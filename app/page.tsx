@@ -6,6 +6,10 @@ import { Stats } from "@/components/landing/Stats";
 import { Pricing } from "@/components/landing/Pricing";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { Benefits } from "@/components/landing/Benefits";
+import { ROICalculator } from "@/components/landing/ROICalculator";
+import { TrustBadges } from "@/components/landing/TrustBadges";
+import { ComparisonTable } from "@/components/landing/ComparisonTable";
+import { LiveDataIndicator } from "@/components/landing/LiveDataIndicator";
 
 // Lazy load heavy components for better initial load performance
 // HeroMap is already a client component, so it will be rendered client-side automatically
@@ -68,6 +72,7 @@ export default function HomePage() {
       <Navbar />
       <LandingHero />
       <Stats />
+      <TrustBadges />
       <section id="map" aria-label="Interaktívna mapa Slovenska">
         <HeroMap />
       </section>
@@ -75,9 +80,12 @@ export default function HomePage() {
         <Features />
       </section>
       <Benefits />
+      <ROICalculator />
+      <ComparisonTable />
       <Testimonials />
       <Pricing />
       <CTA />
+      <LiveDataIndicator />
     </main>
   );
 }
