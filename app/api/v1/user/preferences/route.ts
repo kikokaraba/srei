@@ -112,7 +112,6 @@ export async function POST(request: Request) {
 
     // Build update data object with proper types
     const updateData: {
-      userId: string;
       primaryCity?: string | null;
       trackedCities?: string;
       trackedDistricts?: string;
