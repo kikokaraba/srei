@@ -256,24 +256,3 @@ model TaxInfo {
   updatedAt             DateTime @updatedAt
 }
 
-// Daňové a právne informácie pre nehnuteľnosti
-model TaxInfo {
-  id                    String   @id @default(cuid())
-  propertyId            String   @unique
-  property              Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  purchase_date         DateTime
-  purchase_price        Float
-  ownership_duration_years Int    // Počet rokov vlastníctva
-  is_primary_residence  Boolean  @default(false) // Hlavné bydlisko
-  tax_exemption_eligible Boolean @default(false) // Oprávnenosť na oslobodenie od dane
-  tax_exemption_date    DateTime? // Kedy uplynie 5-ročný test
-  calculated_at         DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-}
-
-// Odpisové skupiny pre s.r.o.
-enum DepreciationGroup {
-  GROUP_1  // 4 roky - budovy a stavby
-  GROUP_2  // 6 rokov - byty a nebytové priestory
-  GROUP_3  // 12 rokov - pozemky (neodpisujú sa)
-}
