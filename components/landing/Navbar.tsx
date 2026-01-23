@@ -45,16 +45,16 @@ export function Navbar() {
               Cenník
             </Link>
             <Link
-              href="/auth/signin"
+              href="#pricing"
               className="text-slate-300 hover:text-slate-100 transition-colors"
             >
-              Prihlásiť sa
+              Cenník
             </Link>
             <Link
               href="/auth/signin"
-              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors"
+              className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40"
             >
-              Začať
+              Začať zdarma
             </Link>
           </div>
 
@@ -99,18 +99,18 @@ export function Navbar() {
                 Cenník
               </Link>
               <Link
-                href="/auth/signin"
+                href="#pricing"
                 className="text-slate-300 hover:text-slate-100 transition-colors"
                 onClick={closeMobileMenu}
               >
-                Prihlásiť sa
+                Cenník
               </Link>
               <Link
                 href="/auth/signin"
-                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors text-center"
+                className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-all duration-200 text-center shadow-lg shadow-emerald-500/25"
                 onClick={closeMobileMenu}
               >
-                Začať
+                Začať zdarma
               </Link>
             </div>
           </div>

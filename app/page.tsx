@@ -3,6 +3,9 @@ import dynamic from "next/dynamic";
 import { Navbar } from "@/components/landing/Navbar";
 import { LandingHero } from "@/components/landing/Hero";
 import { Stats } from "@/components/landing/Stats";
+import { Pricing } from "@/components/landing/Pricing";
+import { Testimonials } from "@/components/landing/Testimonials";
+import { Benefits } from "@/components/landing/Benefits";
 
 // Lazy load heavy components for better initial load performance
 // HeroMap is already a client component, so it will be rendered client-side automatically
@@ -71,6 +74,9 @@ export default function HomePage() {
       <section id="features" aria-label="Funkcie platformy">
         <Features />
       </section>
+      <Benefits />
+      <Testimonials />
+      <Pricing />
       <CTA />
     </main>
   );

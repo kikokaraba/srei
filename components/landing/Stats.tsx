@@ -3,27 +3,27 @@
 export function Stats() {
   const stats = [
     {
-      value: "2,500+",
-      label: "Aktívnych nehnuteľností",
-      change: "+12%",
+      value: "500+",
+      label: "Aktívnych investorov",
+      change: "+127 tento mesiac",
       trend: "up",
     },
     {
-      value: "8",
-      label: "Slovenských miest",
-      change: "Kompletný prehľad",
-      trend: "neutral",
+      value: "2,500+",
+      label: "Sledovaných nehnuteľností",
+      change: "+12% rast",
+      trend: "up",
     },
     {
       value: "5.2%",
       label: "Priemerný výnos",
-      change: "+0.4%",
+      change: "+0.4% vs. trh",
       trend: "up",
     },
     {
-      value: "€1.2M",
+      value: "€1.2M+",
       label: "Spravovaný kapitál",
-      change: "+28%",
+      change: "+28% rast",
       trend: "up",
     },
   ];

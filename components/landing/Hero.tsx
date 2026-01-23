@@ -10,38 +10,51 @@ function LandingHeroComponent() {
       <div className="absolute inset-0 bg-grid-slate-800/[0.2] bg-[size:20px_20px]" />
       <div className="relative container mx-auto px-6 py-24 lg:py-32">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium mb-8 animate-pulse">
             <TrendingUp className="w-4 h-4" />
-            <span>Prémiová investičná platforma</span>
+            <span>#1 investičná platforma na Slovensku</span>
           </div>
 
           <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
             <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-gold-400 bg-clip-text text-transparent" suppressHydrationWarning>
-              Slovenská realitná investičná aplikácia
+              Investujte inteligentne.
+            </span>
+            <br />
+            <span className="text-slate-100">
+              Získajte výhodu.
             </span>
           </h1>
 
-          <p className="text-xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Real-time analýzy, pokročilé metriky a AI-powered insights pre
-            maximálny výnos z vašich investícií na slovenskom trhu
-            nehnuteľností.
+          <p className="text-xl text-slate-400 mb-4 max-w-2xl mx-auto leading-relaxed">
+            Jediná platforma, ktorá kombinuje <span className="text-emerald-400 font-semibold">AI predikcie</span>,{" "}
+            <span className="text-emerald-400 font-semibold">real-time dáta</span> a{" "}
+            <span className="text-emerald-400 font-semibold">pokročilé analytické nástroje</span>{" "}
+            pre maximálny výnos z vašich investícií do nehnuteľností.
+          </p>
+          
+          <p className="text-lg text-slate-500 mb-12 max-w-2xl mx-auto">
+            Pripojte sa k 500+ investorom, ktorí už maximalizujú svoje výnosy na slovenskom trhu.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
             <Link
               href="/auth/signin"
-              className="group px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40"
+              className="group px-10 py-5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-lg rounded-xl transition-all duration-200 flex items-center gap-2 shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105"
             >
-              Začať investovať
+              Začať 14 dní zdarma
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
-              href="/dashboard"
-              className="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-slate-100 font-semibold rounded-lg transition-all duration-200 border border-slate-700"
+              href="#pricing"
+              className="px-10 py-5 bg-slate-800/80 hover:bg-slate-700 text-slate-100 font-semibold rounded-xl transition-all duration-200 border-2 border-slate-700 hover:border-slate-600 backdrop-blur-sm"
             >
-              Prehliadka platformy
+              Zobraziť cenník
             </Link>
           </div>
+          
+          <p className="text-sm text-slate-500 mb-16">
+            ✓ Bezplatná 14-dňová skúšobná verzia • ✓ Žiadna kreditná karta • ✓ Zrušiteľné kedykoľvek
+          </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto">
             <div className="flex items-start gap-3">
