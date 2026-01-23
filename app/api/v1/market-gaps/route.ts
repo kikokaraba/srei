@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 const GAP_THRESHOLD = 15; // 15% pod priemerom = podhodnotená
 
@@ -48,9 +49,10 @@ export async function GET() {
         },
         take: 100, // Limit pre performance
       });
-    } catch (queryError: any) {
+    } catch (queryError: unknown) {
       // Ak modely ešte neexistujú, vrátime prázdny výsledok
-      if (queryError?.code === "P2001" || queryError?.message?.includes("does not exist")) {
+      const error = queryError as Prisma.PrismaClientKnownRequestError | Error;
+      if ((error as Prisma.PrismaClientKnownRequestError)?.code === "P2001" || (error as Error)?.message?.includes("does not exist")) {
         console.warn("MarketGap model not found - database may need migration");
         return NextResponse.json({
           success: true,

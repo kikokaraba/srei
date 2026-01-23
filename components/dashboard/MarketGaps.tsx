@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { TrendingDown, MapPin, Euro, AlertCircle, ExternalLink } from "lucide-react";
+import { TrendingDown, MapPin, AlertCircle, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
 interface MarketGap {

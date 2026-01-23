@@ -53,7 +53,7 @@ export function TaxAssistant() {
     return calculateTax(inputs);
   }, [inputs]);
 
-  const handleInputChange = (field: keyof TaxCalculation, value: any) => {
+  const handleInputChange = (field: keyof TaxCalculation, value: string | number | boolean | Date) => {
     setInputs((prev) => ({
       ...prev,
       [field]: value,

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { SlovakCity } from "@prisma/client";
 
 export async function GET(request: Request) {
   try {
@@ -73,7 +74,7 @@ export async function GET(request: Request) {
       // Získame všetky nehnuteľnosti v meste s liquidity dátami
       const properties = await prisma.property.findMany({
         where: {
-          city: city as any,
+          city: city as SlovakCity,
         },
         include: {
           priceHistory: {
