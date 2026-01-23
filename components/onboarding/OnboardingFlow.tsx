@@ -1,0 +1,597 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import { ArrowRight, ArrowLeft, MapPin, TrendingUp, Target, Bell } from "lucide-react";
+import { SlovakCity } from "@/lib/constants/cities";
+
+const SLOVAK_CITIES = [
+  { value: "BRATISLAVA", label: "Bratislava" },
+  { value: "KOSICE", label: "Košice" },
+  { value: "PRESOV", label: "Prešov" },
+  { value: "ZILINA", label: "Žilina" },
+  { value: "BANSKA_BYSTRICA", label: "Banská Bystrica" },
+  { value: "TRNAVA", label: "Trnava" },
+  { value: "TRENCIN", label: "Trenčín" },
+  { value: "NITRA", label: "Nitra" },
+] as const;
+
+const INVESTMENT_TYPES = [
+  {
+    id: "future-potential",
+    title: "Investície s budúcim potenciálom",
+    description: "Hľadám nehnuteľnosti v oblastiach s plánovanou infraštruktúrou",
+    icon: TrendingUp,
+  },
+  {
+    id: "high-yield",
+    title: "Vysoký výnos",
+    description: "Zaujímajú ma nehnuteľnosti s najvyšším výnosom",
+    icon: Target,
+  },
+  {
+    id: "stable-growth",
+    title: "Stabilný rast",
+    description: "Hľadám bezpečné investície s predvídateľným rastom",
+    icon: TrendingUp,
+  },
+  {
+    id: "flip",
+    title: "Flip (kúpa a predaj)",
+    description: "Hľadám nehnuteľnosti na renováciu a rýchly predaj",
+    icon: ArrowRight,
+  },
+  {
+    id: "rental",
+    title: "Dlhodobý nájom",
+    description: "Hľadám nehnuteľnosti pre pasívny príjem z nájmu",
+    icon: Bell,
+  },
+] as const;
+
+interface OnboardingData {
+  primaryCity: SlovakCity | null;
+  trackedCities: SlovakCity[];
+  investmentType: string | null;
+  minYield: number | null;
+  maxPrice: number | null;
+  minPrice: number | null;
+  minPricePerM2: number | null;
+  maxPricePerM2: number | null;
+  minArea: number | null;
+  maxArea: number | null;
+  minRooms: number | null;
+  maxRooms: number | null;
+  condition: string[];
+  energyCertificates: string[];
+  minGrossYield: number | null;
+  minCashOnCash: number | null;
+  maxDaysOnMarket: number | null;
+  minGapPercentage: number | null;
+  minUrbanImpact: number | null;
+  onlyDistressed: boolean;
+  notifyMarketGaps: boolean;
+  notifyPriceDrops: boolean;
+  notifyNewProperties: boolean;
+  notifyUrbanDevelopment: boolean;
+}
+
+export function OnboardingFlow() {
+  const [step, setStep] = useState(1);
+  const [data, setData] = useState<OnboardingData>({
+    primaryCity: null,
+    trackedCities: [],
+    investmentType: null,
+    minYield: null,
+    maxPrice: null,
+    minPrice: null,
+    minPricePerM2: null,
+    maxPricePerM2: null,
+    minArea: null,
+    maxArea: null,
+    minRooms: null,
+    maxRooms: null,
+    condition: [],
+    energyCertificates: [],
+    minGrossYield: null,
+    minCashOnCash: null,
+    maxDaysOnMarket: null,
+    minGapPercentage: null,
+    minUrbanImpact: null,
+    onlyDistressed: false,
+    notifyMarketGaps: true,
+    notifyPriceDrops: true,
+    notifyNewProperties: true,
+    notifyUrbanDevelopment: true,
+  });
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleNext = useCallback(() => {
+    if (step < 4) {
+      setStep(step + 1);
+    }
+  }, [step]);
+
+  const handleBack = useCallback(() => {
+    if (step > 1) {
+      setStep(step - 1);
+    }
+  }, [step]);
+
+  const handleSave = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      const response = await fetch("/api/v1/user/preferences", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          primaryCity: data.primaryCity,
+          trackedCities: data.trackedCities,
+          investmentType: data.investmentType,
+          minYield: data.minYield,
+          maxYield: null,
+          minPrice: data.minPrice,
+          maxPrice: data.maxPrice,
+          minPricePerM2: data.minPricePerM2,
+          maxPricePerM2: data.maxPricePerM2,
+          minArea: data.minArea,
+          maxArea: data.maxArea,
+          minRooms: data.minRooms,
+          maxRooms: data.maxRooms,
+          condition: data.condition,
+          energyCertificates: data.energyCertificates,
+          minGrossYield: data.minGrossYield,
+          minCashOnCash: data.minCashOnCash,
+          maxDaysOnMarket: data.maxDaysOnMarket,
+          minGapPercentage: data.minGapPercentage,
+          minUrbanImpact: data.minUrbanImpact,
+          onlyDistressed: data.onlyDistressed,
+          notifyMarketGaps: data.notifyMarketGaps,
+          notifyPriceDrops: data.notifyPriceDrops,
+          notifyNewProperties: data.notifyNewProperties,
+          notifyUrbanDevelopment: data.notifyUrbanDevelopment,
+          onboardingCompleted: true,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save preferences");
+      }
+
+      // Reload page to apply preferences
+      window.location.href = "/dashboard";
+    } catch (error) {
+      console.error("Error saving preferences:", error);
+      alert("Chyba pri ukladaní preferencií. Skúste to znova.");
+    } finally {
+      setIsSaving(false);
+    }
+  }, [data]);
+
+  const updateData = useCallback((updates: Partial<OnboardingData>) => {
+    setData((prev) => ({ ...prev, ...updates }));
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/20 flex items-center justify-center p-6">
+      <div className="max-w-2xl w-full">
+        {/* Progress bar */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-slate-400">
+              Krok {step} z 5
+            </span>
+            <span className="text-sm text-slate-400">
+              {Math.round((step / 5) * 100)}%
+            </span>
+          </div>
+          <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-emerald-500 transition-all duration-300"
+              style={{ width: `${(step / 5) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Step content */}
+        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-8">
+          {step === 1 && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-3xl font-bold text-slate-100 mb-2">
+                  Kde hľadáte investície?
+                </h2>
+                <p className="text-slate-400">
+                  Vyberte mesto, ktoré vás najviac zaujíma
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {SLOVAK_CITIES.map((city) => (
+                  <button
+                    key={city.value}
+                    onClick={() => {
+                      updateData({ primaryCity: city.value as SlovakCity });
+                      const tracked = data.trackedCities.includes(city.value as SlovakCity)
+                        ? data.trackedCities
+                        : [...data.trackedCities, city.value as SlovakCity];
+                      updateData({ trackedCities: tracked });
+                    }}
+                    className={`p-4 rounded-lg border transition-all ${
+                      data.primaryCity === city.value
+                        ? "bg-emerald-500/10 border-emerald-500 text-emerald-400"
+                        : "bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600"
+                    }`}
+                  >
+                    <MapPin className="w-5 h-5 mb-2 mx-auto" />
+                    <div className="text-sm font-semibold">{city.label}</div>
+                  </button>
+                ))}
+              </div>
+
+              {data.primaryCity && (
+                <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                  <p className="text-sm text-emerald-400">
+                    ✓ Hlavné mesto: {SLOVAK_CITIES.find((c) => c.value === data.primaryCity)?.label}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-3xl font-bold text-slate-100 mb-2">
+                  Aký typ investícií vás zaujíma?
+                </h2>
+                <p className="text-slate-400">
+                  Vyberte stratégiu, ktorá najlepšie zodpovedá vašim cieľom
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                {INVESTMENT_TYPES.map((type) => {
+                  const Icon = type.icon;
+                  return (
+                    <button
+                      key={type.id}
+                      onClick={() => updateData({ investmentType: type.id })}
+                      className={`w-full p-4 rounded-lg border text-left transition-all ${
+                        data.investmentType === type.id
+                          ? "bg-emerald-500/10 border-emerald-500"
+                          : "bg-slate-800 border-slate-700 hover:border-slate-600"
+                      }`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div
+                          className={`p-2 rounded-lg ${
+                            data.investmentType === type.id
+                              ? "bg-emerald-500/20 text-emerald-400"
+                              : "bg-slate-700 text-slate-400"
+                          }`}
+                        >
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-slate-100 mb-1">
+                            {type.title}
+                          </h3>
+                          <p className="text-sm text-slate-400">
+                            {type.description}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-3xl font-bold text-slate-100 mb-2">
+                  Základné kritériá
+                </h2>
+                <p className="text-slate-400">
+                  Nastavte základné filtre pre vaše investície
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-slate-300 mb-2 font-medium">
+                    Minimálny výnos (%)
+                  </label>
+                  <input
+                    type="number"
+                    value={data.minYield || ""}
+                    onChange={(e) =>
+                      updateData({ minYield: e.target.value ? parseFloat(e.target.value) : null })
+                    }
+                    placeholder="Napríklad 5.0"
+                    step="0.1"
+                    min="0"
+                    max="20"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 mb-2 font-medium">
+                    Maximálna cena (€)
+                  </label>
+                  <input
+                    type="number"
+                    value={data.maxPrice || ""}
+                    onChange={(e) =>
+                      updateData({ maxPrice: e.target.value ? parseFloat(e.target.value) : null })
+                    }
+                    placeholder="Napríklad 200000"
+                    step="1000"
+                    min="0"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 mb-2 font-medium">
+                    Minimálna cena (€)
+                  </label>
+                  <input
+                    type="number"
+                    value={data.minPrice || ""}
+                    onChange={(e) =>
+                      updateData({ minPrice: e.target.value ? parseFloat(e.target.value) : null })
+                    }
+                    placeholder="Napríklad 50000"
+                    step="1000"
+                    min="0"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 mb-2 font-medium">
+                    Počet izieb
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      value={data.minRooms || ""}
+                      onChange={(e) =>
+                        updateData({ minRooms: e.target.value ? parseInt(e.target.value) : null })
+                      }
+                      placeholder="Od"
+                      min="1"
+                      className="flex-1 px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <input
+                      type="number"
+                      value={data.maxRooms || ""}
+                      onChange={(e) =>
+                        updateData({ maxRooms: e.target.value ? parseInt(e.target.value) : null })
+                      }
+                      placeholder="Do"
+                      min="1"
+                      className="flex-1 px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-3xl font-bold text-slate-100 mb-2">
+                  Pokročilé kritériá
+                </h2>
+                <p className="text-slate-400">
+                  Voliteľné: Nastavte pokročilé filtre pre ešte presnejšie výsledky
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-slate-300 mb-2 font-medium text-sm">
+                    Cena za m² (€/m²)
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      value={data.minPricePerM2 || ""}
+                      onChange={(e) =>
+                        updateData({ minPricePerM2: e.target.value ? parseFloat(e.target.value) : null })
+                      }
+                      placeholder="Od"
+                      className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <input
+                      type="number"
+                      value={data.maxPricePerM2 || ""}
+                      onChange={(e) =>
+                        updateData({ maxPricePerM2: e.target.value ? parseFloat(e.target.value) : null })
+                      }
+                      placeholder="Do"
+                      className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 mb-2 font-medium text-sm">
+                    Plocha (m²)
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      value={data.minArea || ""}
+                      onChange={(e) =>
+                        updateData({ minArea: e.target.value ? parseFloat(e.target.value) : null })
+                      }
+                      placeholder="Od"
+                      className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <input
+                      type="number"
+                      value={data.maxArea || ""}
+                      onChange={(e) =>
+                        updateData({ maxArea: e.target.value ? parseFloat(e.target.value) : null })
+                      }
+                      placeholder="Do"
+                      className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 mb-2 font-medium text-sm">
+                    Minimálny Market Gap (%)
+                  </label>
+                  <input
+                    type="number"
+                    value={data.minGapPercentage || ""}
+                    onChange={(e) =>
+                      updateData({ minGapPercentage: e.target.value ? parseFloat(e.target.value) : null })
+                    }
+                    placeholder="Napríklad 10"
+                    step="0.1"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 mb-2 font-medium text-sm">
+                    Minimálny Urban Impact (%)
+                  </label>
+                  <input
+                    type="number"
+                    value={data.minUrbanImpact || ""}
+                    onChange={(e) =>
+                      updateData({ minUrbanImpact: e.target.value ? parseFloat(e.target.value) : null })
+                    }
+                    placeholder="Napríklad 15"
+                    step="0.1"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <label className="flex items-center gap-3 p-4 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-slate-600 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={data.onlyDistressed}
+                  onChange={(e) => updateData({ onlyDistressed: e.target.checked })}
+                  className="w-5 h-5 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500"
+                />
+                <div>
+                  <h3 className="font-semibold text-slate-100 mb-1">
+                    Len nehnuteľnosti v núdzi
+                  </h3>
+                  <p className="text-sm text-slate-400">
+                    Zobraziť len nehnuteľnosti, ktoré sú dlhšie v ponuke alebo majú zníženú cenu
+                  </p>
+                </div>
+              </label>
+            </div>
+          )}
+
+          {step === 5 && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-3xl font-bold text-slate-100 mb-2">
+                  Notifikácie
+                </h2>
+                <p className="text-slate-400">
+                  Vyberte, o čom chcete dostávať upozornenia
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                {[
+                  {
+                    id: "notifyMarketGaps",
+                    title: "Index skrytého potenciálu",
+                    description: "Upozornenia na podhodnotené nehnuteľnosti",
+                  },
+                  {
+                    id: "notifyPriceDrops",
+                    title: "Poklesy cien",
+                    description: "Keď cena nehnuteľnosti klesne",
+                  },
+                  {
+                    id: "notifyNewProperties",
+                    title: "Nové nehnuteľnosti",
+                    description: "Nové príležitosti vo vašich sledovaných mestách",
+                  },
+                  {
+                    id: "notifyUrbanDevelopment",
+                    title: "Urbanistický rozvoj",
+                    description: "Plánovaná infraštruktúra vo vašich lokalitách",
+                  },
+                ].map((notif) => (
+                  <label
+                    key={notif.id}
+                    className="flex items-start gap-4 p-4 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-slate-600 transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={data[notif.id as keyof OnboardingData] as boolean}
+                      onChange={(e) =>
+                        updateData({ [notif.id]: e.target.checked } as Partial<OnboardingData>)
+                      }
+                      className="mt-1 w-5 h-5 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500"
+                    />
+                    <div>
+                      <h3 className="font-semibold text-slate-100 mb-1">
+                        {notif.title}
+                      </h3>
+                      <p className="text-sm text-slate-400">{notif.description}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Navigation buttons */}
+          <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-800">
+            <button
+              onClick={handleBack}
+              disabled={step === 1}
+              className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Späť
+            </button>
+
+            {step < 5 ? (
+              <button
+                onClick={handleNext}
+                disabled={
+                  (step === 1 && !data.primaryCity) ||
+                  (step === 2 && !data.investmentType)
+                }
+                className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                Ďalej
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSaving ? "Ukladám..." : "Dokončiť nastavenie"}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

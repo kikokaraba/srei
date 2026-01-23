@@ -60,6 +60,7 @@ model User {
   sessions      Session[]
   properties    Property[]
   dashboardLayout DashboardLayout?
+  preferences   UserPreferences?
 }
 
 model Account {
@@ -266,5 +267,88 @@ model DashboardLayout {
   hiddenWidgets String @db.Text // JSON array of hidden widget IDs
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// User preferences - onboarding a filtre
+model UserPreferences {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  onboardingCompleted   Boolean  @default(false)
+  
+  // Lokalita
+  primaryCity           SlovakCity? // Hlavné mesto záujmu
+  trackedCities         String   @db.Text // JSON array of SlovakCity
+  trackedDistricts      String   @db.Text // JSON array of districts
+  trackedStreets        String   @db.Text // JSON array of street names
+  
+  // Typ investície
+  investmentType        String?  // "future-potential", "high-yield", "stable-growth", "flip", "rental"
+  minYield              Float?   // Minimálny požadovaný výnos
+  maxYield              Float?   // Maximálny výnos
+  minPrice              Float?   // Minimálna cena
+  maxPrice              Float?   // Maximálna cena
+  minPricePerM2         Float?   // Minimálna cena za m²
+  maxPricePerM2         Float?   // Maximálna cena za m²
+  minArea               Float?   // Minimálna plocha v m²
+  maxArea               Float?   // Maximálna plocha v m²
+  
+  // Nehnuteľnosť
+  propertyTypes         String   @db.Text // JSON array: ["apartment", "house", "studio", "commercial"]
+  minRooms              Int?     // Minimálny počet izieb
+  maxRooms              Int?     // Maximálny počet izieb
+  condition             String   @db.Text // JSON array of PropertyCondition
+  energyCertificates    String   @db.Text // JSON array of EnergyCertificate
+  minFloor              Int?     // Minimálne poschodie
+  maxFloor              Int?     // Maximálne poschodie
+  onlyDistressed        Boolean  @default(false) // Len nehnuteľnosti v núdzi
+  
+  // Investičné metriky
+  minGrossYield         Float?   // Minimálny hrubý výnos
+  maxGrossYield         Float?   // Maximálny hrubý výnos
+  minNetYield           Float?   // Minimálny čistý výnos
+  maxNetYield           Float?   // Maximálny čistý výnos
+  minCashOnCash         Float?   // Minimálny cash-on-cash return
+  maxCashOnCash         Float?   // Maximálny cash-on-cash return
+  maxPriceToRentRatio   Float?   // Maximálny pomer cena/nájom
+  
+  // Trhové podmienky
+  maxDaysOnMarket       Int?     // Maximálny počet dní v ponuke
+  minPriceDrop          Float?   // Minimálny pokles ceny v %
+  requirePriceHistory   Boolean  @default(false) // Vyžadovať históriu cien
+  
+  // Urban Development
+  minUrbanImpact        Float?   // Minimálny očakávaný vplyv urban development v %
+  maxDistanceToInfra    Float?   // Maximálna vzdialenosť k infraštruktúre v metroch
+  infrastructureTypes   String   @db.Text // JSON array of InfrastructureType
+  
+  // Market Gaps
+  minGapPercentage      Float?   // Minimálny gap percentage (napr. 10%)
+  minPotentialProfit    Float?   // Minimálny potenciálny zisk
+  
+  // Daňové preferencie
+  ownershipTypes        String   @db.Text // JSON array: ["individual", "sro", "spolocnost"]
+  requireTaxExemption   Boolean  @default(false) // Vyžadovať daňové oslobodenie
+  
+  // Notifikácie
+  notifyMarketGaps      Boolean  @default(true)
+  notifyPriceDrops      Boolean  @default(true)
+  notifyNewProperties   Boolean  @default(true)
+  notifyUrbanDevelopment Boolean @default(true)
+  notifyHighYield       Boolean  @default(false) // Upozornenia na vysoký výnos
+  notifyDistressed      Boolean  @default(false) // Upozornenia na nehnuteľnosti v núdzi
+  notificationFrequency String?  @default("daily") // "realtime", "hourly", "daily", "weekly"
+  
+  // Dashboard preferences
+  defaultView           String?  @default("dashboard") // "dashboard", "map", "list"
+  itemsPerPage          Int?     @default(20) // Počet položiek na stránku
+  sortBy                String?  @default("price") // "price", "yield", "area", "date"
+  sortOrder             String?  @default("asc") // "asc", "desc"
+  
+  // Filter presets
+  savedFilters          String   @db.Text // JSON array of saved filter presets
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 }
 
