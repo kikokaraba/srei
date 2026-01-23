@@ -21,7 +21,8 @@ export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Bratislava",
     slug: "bratislava",
-    coordinates: { x: 15, y: 75 },
+    // Southwest - bottom-left area (48.15°N, 17.11°E)
+    coordinates: { x: 18, y: 82 },
     metrics: {
       avgPrice: 3200,
       yield: 4.7,
@@ -31,7 +32,8 @@ export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Košice",
     slug: "kosice",
-    coordinates: { x: 85, y: 60 },
+    // Far East - right side (48.72°N, 21.26°E)
+    coordinates: { x: 88, y: 65 },
     metrics: {
       avgPrice: 1850,
       yield: 5.3,
@@ -41,7 +43,8 @@ export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Prešov",
     slug: "presov",
-    coordinates: { x: 80, y: 45 },
+    // Northeast - top-right (49.00°N, 21.24°E)
+    coordinates: { x: 87, y: 50 },
     metrics: {
       avgPrice: 1650,
       yield: 5.5,
@@ -51,7 +54,8 @@ export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Žilina",
     slug: "zilina",
-    coordinates: { x: 35, y: 35 },
+    // North - top-center (49.22°N, 18.74°E)
+    coordinates: { x: 42, y: 38 },
     metrics: {
       avgPrice: 1950,
       yield: 5.1,
@@ -61,7 +65,8 @@ export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Banská Bystrica",
     slug: "banska-bystrica",
-    coordinates: { x: 50, y: 50 },
+    // Center (48.74°N, 19.15°E)
+    coordinates: { x: 52, y: 58 },
     metrics: {
       avgPrice: 1750,
       yield: 5.4,
@@ -71,7 +76,8 @@ export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Trnava",
     slug: "trnava",
-    coordinates: { x: 25, y: 70 },
+    // West - left-center (48.38°N, 17.59°E)
+    coordinates: { x: 22, y: 72 },
     metrics: {
       avgPrice: 2100,
       yield: 4.9,
@@ -81,7 +87,8 @@ export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Trenčín",
     slug: "trencin",
-    coordinates: { x: 30, y: 55 },
+    // Northwest - top-left (48.89°N, 18.04°E)
+    coordinates: { x: 28, y: 52 },
     metrics: {
       avgPrice: 1900,
       yield: 5.2,
@@ -91,7 +98,8 @@ export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Nitra",
     slug: "nitra",
-    coordinates: { x: 30, y: 80 },
+    // Southwest - left-center, below Trnava (48.31°N, 18.09°E)
+    coordinates: { x: 25, y: 78 },
     metrics: {
       avgPrice: 1650,
       yield: 5.7,

@@ -40,62 +40,42 @@ export function SlovakiaMap() {
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/10 via-transparent to-gold-950/10" />
             
             <svg
-              viewBox="0 0 400 300"
+              viewBox="0 0 600 400"
               className="w-full h-auto relative z-10"
               style={{ minHeight: "400px" }}
+              preserveAspectRatio="xMidYMid meet"
             >
-              {/* More accurate Slovakia shape */}
+              {/* Realistic Slovakia shape based on actual geographic borders */}
+              {/* Slovakia is roughly rectangular, wider in north, narrower in south */}
               <path
-                d="M 80 60 
-                   L 120 50 
-                   L 160 55 
-                   L 200 65 
-                   L 240 80 
-                   L 280 95 
-                   L 310 110 
-                   L 330 135 
-                   L 340 165 
-                   L 335 195 
-                   L 320 225 
-                   L 290 250 
-                   L 250 265 
-                   L 200 270 
-                   L 150 265 
-                   L 110 250 
-                   L 85 225 
-                   L 70 195 
-                   L 65 165 
-                   L 70 135 
-                   L 75 110 
-                   Z"
+                d="M 100 60 
+                   C 120 55, 150 58, 180 62
+                   C 220 68, 260 75, 300 85
+                   C 340 98, 380 115, 410 140
+                   C 435 165, 445 195, 440 225
+                   C 430 255, 400 280, 360 295
+                   C 320 305, 280 308, 240 305
+                   C 200 300, 160 290, 130 275
+                   C 110 260, 95 240, 88 220
+                   C 82 200, 80 180, 82 160
+                   C 85 140, 90 120, 100 60 Z"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth="2.5"
                 className="text-slate-700"
               />
               <path
-                d="M 80 60 
-                   L 120 50 
-                   L 160 55 
-                   L 200 65 
-                   L 240 80 
-                   L 280 95 
-                   L 310 110 
-                   L 330 135 
-                   L 340 165 
-                   L 335 195 
-                   L 320 225 
-                   L 290 250 
-                   L 250 265 
-                   L 200 270 
-                   L 150 265 
-                   L 110 250 
-                   L 85 225 
-                   L 70 195 
-                   L 65 165 
-                   L 70 135 
-                   L 75 110 
-                   Z"
+                d="M 100 60 
+                   C 120 55, 150 58, 180 62
+                   C 220 68, 260 75, 300 85
+                   C 340 98, 380 115, 410 140
+                   C 435 165, 445 195, 440 225
+                   C 430 255, 400 280, 360 295
+                   C 320 305, 280 308, 240 305
+                   C 200 300, 160 290, 130 275
+                   C 110 260, 95 240, 88 220
+                   C 82 200, 80 180, 82 160
+                   C 85 140, 90 120, 100 60 Z"
                 fill="url(#slovakiaGradient)"
                 opacity="0.15"
               />
@@ -107,49 +87,54 @@ export function SlovakiaMap() {
                 </linearGradient>
               </defs>
 
-              {/* City markers */}
-              {SLOVAK_CITIES.map((city) => (
-                <g key={city.slug}>
-                  <circle
-                    cx={`${city.coordinates.x}%`}
-                    cy={`${city.coordinates.y}%`}
-                    r="8"
-                    fill="#10b981"
-                    className="cursor-pointer hover:fill-emerald-300 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-slate-900"
-                    onClick={() => handleCitySelect(city)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        handleCitySelect(city);
-                      }
-                    }}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={`Vybrať mesto ${city.name}`}
-                    style={{ filter: "drop-shadow(0 0 8px rgba(16, 185, 129, 0.5))" }}
-                  />
-                  <circle
-                    cx={`${city.coordinates.x}%`}
-                    cy={`${city.coordinates.y}%`}
-                    r="12"
-                    fill="none"
-                    stroke="#10b981"
-                    strokeWidth="2"
-                    opacity="0.3"
-                    className="animate-pulse"
-                    aria-hidden="true"
-                  />
-                  <text
-                    x={`${city.coordinates.x}%`}
-                    y={`${city.coordinates.y - 15}%`}
-                    textAnchor="middle"
-                    className="text-xs fill-slate-300 font-semibold pointer-events-none"
-                    aria-hidden="true"
-                  >
-                    {city.name}
-                  </text>
-                </g>
-              ))}
+              {/* City markers - using absolute coordinates in viewBox */}
+              {SLOVAK_CITIES.map((city) => {
+                // Convert percentage to absolute coordinates in viewBox (600x400)
+                const x = (city.coordinates.x / 100) * 600;
+                const y = (city.coordinates.y / 100) * 400;
+                return (
+                  <g key={city.slug}>
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r="10"
+                      fill="#10b981"
+                      className="cursor-pointer hover:fill-emerald-300 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-slate-900"
+                      onClick={() => handleCitySelect(city)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleCitySelect(city);
+                        }
+                      }}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`Vybrať mesto ${city.name}`}
+                      style={{ filter: "drop-shadow(0 0 8px rgba(16, 185, 129, 0.5))" }}
+                    />
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r="15"
+                      fill="none"
+                      stroke="#10b981"
+                      strokeWidth="2"
+                      opacity="0.3"
+                      className="animate-pulse"
+                      aria-hidden="true"
+                    />
+                    <text
+                      x={x}
+                      y={y - 20}
+                      textAnchor="middle"
+                      className="text-xs fill-slate-300 font-semibold pointer-events-none"
+                      aria-hidden="true"
+                    >
+                      {city.name}
+                    </text>
+                  </g>
+                );
+              })}
             </svg>
           </div>
 
