@@ -5,10 +5,6 @@ import { LandingHero } from "@/components/landing/Hero";
 import { Stats } from "@/components/landing/Stats";
 import { Pricing } from "@/components/landing/Pricing";
 import { Testimonials } from "@/components/landing/Testimonials";
-import { Benefits } from "@/components/landing/Benefits";
-import { ROICalculator } from "@/components/landing/ROICalculator";
-import { TrustBadges } from "@/components/landing/TrustBadges";
-import { ComparisonTable } from "@/components/landing/ComparisonTable";
 import { LiveDataIndicator } from "@/components/landing/LiveDataIndicator";
 
 // Lazy load heavy components for better initial load performance
@@ -72,16 +68,12 @@ export default function HomePage() {
       <Navbar />
       <LandingHero />
       <Stats />
-      <TrustBadges />
       <section id="map" aria-label="Interaktívna mapa Slovenska">
         <HeroMap />
       </section>
       <section id="features" aria-label="Funkcie platformy">
         <Features />
       </section>
-      <Benefits />
-      <ROICalculator />
-      <ComparisonTable />
       <Testimonials />
       <Pricing />
       <CTA />
