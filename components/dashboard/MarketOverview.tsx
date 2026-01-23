@@ -3,7 +3,24 @@
 import { useQuery } from "@tanstack/react-query";
 import { BarChart3, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
-async function fetchAnalytics() {
+interface AnalyticsData {
+  city: string;
+  avg_price_m2: number;
+  avg_rent_m2: number;
+  yield_benchmark: number;
+  volatility_index: number;
+  properties_count: number;
+  trend: "rising" | "falling" | "stable";
+  last_updated: string;
+}
+
+interface AnalyticsResponse {
+  success: boolean;
+  data: AnalyticsData[];
+  timestamp: string;
+}
+
+async function fetchAnalytics(): Promise<AnalyticsResponse> {
   const res = await fetch("/api/v1/analytics/snapshot");
   if (!res.ok) throw new Error("Failed to fetch analytics");
   return res.json();
@@ -28,7 +45,7 @@ export function MarketOverview() {
     );
   }
 
-  const analytics = data?.data || [];
+  const analytics: AnalyticsData[] = data?.data || [];
 
   return (
     <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
@@ -38,7 +55,7 @@ export function MarketOverview() {
       </div>
 
       <div className="space-y-4">
-        {analytics.map((city: any, index: number) => (
+        {analytics.map((city, index) => (
           <div
             key={index}
             className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50"

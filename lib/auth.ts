@@ -1,9 +1,10 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { NextAuthOptions } from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { z } from "zod";
 import type { Adapter } from "next-auth/adapters";
+import type { UserRole } from "@prisma/client";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -58,14 +59,14 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role,
+          role: user.role as UserRole,
         };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
+      if (user && "id" in user && "role" in user) {
         token.id = user.id;
         token.role = user.role;
       }
@@ -73,8 +74,11 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user && token.id && token.role) {
-        session.user.id = token.id as string;
-        session.user.role = token.role;
+        session.user = {
+          ...session.user,
+          id: String(token.id),
+          role: token.role,
+        };
       }
       return session;
     },

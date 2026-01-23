@@ -1,9 +1,26 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, TrendingDown, DollarSign, MapPin } from "lucide-react";
+import { TrendingUp, DollarSign, MapPin } from "lucide-react";
 
-async function fetchAnalytics() {
+interface AnalyticsData {
+  city: string;
+  avg_price_m2: number;
+  avg_rent_m2: number;
+  yield_benchmark: number;
+  volatility_index: number;
+  properties_count: number;
+  trend: "rising" | "falling" | "stable";
+  last_updated: string;
+}
+
+interface AnalyticsResponse {
+  success: boolean;
+  data: AnalyticsData[];
+  timestamp: string;
+}
+
+async function fetchAnalytics(): Promise<AnalyticsResponse> {
   const res = await fetch("/api/v1/analytics/snapshot");
   if (!res.ok) throw new Error("Failed to fetch analytics");
   return res.json();
@@ -31,19 +48,18 @@ export function AnalyticsCards() {
     );
   }
 
-  const analytics = data?.data || [];
-  const bratislava = analytics.find((a: any) => a.city === "BRATISLAVA");
-  const kosice = analytics.find((a: any) => a.city === "KOSICE");
-  const nitra = analytics.find((a: any) => a.city === "NITRA");
+  const analytics: AnalyticsData[] = data?.data || [];
+  const bratislava = analytics.find((a) => a.city === "BRATISLAVA");
+  const nitra = analytics.find((a) => a.city === "NITRA");
 
   const avgYield =
     analytics.length > 0
-      ? analytics.reduce((sum: number, a: any) => sum + a.yield_benchmark, 0) /
+      ? analytics.reduce((sum, a) => sum + a.yield_benchmark, 0) /
         analytics.length
       : 0;
 
   const totalProperties = analytics.reduce(
-    (sum: number, a: any) => sum + (a.properties_count || 0),
+    (sum, a) => sum + (a.properties_count || 0),
     0
   );
 
