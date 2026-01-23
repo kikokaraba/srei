@@ -3,6 +3,9 @@ import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 
 // Zero Trust Middleware - Validates sessions and sanitizes headers
+// Nastavujeme runtime na Node.js aby sme mohli použiť Prisma Client
+export const runtime = "nodejs";
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
