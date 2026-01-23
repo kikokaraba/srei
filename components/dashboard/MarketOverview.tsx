@@ -51,7 +51,7 @@ export function MarketOverview() {
     <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
       <div className="flex items-center gap-2 mb-6">
         <BarChart3 className="w-5 h-5 text-emerald-400" />
-        <h2 className="text-xl font-bold text-slate-100">Market Overview</h2>
+        <h2 className="text-xl font-bold text-slate-100">Prehľad trhu</h2>
       </div>
 
       <div className="space-y-4">
@@ -64,32 +64,32 @@ export function MarketOverview() {
               <div>
                 <h3 className="font-semibold text-slate-100">{city.city}</h3>
                 <p className="text-sm text-slate-400">
-                  {city.properties_count} properties
+                  {city.properties_count} nehnuteľností
                 </p>
               </div>
               <div className="text-right">
                 <p className="text-lg font-bold text-emerald-400">
                   {city.yield_benchmark.toFixed(2)}%
                 </p>
-                <p className="text-xs text-slate-400">Yield</p>
+                <p className="text-xs text-slate-400">Výnos</p>
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-4 mt-4">
               <div>
-                <p className="text-xs text-slate-500 mb-1">Avg Price/m²</p>
+                <p className="text-xs text-slate-500 mb-1">Priem. cena/m²</p>
                 <p className="text-sm font-medium text-slate-200">
                   €{city.avg_price_m2.toLocaleString()}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-500 mb-1">Avg Rent/m²</p>
+                <p className="text-xs text-slate-500 mb-1">Priem. nájomné/m²</p>
                 <p className="text-sm font-medium text-slate-200">
                   €{city.avg_rent_m2.toFixed(2)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-500 mb-1">Risk Index</p>
+                <p className="text-xs text-slate-500 mb-1">Index rizika</p>
                 <div className="flex items-center gap-1">
                   <p className="text-sm font-medium text-slate-200">
                     {(city.volatility_index * 100).toFixed(0)}%
@@ -115,7 +115,7 @@ export function MarketOverview() {
                       : "bg-slate-700 text-slate-300"
                   }`}
                 >
-                  {city.trend.toUpperCase()}
+                  {city.trend === "rising" ? "RASTÚCI" : city.trend === "falling" ? "KLESAJÚCI" : "STABILNÝ"}
                 </span>
               </div>
             </div>

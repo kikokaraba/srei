@@ -3,16 +3,16 @@ export default function PropertiesPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-slate-100 mb-2">
-          Property Search
+          Vyhľadávanie nehnuteľností
         </h1>
         <p className="text-slate-400">
-          Advanced filtering and search for Slovak real estate
+          Pokročilé filtrovanie a vyhľadávanie slovenských nehnuteľností
         </p>
       </div>
 
       <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
         <p className="text-slate-400">
-          Smart filters component coming soon...
+          Komponent inteligentných filtrov čoskoro...
         </p>
       </div>
     </div>

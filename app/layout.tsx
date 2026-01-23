@@ -6,8 +6,8 @@ import { Providers } from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SREI - Slovakia Real Estate Intelligence",
-  description: "Premium real estate investment platform for the Slovak market",
+  title: "SREI - Slovenská Realitná Investičná Inteligencia",
+  description: "Prémiová platforma pre investovanie do nehnuteľností na slovenskom trhu",
 };
 
 export default function RootLayout({
@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="sk" className="dark">
       <body className={inter.className}>
         <Providers>{children}</Providers>
       </body>

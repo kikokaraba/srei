@@ -6,7 +6,7 @@ import { Home, MapPin, TrendingUp } from "lucide-react";
 const mockProperties = [
   {
     id: "1",
-    title: "2-room apartment in Staré Mesto",
+    title: "2-izbový byt v Starom Meste",
     city: "BRATISLAVA",
     district: "Staré Mesto",
     price: 185000,
@@ -17,7 +17,7 @@ const mockProperties = [
   },
   {
     id: "2",
-    title: "3-room apartment near city center",
+    title: "3-izbový byt blízko centra",
     city: "KOSICE",
     district: "Košice I",
     price: 125000,
@@ -28,7 +28,7 @@ const mockProperties = [
   },
   {
     id: "3",
-    title: "1-room studio, renovated",
+    title: "1-izbové štúdio, zrekonštruované",
     city: "NITRA",
     district: "Nitra",
     price: 68000,
@@ -45,10 +45,10 @@ export function RecentProperties() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Home className="w-5 h-5 text-emerald-400" />
-          <h2 className="text-xl font-bold text-slate-100">Recent Properties</h2>
+          <h2 className="text-xl font-bold text-slate-100">Nedávne nehnuteľnosti</h2>
         </div>
         <button className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors">
-          View All →
+          Zobraziť všetko →
         </button>
       </div>
 
@@ -70,25 +70,25 @@ export function RecentProperties() {
                   </div>
                   <div className="flex items-center gap-1">
                     <Home className="w-4 h-4" />
-                    <span>{property.rooms} rooms</span>
+                    <span>{property.rooms} {property.rooms === 1 ? "izba" : property.rooms < 5 ? "izby" : "izieb"}</span>
                   </div>
                   <span>{property.area_m2} m²</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <div>
-                    <p className="text-xs text-slate-500 mb-1">Price</p>
+                    <p className="text-xs text-slate-500 mb-1">Cena</p>
                     <p className="text-lg font-bold text-slate-100">
                       €{property.price.toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 mb-1">Price/m²</p>
+                    <p className="text-xs text-slate-500 mb-1">Cena/m²</p>
                     <p className="text-sm font-medium text-slate-200">
                       €{property.price_per_m2.toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 mb-1">Yield</p>
+                    <p className="text-xs text-slate-500 mb-1">Výnos</p>
                     <div className="flex items-center gap-1">
                       <TrendingUp className="w-4 h-4 text-emerald-400" />
                       <p className="text-sm font-bold text-emerald-400">

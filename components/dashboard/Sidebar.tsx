@@ -15,11 +15,11 @@ import { signOut } from "next-auth/react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Heatmap", href: "/dashboard/heatmap", icon: Map },
-  { name: "Properties", href: "/dashboard/properties", icon: Filter },
-  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
-  { name: "Comparison", href: "/dashboard/comparison", icon: TrendingUp },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+  { name: "Heatmapa", href: "/dashboard/heatmap", icon: Map },
+  { name: "Nehnuteľnosti", href: "/dashboard/properties", icon: Filter },
+  { name: "Analytika", href: "/dashboard/analytics", icon: BarChart3 },
+  { name: "Porovnanie", href: "/dashboard/comparison", icon: TrendingUp },
+  { name: "Nastavenia", href: "/dashboard/settings", icon: Settings },
 ];
 
 export function Sidebar() {
@@ -30,7 +30,7 @@ export function Sidebar() {
       <div className="p-6 border-b border-slate-800">
         <h2 className="text-xl font-bold text-emerald-400">SREI</h2>
         <p className="text-xs text-slate-500 mt-1">
-          Slovakia Real Estate Intelligence
+          Slovenská Realitná Investičná Inteligencia
         </p>
       </div>
 
@@ -62,7 +62,7 @@ export function Sidebar() {
           className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
         >
           <LogOut className="w-5 h-5" />
-          <span className="font-medium">Sign Out</span>
+          <span className="font-medium">Odhlásiť sa</span>
         </button>
       </div>
     </aside>

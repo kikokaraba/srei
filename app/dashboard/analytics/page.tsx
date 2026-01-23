@@ -3,16 +3,16 @@ export default function AnalyticsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-slate-100 mb-2">
-          Market Analytics
+          Trhová analytika
         </h1>
         <p className="text-slate-400">
-          Deep dive into market trends and performance metrics
+          Hlboký pohľad na trhové trendy a výkonnostné metriky
         </p>
       </div>
 
       <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
         <p className="text-slate-400">
-          Advanced analytics dashboard coming soon...
+          Pokročilý analytický dashboard čoskoro...
         </p>
       </div>
     </div>

@@ -7,10 +7,10 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-slate-100 mb-2">
-          Investor Dashboard
+          Investičný Dashboard
         </h1>
         <p className="text-slate-400">
-          Real-time market intelligence for Slovak real estate
+          Real-time trhová inteligencia pre slovenské nehnuteľnosti
         </p>
       </div>
 

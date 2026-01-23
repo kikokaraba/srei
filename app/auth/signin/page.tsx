@@ -27,13 +27,13 @@ function SignInForm() {
       });
 
       if (result?.error) {
-        setError("Invalid credentials");
+        setError("Neplatné prihlasovacie údaje");
       } else {
         router.push(callbackUrl);
         router.refresh();
       }
     } catch {
-      setError("An error occurred. Please try again.");
+      setError("Nastala chyba. Skúste to znova.");
     } finally {
       setLoading(false);
     }
@@ -49,10 +49,10 @@ function SignInForm() {
           </div>
 
           <h2 className="text-xl font-semibold text-slate-100 mb-2">
-            Sign in to your account
+            Prihláste sa do svojho účtu
           </h2>
           <p className="text-sm text-slate-400 mb-6">
-            Access your real estate investment dashboard
+            Prístup k vášmu investičnému dashboardu pre nehnuteľnosti
           </p>
 
           {error && (
@@ -76,7 +76,7 @@ function SignInForm() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="you@example.com"
+                placeholder="vas@email.sk"
               />
             </div>
 
@@ -85,7 +85,7 @@ function SignInForm() {
                 htmlFor="password"
                 className="block text-sm font-medium text-slate-300 mb-2"
               >
-                Password
+                Heslo
               </label>
               <input
                 id="password"
@@ -103,13 +103,12 @@ function SignInForm() {
               disabled={loading}
               className="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? "Prihlasujem..." : "Prihlásiť sa"}
             </button>
           </form>
 
           <p className="mt-6 text-xs text-center text-slate-500">
-            Demo: Use any email/password to test (authentication will be fully
-            implemented)
+            Demo: Použite ľubovoľný email/heslo na testovanie (autentifikácia bude plne implementovaná)
           </p>
         </div>
       </div>
@@ -122,7 +121,7 @@ export default function SignInPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-slate-950">
-          <div className="text-slate-400">Loading...</div>
+          <div className="text-slate-400">Načítavam...</div>
         </div>
       }
     >

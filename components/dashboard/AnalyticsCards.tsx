@@ -65,7 +65,7 @@ export function AnalyticsCards() {
 
   const cards = [
     {
-      title: "Average Yield",
+      title: "Priemerný výnos",
       value: `${avgYield.toFixed(2)}%`,
       icon: TrendingUp,
       change: "+0.3%",
@@ -73,7 +73,7 @@ export function AnalyticsCards() {
       color: "emerald",
     },
     {
-      title: "Total Properties",
+      title: "Celkom nehnuteľností",
       value: totalProperties.toLocaleString(),
       icon: MapPin,
       change: "+127",
@@ -81,15 +81,15 @@ export function AnalyticsCards() {
       color: "gold",
     },
     {
-      title: "Bratislava Avg Price",
+      title: "Priemerná cena Bratislava",
       value: `€${bratislava?.avg_price_m2.toLocaleString() || 0}/m²`,
       icon: DollarSign,
-      change: "Stable",
+      change: "Stabilná",
       trend: "neutral",
       color: "slate",
     },
     {
-      title: "Top Yield City",
+      title: "Mesto s najvyšším výnosom",
       value: nitra?.city || "N/A",
       icon: TrendingUp,
       change: `${nitra?.yield_benchmark.toFixed(1)}%`,
