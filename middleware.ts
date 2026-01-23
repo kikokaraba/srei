@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { auth } from "@/lib/auth";
 
 // Zero Trust Middleware - Validates sessions and sanitizes headers
 export async function middleware(request: NextRequest) {
@@ -15,12 +15,9 @@ export async function middleware(request: NextRequest) {
 
   // Protected routes require authentication
   if (!isPublicRoute && !isApiRoute) {
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
+    const session = await auth();
 
-    if (!token) {
+    if (!session) {
       const signInUrl = new URL("/auth/signin", request.url);
       signInUrl.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(signInUrl);

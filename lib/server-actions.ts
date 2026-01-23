@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import type { Session } from "next-auth";
 
 /**
@@ -10,11 +9,11 @@ export async function withAuth<T>(
   handler: (session: Session) => Promise<T>
 ): Promise<{ success: true; data: T } | { success: false; error: string }> {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) {
       return { success: false, error: "Unauthorized" };
     }
-    const result = await handler(session);
+    const result = await handler(session as Session);
     return { success: true, data: result };
   } catch (error) {
     console.error("Server action error:", error);
@@ -36,7 +35,7 @@ export async function withValidation<TInput, TOutput>(
     input: unknown
   ): Promise<{ success: true; data: TOutput } | { success: false; error: string }> => {
     try {
-      const session = await getServerSession(authOptions);
+      const session = await auth();
       if (!session) {
         return { success: false, error: "Unauthorized" };
       }
@@ -49,7 +48,7 @@ export async function withValidation<TInput, TOutput>(
         };
       }
 
-      const result = await handler(validated.data, session);
+      const result = await handler(validated.data, session as Session);
       return { success: true, data: result };
     } catch (error) {
       console.error("Server action error:", error);

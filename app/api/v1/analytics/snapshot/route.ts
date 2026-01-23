@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { analyticsRateLimiter } from "@/lib/rate-limit";
-import { getToken } from "next-auth/jwt";
+import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
 // Mock data for Slovak cities
@@ -53,12 +53,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Authentication check
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
+    const session = await auth();
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
