@@ -103,6 +103,7 @@ model Property {
   description       String?          @db.Text
   city              SlovakCity
   district          String            // mestska cast / okres
+  street            String?           // Názov ulice pre Market Gaps analýzu
   address           String
   coordinates       Unsupported("geometry(Point,4326)")? // PostGIS Point
   price             Float
@@ -114,11 +115,15 @@ model Property {
   energy_certificate EnergyCertificate
   source_url        String?          @db.Text
   is_distressed     Boolean          @default(false)
+  days_on_market    Int              @default(0) // Počet dní v ponuke
+  first_listed_at   DateTime?        // Kedy bol prvýkrát zverejnený
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   userId            String?
   user              User?            @relation(fields: [userId], references: [id])
   investmentMetrics InvestmentMetrics?
+  priceHistory      PriceHistory[]
+  marketGaps        MarketGap[]
 }
 
 model MarketAnalytics {
@@ -143,4 +148,47 @@ model InvestmentMetrics {
   price_to_rent_ratio Float  // Price / annual rent
   calculated_at     DateTime @default(now())
   updatedAt         DateTime @updatedAt
+}
+
+// Sledovanie zmien cien nehnuteľností (pre Liquidity Tracker)
+model PriceHistory {
+  id          String   @id @default(cuid())
+  propertyId String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  price       Float
+  price_per_m2 Float
+  recorded_at DateTime @default(now())
+  
+  @@index([propertyId, recorded_at])
+}
+
+// Analýza priemerných cien v uliciach (pre Market Gaps)
+model StreetAnalytics {
+  id              String   @id @default(cuid())
+  city            SlovakCity
+  district        String
+  street          String
+  avg_price_m2    Float
+  median_price_m2 Float
+  property_count  Int      @default(0)
+  last_updated    DateTime @default(now())
+  
+  @@unique([city, district, street])
+  @@index([city, district])
+}
+
+// Detekované podhodnotené nehnuteľnosti (Market Gaps)
+model MarketGap {
+  id                String   @id @default(cuid())
+  propertyId        String
+  property          Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  gap_percentage    Float    // O koľko % je podhodnotená (napr. 15.5)
+  potential_profit  Float?   // Odhadovaný potenciálny zisk pri flipe
+  street_avg_price  Float    // Priemerná cena v ulici
+  detected_at       DateTime @default(now())
+  notified          Boolean  @default(false) // Či už bola poslaná notifikácia
+  notified_at       DateTime?
+  
+  @@unique([propertyId])
+  @@index([detected_at, notified])
 }

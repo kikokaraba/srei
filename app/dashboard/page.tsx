@@ -1,6 +1,7 @@
 import { AnalyticsCards } from "@/components/dashboard/AnalyticsCards";
 import { MarketOverview } from "@/components/dashboard/MarketOverview";
 import { RecentProperties } from "@/components/dashboard/RecentProperties";
+import { MarketGaps } from "@/components/dashboard/MarketGaps";
 
 export default function DashboardPage() {
   return (
@@ -15,6 +16,7 @@ export default function DashboardPage() {
       </div>
 
       <AnalyticsCards />
+      <MarketGaps />
       <MarketOverview />
       <RecentProperties />
     </div>
