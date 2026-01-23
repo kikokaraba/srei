@@ -2,8 +2,18 @@
 
 import { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
-import type { LeafletMouseEvent, Path, Feature, GeoJsonObject } from "leaflet";
+import type { LeafletMouseEvent, Path } from "leaflet";
 import "leaflet/dist/leaflet.css";
+
+// GeoJSON typy
+type GeoJSONFeature = {
+  type: "Feature";
+  properties: Record<string, unknown>;
+  geometry: {
+    type: string;
+    coordinates: unknown;
+  };
+};
 
 // Dynamicky importujeme Leaflet komponenty, aby sa načítali len na klientovi
 const MapContainer = dynamic(
@@ -172,7 +182,7 @@ export function HeroMap() {
 
   const center: [number, number] = [48.669, 19.699]; // Stred Slovenska
 
-  const style = useCallback((feature?: Feature<GeoJsonObject>): Path.Options => {
+  const style = useCallback((feature?: GeoJSONFeature): Path.Options => {
     if (!feature || !feature.properties) {
       return {
         fillColor: "#065f46",
@@ -194,7 +204,7 @@ export function HeroMap() {
     };
   }, []);
 
-  const onEachFeature = useCallback((feature: Feature<GeoJsonObject>, layer: Path) => {
+  const onEachFeature = useCallback((feature: GeoJSONFeature, layer: Path) => {
     if (!feature || !feature.properties || !layer) return;
     const regionName = (feature.properties.name as string) || (feature.properties.NAME_1 as string) || "";
     const data = REGION_DATA[regionName] || { avgPrice: 0, avgYield: 0, trend: "up" };
