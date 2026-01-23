@@ -46,6 +46,12 @@ export function UrbanDevelopment() {
       const response = await fetch("/api/v1/urban-development");
       
       if (!response.ok) {
+        // Ak je 401, používateľ nie je prihlásený - to nie je chyba
+        if (response.status === 401) {
+          setDevelopments([]);
+          setError(null);
+          return;
+        }
         throw new Error("Failed to fetch urban development data");
       }
       

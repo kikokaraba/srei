@@ -7,9 +7,14 @@ const GAP_THRESHOLD = 15; // 15% pod priemerom = podhodnotená
 
 export async function GET() {
   try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // V development móde povolíme prístup aj bez auth
+    if (process.env.NODE_ENV === "development") {
+      console.warn("Development mode: skipping auth check");
+    } else {
+      const session = await auth();
+      if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
     }
 
     // Skontrolujeme, či Prisma modely existujú

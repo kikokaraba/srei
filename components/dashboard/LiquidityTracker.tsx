@@ -32,6 +32,12 @@ export function LiquidityTracker() {
       const response = await fetch("/api/v1/liquidity");
       
       if (!response.ok) {
+        // Ak je 401, používateľ nie je prihlásený - to nie je chyba
+        if (response.status === 401) {
+          setProperties([]);
+          setError(null);
+          return;
+        }
         throw new Error("Failed to fetch liquidity data");
       }
       

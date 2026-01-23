@@ -143,7 +143,7 @@ function PopupContent({ regionName, data }: { regionName: string; data: { avgPri
       </div>
       <div>
         <span className="text-slate-400 text-sm">Cena: </span>
-        <span className="text-slate-100 font-semibold text-base">
+        <span className="text-slate-100 font-semibold text-base" suppressHydrationWarning>
           {data.avgPrice.toLocaleString("sk-SK")} €/m²
         </span>
       </div>
@@ -175,7 +175,7 @@ function createPopupHTML(regionName: string, data: { avgPrice: number; avgYield:
       </div>
       <div>
         <span style="color: #94a3b8; font-size: 14px;">Cena: </span>
-        <span style="color: #f1f5f9; font-weight: 600; font-size: 16px;">${data.avgPrice.toLocaleString("sk-SK")} €/m²</span>
+        <span style="color: #f1f5f9; font-weight: 600; font-size: 16px;">${Math.round(data.avgPrice).toLocaleString("sk-SK")} €/m²</span>
       </div>
     </div>
   `;
