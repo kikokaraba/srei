@@ -189,13 +189,16 @@ export async function POST(request: Request) {
     }
     if (onboardingCompleted !== undefined) updateData.onboardingCompleted = onboardingCompleted ?? false;
 
+    // For create, we need to ensure all required fields are present
+    const createData: Prisma.UserPreferencesUncheckedCreateInput = {
+      userId: session.user.id,
+      ...updateData,
+    };
+
     const preferences = await prisma.userPreferences.upsert({
       where: { userId: session.user.id },
       update: updateData,
-      create: {
-        userId: session.user.id,
-        ...updateData,
-      },
+      create: createData,
     });
 
     return NextResponse.json({
