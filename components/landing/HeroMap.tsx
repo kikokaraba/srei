@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
+import "leaflet/dist/leaflet.css";
 
 // Dynamicky importujeme Leaflet komponenty, aby sa načítali len na klientovi
 const MapContainer = dynamic(
@@ -140,9 +141,6 @@ export function HeroMap() {
         shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
       });
     });
-    
-    // Importujeme CSS
-    import("leaflet/dist/leaflet.css");
   }, []);
 
   useEffect(() => {
