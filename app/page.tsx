@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { Navbar } from "@/components/landing/Navbar";
 import { LandingHero } from "@/components/landing/Hero";

@@ -3,7 +3,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { MapPin, TrendingUp, Euro, X } from "lucide-react";
 import { SLOVAK_CITIES, type CityData } from "@/lib/constants/cities";
-import { SLOVAK_REGIONS } from "@/lib/constants/regions";
 
 export function SlovakiaMap() {
   const [selectedCity, setSelectedCity] = useState<CityData | null>(null);

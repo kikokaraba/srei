@@ -9,13 +9,17 @@ type GeoJSONFeatureCollection = {
   type: "FeatureCollection";
   features: Array<{
     type: "Feature";
-    properties: Record<string, any>;
-    geometry: any;
+    properties: Record<string, unknown>;
+    geometry: {
+      type: string;
+      coordinates: unknown;
+    };
   }>;
 };
 
 // Fix pre Leaflet ikony v Next.js
 if (typeof window !== "undefined") {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   delete (L.Icon.Default.prototype as any)._getIconUrl;
   L.Icon.Default.mergeOptions({
     iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
@@ -140,8 +144,8 @@ export function HeroMap() {
 
   const center: [number, number] = [48.669, 19.699]; // Stred Slovenska
 
-  const style = useCallback((feature: any) => {
-    const regionName = feature?.properties?.name || feature?.properties?.NAME_1 || "";
+  const style = useCallback((feature: { properties?: Record<string, unknown> }) => {
+    const regionName = (feature?.properties?.name as string) || (feature?.properties?.NAME_1 as string) || "";
     const data = REGION_DATA[regionName] || { avgPrice: 0, avgYield: 0, trend: "up" };
     
     return {
@@ -153,8 +157,8 @@ export function HeroMap() {
     };
   }, []);
 
-  const onEachFeature = useCallback((feature: any, layer: L.Layer) => {
-    const regionName = feature?.properties?.name || feature?.properties?.NAME_1 || "";
+  const onEachFeature = useCallback((feature: { properties?: Record<string, unknown> }, layer: L.Layer) => {
+    const regionName = (feature?.properties?.name as string) || (feature?.properties?.NAME_1 as string) || "";
     const data = REGION_DATA[regionName] || { avgPrice: 0, avgYield: 0, trend: "up" };
 
     // Hover effect

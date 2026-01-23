@@ -38,7 +38,7 @@ const mockAnalytics = {
   },
 };
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Rate limiting
     const headersList = await headers();
