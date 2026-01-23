@@ -5,16 +5,6 @@ import dynamic from "next/dynamic";
 import type { LeafletMouseEvent, Path, PathOptions } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// GeoJSON typy
-type GeoJSONFeature = {
-  type: "Feature";
-  properties: Record<string, unknown>;
-  geometry: {
-    type: string;
-    coordinates: unknown;
-  };
-};
-
 // Dynamicky importujeme Leaflet komponenty, aby sa načítali len na klientovi
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
@@ -97,6 +87,7 @@ function getColorByYield(yieldValue: number): string {
 
 // Funkcia pre vytvorenie custom DivIcon markeru
 // Musí byť volaná len na klientovi po načítaní Leaflet
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function createCustomMarkerIcon(code: string, yieldValue: number, L: typeof import("leaflet").default): any {
   const pingColor = getPingColorByYield(yieldValue);
   
