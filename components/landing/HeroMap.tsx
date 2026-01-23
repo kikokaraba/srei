@@ -158,27 +158,32 @@ export function HeroMap() {
     const fetchGeoJSON = async () => {
       try {
         setLoading(true);
+        setError(false);
         const response = await fetch(
           "https://raw.githubusercontent.com/duhaime/re-atlas/master/data/geojson/slovakia-regions.geojson"
         );
         
         if (!response.ok) {
-          throw new Error("Failed to fetch GeoJSON");
+          throw new Error(`Failed to fetch GeoJSON: ${response.status} ${response.statusText}`);
         }
         
         const data = await response.json();
+        console.log("GeoJSON loaded successfully:", data);
         setGeojson(data);
         setError(false);
       } catch (err) {
         console.error("Error loading GeoJSON:", err);
         setError(true);
+        setGeojson(null);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchGeoJSON();
-  }, []);
+    if (mounted) {
+      fetchGeoJSON();
+    }
+  }, [mounted]);
 
   const center: [number, number] = [48.669, 19.699]; // Stred Slovenska
 
@@ -273,7 +278,7 @@ export function HeroMap() {
                 url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
               />
 
-              {geojson && !error ? (
+              {geojson && !error && geojson.features && geojson.features.length > 0 ? (
                 <GeoJSON
                   data={geojson}
                   style={style}
