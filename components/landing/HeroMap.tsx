@@ -1,9 +1,29 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { MapContainer, TileLayer, GeoJSON, CircleMarker, Popup } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import dynamic from "next/dynamic";
+
+// Dynamicky importujeme Leaflet komponenty, aby sa načítali len na klientovi
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+const GeoJSON = dynamic(
+  () => import("react-leaflet").then((mod) => mod.GeoJSON),
+  { ssr: false }
+);
+const CircleMarker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.CircleMarker),
+  { ssr: false }
+);
+const Popup = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Popup),
+  { ssr: false }
+);
 
 type GeoJSONFeatureCollection = {
   type: "FeatureCollection";
@@ -16,17 +36,6 @@ type GeoJSONFeatureCollection = {
     };
   }>;
 };
-
-// Fix pre Leaflet ikony v Next.js
-if (typeof window !== "undefined") {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  delete (L.Icon.Default.prototype as any)._getIconUrl;
-  L.Icon.Default.mergeOptions({
-    iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
-    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-  });
-}
 
 // Mock dáta pre kraje
 const REGION_DATA: Record<string, { avgPrice: number; avgYield: number; trend: "up" | "down" }> = {
@@ -115,6 +124,26 @@ export function HeroMap() {
   const [geojson, setGeojson] = useState<GeoJSONFeatureCollection | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Fix pre Leaflet ikony v Next.js - musí bežať len na klientovi
+  useEffect(() => {
+    setMounted(true);
+    
+    // Dynamicky importujeme Leaflet len na klientovi
+    import("leaflet").then((L) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (L.default.Icon.Default.prototype as any)._getIconUrl;
+      L.default.Icon.Default.mergeOptions({
+        iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+        iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+        shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+      });
+    });
+    
+    // Importujeme CSS
+    import("leaflet/dist/leaflet.css");
+  }, []);
 
   useEffect(() => {
     const fetchGeoJSON = async () => {
@@ -145,7 +174,7 @@ export function HeroMap() {
   const center: [number, number] = [48.669, 19.699]; // Stred Slovenska
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const style = useCallback((feature: any): L.PathOptions => {
+  const style = useCallback((feature: any): any => {
     if (!feature || !feature.properties) {
       return {
         fillColor: "#065f46",
@@ -168,7 +197,7 @@ export function HeroMap() {
   }, []);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onEachFeature = useCallback((feature: any, layer: L.Layer) => {
+  const onEachFeature = useCallback((feature: any, layer: any) => {
     if (!feature || !feature.properties || !layer) return;
     const regionName = (feature.properties.name as string) || (feature.properties.NAME_1 as string) || "";
     const data = REGION_DATA[regionName] || { avgPrice: 0, avgYield: 0, trend: "up" };
@@ -222,6 +251,7 @@ export function HeroMap() {
               </div>
             )}
             
+            {mounted && (
             <MapContainer
               center={center}
               zoom={8}
@@ -275,6 +305,7 @@ export function HeroMap() {
                 })
               )}
             </MapContainer>
+            )}
           </div>
         </div>
       </div>
