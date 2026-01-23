@@ -144,8 +144,18 @@ export function HeroMap() {
 
   const center: [number, number] = [48.669, 19.699]; // Stred Slovenska
 
-  const style = useCallback((feature: { properties?: Record<string, unknown> }) => {
-    const regionName = (feature?.properties?.name as string) || (feature?.properties?.NAME_1 as string) || "";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const style = useCallback((feature: any): L.PathOptions => {
+    if (!feature || !feature.properties) {
+      return {
+        fillColor: "#065f46",
+        fillOpacity: 0.4,
+        color: "#94a3b8",
+        weight: 1,
+        opacity: 0.3,
+      };
+    }
+    const regionName = (feature.properties.name as string) || (feature.properties.NAME_1 as string) || "";
     const data = REGION_DATA[regionName] || { avgPrice: 0, avgYield: 0, trend: "up" };
     
     return {
@@ -157,8 +167,10 @@ export function HeroMap() {
     };
   }, []);
 
-  const onEachFeature = useCallback((feature: { properties?: Record<string, unknown> }, layer: L.Layer) => {
-    const regionName = (feature?.properties?.name as string) || (feature?.properties?.NAME_1 as string) || "";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onEachFeature = useCallback((feature: any, layer: L.Layer) => {
+    if (!feature || !feature.properties || !layer) return;
+    const regionName = (feature.properties.name as string) || (feature.properties.NAME_1 as string) || "";
     const data = REGION_DATA[regionName] || { avgPrice: 0, avgYield: 0, trend: "up" };
 
     // Hover effect
