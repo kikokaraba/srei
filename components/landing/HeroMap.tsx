@@ -182,7 +182,8 @@ export function HeroMap() {
 
   const center: [number, number] = [48.669, 19.699]; // Stred Slovenska
 
-  const style = useCallback((feature?: GeoJSONFeature): PathOptions => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const style = useCallback((feature?: any): PathOptions => {
     if (!feature || !feature.properties) {
       return {
         fillColor: "#065f46",
@@ -204,7 +205,8 @@ export function HeroMap() {
     };
   }, []);
 
-  const onEachFeature = useCallback((feature: GeoJSONFeature, layer: Path) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onEachFeature = useCallback((feature: any, layer: Path) => {
     if (!feature || !feature.properties || !layer) return;
     const regionName = (feature.properties.name as string) || (feature.properties.NAME_1 as string) || "";
     const data = REGION_DATA[regionName] || { avgPrice: 0, avgYield: 0, trend: "up" };
