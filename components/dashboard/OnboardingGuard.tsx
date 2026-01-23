@@ -5,9 +5,34 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
 async function checkOnboarding() {
-  const response = await fetch("/api/v1/user/preferences");
-  const data = await response.json();
-  return data.success && data.data?.onboardingCompleted === true;
+  try {
+    const response = await fetch("/api/v1/user/preferences", {
+      credentials: "include", // Ensure cookies are sent
+    });
+    
+    if (!response.ok) {
+      console.error("Failed to check onboarding status:", response.status, response.statusText);
+      // If unauthorized, user should be redirected to sign in by middleware
+      return false;
+    }
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      console.error("API returned error:", data.error);
+      return false;
+    }
+    
+    // If preferences don't exist, onboarding is not completed
+    if (!data.data) {
+      return false;
+    }
+    
+    return data.data.onboardingCompleted === true;
+  } catch (error) {
+    console.error("Error checking onboarding status:", error);
+    return false;
+  }
 }
 
 export function OnboardingGuard({ children }: { children: React.ReactNode }) {

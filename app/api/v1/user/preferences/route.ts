@@ -6,6 +6,7 @@ export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
+      console.error("GET /api/v1/user/preferences: Unauthorized - No session or user ID");
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
         { status: 401 }
@@ -16,14 +17,20 @@ export async function GET() {
       where: { userId: session.user.id },
     });
 
+    // Return null if preferences don't exist yet (not an error)
     return NextResponse.json({
       success: true,
-      data: preferences,
+      data: preferences || null,
     });
   } catch (error) {
     console.error("Error fetching user preferences:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      { 
+        success: false, 
+        error: "Internal server error",
+        details: process.env.NODE_ENV === "development" ? errorMessage : undefined
+      },
       { status: 500 }
     );
   }
@@ -33,13 +40,23 @@ export async function POST(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
+      console.error("Unauthorized: No session or user ID");
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (error) {
+      console.error("Error parsing request body:", error);
+      return NextResponse.json(
+        { success: false, error: "Invalid request body" },
+        { status: 400 }
+      );
+    }
     const {
       primaryCity,
       trackedCities,
@@ -93,7 +110,60 @@ export async function POST(request: Request) {
       onboardingCompleted,
     } = body;
 
-    const updateData: any = {
+    // Build update data object with proper types
+    const updateData: {
+      userId: string;
+      primaryCity?: string | null;
+      trackedCities?: string;
+      trackedDistricts?: string;
+      trackedStreets?: string;
+      investmentType?: string | null;
+      minYield?: number | null;
+      maxYield?: number | null;
+      minPrice?: number | null;
+      maxPrice?: number | null;
+      minPricePerM2?: number | null;
+      maxPricePerM2?: number | null;
+      minArea?: number | null;
+      maxArea?: number | null;
+      minRooms?: number | null;
+      maxRooms?: number | null;
+      condition?: string;
+      energyCertificates?: string;
+      minFloor?: number | null;
+      maxFloor?: number | null;
+      onlyDistressed?: boolean;
+      minGrossYield?: number | null;
+      maxGrossYield?: number | null;
+      minNetYield?: number | null;
+      maxNetYield?: number | null;
+      minCashOnCash?: number | null;
+      maxCashOnCash?: number | null;
+      maxPriceToRentRatio?: number | null;
+      maxDaysOnMarket?: number | null;
+      minPriceDrop?: number | null;
+      requirePriceHistory?: boolean;
+      minUrbanImpact?: number | null;
+      maxDistanceToInfra?: number | null;
+      infrastructureTypes?: string;
+      minGapPercentage?: number | null;
+      minPotentialProfit?: number | null;
+      ownershipTypes?: string;
+      requireTaxExemption?: boolean;
+      notifyMarketGaps?: boolean;
+      notifyPriceDrops?: boolean;
+      notifyNewProperties?: boolean;
+      notifyUrbanDevelopment?: boolean;
+      notifyHighYield?: boolean;
+      notifyDistressed?: boolean;
+      notificationFrequency?: string;
+      defaultView?: string;
+      itemsPerPage?: number;
+      sortBy?: string;
+      sortOrder?: string;
+      savedFilters?: string;
+      onboardingCompleted?: boolean;
+    } = {
       primaryCity: primaryCity || null,
       trackedCities: trackedCities ? JSON.stringify(trackedCities) : JSON.stringify([]),
       trackedDistricts: trackedDistricts ? JSON.stringify(trackedDistricts) : JSON.stringify([]),
@@ -161,8 +231,13 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Error saving user preferences:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      { 
+        success: false, 
+        error: "Internal server error",
+        details: process.env.NODE_ENV === "development" ? errorMessage : undefined
+      },
       { status: 500 }
     );
   }

@@ -123,6 +123,7 @@ export function OnboardingFlow() {
       const response = await fetch("/api/v1/user/preferences", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // Ensure cookies are sent
         body: JSON.stringify({
           primaryCity: data.primaryCity,
           trackedCities: data.trackedCities,
@@ -154,14 +155,20 @@ export function OnboardingFlow() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save preferences");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Failed to save preferences:", response.status, errorData);
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to save preferences`);
       }
+
+      const result = await response.json();
+      console.log("Preferences saved successfully:", result);
 
       // Reload page to apply preferences
       window.location.href = "/dashboard";
     } catch (error) {
       console.error("Error saving preferences:", error);
-      alert("Chyba pri ukladaní preferencií. Skúste to znova.");
+      const errorMessage = error instanceof Error ? error.message : "Neznáma chyba";
+      alert(`Chyba pri ukladaní preferencií: ${errorMessage}. Skúste to znova.`);
     } finally {
       setIsSaving(false);
     }
@@ -173,20 +180,27 @@ export function OnboardingFlow() {
       const response = await fetch("/api/v1/user/preferences", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // Ensure cookies are sent
         body: JSON.stringify({
           onboardingCompleted: true,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to skip onboarding");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Failed to skip onboarding:", response.status, errorData);
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to skip onboarding`);
       }
+
+      const result = await response.json();
+      console.log("Onboarding skipped successfully:", result);
 
       // Reload page to apply preferences
       window.location.href = "/dashboard";
     } catch (error) {
       console.error("Error skipping onboarding:", error);
-      alert("Chyba pri preskakovaní nastavení. Skúste to znova.");
+      const errorMessage = error instanceof Error ? error.message : "Neznáma chyba";
+      alert(`Chyba pri preskakovaní nastavení: ${errorMessage}. Skúste to znova.`);
     } finally {
       setIsSaving(false);
     }
@@ -197,8 +211,8 @@ export function OnboardingFlow() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/20 flex items-center justify-center p-6">
-      <div className="max-w-2xl w-full">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/20 flex items-center justify-center p-4 md:p-6">
+      <div className="max-w-2xl w-full mx-auto">
         {/* Header s možnosťou preskočiť */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -237,7 +251,7 @@ export function OnboardingFlow() {
         </div>
 
         {/* Step content */}
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-8">
+        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 md:p-8 overflow-x-hidden">
           {step === 1 && (
             <div className="space-y-6">
               <div>
@@ -343,84 +357,88 @@ export function OnboardingFlow() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-300 mb-2 font-medium">
-                    Minimálny výnos (%)
-                  </label>
-                  <input
-                    type="number"
-                    value={data.minYield !== null && data.minYield !== undefined ? data.minYield : ""}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      updateData({ minYield: val === "" ? null : parseFloat(val) || null });
-                    }}
-                    placeholder="Napríklad 5.0"
-                    step="0.1"
-                    max="20"
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-300 mb-2 font-medium">
-                    Maximálna cena (€)
-                  </label>
-                  <input
-                    type="number"
-                    value={data.maxPrice !== null && data.maxPrice !== undefined ? data.maxPrice : ""}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      updateData({ maxPrice: val === "" ? null : parseFloat(val) || null });
-                    }}
-                    placeholder="Napríklad 200000"
-                    step="1000"
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-300 mb-2 font-medium">
-                    Minimálna cena (€)
-                  </label>
-                  <input
-                    type="number"
-                    value={data.minPrice !== null && data.minPrice !== undefined ? data.minPrice : ""}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      updateData({ minPrice: val === "" ? null : parseFloat(val) || null });
-                    }}
-                    placeholder="Napríklad 50000"
-                    step="1000"
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-300 mb-2 font-medium">
-                    Počet izieb
-                  </label>
-                  <div className="flex gap-2">
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="min-w-0">
+                    <label className="block text-slate-300 mb-2 font-medium">
+                      Minimálny výnos (%)
+                    </label>
                     <input
                       type="number"
-                      value={data.minRooms !== null && data.minRooms !== undefined ? data.minRooms : ""}
+                      value={data.minYield !== null && data.minYield !== undefined ? data.minYield : ""}
                       onChange={(e) => {
                         const val = e.target.value;
-                        updateData({ minRooms: val === "" ? null : parseInt(val) || null });
+                        updateData({ minYield: val === "" ? null : parseFloat(val) || null });
                       }}
-                      placeholder="Od"
-                      className="flex-1 px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Napríklad 5.0"
+                      step="0.1"
+                      max="20"
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
+                  </div>
+
+                  <div className="min-w-0">
+                    <label className="block text-slate-300 mb-2 font-medium">
+                      Maximálna cena (€)
+                    </label>
                     <input
                       type="number"
-                      value={data.maxRooms !== null && data.maxRooms !== undefined ? data.maxRooms : ""}
+                      value={data.maxPrice !== null && data.maxPrice !== undefined ? data.maxPrice : ""}
                       onChange={(e) => {
                         const val = e.target.value;
-                        updateData({ maxRooms: val === "" ? null : parseInt(val) || null });
+                        updateData({ maxPrice: val === "" ? null : parseFloat(val) || null });
                       }}
-                      placeholder="Do"
-                      className="flex-1 px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Napríklad 200000"
+                      step="1000"
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="min-w-0">
+                    <label className="block text-slate-300 mb-2 font-medium">
+                      Minimálna cena (€)
+                    </label>
+                    <input
+                      type="number"
+                      value={data.minPrice !== null && data.minPrice !== undefined ? data.minPrice : ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        updateData({ minPrice: val === "" ? null : parseFloat(val) || null });
+                      }}
+                      placeholder="Napríklad 50000"
+                      step="1000"
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  <div className="min-w-0">
+                    <label className="block text-slate-300 mb-2 font-medium">
+                      Počet izieb
+                    </label>
+                    <div className="flex gap-2 min-w-0">
+                      <input
+                        type="number"
+                        value={data.minRooms !== null && data.minRooms !== undefined ? data.minRooms : ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          updateData({ minRooms: val === "" ? null : parseInt(val) || null });
+                        }}
+                        placeholder="Od"
+                        className="flex-1 min-w-0 px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                      <input
+                        type="number"
+                        value={data.maxRooms !== null && data.maxRooms !== undefined ? data.maxRooms : ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          updateData({ maxRooms: val === "" ? null : parseInt(val) || null });
+                        }}
+                        placeholder="Do"
+                        className="flex-1 min-w-0 px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -439,11 +457,11 @@ export function OnboardingFlow() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+                <div className="min-w-0">
                   <label className="block text-slate-300 mb-2 font-medium text-sm">
                     Cena za m² (€/m²)
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 min-w-0">
                     <input
                       type="number"
                       value={data.minPricePerM2 !== null && data.minPricePerM2 !== undefined ? data.minPricePerM2 : ""}
@@ -452,7 +470,7 @@ export function OnboardingFlow() {
                         updateData({ minPricePerM2: val === "" ? null : parseFloat(val) || null });
                       }}
                       placeholder="Od"
-                      className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="flex-1 min-w-0 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     <input
                       type="number"
@@ -462,16 +480,16 @@ export function OnboardingFlow() {
                         updateData({ maxPricePerM2: val === "" ? null : parseFloat(val) || null });
                       }}
                       placeholder="Do"
-                      className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="flex-1 min-w-0 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                 </div>
 
-                <div>
+                <div className="min-w-0">
                   <label className="block text-slate-300 mb-2 font-medium text-sm">
                     Plocha (m²)
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 min-w-0">
                     <input
                       type="number"
                       value={data.minArea !== null && data.minArea !== undefined ? data.minArea : ""}
@@ -480,7 +498,7 @@ export function OnboardingFlow() {
                         updateData({ minArea: val === "" ? null : parseFloat(val) || null });
                       }}
                       placeholder="Od"
-                      className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="flex-1 min-w-0 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     <input
                       type="number"
@@ -490,12 +508,12 @@ export function OnboardingFlow() {
                         updateData({ maxArea: val === "" ? null : parseFloat(val) || null });
                       }}
                       placeholder="Do"
-                      className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="flex-1 min-w-0 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                 </div>
 
-                <div>
+                <div className="min-w-0">
                   <label className="block text-slate-300 mb-2 font-medium text-sm">
                     Minimálny Market Gap (%)
                   </label>
@@ -512,7 +530,7 @@ export function OnboardingFlow() {
                   />
                 </div>
 
-                <div>
+                <div className="min-w-0">
                   <label className="block text-slate-300 mb-2 font-medium text-sm">
                     Minimálny Urban Impact (%)
                   </label>
