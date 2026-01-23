@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
+import { SlovakCity } from "@/generated/prisma/client";
 
 export async function GET() {
   try {
@@ -111,109 +113,81 @@ export async function POST(request: Request) {
     } = body;
 
     // Build update data object with proper types
-    const updateData: {
-      primaryCity?: string | null;
-      trackedCities?: string;
-      trackedDistricts?: string;
-      trackedStreets?: string;
-      investmentType?: string | null;
-      minYield?: number | null;
-      maxYield?: number | null;
-      minPrice?: number | null;
-      maxPrice?: number | null;
-      minPricePerM2?: number | null;
-      maxPricePerM2?: number | null;
-      minArea?: number | null;
-      maxArea?: number | null;
-      minRooms?: number | null;
-      maxRooms?: number | null;
-      condition?: string;
-      energyCertificates?: string;
-      minFloor?: number | null;
-      maxFloor?: number | null;
-      onlyDistressed?: boolean;
-      minGrossYield?: number | null;
-      maxGrossYield?: number | null;
-      minNetYield?: number | null;
-      maxNetYield?: number | null;
-      minCashOnCash?: number | null;
-      maxCashOnCash?: number | null;
-      maxPriceToRentRatio?: number | null;
-      maxDaysOnMarket?: number | null;
-      minPriceDrop?: number | null;
-      requirePriceHistory?: boolean;
-      minUrbanImpact?: number | null;
-      maxDistanceToInfra?: number | null;
-      infrastructureTypes?: string;
-      minGapPercentage?: number | null;
-      minPotentialProfit?: number | null;
-      ownershipTypes?: string;
-      requireTaxExemption?: boolean;
-      notifyMarketGaps?: boolean;
-      notifyPriceDrops?: boolean;
-      notifyNewProperties?: boolean;
-      notifyUrbanDevelopment?: boolean;
-      notifyHighYield?: boolean;
-      notifyDistressed?: boolean;
-      notificationFrequency?: string;
-      defaultView?: string;
-      itemsPerPage?: number;
-      sortBy?: string;
-      sortOrder?: string;
-      savedFilters?: string;
-      onboardingCompleted?: boolean;
-    } = {
-      primaryCity: primaryCity || null,
-      trackedCities: trackedCities ? JSON.stringify(trackedCities) : JSON.stringify([]),
-      trackedDistricts: trackedDistricts ? JSON.stringify(trackedDistricts) : JSON.stringify([]),
-      trackedStreets: trackedStreets ? JSON.stringify(trackedStreets) : JSON.stringify([]),
-      investmentType: investmentType || null,
-      minYield: minYield || null,
-      maxYield: maxYield || null,
-      minPrice: minPrice || null,
-      maxPrice: maxPrice || null,
-      minPricePerM2: minPricePerM2 || null,
-      maxPricePerM2: maxPricePerM2 || null,
-      minArea: minArea || null,
-      maxArea: maxArea || null,
-      minRooms: minRooms || null,
-      maxRooms: maxRooms || null,
-      condition: condition ? (Array.isArray(condition) ? JSON.stringify(condition) : condition) : JSON.stringify([]),
-      energyCertificates: energyCertificates ? (Array.isArray(energyCertificates) ? JSON.stringify(energyCertificates) : energyCertificates) : JSON.stringify([]),
-      minFloor: minFloor || null,
-      maxFloor: maxFloor || null,
-      onlyDistressed: onlyDistressed ?? false,
-      minGrossYield: minGrossYield || null,
-      maxGrossYield: maxGrossYield || null,
-      minNetYield: minNetYield || null,
-      maxNetYield: maxNetYield || null,
-      minCashOnCash: minCashOnCash || null,
-      maxCashOnCash: maxCashOnCash || null,
-      maxPriceToRentRatio: maxPriceToRentRatio || null,
-      maxDaysOnMarket: maxDaysOnMarket || null,
-      minPriceDrop: minPriceDrop || null,
-      requirePriceHistory: requirePriceHistory ?? false,
-      minUrbanImpact: minUrbanImpact || null,
-      maxDistanceToInfra: maxDistanceToInfra || null,
-      infrastructureTypes: infrastructureTypes ? (Array.isArray(infrastructureTypes) ? JSON.stringify(infrastructureTypes) : infrastructureTypes) : JSON.stringify([]),
-      minGapPercentage: minGapPercentage || null,
-      minPotentialProfit: minPotentialProfit || null,
-      ownershipTypes: ownershipTypes ? (Array.isArray(ownershipTypes) ? JSON.stringify(ownershipTypes) : ownershipTypes) : JSON.stringify([]),
-      requireTaxExemption: requireTaxExemption ?? false,
-      notifyMarketGaps: notifyMarketGaps ?? true,
-      notifyPriceDrops: notifyPriceDrops ?? true,
-      notifyNewProperties: notifyNewProperties ?? true,
-      notifyUrbanDevelopment: notifyUrbanDevelopment ?? true,
-      notifyHighYield: notifyHighYield ?? false,
-      notifyDistressed: notifyDistressed ?? false,
-      notificationFrequency: notificationFrequency || "daily",
-      defaultView: defaultView || "dashboard",
-      itemsPerPage: itemsPerPage || 20,
-      sortBy: sortBy || "price",
-      sortOrder: sortOrder || "asc",
-      savedFilters: savedFilters ? (Array.isArray(savedFilters) ? JSON.stringify(savedFilters) : savedFilters) : JSON.stringify([]),
-      onboardingCompleted: onboardingCompleted ?? false,
-    };
+    // Convert primaryCity string to SlovakCity enum if provided
+    const primaryCityEnum = primaryCity && Object.values(SlovakCity).includes(primaryCity as SlovakCity) 
+      ? (primaryCity as SlovakCity) 
+      : (primaryCity === null ? null : undefined);
+
+    const updateData: Prisma.UserPreferencesUncheckedUpdateInput = {};
+    
+    if (primaryCity !== undefined) {
+      updateData.primaryCity = primaryCityEnum;
+    }
+    if (trackedCities !== undefined) {
+      updateData.trackedCities = trackedCities ? JSON.stringify(trackedCities) : JSON.stringify([]);
+    }
+    if (trackedDistricts !== undefined) {
+      updateData.trackedDistricts = trackedDistricts ? JSON.stringify(trackedDistricts) : JSON.stringify([]);
+    }
+    if (trackedStreets !== undefined) {
+      updateData.trackedStreets = trackedStreets ? JSON.stringify(trackedStreets) : JSON.stringify([]);
+    }
+    if (investmentType !== undefined) updateData.investmentType = investmentType || null;
+    if (minYield !== undefined) updateData.minYield = minYield || null;
+    if (maxYield !== undefined) updateData.maxYield = maxYield || null;
+    if (minPrice !== undefined) updateData.minPrice = minPrice || null;
+    if (maxPrice !== undefined) updateData.maxPrice = maxPrice || null;
+    if (minPricePerM2 !== undefined) updateData.minPricePerM2 = minPricePerM2 || null;
+    if (maxPricePerM2 !== undefined) updateData.maxPricePerM2 = maxPricePerM2 || null;
+    if (minArea !== undefined) updateData.minArea = minArea || null;
+    if (maxArea !== undefined) updateData.maxArea = maxArea || null;
+    if (minRooms !== undefined) updateData.minRooms = minRooms || null;
+    if (maxRooms !== undefined) updateData.maxRooms = maxRooms || null;
+    if (condition !== undefined) {
+      updateData.condition = condition ? (Array.isArray(condition) ? JSON.stringify(condition) : condition) : JSON.stringify([]);
+    }
+    if (energyCertificates !== undefined) {
+      updateData.energyCertificates = energyCertificates ? (Array.isArray(energyCertificates) ? JSON.stringify(energyCertificates) : energyCertificates) : JSON.stringify([]);
+    }
+    if (minFloor !== undefined) updateData.minFloor = minFloor || null;
+    if (maxFloor !== undefined) updateData.maxFloor = maxFloor || null;
+    if (onlyDistressed !== undefined) updateData.onlyDistressed = onlyDistressed ?? false;
+    if (minGrossYield !== undefined) updateData.minGrossYield = minGrossYield || null;
+    if (maxGrossYield !== undefined) updateData.maxGrossYield = maxGrossYield || null;
+    if (minNetYield !== undefined) updateData.minNetYield = minNetYield || null;
+    if (maxNetYield !== undefined) updateData.maxNetYield = maxNetYield || null;
+    if (minCashOnCash !== undefined) updateData.minCashOnCash = minCashOnCash || null;
+    if (maxCashOnCash !== undefined) updateData.maxCashOnCash = maxCashOnCash || null;
+    if (maxPriceToRentRatio !== undefined) updateData.maxPriceToRentRatio = maxPriceToRentRatio || null;
+    if (maxDaysOnMarket !== undefined) updateData.maxDaysOnMarket = maxDaysOnMarket || null;
+    if (minPriceDrop !== undefined) updateData.minPriceDrop = minPriceDrop || null;
+    if (requirePriceHistory !== undefined) updateData.requirePriceHistory = requirePriceHistory ?? false;
+    if (minUrbanImpact !== undefined) updateData.minUrbanImpact = minUrbanImpact || null;
+    if (maxDistanceToInfra !== undefined) updateData.maxDistanceToInfra = maxDistanceToInfra || null;
+    if (infrastructureTypes !== undefined) {
+      updateData.infrastructureTypes = infrastructureTypes ? (Array.isArray(infrastructureTypes) ? JSON.stringify(infrastructureTypes) : infrastructureTypes) : JSON.stringify([]);
+    }
+    if (minGapPercentage !== undefined) updateData.minGapPercentage = minGapPercentage || null;
+    if (minPotentialProfit !== undefined) updateData.minPotentialProfit = minPotentialProfit || null;
+    if (ownershipTypes !== undefined) {
+      updateData.ownershipTypes = ownershipTypes ? (Array.isArray(ownershipTypes) ? JSON.stringify(ownershipTypes) : ownershipTypes) : JSON.stringify([]);
+    }
+    if (requireTaxExemption !== undefined) updateData.requireTaxExemption = requireTaxExemption ?? false;
+    if (notifyMarketGaps !== undefined) updateData.notifyMarketGaps = notifyMarketGaps ?? true;
+    if (notifyPriceDrops !== undefined) updateData.notifyPriceDrops = notifyPriceDrops ?? true;
+    if (notifyNewProperties !== undefined) updateData.notifyNewProperties = notifyNewProperties ?? true;
+    if (notifyUrbanDevelopment !== undefined) updateData.notifyUrbanDevelopment = notifyUrbanDevelopment ?? true;
+    if (notifyHighYield !== undefined) updateData.notifyHighYield = notifyHighYield ?? false;
+    if (notifyDistressed !== undefined) updateData.notifyDistressed = notifyDistressed ?? false;
+    if (notificationFrequency !== undefined) updateData.notificationFrequency = notificationFrequency || "daily";
+    if (defaultView !== undefined) updateData.defaultView = defaultView || "dashboard";
+    if (itemsPerPage !== undefined) updateData.itemsPerPage = itemsPerPage || 20;
+    if (sortBy !== undefined) updateData.sortBy = sortBy || "price";
+    if (sortOrder !== undefined) updateData.sortOrder = sortOrder || "asc";
+    if (savedFilters !== undefined) {
+      updateData.savedFilters = savedFilters ? (Array.isArray(savedFilters) ? JSON.stringify(savedFilters) : savedFilters) : JSON.stringify([]);
+    }
+    if (onboardingCompleted !== undefined) updateData.onboardingCompleted = onboardingCompleted ?? false;
 
     const preferences = await prisma.userPreferences.upsert({
       where: { userId: session.user.id },
