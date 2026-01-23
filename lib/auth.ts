@@ -2,8 +2,8 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { NextAuthOptions } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { compare } from "bcryptjs";
 import { z } from "zod";
+import type { Adapter } from "next-auth/adapters";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -11,7 +11,7 @@ const credentialsSchema = z.object({
 });
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as any,
+  adapter: PrismaAdapter(prisma) as Adapter,
   session: {
     strategy: "jwt",
   },
@@ -67,14 +67,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role;
+        token.role = user.role;
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).role = token.role;
+      if (session.user && token.id && token.role) {
+        session.user.id = token.id as string;
+        session.user.role = token.role;
       }
       return session;
     },

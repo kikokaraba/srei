@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { analyticsRateLimiter } from "@/lib/rate-limit";
 import { getToken } from "next-auth/jwt";
 import { headers } from "next/headers";
@@ -37,7 +38,7 @@ const mockAnalytics = {
   },
 };
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     // Rate limiting
     const headersList = await headers();
@@ -53,7 +54,7 @@ export async function GET(request: Request) {
 
     // Authentication check
     const token = await getToken({
-      req: request as any,
+      req: request,
       secret: process.env.NEXTAUTH_SECRET,
     });
 

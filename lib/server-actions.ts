@@ -1,12 +1,13 @@
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import type { Session } from "next-auth";
 
 /**
  * Wrapper for server actions with authentication and validation
  */
 export async function withAuth<T>(
-  handler: (session: any) => Promise<T>
+  handler: (session: Session) => Promise<T>
 ): Promise<{ success: true; data: T } | { success: false; error: string }> {
   try {
     const session = await getServerSession(authOptions);
@@ -29,7 +30,7 @@ export async function withAuth<T>(
  */
 export async function withValidation<TInput, TOutput>(
   schema: z.ZodSchema<TInput>,
-  handler: (input: TInput, session: any) => Promise<TOutput>
+  handler: (input: TInput, session: Session) => Promise<TOutput>
 ) {
   return async (
     input: unknown

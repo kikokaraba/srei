@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, MapPin, Euro, TrendingUp } from "lucide-react";
+import { Home, MapPin, TrendingUp } from "lucide-react";
 
 // Mock data for recent properties
 const mockProperties = [
