@@ -253,25 +253,27 @@ export function AdvancedFilters() {
               <div className="flex gap-2">
                 <input
                   type="number"
-                  value={filters.minPrice || ""}
-                  onChange={(e) =>
+                  value={filters.minPrice !== null && filters.minPrice !== undefined ? filters.minPrice : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setFilters({
                       ...filters,
-                      minPrice: e.target.value ? parseFloat(e.target.value) : null,
-                    })
-                  }
+                      minPrice: val === "" ? null : parseFloat(val) || null,
+                    });
+                  }}
                   placeholder="Od"
                   className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <input
                   type="number"
-                  value={filters.maxPrice || ""}
-                  onChange={(e) =>
+                  value={filters.maxPrice !== null && filters.maxPrice !== undefined ? filters.maxPrice : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setFilters({
                       ...filters,
-                      maxPrice: e.target.value ? parseFloat(e.target.value) : null,
-                    })
-                  }
+                      maxPrice: val === "" ? null : parseFloat(val) || null,
+                    });
+                  }}
                   placeholder="Do"
                   className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
@@ -285,25 +287,27 @@ export function AdvancedFilters() {
               <div className="flex gap-2">
                 <input
                   type="number"
-                  value={filters.minPricePerM2 || ""}
-                  onChange={(e) =>
+                  value={filters.minPricePerM2 !== null && filters.minPricePerM2 !== undefined ? filters.minPricePerM2 : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setFilters({
                       ...filters,
-                      minPricePerM2: e.target.value ? parseFloat(e.target.value) : null,
-                    })
-                  }
+                      minPricePerM2: val === "" ? null : parseFloat(val) || null,
+                    });
+                  }}
                   placeholder="Od"
                   className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <input
                   type="number"
-                  value={filters.maxPricePerM2 || ""}
-                  onChange={(e) =>
+                  value={filters.maxPricePerM2 !== null && filters.maxPricePerM2 !== undefined ? filters.maxPricePerM2 : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setFilters({
                       ...filters,
-                      maxPricePerM2: e.target.value ? parseFloat(e.target.value) : null,
-                    })
-                  }
+                      maxPricePerM2: val === "" ? null : parseFloat(val) || null,
+                    });
+                  }}
                   placeholder="Do"
                   className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
@@ -320,25 +324,27 @@ export function AdvancedFilters() {
               <div className="flex gap-2">
                 <input
                   type="number"
-                  value={filters.minArea || ""}
-                  onChange={(e) =>
+                  value={filters.minArea !== null && filters.minArea !== undefined ? filters.minArea : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setFilters({
                       ...filters,
-                      minArea: e.target.value ? parseFloat(e.target.value) : null,
-                    })
-                  }
+                      minArea: val === "" ? null : parseFloat(val) || null,
+                    });
+                  }}
                   placeholder="Od"
                   className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <input
                   type="number"
-                  value={filters.maxArea || ""}
-                  onChange={(e) =>
+                  value={filters.maxArea !== null && filters.maxArea !== undefined ? filters.maxArea : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setFilters({
                       ...filters,
-                      maxArea: e.target.value ? parseFloat(e.target.value) : null,
-                    })
-                  }
+                      maxArea: val === "" ? null : parseFloat(val) || null,
+                    });
+                  }}
                   placeholder="Do"
                   className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
@@ -352,28 +358,28 @@ export function AdvancedFilters() {
               <div className="flex gap-2">
                 <input
                   type="number"
-                  value={filters.minRooms || ""}
-                  onChange={(e) =>
+                  value={filters.minRooms !== null && filters.minRooms !== undefined ? filters.minRooms : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setFilters({
                       ...filters,
-                      minRooms: e.target.value ? parseInt(e.target.value) : null,
-                    })
-                  }
+                      minRooms: val === "" ? null : parseInt(val) || null,
+                    });
+                  }}
                   placeholder="Od"
-                  min="1"
                   className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <input
                   type="number"
-                  value={filters.maxRooms || ""}
-                  onChange={(e) =>
+                  value={filters.maxRooms !== null && filters.maxRooms !== undefined ? filters.maxRooms : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setFilters({
                       ...filters,
-                      maxRooms: e.target.value ? parseInt(e.target.value) : null,
-                    })
-                  }
+                      maxRooms: val === "" ? null : parseInt(val) || null,
+                    });
+                  }}
                   placeholder="Do"
-                  min="1"
                   className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -446,26 +452,28 @@ export function AdvancedFilters() {
               <div className="flex gap-2">
                 <input
                   type="number"
-                  value={filters.minYield || ""}
-                  onChange={(e) =>
+                  value={filters.minYield !== null && filters.minYield !== undefined ? filters.minYield : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setFilters({
                       ...filters,
-                      minYield: e.target.value ? parseFloat(e.target.value) : null,
-                    })
-                  }
+                      minYield: val === "" ? null : parseFloat(val) || null,
+                    });
+                  }}
                   placeholder="Od"
                   step="0.1"
                   className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <input
                   type="number"
-                  value={filters.maxYield || ""}
-                  onChange={(e) =>
+                  value={filters.maxYield !== null && filters.maxYield !== undefined ? filters.maxYield : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setFilters({
                       ...filters,
-                      maxYield: e.target.value ? parseFloat(e.target.value) : null,
-                    })
-                  }
+                      maxYield: val === "" ? null : parseFloat(val) || null,
+                    });
+                  }}
                   placeholder="Do"
                   step="0.1"
                   className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -480,26 +488,28 @@ export function AdvancedFilters() {
               <div className="flex gap-2">
                 <input
                   type="number"
-                  value={filters.minGrossYield || ""}
-                  onChange={(e) =>
+                  value={filters.minGrossYield !== null && filters.minGrossYield !== undefined ? filters.minGrossYield : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setFilters({
                       ...filters,
-                      minGrossYield: e.target.value ? parseFloat(e.target.value) : null,
-                    })
-                  }
+                      minGrossYield: val === "" ? null : parseFloat(val) || null,
+                    });
+                  }}
                   placeholder="Od"
                   step="0.1"
                   className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <input
                   type="number"
-                  value={filters.maxGrossYield || ""}
-                  onChange={(e) =>
+                  value={filters.maxGrossYield !== null && filters.maxGrossYield !== undefined ? filters.maxGrossYield : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setFilters({
                       ...filters,
-                      maxGrossYield: e.target.value ? parseFloat(e.target.value) : null,
-                    })
-                  }
+                      maxGrossYield: val === "" ? null : parseFloat(val) || null,
+                    });
+                  }}
                   placeholder="Do"
                   step="0.1"
                   className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -514,13 +524,14 @@ export function AdvancedFilters() {
               <div className="flex gap-2">
                 <input
                   type="number"
-                  value={filters.minCashOnCash || ""}
-                  onChange={(e) =>
+                  value={filters.minCashOnCash !== null && filters.minCashOnCash !== undefined ? filters.minCashOnCash : ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setFilters({
                       ...filters,
-                      minCashOnCash: e.target.value ? parseFloat(e.target.value) : null,
-                    })
-                  }
+                      minCashOnCash: val === "" ? null : parseFloat(val) || null,
+                    });
+                  }}
                   placeholder="Od"
                   step="0.1"
                   className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -537,13 +548,14 @@ export function AdvancedFilters() {
               </label>
               <input
                 type="number"
-                value={filters.maxDaysOnMarket || ""}
-                onChange={(e) =>
+                value={filters.maxDaysOnMarket !== null && filters.maxDaysOnMarket !== undefined ? filters.maxDaysOnMarket : ""}
+                onChange={(e) => {
+                  const val = e.target.value;
                   setFilters({
                     ...filters,
-                    maxDaysOnMarket: e.target.value ? parseInt(e.target.value) : null,
-                  })
-                }
+                    maxDaysOnMarket: val === "" ? null : parseInt(val) || null,
+                  });
+                }}
                 placeholder="Napríklad 90"
                 className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
@@ -555,13 +567,14 @@ export function AdvancedFilters() {
               </label>
               <input
                 type="number"
-                value={filters.minGapPercentage || ""}
-                onChange={(e) =>
+                value={filters.minGapPercentage !== null && filters.minGapPercentage !== undefined ? filters.minGapPercentage : ""}
+                onChange={(e) => {
+                  const val = e.target.value;
                   setFilters({
                     ...filters,
-                    minGapPercentage: e.target.value ? parseFloat(e.target.value) : null,
-                  })
-                }
+                    minGapPercentage: val === "" ? null : parseFloat(val) || null,
+                  });
+                }}
                 placeholder="Napríklad 10"
                 step="0.1"
                 className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -574,13 +587,14 @@ export function AdvancedFilters() {
               </label>
               <input
                 type="number"
-                value={filters.minUrbanImpact || ""}
-                onChange={(e) =>
+                value={filters.minUrbanImpact !== null && filters.minUrbanImpact !== undefined ? filters.minUrbanImpact : ""}
+                onChange={(e) => {
+                  const val = e.target.value;
                   setFilters({
                     ...filters,
-                    minUrbanImpact: e.target.value ? parseFloat(e.target.value) : null,
-                  })
-                }
+                    minUrbanImpact: val === "" ? null : parseFloat(val) || null,
+                  });
+                }}
                 placeholder="Napríklad 15"
                 step="0.1"
                 className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"

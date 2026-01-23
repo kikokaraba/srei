@@ -106,7 +106,7 @@ export function OnboardingFlow() {
   const [isSaving, setIsSaving] = useState(false);
 
   const handleNext = useCallback(() => {
-    if (step < 4) {
+    if (step < 5) {
       setStep(step + 1);
     }
   }, [step]);
@@ -167,6 +167,31 @@ export function OnboardingFlow() {
     }
   }, [data]);
 
+  const handleSkip = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      const response = await fetch("/api/v1/user/preferences", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          onboardingCompleted: true,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to skip onboarding");
+      }
+
+      // Reload page to apply preferences
+      window.location.href = "/dashboard";
+    } catch (error) {
+      console.error("Error skipping onboarding:", error);
+      alert("Chyba pri preskakovaní nastavení. Skúste to znova.");
+    } finally {
+      setIsSaving(false);
+    }
+  }, []);
+
   const updateData = useCallback((updates: Partial<OnboardingData>) => {
     setData((prev) => ({ ...prev, ...updates }));
   }, []);
@@ -174,6 +199,25 @@ export function OnboardingFlow() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/20 flex items-center justify-center p-6">
       <div className="max-w-2xl w-full">
+        {/* Header s možnosťou preskočiť */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-100 mb-1">
+              Vitajte v SRIA
+            </h1>
+            <p className="text-sm text-slate-400">
+              Nastavte si aplikáciu podľa svojich potrieb
+            </p>
+          </div>
+          <button
+            onClick={handleSkip}
+            disabled={isSaving}
+            className="px-4 py-2 text-sm text-slate-400 hover:text-slate-100 transition-colors disabled:opacity-50"
+          >
+            Preskočiť
+          </button>
+        </div>
+
         {/* Progress bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
@@ -306,13 +350,13 @@ export function OnboardingFlow() {
                   </label>
                   <input
                     type="number"
-                    value={data.minYield || ""}
-                    onChange={(e) =>
-                      updateData({ minYield: e.target.value ? parseFloat(e.target.value) : null })
-                    }
+                    value={data.minYield !== null && data.minYield !== undefined ? data.minYield : ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      updateData({ minYield: val === "" ? null : parseFloat(val) || null });
+                    }}
                     placeholder="Napríklad 5.0"
                     step="0.1"
-                    min="0"
                     max="20"
                     className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
@@ -324,13 +368,13 @@ export function OnboardingFlow() {
                   </label>
                   <input
                     type="number"
-                    value={data.maxPrice || ""}
-                    onChange={(e) =>
-                      updateData({ maxPrice: e.target.value ? parseFloat(e.target.value) : null })
-                    }
+                    value={data.maxPrice !== null && data.maxPrice !== undefined ? data.maxPrice : ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      updateData({ maxPrice: val === "" ? null : parseFloat(val) || null });
+                    }}
                     placeholder="Napríklad 200000"
                     step="1000"
-                    min="0"
                     className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
@@ -341,13 +385,13 @@ export function OnboardingFlow() {
                   </label>
                   <input
                     type="number"
-                    value={data.minPrice || ""}
-                    onChange={(e) =>
-                      updateData({ minPrice: e.target.value ? parseFloat(e.target.value) : null })
-                    }
+                    value={data.minPrice !== null && data.minPrice !== undefined ? data.minPrice : ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      updateData({ minPrice: val === "" ? null : parseFloat(val) || null });
+                    }}
                     placeholder="Napríklad 50000"
                     step="1000"
-                    min="0"
                     className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
@@ -359,22 +403,22 @@ export function OnboardingFlow() {
                   <div className="flex gap-2">
                     <input
                       type="number"
-                      value={data.minRooms || ""}
-                      onChange={(e) =>
-                        updateData({ minRooms: e.target.value ? parseInt(e.target.value) : null })
-                      }
+                      value={data.minRooms !== null && data.minRooms !== undefined ? data.minRooms : ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        updateData({ minRooms: val === "" ? null : parseInt(val) || null });
+                      }}
                       placeholder="Od"
-                      min="1"
                       className="flex-1 px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     <input
                       type="number"
-                      value={data.maxRooms || ""}
-                      onChange={(e) =>
-                        updateData({ maxRooms: e.target.value ? parseInt(e.target.value) : null })
-                      }
+                      value={data.maxRooms !== null && data.maxRooms !== undefined ? data.maxRooms : ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        updateData({ maxRooms: val === "" ? null : parseInt(val) || null });
+                      }}
                       placeholder="Do"
-                      min="1"
                       className="flex-1 px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
@@ -402,19 +446,21 @@ export function OnboardingFlow() {
                   <div className="flex gap-2">
                     <input
                       type="number"
-                      value={data.minPricePerM2 || ""}
-                      onChange={(e) =>
-                        updateData({ minPricePerM2: e.target.value ? parseFloat(e.target.value) : null })
-                      }
+                      value={data.minPricePerM2 !== null && data.minPricePerM2 !== undefined ? data.minPricePerM2 : ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        updateData({ minPricePerM2: val === "" ? null : parseFloat(val) || null });
+                      }}
                       placeholder="Od"
                       className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     <input
                       type="number"
-                      value={data.maxPricePerM2 || ""}
-                      onChange={(e) =>
-                        updateData({ maxPricePerM2: e.target.value ? parseFloat(e.target.value) : null })
-                      }
+                      value={data.maxPricePerM2 !== null && data.maxPricePerM2 !== undefined ? data.maxPricePerM2 : ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        updateData({ maxPricePerM2: val === "" ? null : parseFloat(val) || null });
+                      }}
                       placeholder="Do"
                       className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
@@ -428,19 +474,21 @@ export function OnboardingFlow() {
                   <div className="flex gap-2">
                     <input
                       type="number"
-                      value={data.minArea || ""}
-                      onChange={(e) =>
-                        updateData({ minArea: e.target.value ? parseFloat(e.target.value) : null })
-                      }
+                      value={data.minArea !== null && data.minArea !== undefined ? data.minArea : ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        updateData({ minArea: val === "" ? null : parseFloat(val) || null });
+                      }}
                       placeholder="Od"
                       className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     <input
                       type="number"
-                      value={data.maxArea || ""}
-                      onChange={(e) =>
-                        updateData({ maxArea: e.target.value ? parseFloat(e.target.value) : null })
-                      }
+                      value={data.maxArea !== null && data.maxArea !== undefined ? data.maxArea : ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        updateData({ maxArea: val === "" ? null : parseFloat(val) || null });
+                      }}
                       placeholder="Do"
                       className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
@@ -453,10 +501,11 @@ export function OnboardingFlow() {
                   </label>
                   <input
                     type="number"
-                    value={data.minGapPercentage || ""}
-                    onChange={(e) =>
-                      updateData({ minGapPercentage: e.target.value ? parseFloat(e.target.value) : null })
-                    }
+                    value={data.minGapPercentage !== null && data.minGapPercentage !== undefined ? data.minGapPercentage : ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      updateData({ minGapPercentage: val === "" ? null : parseFloat(val) || null });
+                    }}
                     placeholder="Napríklad 10"
                     step="0.1"
                     className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -469,10 +518,11 @@ export function OnboardingFlow() {
                   </label>
                   <input
                     type="number"
-                    value={data.minUrbanImpact || ""}
-                    onChange={(e) =>
-                      updateData({ minUrbanImpact: e.target.value ? parseFloat(e.target.value) : null })
-                    }
+                    value={data.minUrbanImpact !== null && data.minUrbanImpact !== undefined ? data.minUrbanImpact : ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      updateData({ minUrbanImpact: val === "" ? null : parseFloat(val) || null });
+                    }}
                     placeholder="Napríklad 15"
                     step="0.1"
                     className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
