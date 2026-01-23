@@ -73,6 +73,37 @@ export function SlovakiaMap() {
                 // Convert percentage to absolute coordinates in viewBox (1000x492)
                 const x = (city.coordinates.x / 100) * 1000;
                 const y = (city.coordinates.y / 100) * 492;
+                
+                // Determine text position based on city location to avoid going outside map
+                // If city is in top 30% of map, place text below; if bottom 30%, place above
+                // If city is in left 20%, place text to the right; if right 20%, place to the left
+                const isTop = city.coordinates.y < 30;
+                const isBottom = city.coordinates.y > 70;
+                const isLeft = city.coordinates.x < 20;
+                const isRight = city.coordinates.x > 80;
+                
+                let textX = x;
+                let textY = y;
+                let textAnchor: "start" | "middle" | "end" = "middle";
+                
+                // Vertical positioning
+                if (isTop) {
+                  textY = y + 25; // Place text below marker
+                } else if (isBottom) {
+                  textY = y - 25; // Place text above marker
+                } else {
+                  textY = y - 20; // Default: above marker
+                }
+                
+                // Horizontal positioning for edge cities
+                if (isLeft) {
+                  textX = x + 15;
+                  textAnchor = "start";
+                } else if (isRight) {
+                  textX = x - 15;
+                  textAnchor = "end";
+                }
+                
                 return (
                   <g key={city.slug}>
                     <circle
@@ -105,9 +136,9 @@ export function SlovakiaMap() {
                       aria-hidden="true"
                     />
                     <text
-                      x={x}
-                      y={y - 20}
-                      textAnchor="middle"
+                      x={textX}
+                      y={textY}
+                      textAnchor={textAnchor}
                       className="text-xs fill-slate-300 font-semibold pointer-events-none"
                       aria-hidden="true"
                     >

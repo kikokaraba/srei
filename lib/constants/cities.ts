@@ -21,9 +21,9 @@ export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Bratislava",
     slug: "bratislava",
-    // Southwest - bottom-left area (48.15°N, 17.11°E)
-    // Based on actual map coordinates: ~91px x, ~448px y in 1000x492 viewBox
-    coordinates: { x: 9, y: 91 },
+    // Southwest - bottom area (48.15°N, 17.11°E)
+    // Adjusted to be more centered within map boundaries
+    coordinates: { x: 12, y: 85 },
     metrics: {
       avgPrice: 3200,
       yield: 4.7,
@@ -34,7 +34,8 @@ export const SLOVAK_CITIES: readonly CityData[] = [
     name: "Košice",
     slug: "kosice",
     // Far East - right side (48.72°N, 21.26°E)
-    coordinates: { x: 91, y: 55 },
+    // Adjusted to be more inside map boundaries
+    coordinates: { x: 85, y: 60 },
     metrics: {
       avgPrice: 1850,
       yield: 5.3,
@@ -45,7 +46,8 @@ export const SLOVAK_CITIES: readonly CityData[] = [
     name: "Prešov",
     slug: "presov",
     // Northeast - top-right (49.00°N, 21.24°E)
-    coordinates: { x: 91, y: 9 },
+    // Adjusted to be more inside map boundaries
+    coordinates: { x: 88, y: 20 },
     metrics: {
       avgPrice: 1650,
       yield: 5.5,
@@ -56,7 +58,7 @@ export const SLOVAK_CITIES: readonly CityData[] = [
     name: "Žilina",
     slug: "zilina",
     // North - top-center (49.22°N, 18.74°E)
-    coordinates: { x: 45, y: 25 },
+    coordinates: { x: 42, y: 30 },
     metrics: {
       avgPrice: 1950,
       yield: 5.1,
@@ -67,7 +69,7 @@ export const SLOVAK_CITIES: readonly CityData[] = [
     name: "Banská Bystrica",
     slug: "banska-bystrica",
     // Center (48.74°N, 19.15°E)
-    coordinates: { x: 55, y: 55 },
+    coordinates: { x: 52, y: 58 },
     metrics: {
       avgPrice: 1750,
       yield: 5.4,
@@ -78,7 +80,8 @@ export const SLOVAK_CITIES: readonly CityData[] = [
     name: "Trnava",
     slug: "trnava",
     // West - left-center (48.38°N, 17.59°E)
-    coordinates: { x: 12, y: 80 },
+    // Adjusted to be more inside map boundaries
+    coordinates: { x: 15, y: 75 },
     metrics: {
       avgPrice: 2100,
       yield: 4.9,
@@ -89,7 +92,7 @@ export const SLOVAK_CITIES: readonly CityData[] = [
     name: "Trenčín",
     slug: "trencin",
     // Northwest - top-left (48.89°N, 18.04°E)
-    coordinates: { x: 30, y: 45 },
+    coordinates: { x: 28, y: 48 },
     metrics: {
       avgPrice: 1900,
       yield: 5.2,
@@ -100,7 +103,7 @@ export const SLOVAK_CITIES: readonly CityData[] = [
     name: "Nitra",
     slug: "nitra",
     // Southwest - left-center, below Trnava (48.31°N, 18.09°E)
-    coordinates: { x: 15, y: 85 },
+    coordinates: { x: 18, y: 82 },
     metrics: {
       avgPrice: 1650,
       yield: 5.7,
