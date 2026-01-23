@@ -142,20 +142,20 @@ export async function GET(request: Request) {
 
     if (preferences.minYield || preferences.maxYield) {
       filteredProperties = filteredProperties.filter((p) => {
-        const yield = p.investmentMetrics?.gross_yield;
-        if (!yield) return false;
-        if (preferences.minYield && yield < preferences.minYield) return false;
-        if (preferences.maxYield && yield > preferences.maxYield) return false;
+        const yieldValue = p.investmentMetrics?.gross_yield;
+        if (!yieldValue) return false;
+        if (preferences.minYield && yieldValue < preferences.minYield) return false;
+        if (preferences.maxYield && yieldValue > preferences.maxYield) return false;
         return true;
       });
     }
 
     if (preferences.minGrossYield || preferences.maxGrossYield) {
       filteredProperties = filteredProperties.filter((p) => {
-        const yield = p.investmentMetrics?.gross_yield;
-        if (!yield) return false;
-        if (preferences.minGrossYield && yield < preferences.minGrossYield) return false;
-        if (preferences.maxGrossYield && yield > preferences.maxGrossYield) return false;
+        const grossYield = p.investmentMetrics?.gross_yield;
+        if (!grossYield) return false;
+        if (preferences.minGrossYield && grossYield < preferences.minGrossYield) return false;
+        if (preferences.maxGrossYield && grossYield > preferences.maxGrossYield) return false;
         return true;
       });
     }
