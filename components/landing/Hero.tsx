@@ -16,9 +16,8 @@ function LandingHeroComponent() {
           </div>
 
           <h1 className="text-5xl lg:text-7xl font-bold text-slate-100 mb-6 leading-tight">
-            Inteligencia pre
-            <span className="block bg-gradient-to-r from-emerald-400 via-emerald-300 to-gold-400 bg-clip-text text-transparent">
-              investície do nehnuteľností
+            <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-gold-400 bg-clip-text text-transparent">
+              Slovenská realitná investičná aplikácia
             </span>
           </h1>
 
