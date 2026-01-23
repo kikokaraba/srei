@@ -1,9 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    ppr: true, // Partial Prerendering
-  },
+  // Note: PPR (Partial Prerendering) is available only in Next.js canary
+  // Remove comment below when upgrading to canary if needed
+  // experimental: {
+  //   ppr: true,
+  // },
   images: {
     remotePatterns: [
       {
