@@ -73,6 +73,7 @@ export async function POST(request: Request) {
       maxPricePerM2,
       minArea,
       maxArea,
+      propertyTypes,
       minRooms,
       maxRooms,
       condition,
@@ -141,6 +142,9 @@ export async function POST(request: Request) {
     if (maxPricePerM2 !== undefined) updateData.maxPricePerM2 = maxPricePerM2 || null;
     if (minArea !== undefined) updateData.minArea = minArea || null;
     if (maxArea !== undefined) updateData.maxArea = maxArea || null;
+    if (propertyTypes !== undefined) {
+      updateData.propertyTypes = propertyTypes ? (Array.isArray(propertyTypes) ? JSON.stringify(propertyTypes) : propertyTypes) : JSON.stringify([]);
+    }
     if (minRooms !== undefined) updateData.minRooms = minRooms || null;
     if (maxRooms !== undefined) updateData.maxRooms = maxRooms || null;
     if (condition !== undefined) {
@@ -205,6 +209,7 @@ export async function POST(request: Request) {
       maxPricePerM2: maxPricePerM2 !== undefined ? (maxPricePerM2 || null) : null,
       minArea: minArea !== undefined ? (minArea || null) : null,
       maxArea: maxArea !== undefined ? (maxArea || null) : null,
+      propertyTypes: propertyTypes !== undefined ? (propertyTypes ? (Array.isArray(propertyTypes) ? JSON.stringify(propertyTypes) : propertyTypes) : JSON.stringify([])) : JSON.stringify([]),
       minRooms: minRooms !== undefined ? (minRooms || null) : null,
       maxRooms: maxRooms !== undefined ? (maxRooms || null) : null,
       condition: condition !== undefined ? (condition ? (Array.isArray(condition) ? JSON.stringify(condition) : condition) : JSON.stringify([])) : JSON.stringify([]),
