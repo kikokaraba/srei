@@ -2,6 +2,10 @@ import { AnalyticsCards } from "@/components/dashboard/AnalyticsCards";
 import { MarketOverview } from "@/components/dashboard/MarketOverview";
 import { RecentProperties } from "@/components/dashboard/RecentProperties";
 import { MarketGaps } from "@/components/dashboard/MarketGaps";
+import { LiquidityTracker } from "@/components/dashboard/LiquidityTracker";
+import { ScenarioSimulator } from "@/components/dashboard/ScenarioSimulator";
+import { UrbanDevelopment } from "@/components/dashboard/UrbanDevelopment";
+import { TaxAssistant } from "@/components/dashboard/TaxAssistant";
 
 export default function DashboardPage() {
   return (
@@ -17,6 +21,10 @@ export default function DashboardPage() {
 
       <AnalyticsCards />
       <MarketGaps />
+      <LiquidityTracker />
+      <ScenarioSimulator />
+      <UrbanDevelopment />
+      <TaxAssistant />
       <MarketOverview />
       <RecentProperties />
     </div>
