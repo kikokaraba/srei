@@ -44,7 +44,7 @@ export async function withValidation<TInput, TOutput>(
       if (!validated.success) {
         return {
           success: false,
-          error: validated.error.errors.map((e) => e.message).join(", "),
+          error: validated.error.issues.map((e) => e.message).join(", "),
         };
       }
 
