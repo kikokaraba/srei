@@ -59,6 +59,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   properties    Property[]
+  dashboardLayout DashboardLayout?
 }
 
 model Account {
@@ -254,5 +255,16 @@ model TaxInfo {
   tax_exemption_date    DateTime? // Kedy uplynie 5-ročný test
   calculated_at         DateTime @default(now())
   updatedAt             DateTime @updatedAt
+}
+
+// Dashboard layout pre každého používateľa
+model DashboardLayout {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  widgets   String   @db.Text // JSON array of widget IDs in order
+  hiddenWidgets String @db.Text // JSON array of hidden widget IDs
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
