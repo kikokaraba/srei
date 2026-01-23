@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { MapPin, Calendar, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
 
 interface UrbanDevelopment {
@@ -40,10 +40,6 @@ export function UrbanDevelopment() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchDevelopments();
-  }, []);
-
   const fetchDevelopments = useCallback(async () => {
     try {
       setLoading(true);
@@ -63,6 +59,10 @@ export function UrbanDevelopment() {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    fetchDevelopments();
+  }, [fetchDevelopments]);
 
   const formatDate = useCallback((dateString: string | null): string => {
     if (!dateString) return "Neuvedené";

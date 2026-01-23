@@ -26,10 +26,6 @@ export function LiquidityTracker() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchLiquidityData();
-  }, []);
-
   const fetchLiquidityData = useCallback(async () => {
     try {
       setLoading(true);
@@ -50,6 +46,10 @@ export function LiquidityTracker() {
     }
   }, []);
 
+  useEffect(() => {
+    fetchLiquidityData();
+  }, [fetchLiquidityData]);
+
   const formatDays = useCallback((days: number): string => {
     if (days === 1) return "1 deň";
     if (days < 5) return `${days} dni`;
@@ -61,6 +61,11 @@ export function LiquidityTracker() {
     }
     return `${years} ${years === 1 ? "rok" : "rokov"} ${remainingDays} ${remainingDays === 1 ? "deň" : "dní"}`;
   }, []);
+
+  // Zoradiť podľa dní v ponuke (najdlhšie prvé) - musí byť pred early returns
+  const sortedProperties = useMemo(() => {
+    return [...properties].sort((a, b) => b.days_on_market - a.days_on_market);
+  }, [properties]);
 
   if (loading) {
     return (
@@ -102,11 +107,6 @@ export function LiquidityTracker() {
       </div>
     );
   }
-
-  // Zoradiť podľa dní v ponuke (najdlhšie prvé)
-  const sortedProperties = useMemo(() => {
-    return [...properties].sort((a, b) => b.days_on_market - a.days_on_market);
-  }, [properties]);
 
   return (
     <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">

@@ -26,10 +26,6 @@ export function MarketGaps() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchMarketGaps();
-  }, []);
-
   const fetchMarketGaps = useCallback(async () => {
     try {
       setLoading(true);
@@ -61,6 +57,10 @@ export function MarketGaps() {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    fetchMarketGaps();
+  }, [fetchMarketGaps]);
 
   if (loading) {
     return (
