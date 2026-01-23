@@ -28,8 +28,8 @@ const GeoJSON = dynamic(
   () => import("react-leaflet").then((mod) => mod.GeoJSON),
   { ssr: false }
 );
-const CircleMarker = dynamic(
-  () => import("react-leaflet").then((mod) => mod.CircleMarker),
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
   { ssr: false }
 );
 const Popup = dynamic(
@@ -61,26 +61,84 @@ const REGION_DATA: Record<string, { avgPrice: number; avgYield: number; trend: "
   "Košický kraj": { avgPrice: 1850, avgYield: 5.3, trend: "down" },
 };
 
-// Súradnice krajských miest pre fallback
-const CITY_COORDINATES: Array<{ name: string; lat: number; lng: number; region: string }> = [
-  { name: "Bratislava", lat: 48.1486, lng: 17.1077, region: "Bratislavský kraj" },
-  { name: "Trnava", lat: 48.3774, lng: 17.5872, region: "Trnavský kraj" },
-  { name: "Nitra", lat: 48.3069, lng: 18.0845, region: "Nitriansky kraj" },
-  { name: "Trenčín", lat: 48.8945, lng: 18.0444, region: "Trenčiansky kraj" },
-  { name: "Žilina", lat: 49.2231, lng: 18.7394, region: "Žilinský kraj" },
-  { name: "Banská Bystrica", lat: 48.7363, lng: 19.1451, region: "Banskobystrický kraj" },
-  { name: "Prešov", lat: 49.0016, lng: 21.2396, region: "Prešovský kraj" },
-  { name: "Košice", lat: 48.7164, lng: 21.2611, region: "Košický kraj" },
+// Presné súradnice stredov krajov
+const REGION_COORDINATES: Array<{ 
+  code: string; 
+  name: string; 
+  lat: number; 
+  lng: number; 
+  region: string;
+}> = [
+  { code: "BA", name: "Bratislava", lat: 48.1485, lng: 17.1077, region: "Bratislavský kraj" },
+  { code: "TT", name: "Trnava", lat: 48.3775, lng: 17.5855, region: "Trnavský kraj" },
+  { code: "TN", name: "Trenčín", lat: 48.8945, lng: 18.0445, region: "Trenčiansky kraj" },
+  { code: "NR", name: "Nitra", lat: 48.3061, lng: 18.0764, region: "Nitriansky kraj" },
+  { code: "ZA", name: "Žilina", lat: 49.2231, lng: 18.7398, region: "Žilinský kraj" },
+  { code: "BB", name: "Banská Bystrica", lat: 48.7352, lng: 19.1459, region: "Banskobystrický kraj" },
+  { code: "PO", name: "Prešov", lat: 48.9981, lng: 21.2339, region: "Prešovský kraj" },
+  { code: "KE", name: "Košice", lat: 48.7164, lng: 21.2611, region: "Košický kraj" },
 ];
 
-// Funkcia pre výpočet farby podľa výnosu
+// Funkcia pre výpočet farby pulzujúceho bodu podľa výnosu
+function getPingColorByYield(yieldValue: number): string {
+  if (yieldValue > 5) return "#10b981"; // Emerald pre vysoké výnosy
+  if (yieldValue < 4) return "#f43f5e"; // Rose pre nízke výnosy
+  return "#fbbf24"; // Zlatá pre stredné výnosy
+}
+
+// Funkcia pre výpočet farby podľa výnosu (pre GeoJSON)
 function getColorByYield(yieldValue: number): string {
-  // Čím vyšší výnos, tým sýtejšia smaragdová/zlatá farba
   if (yieldValue >= 5.5) return "#10b981"; // Smaragdová
   if (yieldValue >= 5.0) return "#34d399"; // Svetlejšia smaragdová
   if (yieldValue >= 4.5) return "#fbbf24"; // Zlatá
   if (yieldValue >= 4.0) return "#f59e0b"; // Tmavšia zlatá
   return "#6b7280"; // Šedá pre nízke výnosy
+}
+
+// Funkcia pre vytvorenie custom DivIcon markeru
+// Musí byť volaná len na klientovi po načítaní Leaflet
+function createCustomMarkerIcon(code: string, yieldValue: number, L: typeof import("leaflet").default): any {
+  const pingColor = getPingColorByYield(yieldValue);
+  
+  return L.divIcon({
+    iconSize: [60, 50],
+    iconAnchor: [30, 50],
+    popupAnchor: [0, -50],
+    className: "custom-marker",
+    html: `
+      <div style="
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+      ">
+        <div style="
+          background: #0f172a;
+          border: 1px solid #334155;
+          border-radius: 4px;
+          padding: 4px 8px;
+          color: #f1f5f9;
+          font-size: 11px;
+          font-weight: 600;
+          font-family: system-ui, -apple-system, sans-serif;
+          white-space: nowrap;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        ">
+          ${code} ${yieldValue}%
+        </div>
+        <div style="
+          margin-top: 4px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: ${pingColor};
+          animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+          box-shadow: 0 0 0 0 ${pingColor};
+        "></div>
+      </div>
+    `,
+  });
 }
 
 // React komponent pre popup obsah
@@ -137,6 +195,7 @@ export function HeroMap() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [leafletModule, setLeafletModule] = useState<typeof import("leaflet").default | null>(null);
 
   // Fix pre Leaflet ikony v Next.js - musí bežať len na klientovi
   useEffect(() => {
@@ -151,6 +210,7 @@ export function HeroMap() {
         iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
         shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
       });
+      setLeafletModule(L.default);
     });
   }, []);
 
@@ -270,12 +330,12 @@ export function HeroMap() {
               center={center}
               zoom={8}
               scrollWheelZoom={false}
+              attributionControl={false}
               style={{ height: "100%", width: "100%", zIndex: 1 }}
               className="rounded-2xl"
             >
               <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
               />
 
               {geojson && !error && geojson.features && geojson.features.length > 0 ? (
@@ -284,40 +344,35 @@ export function HeroMap() {
                   style={style}
                   onEachFeature={onEachFeature}
                 />
-              ) : (
-                // Fallback: Zobraz značky pre krajské mestá
-                CITY_COORDINATES.map((city) => {
-                  const data = REGION_DATA[city.region] || { avgPrice: 0, avgYield: 0, trend: "up" };
-                  return (
-                    <CircleMarker
-                      key={city.name}
-                      center={[city.lat, city.lng]}
-                      radius={18}
-                      pathOptions={{
-                        fillColor: getColorByYield(data.avgYield),
-                        fillOpacity: 0.9,
-                        color: "#10b981",
-                        weight: 3,
-                        opacity: 0.8,
-                      }}
-                      eventHandlers={{
-                        mouseover: (e: LeafletMouseEvent) => {
-                          const marker = e.target;
-                          marker.setRadius(22);
-                        },
-                        mouseout: (e: LeafletMouseEvent) => {
-                          const marker = e.target;
-                          marker.setRadius(18);
-                        },
-                      }}
-                    >
-                      <Popup>
-                        <PopupContent regionName={city.region} data={data} />
-                      </Popup>
-                    </CircleMarker>
-                  );
-                })
-              )}
+              ) : null}
+
+              {/* Custom DivIcon markery pre kraje */}
+              {leafletModule && REGION_COORDINATES.map((region) => {
+                const data = REGION_DATA[region.region] || { avgPrice: 0, avgYield: 0, trend: "up" };
+                const icon = createCustomMarkerIcon(region.code, data.avgYield, leafletModule);
+                
+                return (
+                  <Marker
+                    key={region.code}
+                    position={[region.lat, region.lng]}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    icon={icon as any}
+                    eventHandlers={{
+                      click: () => {
+                        // Plynulý posun na sekciu 'Funkcie'
+                        const featuresSection = document.getElementById("features");
+                        if (featuresSection) {
+                          featuresSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }
+                      },
+                    }}
+                  >
+                    <Popup>
+                      <PopupContent regionName={region.region} data={data} />
+                    </Popup>
+                  </Marker>
+                );
+              })}
             </MapContainer>
             )}
           </div>
