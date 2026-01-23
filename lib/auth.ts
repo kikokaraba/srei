@@ -1,4 +1,3 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth from "next-auth";
 import { prisma } from "@/lib/prisma";
 import Credentials from "next-auth/providers/credentials";
@@ -11,7 +10,9 @@ const credentialsSchema = z.object({
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  // Adapter not needed for JWT strategy with Credentials provider
+  // If you need database sessions later, uncomment and fix version compatibility:
+  // adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
   },
