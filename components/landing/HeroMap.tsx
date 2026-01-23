@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
+import type { LeafletMouseEvent, Path, Feature, GeoJsonObject } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 // Dynamicky importujeme Leaflet komponenty, aby sa načítali len na klientovi
@@ -171,8 +172,7 @@ export function HeroMap() {
 
   const center: [number, number] = [48.669, 19.699]; // Stred Slovenska
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const style = useCallback((feature: any): any => {
+  const style = useCallback((feature?: Feature<GeoJsonObject>): Path.Options => {
     if (!feature || !feature.properties) {
       return {
         fillColor: "#065f46",
@@ -194,25 +194,24 @@ export function HeroMap() {
     };
   }, []);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onEachFeature = useCallback((feature: any, layer: any) => {
+  const onEachFeature = useCallback((feature: Feature<GeoJsonObject>, layer: Path) => {
     if (!feature || !feature.properties || !layer) return;
     const regionName = (feature.properties.name as string) || (feature.properties.NAME_1 as string) || "";
     const data = REGION_DATA[regionName] || { avgPrice: 0, avgYield: 0, trend: "up" };
 
     // Hover effect
     layer.on({
-      mouseover: (e) => {
-        const layer = e.target;
-        layer.setStyle({
+      mouseover: (e: LeafletMouseEvent) => {
+        const pathLayer = e.target as Path;
+        pathLayer.setStyle({
           fillOpacity: 0.8,
           weight: 2,
           opacity: 0.6,
         });
       },
-      mouseout: (e) => {
-        const layer = e.target;
-        layer.setStyle({
+      mouseout: (e: LeafletMouseEvent) => {
+        const pathLayer = e.target as Path;
+        pathLayer.setStyle({
           fillOpacity: 0.4,
           weight: 1,
           opacity: 0.3,
@@ -285,11 +284,11 @@ export function HeroMap() {
                         opacity: 0.8,
                       }}
                       eventHandlers={{
-                        mouseover: (e) => {
+                        mouseover: (e: LeafletMouseEvent) => {
                           const marker = e.target;
                           marker.setRadius(22);
                         },
-                        mouseout: (e) => {
+                        mouseout: (e: LeafletMouseEvent) => {
                           const marker = e.target;
                           marker.setRadius(18);
                         },
