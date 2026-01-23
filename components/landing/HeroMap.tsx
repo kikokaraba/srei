@@ -186,7 +186,8 @@ export function HeroMap() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [leafletModule, setLeafletModule] = useState<typeof import("leaflet").default | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [leafletModule, setLeafletModule] = useState<any>(null);
 
   // Fix pre Leaflet ikony v Next.js - musí bežať len na klientovi
   useEffect(() => {
