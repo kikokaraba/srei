@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { TrendingDown, MapPin, AlertCircle, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
@@ -30,7 +30,7 @@ export function MarketGaps() {
     fetchMarketGaps();
   }, []);
 
-  const fetchMarketGaps = async () => {
+  const fetchMarketGaps = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch("/api/v1/market-gaps");
@@ -60,7 +60,7 @@ export function MarketGaps() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   if (loading) {
     return (

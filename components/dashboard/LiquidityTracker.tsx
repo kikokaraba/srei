@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Clock, TrendingDown, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
@@ -30,7 +30,7 @@ export function LiquidityTracker() {
     fetchLiquidityData();
   }, []);
 
-  const fetchLiquidityData = async () => {
+  const fetchLiquidityData = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch("/api/v1/liquidity");
@@ -48,9 +48,9 @@ export function LiquidityTracker() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const formatDays = (days: number): string => {
+  const formatDays = useCallback((days: number): string => {
     if (days === 1) return "1 deň";
     if (days < 5) return `${days} dni`;
     if (days < 365) return `${days} dní`;
@@ -60,7 +60,7 @@ export function LiquidityTracker() {
       return years === 1 ? "1 rok" : `${years} rokov`;
     }
     return `${years} ${years === 1 ? "rok" : "rokov"} ${remainingDays} ${remainingDays === 1 ? "deň" : "dní"}`;
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -104,7 +104,9 @@ export function LiquidityTracker() {
   }
 
   // Zoradiť podľa dní v ponuke (najdlhšie prvé)
-  const sortedProperties = [...properties].sort((a, b) => b.days_on_market - a.days_on_market);
+  const sortedProperties = useMemo(() => {
+    return [...properties].sort((a, b) => b.days_on_market - a.days_on_market);
+  }, [properties]);
 
   return (
     <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">

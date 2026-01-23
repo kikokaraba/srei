@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Calculator, FileText, Calendar, AlertCircle, CheckCircle } from "lucide-react";
 
 interface TaxCalculation {
@@ -53,12 +53,12 @@ export function TaxAssistant() {
     return calculateTax(inputs);
   }, [inputs]);
 
-  const handleInputChange = (field: keyof TaxCalculation, value: string | number | boolean | Date) => {
+  const handleInputChange = useCallback((field: keyof TaxCalculation, value: string | number | boolean | Date) => {
     setInputs((prev) => ({
       ...prev,
       [field]: value,
     }));
-  };
+  }, []);
 
   return (
     <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">

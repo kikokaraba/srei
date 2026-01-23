@@ -52,7 +52,9 @@ export async function GET() {
     } catch (queryError: unknown) {
       // Ak modely ešte neexistujú, vrátime prázdny výsledok
       const error = queryError as Prisma.PrismaClientKnownRequestError | Error;
-      if ((error as Prisma.PrismaClientKnownRequestError)?.code === "P2001" || (error as Error)?.message?.includes("does not exist")) {
+      const prismaError = error as Prisma.PrismaClientKnownRequestError;
+      const genericError = error as Error;
+      if (prismaError?.code === "P2001" || genericError?.message?.includes("does not exist")) {
         console.warn("MarketGap model not found - database may need migration");
         return NextResponse.json({
           success: true,

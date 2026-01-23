@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Calculator, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
 
 interface ScenarioInputs {
@@ -41,12 +41,12 @@ export function ScenarioSimulator() {
     return calculateScenario(inputs);
   }, [inputs]);
 
-  const handleInputChange = (field: keyof ScenarioInputs, value: number) => {
+  const handleInputChange = useCallback((field: keyof ScenarioInputs, value: number) => {
     setInputs((prev) => ({
       ...prev,
       [field]: value,
     }));
-  };
+  }, []);
 
   return (
     <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
@@ -300,12 +300,12 @@ export function ScenarioSimulator() {
               {results.breakEvenRent.toLocaleString("sk-SK", { maximumFractionDigits: 0 })} €/mesiac
             </p>
             <p className="text-xs text-slate-500 mt-1">
-              {results.monthlyRent >= results.breakEvenRent ? (
+              {inputs.monthlyRent >= results.breakEvenRent ? (
                 <span className="text-emerald-400">✓ Nájom pokrýva náklady</span>
               ) : (
                 <span className="text-rose-400">
                   ⚠ Nájom je o{" "}
-                  {(results.breakEvenRent - results.monthlyRent).toLocaleString("sk-SK", {
+                  {Math.max(0, results.breakEvenRent - inputs.monthlyRent).toLocaleString("sk-SK", {
                     maximumFractionDigits: 0,
                   })}{" "}
                   € nižší ako potrebné
