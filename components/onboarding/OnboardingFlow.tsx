@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { ArrowRight, ArrowLeft, MapPin, TrendingUp, Target, Bell } from "lucide-react";
-import { SlovakCity } from "@/lib/constants/cities";
+import type { SlovakCity } from "@/generated/prisma/client";
 
 const SLOVAK_CITIES = [
   { value: "BRATISLAVA", label: "Bratislava" },
