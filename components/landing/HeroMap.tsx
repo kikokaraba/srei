@@ -1,0 +1,267 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { MapContainer, TileLayer, GeoJSON, CircleMarker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+type GeoJSONFeatureCollection = {
+  type: "FeatureCollection";
+  features: Array<{
+    type: "Feature";
+    properties: Record<string, any>;
+    geometry: any;
+  }>;
+};
+
+// Fix pre Leaflet ikony v Next.js
+if (typeof window !== "undefined") {
+  delete (L.Icon.Default.prototype as any)._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+  });
+}
+
+// Mock dáta pre kraje
+const REGION_DATA: Record<string, { avgPrice: number; avgYield: number; trend: "up" | "down" }> = {
+  "Bratislavský kraj": { avgPrice: 3800, avgYield: 3.8, trend: "up" },
+  "Trnavský kraj": { avgPrice: 2100, avgYield: 4.9, trend: "up" },
+  "Nitriansky kraj": { avgPrice: 1650, avgYield: 5.7, trend: "down" },
+  "Trenčiansky kraj": { avgPrice: 1900, avgYield: 5.2, trend: "up" },
+  "Žilinský kraj": { avgPrice: 1950, avgYield: 5.1, trend: "up" },
+  "Banskobystrický kraj": { avgPrice: 1750, avgYield: 5.4, trend: "up" },
+  "Prešovský kraj": { avgPrice: 1650, avgYield: 5.5, trend: "up" },
+  "Košický kraj": { avgPrice: 1850, avgYield: 5.3, trend: "down" },
+};
+
+// Súradnice krajských miest pre fallback
+const CITY_COORDINATES: Array<{ name: string; lat: number; lng: number; region: string }> = [
+  { name: "Bratislava", lat: 48.1486, lng: 17.1077, region: "Bratislavský kraj" },
+  { name: "Trnava", lat: 48.3774, lng: 17.5872, region: "Trnavský kraj" },
+  { name: "Nitra", lat: 48.3069, lng: 18.0845, region: "Nitriansky kraj" },
+  { name: "Trenčín", lat: 48.8945, lng: 18.0444, region: "Trenčiansky kraj" },
+  { name: "Žilina", lat: 49.2231, lng: 18.7394, region: "Žilinský kraj" },
+  { name: "Banská Bystrica", lat: 48.7363, lng: 19.1451, region: "Banskobystrický kraj" },
+  { name: "Prešov", lat: 49.0016, lng: 21.2396, region: "Prešovský kraj" },
+  { name: "Košice", lat: 48.7164, lng: 21.2611, region: "Košický kraj" },
+];
+
+// Funkcia pre výpočet farby podľa výnosu
+function getColorByYield(yieldValue: number): string {
+  // Čím vyšší výnos, tým sýtejšia smaragdová/zlatá farba
+  if (yieldValue >= 5.5) return "#10b981"; // Smaragdová
+  if (yieldValue >= 5.0) return "#34d399"; // Svetlejšia smaragdová
+  if (yieldValue >= 4.5) return "#fbbf24"; // Zlatá
+  if (yieldValue >= 4.0) return "#f59e0b"; // Tmavšia zlatá
+  return "#6b7280"; // Šedá pre nízke výnosy
+}
+
+// React komponent pre popup obsah
+function PopupContent({ regionName, data }: { regionName: string; data: { avgPrice: number; avgYield: number; trend: "up" | "down" } }) {
+  return (
+    <div className="bg-slate-900 text-slate-100 p-4 rounded-lg border border-slate-800 min-w-[200px]">
+      <h3 className="font-bold text-lg mb-3 text-emerald-400">{regionName}</h3>
+      <div className="mb-2">
+        <span className="text-slate-400 text-sm">Priemerný výnos: </span>
+        <span className="text-emerald-400 font-semibold text-base">{data.avgYield}%</span>
+      </div>
+      <div>
+        <span className="text-slate-400 text-sm">Cena: </span>
+        <span className="text-slate-100 font-semibold text-base">
+          {data.avgPrice.toLocaleString("sk-SK")} €/m²
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// Funkcia pre vytvorenie popup obsahu (HTML string pre Leaflet GeoJSON)
+function createPopupHTML(regionName: string, data: { avgPrice: number; avgYield: number; trend: "up" | "down" }): string {
+  return `
+    <div style="
+      background: #0f172a;
+      color: #f1f5f9;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid #1e293b;
+      font-family: system-ui, -apple-system, sans-serif;
+      min-width: 200px;
+    ">
+      <h3 style="
+        font-weight: 700;
+        font-size: 18px;
+        margin: 0 0 12px 0;
+        color: #10b981;
+      ">${regionName}</h3>
+      <div style="margin-bottom: 8px;">
+        <span style="color: #94a3b8; font-size: 14px;">Priemerný výnos: </span>
+        <span style="color: #10b981; font-weight: 600; font-size: 16px;">${data.avgYield}%</span>
+      </div>
+      <div>
+        <span style="color: #94a3b8; font-size: 14px;">Cena: </span>
+        <span style="color: #f1f5f9; font-weight: 600; font-size: 16px;">${data.avgPrice.toLocaleString("sk-SK")} €/m²</span>
+      </div>
+    </div>
+  `;
+}
+
+export function HeroMap() {
+  const [geojson, setGeojson] = useState<GeoJSONFeatureCollection | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchGeoJSON = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          "https://raw.githubusercontent.com/duhaime/re-atlas/master/data/geojson/slovakia-regions.geojson"
+        );
+        
+        if (!response.ok) {
+          throw new Error("Failed to fetch GeoJSON");
+        }
+        
+        const data = await response.json();
+        setGeojson(data);
+        setError(false);
+      } catch (err) {
+        console.error("Error loading GeoJSON:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGeoJSON();
+  }, []);
+
+  const center: [number, number] = [48.669, 19.699]; // Stred Slovenska
+
+  const style = useCallback((feature: any) => {
+    const regionName = feature?.properties?.name || feature?.properties?.NAME_1 || "";
+    const data = REGION_DATA[regionName] || { avgPrice: 0, avgYield: 0, trend: "up" };
+    
+    return {
+      fillColor: getColorByYield(data.avgYield),
+      fillOpacity: 0.4,
+      color: "#94a3b8",
+      weight: 1,
+      opacity: 0.3,
+    };
+  }, []);
+
+  const onEachFeature = useCallback((feature: any, layer: L.Layer) => {
+    const regionName = feature?.properties?.name || feature?.properties?.NAME_1 || "";
+    const data = REGION_DATA[regionName] || { avgPrice: 0, avgYield: 0, trend: "up" };
+
+    // Hover effect
+    layer.on({
+      mouseover: (e) => {
+        const layer = e.target;
+        layer.setStyle({
+          fillOpacity: 0.8,
+          weight: 2,
+          opacity: 0.6,
+        });
+      },
+      mouseout: (e) => {
+        const layer = e.target;
+        layer.setStyle({
+          fillOpacity: 0.4,
+          weight: 1,
+          opacity: 0.3,
+        });
+      },
+    });
+
+    // Custom popup
+    const popupContent = createPopupHTML(regionName, data);
+    layer.bindPopup(popupContent, {
+      className: "custom-popup",
+    });
+  }, []);
+
+  return (
+    <section className="py-24 bg-gradient-to-b from-slate-950 to-slate-900">
+      <div className="container mx-auto px-6">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl lg:text-5xl font-bold text-slate-100 mb-4">
+            Investičné príležitosti
+            <span className="block text-emerald-400">naprieč Slovenskom</span>
+          </h2>
+          <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+            Interaktívna mapa zobrazujúca investičnú atraktivitu a výnosy v
+            slovenských krajoch
+          </p>
+        </div>
+
+        <div className="relative max-w-6xl mx-auto">
+          <div className="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden" style={{ height: "600px" }}>
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center z-50 bg-slate-900/80">
+                <div className="text-slate-400">Načítavam mapu...</div>
+              </div>
+            )}
+            
+            <MapContainer
+              center={center}
+              zoom={8}
+              scrollWheelZoom={false}
+              style={{ height: "100%", width: "100%", zIndex: 1 }}
+              className="rounded-2xl"
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              />
+
+              {geojson && !error ? (
+                <GeoJSON
+                  data={geojson}
+                  style={style}
+                  onEachFeature={onEachFeature}
+                />
+              ) : (
+                // Fallback: Zobraz značky pre krajské mestá
+                CITY_COORDINATES.map((city) => {
+                  const data = REGION_DATA[city.region] || { avgPrice: 0, avgYield: 0, trend: "up" };
+                  return (
+                    <CircleMarker
+                      key={city.name}
+                      center={[city.lat, city.lng]}
+                      radius={18}
+                      pathOptions={{
+                        fillColor: getColorByYield(data.avgYield),
+                        fillOpacity: 0.9,
+                        color: "#10b981",
+                        weight: 3,
+                        opacity: 0.8,
+                      }}
+                      eventHandlers={{
+                        mouseover: (e) => {
+                          const marker = e.target;
+                          marker.setRadius(22);
+                        },
+                        mouseout: (e) => {
+                          const marker = e.target;
+                          marker.setRadius(18);
+                        },
+                      }}
+                    >
+                      <Popup>
+                        <PopupContent regionName={city.region} data={data} />
+                      </Popup>
+                    </CircleMarker>
+                  );
+                })
+              )}
+            </MapContainer>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

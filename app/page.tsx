@@ -6,8 +6,8 @@ import { LandingHero } from "@/components/landing/Hero";
 import { Stats } from "@/components/landing/Stats";
 
 // Lazy load heavy components for better initial load performance
-const SlovakiaMap = dynamic(
-  () => import("@/components/landing/SlovakiaMap").then((mod) => ({ default: mod.SlovakiaMap })),
+const HeroMap = dynamic(
+  () => import("@/components/landing/HeroMap").then((mod) => ({ default: mod.HeroMap })),
   {
     loading: () => (
       <div className="py-24 bg-gradient-to-b from-slate-950 to-slate-900">
@@ -18,7 +18,7 @@ const SlovakiaMap = dynamic(
         </div>
       </div>
     ),
-    ssr: true,
+    ssr: false, // Leaflet requires client-side rendering
   }
 );
 
@@ -67,7 +67,7 @@ export default function HomePage() {
       <LandingHero />
       <Stats />
       <section id="map" aria-label="Interaktívna mapa Slovenska">
-        <SlovakiaMap />
+        <HeroMap />
       </section>
       <section id="features" aria-label="Funkcie platformy">
         <Features />
