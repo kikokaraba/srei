@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import { prisma } from "@/lib/prisma";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
-import type { UserRole } from "@prisma/client";
+import type { UserRole } from "@/generated/prisma/client";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
