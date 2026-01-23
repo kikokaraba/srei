@@ -88,7 +88,7 @@ function getColorByYield(yieldValue: number): string {
 // Funkcia pre vytvorenie custom DivIcon markeru
 // Musí byť volaná len na klientovi po načítaní Leaflet
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function createCustomMarkerIcon(code: string, yieldValue: number, L: typeof import("leaflet").default): any {
+function createCustomMarkerIcon(code: string, yieldValue: number, L: any): any {
   const pingColor = getPingColorByYield(yieldValue);
   
   return L.divIcon({
