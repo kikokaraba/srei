@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { memo } from "react";
 import { ArrowRight, TrendingUp, BarChart3, Shield } from "lucide-react";
 
-export function LandingHero() {
+function LandingHeroComponent() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/20 pt-16">
       <div className="absolute inset-0 bg-grid-slate-800/[0.2] bg-[size:20px_20px]" />
@@ -91,3 +92,6 @@ export function LandingHero() {
     </section>
   );
 }
+
+export const LandingHero = memo(LandingHeroComponent);
+LandingHero.displayName = "LandingHero";

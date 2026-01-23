@@ -45,7 +45,7 @@ function SignInForm() {
         <div className="bg-slate-900 rounded-lg border border-slate-800 p-8">
           <div className="flex items-center gap-3 mb-8 justify-center">
             <Building2 className="w-8 h-8 text-emerald-400" />
-            <h1 className="text-2xl font-bold text-slate-100">SREI</h1>
+            <h1 className="text-2xl font-bold text-slate-100">SRIA</h1>
           </div>
 
           <h2 className="text-xl font-semibold text-slate-100 mb-2">

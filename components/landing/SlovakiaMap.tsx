@@ -1,86 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import { MapPin, TrendingUp, Euro } from "lucide-react";
-
-interface City {
-  name: string;
-  x: number; // Percentage from left
-  y: number; // Percentage from top
-  avgPrice: number;
-  yield: number;
-  properties: number;
-}
-
-const cities: City[] = [
-  {
-    name: "Bratislava",
-    x: 15,
-    y: 75,
-    avgPrice: 3200,
-    yield: 4.7,
-    properties: 1247,
-  },
-  {
-    name: "Košice",
-    x: 85,
-    y: 60,
-    avgPrice: 1850,
-    yield: 5.3,
-    properties: 892,
-  },
-  {
-    name: "Prešov",
-    x: 80,
-    y: 45,
-    avgPrice: 1650,
-    yield: 5.5,
-    properties: 456,
-  },
-  {
-    name: "Žilina",
-    x: 35,
-    y: 35,
-    avgPrice: 1950,
-    yield: 5.1,
-    properties: 623,
-  },
-  {
-    name: "Banská Bystrica",
-    x: 50,
-    y: 50,
-    avgPrice: 1750,
-    yield: 5.4,
-    properties: 389,
-  },
-  {
-    name: "Trnava",
-    x: 25,
-    y: 70,
-    avgPrice: 2100,
-    yield: 4.9,
-    properties: 512,
-  },
-  {
-    name: "Trenčín",
-    x: 30,
-    y: 55,
-    avgPrice: 1900,
-    yield: 5.2,
-    properties: 445,
-  },
-  {
-    name: "Nitra",
-    x: 30,
-    y: 80,
-    avgPrice: 1650,
-    yield: 5.7,
-    properties: 456,
-  },
-];
+import { useState, useCallback, useMemo } from "react";
+import { MapPin, TrendingUp, Euro, X } from "lucide-react";
+import { SLOVAK_CITIES, type CityData } from "@/lib/constants/cities";
 
 export function SlovakiaMap() {
-  const [selectedCity, setSelectedCity] = useState<City | null>(null);
+  const [selectedCity, setSelectedCity] = useState<CityData | null>(null);
+
+  const handleCitySelect = useCallback((city: CityData) => {
+    setSelectedCity(city);
+  }, []);
+
+  const handleCityDeselect = useCallback(() => {
+    setSelectedCity(null);
+  }, []);
+
+  const sortedCitiesByYield = useMemo(
+    () => [...SLOVAK_CITIES].sort((a, b) => b.metrics.yield - a.metrics.yield),
+    []
+  );
 
   return (
     <section className="py-24 bg-gradient-to-b from-slate-950 to-slate-900">
@@ -170,32 +108,43 @@ export function SlovakiaMap() {
               </defs>
 
               {/* City markers */}
-              {cities.map((city, index) => (
-                <g key={index}>
+              {SLOVAK_CITIES.map((city) => (
+                <g key={city.slug}>
                   <circle
-                    cx={`${city.x}%`}
-                    cy={`${city.y}%`}
+                    cx={`${city.coordinates.x}%`}
+                    cy={`${city.coordinates.y}%`}
                     r="8"
                     fill="#10b981"
-                    className="cursor-pointer hover:fill-emerald-300 transition-all"
-                    onClick={() => setSelectedCity(city)}
+                    className="cursor-pointer hover:fill-emerald-300 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-slate-900"
+                    onClick={() => handleCitySelect(city)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleCitySelect(city);
+                      }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Vybrať mesto ${city.name}`}
                     style={{ filter: "drop-shadow(0 0 8px rgba(16, 185, 129, 0.5))" }}
                   />
                   <circle
-                    cx={`${city.x}%`}
-                    cy={`${city.y}%`}
+                    cx={`${city.coordinates.x}%`}
+                    cy={`${city.coordinates.y}%`}
                     r="12"
                     fill="none"
                     stroke="#10b981"
                     strokeWidth="2"
                     opacity="0.3"
                     className="animate-pulse"
+                    aria-hidden="true"
                   />
                   <text
-                    x={`${city.x}%`}
-                    y={`${city.y - 15}%`}
+                    x={`${city.coordinates.x}%`}
+                    y={`${city.coordinates.y - 15}%`}
                     textAnchor="middle"
                     className="text-xs fill-slate-300 font-semibold pointer-events-none"
+                    aria-hidden="true"
                   >
                     {city.name}
                   </text>
@@ -206,40 +155,52 @@ export function SlovakiaMap() {
 
           {/* City Info Panel */}
           {selectedCity && (
-            <div className="absolute top-4 right-4 bg-slate-900 border border-emerald-500/20 rounded-lg p-6 shadow-2xl max-w-sm z-20 animate-in fade-in slide-in-from-right">
+            <div
+              className="absolute top-4 right-4 bg-slate-900 border border-emerald-500/20 rounded-lg p-6 shadow-2xl max-w-sm z-20 animate-in fade-in slide-in-from-right"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="city-info-title"
+            >
               <button
-                onClick={() => setSelectedCity(null)}
-                className="absolute top-2 right-2 text-slate-400 hover:text-slate-100"
+                onClick={handleCityDeselect}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") handleCityDeselect();
+                }}
+                className="absolute top-2 right-2 text-slate-400 hover:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-400 rounded p-1"
+                aria-label="Zavrieť panel"
               >
-                ×
+                <X className="w-5 h-5" />
               </button>
-              <h3 className="text-2xl font-bold text-slate-100 mb-4 flex items-center gap-2">
-                <MapPin className="w-6 h-6 text-emerald-400" />
+              <h3
+                id="city-info-title"
+                className="text-2xl font-bold text-slate-100 mb-4 flex items-center gap-2"
+              >
+                <MapPin className="w-6 h-6 text-emerald-400" aria-hidden="true" />
                 {selectedCity.name}
               </h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <Euro className="w-4 h-4 text-slate-400" />
+                    <Euro className="w-4 h-4 text-slate-400" aria-hidden="true" />
                     <span className="text-sm text-slate-400">Priem. cena/m²</span>
                   </div>
                   <span className="text-lg font-bold text-slate-100">
-                    €{selectedCity.avgPrice.toLocaleString()}
+                    €{selectedCity.metrics.avgPrice.toLocaleString("sk-SK")}
                   </span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-emerald-400" />
+                    <TrendingUp className="w-4 h-4 text-emerald-400" aria-hidden="true" />
                     <span className="text-sm text-slate-400">Výnos</span>
                   </div>
                   <span className="text-lg font-bold text-emerald-400">
-                    {selectedCity.yield}%
+                    {selectedCity.metrics.yield}%
                   </span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
                   <span className="text-sm text-slate-400">Nehnuteľností</span>
                   <span className="text-lg font-bold text-slate-100">
-                    {selectedCity.properties.toLocaleString()}
+                    {selectedCity.metrics.properties.toLocaleString("sk-SK")}
                   </span>
                 </div>
               </div>
@@ -247,22 +208,28 @@ export function SlovakiaMap() {
           )}
 
           {/* City List */}
-          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-            {cities.map((city, index) => (
+          <div
+            className="mt-8 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4"
+            role="list"
+            aria-label="Zoznam slovenských miest"
+          >
+            {sortedCitiesByYield.map((city) => (
               <button
-                key={index}
-                onClick={() => setSelectedCity(city)}
-                className={`p-4 rounded-lg border transition-all text-left ${
-                  selectedCity?.name === city.name
+                key={city.slug}
+                onClick={() => handleCitySelect(city)}
+                className={`p-4 rounded-lg border transition-all text-left focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-slate-900 ${
+                  selectedCity?.slug === city.slug
                     ? "bg-emerald-500/10 border-emerald-500/50"
                     : "bg-slate-800/50 border-slate-700/50 hover:border-emerald-500/30"
                 }`}
+                aria-pressed={selectedCity?.slug === city.slug}
+                aria-label={`${city.name}, výnos ${city.metrics.yield}%`}
               >
                 <div className="text-sm font-semibold text-slate-100 mb-1">
                   {city.name}
                 </div>
                 <div className="text-xs text-emerald-400 font-medium">
-                  {city.yield}% výnos
+                  {city.metrics.yield}% výnos
                 </div>
               </button>
             ))}

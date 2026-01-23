@@ -60,7 +60,7 @@ export function Features() {
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-bold text-slate-100 mb-4">
-            Prečo si vybrať <span className="text-emerald-400">SREI</span>?
+            Prečo si vybrať <span className="text-emerald-400">SRIA</span>?
           </h2>
           <p className="text-xl text-slate-400 max-w-2xl mx-auto">
             Všetko, čo potrebujete pre úspešné investovanie do nehnuteľností na

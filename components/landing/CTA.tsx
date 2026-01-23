@@ -23,7 +23,7 @@ export function CTA() {
           </h2>
 
           <p className="text-xl text-slate-400 mb-12 max-w-2xl mx-auto">
-            Pripojte sa k stovkám investorov, ktorí už využívajú SREI pre
+            Pripojte sa k stovkám investorov, ktorí už využívajú SRIA pre
             inteligentné rozhodnutia v nehnuteľnostiach.
           </p>
 

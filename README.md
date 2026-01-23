@@ -1,6 +1,6 @@
-# SREI - Slovakia Real Estate Intelligence
+# SRIA - Slovenská Realitná Investičná Aplikácia
 
-A mission-critical, high-performance real estate investment platform for the Slovak market.
+Najmodernejšia a najkomplexnejšia realitná investičná aplikácia pre slovenský trh. Enterprise-grade riešenie s AI-powered insights, real-time analýzami a pokročilými investičnými nástrojmi.
 
 ## Tech Stack
 

@@ -28,9 +28,9 @@ export function Sidebar() {
   return (
     <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col">
       <div className="p-6 border-b border-slate-800">
-        <h2 className="text-xl font-bold text-emerald-400">SREI</h2>
+        <h2 className="text-xl font-bold text-emerald-400">SRIA</h2>
         <p className="text-xs text-slate-500 mt-1">
-          Slovenská Realitná Investičná Inteligencia
+          Slovenská Realitná Investičná Aplikácia
         </p>
       </div>
 
