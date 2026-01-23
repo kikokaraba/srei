@@ -6,6 +6,7 @@ import { LandingHero } from "@/components/landing/Hero";
 import { Stats } from "@/components/landing/Stats";
 
 // Lazy load heavy components for better initial load performance
+// HeroMap is already a client component, so it will be rendered client-side automatically
 const HeroMap = dynamic(
   () => import("@/components/landing/HeroMap").then((mod) => ({ default: mod.HeroMap })),
   {
@@ -18,7 +19,6 @@ const HeroMap = dynamic(
         </div>
       </div>
     ),
-    ssr: false, // Leaflet requires client-side rendering
   }
 );
 
