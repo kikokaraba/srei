@@ -15,8 +15,8 @@ function LandingHeroComponent() {
             <span>Prémiová investičná platforma</span>
           </div>
 
-          <h1 className="text-5xl lg:text-7xl font-bold text-slate-100 mb-6 leading-tight">
-            <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-gold-400 bg-clip-text text-transparent">
+          <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
+            <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-gold-400 bg-clip-text text-transparent" suppressHydrationWarning>
               Slovenská realitná investičná aplikácia
             </span>
           </h1>

@@ -5,14 +5,14 @@ import { SlovakCity } from "@/generated/prisma/client";
 
 export async function GET(request: Request) {
   try {
-    // V development móde povolíme prístup aj bez auth
-    if (process.env.NODE_ENV === "development") {
-      console.warn("Development mode: skipping auth check");
-    } else {
-      const session = await auth();
-      if (!session) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
+    // Skontrolujeme session - ak nie je, vrátime prázdne dáta namiesto 401
+    const session = await auth();
+    if (!session) {
+      // V production vracame prázdne dáta namiesto 401, aby frontend nemal chyby
+      return NextResponse.json({
+        success: true,
+        data: [],
+      });
     }
 
     const { searchParams } = new URL(request.url);

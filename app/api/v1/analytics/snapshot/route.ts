@@ -56,23 +56,16 @@ export async function GET() {
       // Pokračujeme bez rate limitingu
     }
 
-    // Authentication check - skip ak auth nie je dostupný (pre development)
+    // Authentication check - ak nie je session, vrátime mock dáta (pre landing page)
     try {
       const session = await auth();
       if (!session) {
-        // V development móde vrátime dáta aj bez auth
-        if (process.env.NODE_ENV === "development") {
-          console.warn("No session found, returning mock data anyway");
-        } else {
-          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+        // Vracame mock dáta aj bez auth, aby landing page fungoval
+        console.warn("No session found, returning mock data");
       }
     } catch (authError) {
       console.error("Auth error:", authError);
-      // V development móde pokračujeme
-      if (process.env.NODE_ENV !== "development") {
-        return NextResponse.json({ error: "Authentication error" }, { status: 500 });
-      }
+      // Pokračujeme s mock dátami
     }
 
     // Return mock analytics data

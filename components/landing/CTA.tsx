@@ -16,7 +16,7 @@ export function CTA() {
 
           <h2 className="text-4xl lg:text-6xl font-bold text-slate-100 mb-6">
             Pripravení na{" "}
-            <span className="bg-gradient-to-r from-emerald-400 to-gold-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-emerald-400 to-gold-400 bg-clip-text text-transparent" suppressHydrationWarning>
               maximálny výnos
             </span>
             ?
