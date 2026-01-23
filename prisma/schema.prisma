@@ -1,0 +1,146 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Extensions for PostGIS
+// Run: CREATE EXTENSION IF NOT EXISTS postgis; in your PostgreSQL database
+
+enum UserRole {
+  ADMIN
+  PREMIUM_INVESTOR
+  FREE_USER
+}
+
+enum SlovakCity {
+  BRATISLAVA
+  KOSICE
+  PRESOV
+  ZILINA
+  BANSKA_BYSTRICA
+  TRNAVA
+  TRENCIN
+  NITRA
+}
+
+enum PropertyCondition {
+  POVODNY        // Original
+  REKONSTRUKCIA  // Renovated
+  NOVOSTAVBA     // New construction
+}
+
+enum EnergyCertificate {
+  A
+  B
+  C
+  D
+  E
+  F
+  G
+  NONE
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  role          UserRole  @default(FREE_USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  properties    Property[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Property {
+  id                String            @id @default(cuid())
+  slug              String            @unique
+  title             String
+  description       String?          @db.Text
+  city              SlovakCity
+  district          String            // mestska cast / okres
+  address           String
+  coordinates       Unsupported("geometry(Point,4326)")? // PostGIS Point
+  price             Float
+  area_m2           Float
+  price_per_m2      Float
+  rooms             Int?
+  floor             Int?
+  condition         PropertyCondition
+  energy_certificate EnergyCertificate
+  source_url        String?          @db.Text
+  is_distressed     Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  userId            String?
+  user              User?            @relation(fields: [userId], references: [id])
+  investmentMetrics InvestmentMetrics?
+}
+
+model MarketAnalytics {
+  id              String   @id @default(cuid())
+  city            SlovakCity
+  avg_price_m2    Float
+  avg_rent_m2     Float
+  yield_benchmark Float    // Average yield percentage
+  volatility_index Float   // Risk metric (0-1)
+  timestamp       DateTime @default(now())
+
+  @@index([city, timestamp])
+}
+
+model InvestmentMetrics {
+  id                String   @id @default(cuid())
+  propertyId        String   @unique
+  property          Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  gross_yield       Float    // Annual rent / purchase price
+  net_yield         Float    // After expenses
+  cash_on_cash      Float    // Cash return on investment
+  price_to_rent_ratio Float  // Price / annual rent
+  calculated_at     DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
