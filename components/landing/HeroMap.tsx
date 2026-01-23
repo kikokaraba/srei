@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
-import type { LeafletMouseEvent, Path } from "leaflet";
+import type { LeafletMouseEvent, Path, PathOptions } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 // GeoJSON typy
@@ -182,7 +182,7 @@ export function HeroMap() {
 
   const center: [number, number] = [48.669, 19.699]; // Stred Slovenska
 
-  const style = useCallback((feature?: GeoJSONFeature): Path.Options => {
+  const style = useCallback((feature?: GeoJSONFeature): PathOptions => {
     if (!feature || !feature.properties) {
       return {
         fillColor: "#065f46",
