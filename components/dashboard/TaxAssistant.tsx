@@ -217,11 +217,13 @@ export function TaxAssistant() {
                   Vlastníctvo: {results.yearsOwned} {results.yearsOwned === 1 ? "rok" : "rokov"}
                 </p>
                 <p className="text-sm text-slate-400">
-                  Oslobodenie od dane: {results.exemptionDate?.toLocaleDateString("sk-SK")}
+                  Oslobodenie od dane: {results.exemptionDate?.toLocaleDateString("sk-SK") || "Neuvedené"}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Zostáva: {results.daysUntilExemption} {results.daysUntilExemption === 1 ? "deň" : "dní"}
-                </p>
+                {results.daysUntilExemption !== null && (
+                  <p className="text-xs text-slate-500 mt-1">
+                    Zostáva: {results.daysUntilExemption} {results.daysUntilExemption === 1 ? "deň" : "dní"}
+                  </p>
+                )}
               </div>
             )}
           </div>

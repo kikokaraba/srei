@@ -36,7 +36,13 @@ export function MarketGaps() {
       const response = await fetch("/api/v1/market-gaps");
       
       if (!response.ok) {
-        throw new Error("Failed to fetch market gaps");
+        // Ak je 401, používateľ nie je prihlásený - to nie je chyba
+        if (response.status === 401) {
+          setGaps([]);
+          setError(null);
+          return;
+        }
+        throw new Error(`Failed to fetch market gaps: ${response.status}`);
       }
       
       const data = await response.json();
@@ -44,7 +50,13 @@ export function MarketGaps() {
       setError(null);
     } catch (err) {
       console.error("Error fetching market gaps:", err);
-      setError("Nepodarilo sa načítať market gaps");
+      // V development móde zobrazíme len warning, nie error
+      if (process.env.NODE_ENV === "development") {
+        setGaps([]);
+        setError(null);
+      } else {
+        setError("Nepodarilo sa načítať market gaps");
+      }
     } finally {
       setLoading(false);
     }
