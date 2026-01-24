@@ -16,7 +16,7 @@ export function CTA() {
 
           <h2 className="text-4xl lg:text-6xl font-bold text-slate-100 mb-6">
             Pripravení{" "}
-            <span className="bg-gradient-to-r from-emerald-400 to-gold-400 bg-clip-text text-transparent" suppressHydrationWarning>
+            <span className="bg-gradient-to-r from-emerald-400 to-emerald-200 bg-clip-text text-transparent" suppressHydrationWarning>
               zmeniť spôsob
             </span>
             <br />
