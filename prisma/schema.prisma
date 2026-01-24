@@ -723,3 +723,117 @@ model DataFetchLog {
   
   @@index([source, fetchedAt])
 }
+
+// Životný cyklus inzerátu - sledovanie vymazaných/ukončených inzerátov
+model PropertyLifecycle {
+  id              String   @id @default(cuid())
+  
+  // Identifikácia pôvodného inzerátu
+  externalId      String   // external_id z Property
+  source          PropertySource
+  city            SlovakCity
+  district        String?
+  
+  // Údaje o inzeráte
+  title           String
+  initialPrice    Float    // Počiatočná cena
+  finalPrice      Float    // Posledná známa cena
+  priceChange     Float    // Zmena ceny počas životnosti (finalPrice - initialPrice)
+  priceChangePercent Float // Zmena v percentách
+  area_m2         Float
+  rooms           Int?
+  condition       PropertyCondition?
+  listingType     ListingType
+  
+  // Časové údaje
+  firstSeenAt     DateTime // Kedy sme ho prvýkrát videli
+  lastSeenAt      DateTime // Kedy sme ho naposledy videli
+  daysOnMarket    Int      // Koľko dní bol v ponuke
+  
+  // Status
+  status          ListingStatus @default(REMOVED)
+  removalReason   String?  // "sold", "withdrawn", "expired", "unknown"
+  
+  createdAt       DateTime @default(now())
+  
+  @@unique([source, externalId])
+  @@index([city, status])
+  @@index([source, createdAt])
+  @@index([daysOnMarket])
+  @@index([listingType, city])
+}
+
+enum ListingStatus {
+  ACTIVE
+  REMOVED
+  SOLD
+  WITHDRAWN
+  EXPIRED
+}
+
+// Denné štatistiky trhu - agregované dáta
+model DailyMarketStats {
+  id              String   @id @default(cuid())
+  date            DateTime @db.Date
+  city            SlovakCity
+  listingType     ListingType
+  
+  // Počty
+  totalListings   Int      // Celkový počet aktívnych inzerátov
+  newListings     Int      // Nové inzeráty za deň
+  removedListings Int      // Vymazané inzeráty za deň
+  
+  // Cenové štatistiky
+  avgPrice        Float    // Priemerná cena
+  medianPrice     Float    // Mediánová cena
+  avgPricePerM2   Float    // Priemerná cena za m²
+  medianPricePerM2 Float   // Mediánová cena za m²
+  minPrice        Float
+  maxPrice        Float
+  
+  // Zmeny oproti predchádzajúcemu dňu
+  priceChangePercent Float? // Zmena priemernej ceny oproti včera
+  listingsChangePercent Float? // Zmena počtu inzerátov oproti včera
+  
+  // Doba v ponuke
+  avgDaysOnMarket Float    // Priemerná doba v ponuke
+  
+  // Hot deals
+  hotDealsCount   Int      // Počet hot deals
+  hotDealsPercent Float    // Percento hot deals
+  
+  createdAt       DateTime @default(now())
+  
+  @@unique([date, city, listingType])
+  @@index([city, date])
+  @@index([listingType, date])
+}
+
+// Mesačné štatistiky - dlhodobé trendy
+model MonthlyMarketStats {
+  id              String   @id @default(cuid())
+  year            Int
+  month           Int
+  city            SlovakCity
+  listingType     ListingType
+  
+  // Agregované dáta
+  avgPrice        Float
+  medianPrice     Float
+  avgPricePerM2   Float
+  medianPricePerM2 Float
+  
+  totalListings   Int      // Priemerný počet aktívnych inzerátov
+  totalNew        Int      // Celkový počet nových za mesiac
+  totalRemoved    Int      // Celkový počet vymazaných za mesiac
+  
+  avgDaysOnMarket Float    // Priemerná doba v ponuke
+  
+  // Zmeny oproti predchádzajúcemu mesiacu
+  priceChangePercent Float?
+  
+  createdAt       DateTime @default(now())
+  
+  @@unique([year, month, city, listingType])
+  @@index([city, year, month])
+}
