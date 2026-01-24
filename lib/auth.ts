@@ -44,9 +44,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         try {
-          const user = await prisma.user.findUnique({
+          let user = await prisma.user.findUnique({
             where: { email: validated.data.email },
           });
+
+          // Auto-create demo user if it doesn't exist and email is demo@sria.sk
+          if (!user && validated.data.email === "demo@sria.sk") {
+            console.log("Auth: Creating demo user automatically...");
+            user = await prisma.user.create({
+              data: {
+                email: "demo@sria.sk",
+                name: "Demo Používateľ",
+                role: "PREMIUM_INVESTOR",
+              },
+            });
+            console.log("Auth: Demo user created", user.email, user.id);
+          }
 
           if (!user) {
             console.log("Auth: User not found", validated.data.email);
