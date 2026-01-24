@@ -27,6 +27,12 @@ const WIDGET_REGISTRY = {
     component: "HotDeals",
     description: "Nehnuteľnosti 15%+ pod trhovou cenou",
   },
+  "property-matches": {
+    id: "property-matches",
+    title: "Porovnanie cien",
+    component: "PropertyMatches",
+    description: "Rovnaké nehnuteľnosti na rôznych portáloch",
+  },
   "economic-indicators": {
     id: "economic-indicators",
     title: "Ekonomické ukazovatele",

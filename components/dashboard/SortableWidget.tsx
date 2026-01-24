@@ -13,9 +13,11 @@ import { MarketOverview } from "./MarketOverview";
 import { RecentProperties } from "./RecentProperties";
 import { EconomicIndicators } from "./EconomicIndicators";
 import HotDeals from "./HotDeals";
+import PropertyMatches from "./PropertyMatches";
 
 const WIDGET_COMPONENTS = {
   "hot-deals": HotDeals,
+  "property-matches": PropertyMatches,
   "economic-indicators": EconomicIndicators,
   "analytics-cards": AnalyticsCards,
   "market-gaps": MarketGaps,

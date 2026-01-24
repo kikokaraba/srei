@@ -623,6 +623,8 @@ export async function syncProperty(listing: ParsedListing): Promise<SyncResult> 
   const property = await prisma.property.create({
     data: {
       slug,
+      external_id: listing.externalId,
+      source: "BAZOS", // Bazos scraper
       title: listing.title,
       description: listing.description,
       city: listing.city,

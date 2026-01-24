@@ -19,6 +19,7 @@ export async function GET() {
     // Všetky dostupné widgety (scraper-control a system-health sú v /admin)
     const allWidgets = [
       "hot-deals",
+      "property-matches",
       "economic-indicators",
       "analytics-cards",
       "market-overview",
@@ -33,6 +34,7 @@ export async function GET() {
     // Default layout pre nových používateľov
     const defaultWidgets = [
       "hot-deals",
+      "property-matches",
       "economic-indicators",
       "analytics-cards",
       "market-overview",

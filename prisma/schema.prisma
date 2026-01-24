@@ -52,6 +52,14 @@ enum ListingType {
   PRENAJOM  // Rent
 }
 
+enum PropertySource {
+  BAZOS         // reality.bazos.sk
+  NEHNUTELNOSTI // nehnutelnosti.sk
+  REALITY       // reality.sk
+  TOPREALITY    // topreality.sk
+  MANUAL        // Manuálne pridané
+}
+
 enum PortfolioPropertyStatus {
   OWNED        // Vlastnená
   SOLD         // Predaná
@@ -143,6 +151,8 @@ model VerificationToken {
 model Property {
   id                String            @id @default(cuid())
   slug              String            @unique
+  external_id       String?           // ID z pôvodného portálu
+  source            PropertySource    @default(BAZOS) // Zdroj inzerátu
   title             String
   description       String?          @db.Text
   city              SlovakCity
@@ -163,6 +173,9 @@ model Property {
   is_distressed     Boolean          @default(false)
   days_on_market    Int              @default(0) // Počet dní v ponuke
   first_listed_at   DateTime?        // Kedy bol prvýkrát zverejnený
+  
+  @@index([source, external_id])
+  @@index([source, city])
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   userId            String?
@@ -360,6 +373,12 @@ model PropertyFingerprint {
   cityDistrict      String   // "BRATISLAVA-Staré Mesto"
   areaRange         String   // "50-60" (zaokrúhlené na desiatky)
   roomsRange        String?  // "2" alebo "2-3"
+  priceRange        String?  // "100000-150000" (zaokrúhlené)
+  floorRange        String?  // "1-3" alebo "4+"
+  
+  // Textové patterny pre AI matching
+  titleNormalized   String?  // Normalizovaný názov
+  descriptionHash   String?  // Hash z prvých 500 znakov popisu
   
   // Hash pre rýchle porovnanie
   fingerprintHash   String   // MD5 hash z normalizovaných hodnôt
@@ -369,6 +388,7 @@ model PropertyFingerprint {
   
   @@index([fingerprintHash])
   @@index([cityDistrict, areaRange])
+  @@index([cityDistrict, priceRange])
 }
 
 // Prepojenie duplicitných/rovnakých nehnuteľností

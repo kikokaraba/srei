@@ -18,6 +18,7 @@ import {
   Brain,
   Menu,
   X,
+  Scale,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 
@@ -25,6 +26,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Portfólio", href: "/dashboard/portfolio", icon: Briefcase },
   { name: "Nehnuteľnosti", href: "/dashboard/properties", icon: Filter },
+  { name: "Porovnanie cien", href: "/dashboard/matches", icon: Scale },
   { name: "AI Predikcie", href: "/dashboard/predictions", icon: Brain },
   { name: "Heatmapa", href: "/dashboard/heatmap", icon: Map },
   { name: "Sledované", href: "/dashboard/saved", icon: Bookmark },
