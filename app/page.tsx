@@ -9,10 +9,10 @@ import { LiveDataIndicator } from "@/components/landing/LiveDataIndicator";
 import { CompetitiveAdvantage } from "@/components/landing/CompetitiveAdvantage";
 
 // Lazy load heavy components for better initial load performance
-// HeroMap is already a client component, so it will be rendered client-side automatically
-const HeroMap = dynamic(
-  () => import("@/components/landing/HeroMap").then((mod) => ({ default: mod.HeroMap })),
+const LandingMap = dynamic(
+  () => import("@/components/landing/LandingMap").then((mod) => ({ default: mod.LandingMap })),
   {
+    ssr: false,
     loading: () => (
       <div className="py-24 bg-gradient-to-b from-slate-950 to-slate-900">
         <div className="container mx-auto px-6">
@@ -70,7 +70,7 @@ export default function HomePage() {
       <LandingHero />
       <Stats />
       <section id="map" aria-label="Interaktívna mapa Slovenska">
-        <HeroMap />
+        <LandingMap />
       </section>
       <section id="features" aria-label="Funkcie platformy">
         <Features />
