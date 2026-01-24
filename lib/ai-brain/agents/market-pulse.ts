@@ -450,8 +450,8 @@ ${avgPriceChange > 0
 // ============================================
 
 export const marketPulseAgent = {
-  type: AGENT_TYPE as const,
+  type: AGENT_TYPE,
   name: "Market Pulse",
   description: "Analyzuje trh a generuje insights o cenových trendoch, hot deals a predikciách",
   run: runMarketPulseAnalysis,
-};
+} as const;

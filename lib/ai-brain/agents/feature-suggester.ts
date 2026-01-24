@@ -418,8 +418,8 @@ async function identifyUnderutilizedFeatures(): Promise<AIInsight[]> {
 // ============================================
 
 export const featureSuggesterAgent = {
-  type: AGENT_TYPE as const,
+  type: AGENT_TYPE,
   name: "Feature Suggester",
   description: "Analyzuje správanie a navrhuje nové funkcie",
   run: runFeatureSuggesterAnalysis,
-};
+} as const;

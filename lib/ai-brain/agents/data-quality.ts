@@ -410,8 +410,8 @@ async function generateQualityReport(): Promise<AIInsight | null> {
 // ============================================
 
 export const dataQualityAgent = {
-  type: AGENT_TYPE as const,
+  type: AGENT_TYPE,
   name: "Data Quality Monitor",
   description: "Monitoruje kvalitu dát a identifikuje problémy",
   run: runDataQualityAnalysis,
-};
+} as const;
