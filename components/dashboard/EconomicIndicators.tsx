@@ -3,15 +3,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { 
   TrendingUp, 
-  TrendingDown, 
   Percent, 
   Users, 
   Banknote, 
-  Building, 
   Home,
-  ArrowUpRight,
-  ArrowDownRight,
-  Minus
+  ArrowUp,
+  ArrowDown,
+  Flame,
+  Coins
 } from "lucide-react";
 
 interface MarketSummary {
@@ -42,7 +41,6 @@ async function fetchMarketSummary(): Promise<MarketResponse> {
   return res.json();
 }
 
-// Mapovanie miest na slovenské názvy
 const CITY_NAMES: Record<string, string> = {
   BRATISLAVA: "Bratislava",
   KOSICE: "Košice",
@@ -58,17 +56,19 @@ export function EconomicIndicators() {
   const { data, isLoading } = useQuery({
     queryKey: ["market-summary"],
     queryFn: fetchMarketSummary,
-    refetchInterval: 10 * 60 * 1000, // Refresh every 10 minutes
+    refetchInterval: 10 * 60 * 1000,
   });
 
   if (isLoading) {
     return (
-      <div className="glass-card rounded-2xl p-6">
-        <div className="h-6 bg-slate-800 rounded w-48 mb-6 animate-pulse"></div>
-        <div className="grid grid-cols-2 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-20 bg-slate-800 rounded-xl animate-pulse"></div>
-          ))}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/20 p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-slate-800/50 rounded-lg w-2/3"></div>
+          <div className="grid grid-cols-2 gap-3">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-24 bg-slate-800/30 rounded-xl" />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -79,135 +79,163 @@ export function EconomicIndicators() {
 
   const indicators = [
     {
-      label: "Priemerná cena/m²",
-      value: `€${summary.nationalAvgPrice.toLocaleString()}`,
+      label: "Cena/m²",
+      value: summary.nationalAvgPrice,
+      format: (v: number) => `€${v.toLocaleString()}`,
       change: summary.nationalPriceChange,
       icon: Home,
-      color: "emerald",
+      gradient: "from-emerald-500 to-teal-500",
+      bg: "from-emerald-500/10 to-teal-500/10",
     },
     {
-      label: "Priemerný výnos",
-      value: `${summary.avgYield}%`,
-      change: null,
+      label: "Výnos",
+      value: summary.avgYield,
+      format: (v: number) => `${v}%`,
       icon: Percent,
-      color: "gold",
+      gradient: "from-amber-500 to-orange-500",
+      bg: "from-amber-500/10 to-orange-500/10",
     },
     {
-      label: "Aktívne ponuky",
-      value: summary.totalListings.toLocaleString(),
-      change: null,
-      icon: Building,
-      color: "slate",
-    },
-    {
-      label: "Rast HDP",
-      value: `${summary.economicIndicators.gdpGrowth}%`,
-      change: null,
+      label: "HDP",
+      value: summary.economicIndicators.gdpGrowth,
+      format: (v: number) => `${v > 0 ? "+" : ""}${v}%`,
       icon: TrendingUp,
-      color: summary.economicIndicators.gdpGrowth > 0 ? "emerald" : "red",
+      gradient: summary.economicIndicators.gdpGrowth > 0 
+        ? "from-emerald-500 to-green-500" 
+        : "from-red-500 to-rose-500",
+      bg: summary.economicIndicators.gdpGrowth > 0 
+        ? "from-emerald-500/10 to-green-500/10" 
+        : "from-red-500/10 to-rose-500/10",
     },
     {
       label: "Inflácia",
-      value: `${summary.economicIndicators.inflation}%`,
-      change: null,
+      value: summary.economicIndicators.inflation,
+      format: (v: number) => `${v}%`,
       icon: Banknote,
-      color: summary.economicIndicators.inflation > 5 ? "amber" : "emerald",
-    },
-    {
-      label: "Nezamestnanosť",
-      value: `${summary.economicIndicators.unemployment}%`,
-      change: null,
-      icon: Users,
-      color: summary.economicIndicators.unemployment < 6 ? "emerald" : "amber",
+      gradient: summary.economicIndicators.inflation > 5 
+        ? "from-red-500 to-rose-500" 
+        : "from-blue-500 to-cyan-500",
+      bg: summary.economicIndicators.inflation > 5 
+        ? "from-red-500/10 to-rose-500/10" 
+        : "from-blue-500/10 to-cyan-500/10",
     },
   ];
 
   return (
-    <div className="glass-card rounded-2xl p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/20 flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-gold-400" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">Ekonomické ukazovatele</h2>
-            <p className="text-xs text-slate-400">Slovensko Q3 2025 (posledné dostupné)</p>
-          </div>
-        </div>
-        <div className="text-right">
-          <p className="text-xs text-slate-500">Hypotekárna sadzba</p>
-          <p className="text-lg font-bold text-amber-400">
-            {summary.economicIndicators.mortgageRate}%
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {indicators.map((indicator, index) => {
-          const Icon = indicator.icon;
-          const colorClasses = {
-            emerald: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-            gold: "bg-gold-500/10 border-gold-500/20 text-gold-400",
-            amber: "bg-amber-500/10 border-amber-500/20 text-amber-400",
-            red: "bg-red-500/10 border-red-500/20 text-red-400",
-            slate: "bg-slate-700/50 border-slate-600 text-slate-400",
-          };
-          const colors = colorClasses[indicator.color as keyof typeof colorClasses];
-          
-          return (
-            <div
-              key={index}
-              className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <div className={`w-7 h-7 rounded-lg ${colors} border flex items-center justify-center`}>
-                  <Icon className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-xs text-slate-400">{indicator.label}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-lg font-bold text-white">{indicator.value}</span>
-                {indicator.change !== null && (
-                  <span className={`text-xs font-medium flex items-center gap-0.5 ${
-                    indicator.change > 0 ? "text-emerald-400" : indicator.change < 0 ? "text-red-400" : "text-slate-400"
-                  }`}>
-                    {indicator.change > 0 ? (
-                      <ArrowUpRight className="w-3 h-3" />
-                    ) : indicator.change < 0 ? (
-                      <ArrowDownRight className="w-3 h-3" />
-                    ) : (
-                      <Minus className="w-3 h-3" />
-                    )}
-                    {Math.abs(indicator.change)}%
-                  </span>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Hottest & Cheapest cities */}
-      <div className="mt-4 pt-4 border-t border-slate-700/50 grid grid-cols-2 gap-4">
-        <div className="bg-emerald-500/5 rounded-xl p-3 border border-emerald-500/20">
-          <p className="text-xs text-emerald-400 mb-1">🔥 Najhorúcejšie mesto</p>
-          <p className="text-lg font-bold text-white">
-            {CITY_NAMES[summary.hottest] || summary.hottest}
-          </p>
-          <p className="text-xs text-slate-400">Najvyšší dopyt</p>
-        </div>
-        <div className="bg-gold-500/5 rounded-xl p-3 border border-gold-500/20">
-          <p className="text-xs text-gold-400 mb-1">💰 Najlacnejšie mesto</p>
-          <p className="text-lg font-bold text-white">
-            {CITY_NAMES[summary.cheapest] || summary.cheapest}
-          </p>
-          <p className="text-xs text-slate-400">Najnižšie ceny</p>
-        </div>
-      </div>
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/20">
+      {/* Ambient glow */}
+      <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 bg-amber-500" />
+      <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full blur-3xl opacity-10 bg-orange-500" />
       
-      <p className="text-xs text-slate-500 mt-4 text-center">
-        Zdroj: NBS, Štatistický úrad SR • Aktualizované: {new Date(data?.updatedAt || Date.now()).toLocaleDateString("sk-SK")}
-      </p>
+      <div className="relative p-6">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <TrendingUp className="w-5 h-5 text-amber-400" />
+              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                Ekonomika
+              </span>
+            </div>
+            <h3 className="text-2xl font-bold text-white">
+              Ukazovatele
+            </h3>
+          </div>
+          
+          {/* Mortgage rate highlight */}
+          <div className="text-right">
+            <p className="text-xs text-slate-500 mb-0.5">Hypotéka</p>
+            <p className="text-2xl font-bold text-amber-400 tabular-nums">
+              {summary.economicIndicators.mortgageRate}%
+            </p>
+          </div>
+        </div>
+
+        {/* Indicators Grid */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          {indicators.map((indicator, index) => {
+            const Icon = indicator.icon;
+            const isPositive = indicator.change ? indicator.change > 0 : undefined;
+            
+            return (
+              <div
+                key={index}
+                className={`relative overflow-hidden p-4 rounded-xl bg-gradient-to-br ${indicator.bg} 
+                            border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300`}
+              >
+                {/* Icon */}
+                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${indicator.gradient} 
+                                flex items-center justify-center mb-3 shadow-lg`}>
+                  <Icon className="w-4 h-4 text-white" />
+                </div>
+                
+                {/* Value */}
+                <p className="text-2xl font-bold text-white tabular-nums">
+                  {indicator.format(indicator.value)}
+                </p>
+                
+                {/* Label & Change */}
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-xs text-slate-400">{indicator.label}</span>
+                  {isPositive !== undefined && (
+                    <span className={`flex items-center gap-0.5 text-xs font-medium ${
+                      isPositive ? "text-emerald-400" : "text-red-400"
+                    }`}>
+                      {isPositive ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
+                      {Math.abs(indicator.change!)}%
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Hottest & Cheapest */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-4 rounded-xl bg-gradient-to-br from-orange-500/10 to-red-500/10 
+                          border border-orange-500/20 hover:border-orange-500/40 transition-colors">
+            <div className="flex items-center gap-2 mb-2">
+              <Flame className="w-4 h-4 text-orange-400" />
+              <span className="text-xs text-orange-400">Najhorúcejšie</span>
+            </div>
+            <p className="text-lg font-bold text-white">
+              {CITY_NAMES[summary.hottest] || summary.hottest}
+            </p>
+          </div>
+          
+          <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-green-500/10 
+                          border border-emerald-500/20 hover:border-emerald-500/40 transition-colors">
+            <div className="flex items-center gap-2 mb-2">
+              <Coins className="w-4 h-4 text-emerald-400" />
+              <span className="text-xs text-emerald-400">Najlacnejšie</span>
+            </div>
+            <p className="text-lg font-bold text-white">
+              {CITY_NAMES[summary.cheapest] || summary.cheapest}
+            </p>
+          </div>
+        </div>
+
+        {/* Unemployment & Listings */}
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-800/50">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-slate-500" />
+            <span className="text-sm text-slate-400">
+              Nezamestnanosť: <span className="text-white font-semibold">{summary.economicIndicators.unemployment}%</span>
+            </span>
+          </div>
+          <div className="text-sm text-slate-400">
+            <span className="text-white font-semibold">{summary.totalListings.toLocaleString()}</span> ponúk
+          </div>
+        </div>
+        
+        {/* Source */}
+        <div className="flex items-center justify-center gap-2 mt-4 text-xs text-slate-600">
+          <span>NBS + ŠÚ SR</span>
+          <span>•</span>
+          <span>Q3 2025</span>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { Clock, TrendingDown, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
-import Link from "next/link";
+import { Clock, TrendingDown, TrendingUp, AlertTriangle, ArrowRight, Timer } from "lucide-react";
 
 interface PriceChange {
   price_diff: number;
@@ -24,29 +23,22 @@ interface LiquidityData {
 export function LiquidityTracker() {
   const [properties, setProperties] = useState<LiquidityData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const fetchLiquidityData = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch("/api/v1/liquidity");
-      
       if (!response.ok) {
-        // Ak je 401, používateľ nie je prihlásený - to nie je chyba
         if (response.status === 401) {
           setProperties([]);
-          setError(null);
           return;
         }
-        throw new Error("Failed to fetch liquidity data");
+        throw new Error("Failed to fetch");
       }
-      
       const data = await response.json();
       setProperties(data.data || []);
-      setError(null);
     } catch (err) {
-      console.error("Error fetching liquidity data:", err);
-      setError("Nepodarilo sa načítať liquidity dáta");
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -56,40 +48,31 @@ export function LiquidityTracker() {
     fetchLiquidityData();
   }, [fetchLiquidityData]);
 
-  const formatDays = useCallback((days: number): string => {
-    if (days === 1) return "1 deň";
-    if (days < 5) return `${days} dni`;
-    if (days < 365) return `${days} dní`;
-    const years = Math.floor(days / 365);
-    const remainingDays = days % 365;
-    if (remainingDays === 0) {
-      return years === 1 ? "1 rok" : `${years} rokov`;
-    }
-    return `${years} ${years === 1 ? "rok" : "rokov"} ${remainingDays} ${remainingDays === 1 ? "deň" : "dní"}`;
-  }, []);
-
-  // Zoradiť podľa dní v ponuke (najdlhšie prvé) - musí byť pred early returns
   const sortedProperties = useMemo(() => {
     return [...properties].sort((a, b) => b.days_on_market - a.days_on_market);
   }, [properties]);
 
+  const getDaysColor = (days: number) => {
+    if (days >= 180) return "text-red-400";
+    if (days >= 90) return "text-amber-400";
+    return "text-slate-400";
+  };
+
+  const getDaysLabel = (days: number) => {
+    if (days >= 365) return `${Math.floor(days / 365)}r ${days % 365}d`;
+    return `${days}d`;
+  };
+
   if (loading) {
     return (
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-rose-950/20 p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-slate-800 rounded w-1/3"></div>
-          <div className="h-32 bg-slate-800 rounded"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-        <div className="text-red-400 flex items-center gap-2">
-          <AlertCircle className="w-5 h-5" />
-          <span>{error}</span>
+          <div className="h-8 bg-slate-800/50 rounded-lg w-2/3"></div>
+          <div className="space-y-3">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-20 bg-slate-800/30 rounded-xl" />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -97,137 +80,114 @@ export function LiquidityTracker() {
 
   if (properties.length === 0) {
     return (
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-rose-500/10 rounded-lg">
-            <Clock className="w-6 h-6 text-rose-400" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-slate-100">Čas na trhu</h3>
-            <p className="text-sm text-slate-400">Sledovanie dní v ponuke a zmien cien</p>
-          </div>
-        </div>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-rose-950/20 p-6">
         <div className="text-center py-8">
-          <p className="text-slate-400">Momentálne nie sú k dispozícii žiadne dáta.</p>
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-rose-500/10 flex items-center justify-center">
+            <Timer className="w-8 h-8 text-rose-400" />
+          </div>
+          <p className="text-slate-400 font-medium">Žiadne dlhodobé ponuky</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-rose-500/10 rounded-lg">
-            <Clock className="w-6 h-6 text-rose-400" />
-          </div>
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-rose-950/20">
+      {/* Ambient glow */}
+      <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 bg-rose-500" />
+      
+      <div className="relative p-6">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-6">
           <div>
-            <h3 className="text-xl font-bold text-slate-100">Čas na trhu</h3>
-            <p className="text-sm text-slate-400">
-              {properties.length} {properties.length === 1 ? "nehnuteľnosť" : "nehnuteľností"} v ponuke viac ako 60 dní
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={fetchLiquidityData}
-          className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors"
-          title="Obnoviť dáta"
-        >
-          <RefreshCw className="w-5 h-5" />
-        </button>
-      </div>
-
-      <div className="space-y-3">
-        {sortedProperties.slice(0, 10).map((property) => (
-          <div
-            key={property.propertyId}
-            className="bg-slate-800/50 rounded-lg border border-slate-700 p-4 hover:border-rose-500/40 transition-all"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <h4 className="text-base font-semibold text-slate-100 mb-1 truncate">
-                  {property.title}
-                </h4>
-                <p className="text-sm text-slate-400 mb-3 truncate">
-                  {property.address}
-                  {property.city && ` • ${property.city}`}
-                </p>
-
-                {/* Stopky - dni v ponuke */}
-                <div className="flex items-center gap-4 mb-2">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-rose-400" />
-                    <span className="text-sm font-medium text-slate-300">
-                      V ponuke: <span className="text-rose-400">{formatDays(property.days_on_market)}</span>
-                    </span>
-                  </div>
-                </div>
-
-                {/* Zmena ceny */}
-                {property.price_change && (
-                  <div className="flex items-center gap-2 mt-2">
-                    {property.price_change.price_diff < 0 ? (
-                      <TrendingDown className="w-4 h-4 text-emerald-400" />
-                    ) : property.price_change.price_diff > 0 ? (
-                      <TrendingUp className="w-4 h-4 text-rose-400" />
-                    ) : null}
-                    <span className="text-xs text-slate-400">
-                      Cena{" "}
-                      {property.price_change.price_diff < 0 ? (
-                        <span className="text-emerald-400 font-semibold">
-                          klesla pred {property.price_change.days_since_change}{" "}
-                          {property.price_change.days_since_change === 1 ? "dňom" : "dňami"} o{" "}
-                          {Math.abs(property.price_change.price_diff_percent).toFixed(1)}%
-                        </span>
-                      ) : property.price_change.price_diff > 0 ? (
-                        <span className="text-rose-400 font-semibold">
-                          stúpla pred {property.price_change.days_since_change}{" "}
-                          {property.price_change.days_since_change === 1 ? "dňom" : "dňami"} o{" "}
-                          {property.price_change.price_diff_percent.toFixed(1)}%
-                        </span>
-                      ) : (
-                        <span className="text-slate-500">nezmenila sa</span>
-                      )}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div className="text-right flex-shrink-0">
-                <p className="text-lg font-bold text-slate-100 mb-1">
-                  {property.current_price.toLocaleString("sk-SK")} €
-                </p>
-                <Link
-                  href={`/dashboard/properties/${property.propertyId}`}
-                  className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
-                >
-                  Zobraziť detail →
-                </Link>
-              </div>
+            <div className="flex items-center gap-2 mb-1">
+              <Clock className="w-5 h-5 text-rose-400" />
+              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                Čas na trhu
+              </span>
             </div>
+            <h3 className="text-2xl font-bold text-white">
+              Dlhodobé ponuky
+            </h3>
+          </div>
+          
+          <div className="px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/30">
+            <span className="text-sm font-bold text-rose-400">{properties.length}</span>
+            <span className="text-xs text-slate-400 ml-1">60+ dní</span>
+          </div>
+        </div>
 
-            {/* Indikátor zúfalosti (čím dlhšie v ponuke, tým viac zúfalý) */}
-            {property.days_on_market >= 90 && (
-              <div className="mt-3 pt-3 border-t border-slate-700">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-rose-400" />
-                  <span className="text-xs text-rose-400 font-medium">
-                    Vysoký potenciál na vyjednávanie - nehnuteľnosť je v ponuke viac ako 3 mesiace
-                  </span>
+        {/* Properties List */}
+        <div className="space-y-2">
+          {sortedProperties.slice(0, 5).map((property) => (
+            <div
+              key={property.propertyId}
+              className="group relative p-4 rounded-xl bg-slate-800/30 backdrop-blur-sm border border-slate-700/50 
+                         hover:border-rose-500/40 hover:bg-slate-800/50 transition-all duration-300"
+            >
+              <div className="flex items-center justify-between gap-4">
+                {/* Left - Days indicator */}
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-xl bg-slate-800 flex flex-col items-center justify-center ${
+                    property.days_on_market >= 90 ? "border-2 border-rose-500/50" : ""
+                  }`}>
+                    <span className={`text-lg font-bold ${getDaysColor(property.days_on_market)}`}>
+                      {getDaysLabel(property.days_on_market)}
+                    </span>
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-white truncate text-sm">
+                      {property.title}
+                    </h4>
+                    <p className="text-xs text-slate-500 truncate">
+                      {property.address}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Right - Price & Change */}
+                <div className="text-right flex-shrink-0">
+                  <p className="text-lg font-bold text-white tabular-nums">
+                    {(property.current_price / 1000).toFixed(0)}k €
+                  </p>
+                  
+                  {property.price_change && (
+                    <div className={`flex items-center justify-end gap-1 text-xs ${
+                      property.price_change.price_diff < 0 ? "text-emerald-400" : "text-rose-400"
+                    }`}>
+                      {property.price_change.price_diff < 0 ? (
+                        <TrendingDown className="w-3 h-3" />
+                      ) : (
+                        <TrendingUp className="w-3 h-3" />
+                      )}
+                      <span>{Math.abs(property.price_change.price_diff_percent).toFixed(0)}%</span>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {properties.length > 10 && (
-        <div className="mt-4 text-center">
-          <button className="text-sm text-slate-400 hover:text-slate-300 transition-colors">
-            Zobraziť všetkých {properties.length} nehnuteľností →
-          </button>
+              
+              {/* Negotiation indicator */}
+              {property.days_on_market >= 90 && (
+                <div className="mt-3 pt-2 border-t border-slate-700/50 flex items-center gap-2">
+                  <AlertTriangle className="w-3 h-3 text-amber-400" />
+                  <span className="text-xs text-amber-400">Vysoký potenciál vyjednávania</span>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
-      )}
+        
+        {/* Footer */}
+        {properties.length > 5 && (
+          <button className="w-full mt-4 py-3 flex items-center justify-center gap-2 text-sm font-medium 
+                             text-rose-400 hover:text-rose-300 transition-colors rounded-xl 
+                             bg-slate-800/30 hover:bg-slate-800/50 border border-slate-700/50">
+            Zobraziť všetkých {properties.length}
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, DollarSign, MapPin } from "lucide-react";
+import { TrendingUp, Building2, MapPin, Percent, ArrowUp, ArrowDown, Sparkles } from "lucide-react";
 
 interface AnalyticsData {
   city: string;
@@ -34,101 +34,104 @@ export function AnalyticsCards() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[...Array(4)].map((_, i) => (
-          <div
-            key={i}
-            className="bg-slate-900 rounded-lg border border-slate-800 p-3 sm:p-4 lg:p-6 animate-pulse"
-          >
-            <div className="h-3 sm:h-4 bg-slate-800 rounded w-16 sm:w-24 mb-3 sm:mb-4"></div>
-            <div className="h-6 sm:h-8 bg-slate-800 rounded w-20 sm:w-32"></div>
-          </div>
+          <div key={i} className="h-28 rounded-2xl bg-slate-800/30 animate-pulse" />
         ))}
       </div>
     );
   }
 
   const analytics: AnalyticsData[] = data?.data || [];
-  const bratislava = analytics.find((a) => a.city === "BRATISLAVA");
-  const nitra = analytics.find((a) => a.city === "NITRA");
+  const bratislava = analytics.find((a) => a.city === "BRATISLAVA" || a.city === "Bratislava");
+  const bestYield = analytics.reduce((best, current) => 
+    current.yield_benchmark > (best?.yield_benchmark || 0) ? current : best
+  , analytics[0]);
 
-  const avgYield =
-    analytics.length > 0
-      ? analytics.reduce((sum, a) => sum + a.yield_benchmark, 0) /
-        analytics.length
-      : 0;
+  const avgYield = analytics.length > 0
+    ? analytics.reduce((sum, a) => sum + a.yield_benchmark, 0) / analytics.length
+    : 0;
 
-  const totalProperties = analytics.reduce(
-    (sum, a) => sum + (a.properties_count || 0),
-    0
-  );
+  const totalProperties = analytics.reduce((sum, a) => sum + (a.properties_count || 0), 0);
 
   const cards = [
     {
-      title: "Priemerný výnos",
-      value: `${avgYield.toFixed(2)}%`,
-      icon: TrendingUp,
-      change: "+0.3%",
-      trend: "up",
-      color: "emerald",
+      title: "Priem. výnos",
+      value: `${avgYield.toFixed(1)}%`,
+      change: 0.3,
+      gradient: "from-emerald-500 to-teal-500",
+      bgGlow: "bg-emerald-500",
+      icon: Percent,
     },
     {
-      title: "Celkom nehnuteľností",
+      title: "Nehnuteľností",
       value: totalProperties.toLocaleString(),
+      change: 127,
+      isCount: true,
+      gradient: "from-violet-500 to-purple-500",
+      bgGlow: "bg-violet-500",
+      icon: Building2,
+    },
+    {
+      title: "BA cena/m²",
+      value: `€${(bratislava?.avg_price_m2 || 0).toLocaleString()}`,
+      gradient: "from-blue-500 to-cyan-500",
+      bgGlow: "bg-blue-500",
       icon: MapPin,
-      change: "+127",
-      trend: "up",
-      color: "gold",
     },
     {
-      title: "Priemerná cena Bratislava",
-      value: `€${bratislava?.avg_price_m2.toLocaleString() || 0}/m²`,
-      icon: DollarSign,
-      change: "Stabilná",
-      trend: "neutral",
-      color: "slate",
-    },
-    {
-      title: "Mesto s najvyšším výnosom",
-      value: nitra?.city || "N/A",
+      title: "Top výnos",
+      value: bestYield?.city?.replace("BANSKA_BYSTRICA", "B.B.") || "N/A",
+      subtitle: `${bestYield?.yield_benchmark?.toFixed(1) || 0}%`,
+      gradient: "from-amber-500 to-orange-500",
+      bgGlow: "bg-amber-500",
       icon: TrendingUp,
-      change: `${nitra?.yield_benchmark.toFixed(1)}%`,
-      trend: "up",
-      color: "emerald",
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {cards.map((card, index) => {
         const Icon = card.icon;
-        const colorClasses = {
-          emerald: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
-          gold: "text-gold-400 bg-gold-400/10 border-gold-400/20",
-          slate: "text-slate-400 bg-slate-800 border-slate-700",
-        };
-
+        
         return (
           <div
             key={index}
-            className={`bg-slate-900 rounded-lg border ${colorClasses[card.color as keyof typeof colorClasses]} p-3 sm:p-4 lg:p-6`}
+            className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 p-4"
           >
-            <div className="flex items-center justify-between mb-2 sm:mb-3 lg:mb-4">
-              <div className={`p-1.5 sm:p-2 rounded-lg ${colorClasses[card.color as keyof typeof colorClasses]}`}>
-                <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+            {/* Ambient glow */}
+            <div className={`absolute -top-12 -right-12 w-24 h-24 rounded-full blur-2xl opacity-20 ${card.bgGlow}`} />
+            
+            <div className="relative">
+              {/* Icon */}
+              <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center mb-3 shadow-lg`}>
+                <Icon className="w-4 h-4 text-white" />
               </div>
-              {card.trend === "up" && (
-                <span className="text-[10px] sm:text-xs text-emerald-400 flex items-center gap-0.5 sm:gap-1">
-                  <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                  <span className="hidden sm:inline">{card.change}</span>
-                </span>
-              )}
-              {card.trend === "neutral" && (
-                <span className="text-[10px] sm:text-xs text-slate-400 hidden sm:block">{card.change}</span>
-              )}
+              
+              {/* Value */}
+              <p className="text-2xl font-bold text-white tabular-nums mb-0.5">
+                {card.value}
+              </p>
+              
+              {/* Title & Change */}
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-slate-400">{card.title}</span>
+                {card.change !== undefined && (
+                  <span className={`flex items-center gap-0.5 text-xs font-medium ${
+                    card.change > 0 ? "text-emerald-400" : "text-red-400"
+                  }`}>
+                    {card.change > 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
+                    {card.isCount ? `+${card.change}` : `${card.change}%`}
+                  </span>
+                )}
+                {card.subtitle && (
+                  <span className="flex items-center gap-1 text-xs font-medium text-amber-400">
+                    <Sparkles className="w-3 h-3" />
+                    {card.subtitle}
+                  </span>
+                )}
+              </div>
             </div>
-            <h3 className="text-xs sm:text-sm text-slate-400 mb-0.5 sm:mb-1 line-clamp-1">{card.title}</h3>
-            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-100 truncate">{card.value}</p>
           </div>
         );
       })}
