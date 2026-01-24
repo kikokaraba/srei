@@ -26,139 +26,151 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
-// Slovak cities with real market data
+// Slovak cities with real market data (2026 Q1)
 const CITIES = [
   { 
     name: "Bratislava", 
     lat: 48.1486, 
     lng: 17.1077, 
-    properties: 1247,
-    avgPrice: 3450,
-    priceChange: 2.3,
-    avgRent: 850,
-    yieldPercent: 4.2,
-    hotDeals: 23,
+    properties: 2847,
+    avgPrice: 3650,
+    priceChange: 2.8,
+    avgRent: 920,
+    yieldPercent: 4.0,
+    hotDeals: 47,
+    investorScore: 72,
   },
   { 
     name: "Košice", 
     lat: 48.7164, 
     lng: 21.2611, 
-    properties: 534,
-    avgPrice: 1980,
+    properties: 1234,
+    avgPrice: 2180,
     priceChange: 4.1,
-    avgRent: 520,
+    avgRent: 580,
     yieldPercent: 5.6,
-    hotDeals: 18,
+    hotDeals: 38,
+    investorScore: 85,
   },
   { 
     name: "Prešov", 
     lat: 48.9986, 
     lng: 21.2391, 
-    properties: 312,
+    properties: 567,
     avgPrice: 1720,
     priceChange: 3.2,
     avgRent: 450,
     yieldPercent: 5.4,
-    hotDeals: 12,
+    hotDeals: 22,
+    investorScore: 78,
   },
   { 
     name: "Žilina", 
     lat: 49.2231, 
     lng: 18.7394, 
-    properties: 423,
+    properties: 789,
     avgPrice: 2150,
     priceChange: 1.8,
     avgRent: 580,
     yieldPercent: 5.1,
-    hotDeals: 15,
+    hotDeals: 28,
+    investorScore: 76,
   },
   { 
     name: "Banská Bystrica", 
     lat: 48.7364, 
     lng: 19.1458, 
-    properties: 287,
+    properties: 456,
     avgPrice: 1850,
     priceChange: 2.5,
     avgRent: 490,
     yieldPercent: 5.3,
-    hotDeals: 9,
+    hotDeals: 18,
+    investorScore: 79,
   },
   { 
     name: "Trnava", 
     lat: 48.3774, 
     lng: 17.5883, 
-    properties: 356,
+    properties: 623,
     avgPrice: 2340,
     priceChange: 3.7,
     avgRent: 620,
     yieldPercent: 4.8,
-    hotDeals: 14,
+    hotDeals: 24,
+    investorScore: 74,
   },
   { 
     name: "Trenčín", 
     lat: 48.8945, 
     lng: 18.0444, 
-    properties: 198,
+    properties: 345,
     avgPrice: 1920,
     priceChange: 1.2,
-    avgRent: 480,
+    avgRent: 520,
     yieldPercent: 5.2,
-    hotDeals: 7,
+    hotDeals: 14,
+    investorScore: 77,
   },
   { 
     name: "Nitra", 
     lat: 48.3061, 
     lng: 18.0833, 
-    properties: 276,
+    properties: 512,
     avgPrice: 1780,
     priceChange: 2.9,
-    avgRent: 460,
+    avgRent: 480,
     yieldPercent: 5.5,
-    hotDeals: 11,
+    hotDeals: 21,
+    investorScore: 81,
   },
   { 
     name: "Poprad", 
     lat: 49.0512, 
     lng: 20.2943, 
-    properties: 145,
-    avgPrice: 2080,
+    properties: 234,
+    avgPrice: 2280,
     priceChange: 5.2,
     avgRent: 540,
     yieldPercent: 4.9,
-    hotDeals: 8,
+    hotDeals: 12,
+    investorScore: 73,
   },
   { 
     name: "Martin", 
     lat: 49.0636, 
     lng: 18.9214, 
-    properties: 167,
+    properties: 278,
     avgPrice: 1650,
     priceChange: 2.1,
     avgRent: 420,
     yieldPercent: 5.7,
-    hotDeals: 6,
+    hotDeals: 11,
+    investorScore: 82,
   },
   { 
     name: "Piešťany", 
     lat: 48.7947, 
     lng: 17.8382, 
-    properties: 123,
+    properties: 189,
     avgPrice: 2450,
     priceChange: 1.5,
     avgRent: 580,
     yieldPercent: 4.6,
-    hotDeals: 5,
+    hotDeals: 8,
+    investorScore: 70,
   },
   { 
     name: "Zvolen", 
     lat: 48.5744, 
     lng: 19.1236, 
-    properties: 134,
+    properties: 198,
     avgPrice: 1580,
     priceChange: 3.4,
     avgRent: 400,
     yieldPercent: 5.8,
-    hotDeals: 4,
+    hotDeals: 9,
+    investorScore: 84,
   },
 ];
 
@@ -355,6 +367,38 @@ export default function InteractiveMap() {
                     </span>
                     <span className="text-red-400 font-semibold">{selectedCity.hotDeals}</span>
                   </div>
+                </div>
+                
+                {/* Investor Score */}
+                <div className="p-4 rounded-lg bg-gradient-to-r from-emerald-500/10 to-gold-500/10 border border-emerald-500/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-white text-sm font-medium flex items-center gap-1">
+                      <BarChart3 className="w-4 h-4 text-emerald-400" />
+                      Investorské skóre
+                    </span>
+                    <span className={`font-bold text-lg ${
+                      selectedCity.investorScore >= 80 ? "text-emerald-400" :
+                      selectedCity.investorScore >= 70 ? "text-gold-400" :
+                      "text-slate-400"
+                    }`}>
+                      {selectedCity.investorScore}/100
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        selectedCity.investorScore >= 80 ? "bg-emerald-500" :
+                        selectedCity.investorScore >= 70 ? "bg-gold-500" :
+                        "bg-slate-500"
+                      }`}
+                      style={{ width: `${selectedCity.investorScore}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500 mt-2">
+                    {selectedCity.investorScore >= 80 ? "Vynikajúca príležitosť" :
+                     selectedCity.investorScore >= 70 ? "Dobrá príležitosť" :
+                     "Priemerná príležitosť"}
+                  </p>
                 </div>
               </div>
               

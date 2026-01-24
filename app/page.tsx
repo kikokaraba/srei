@@ -6,6 +6,7 @@ import { Stats } from "@/components/landing/Stats";
 import { Pricing } from "@/components/landing/Pricing";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { LiveDataIndicator } from "@/components/landing/LiveDataIndicator";
+import { CompetitiveAdvantage } from "@/components/landing/CompetitiveAdvantage";
 
 // Lazy load heavy components for better initial load performance
 // HeroMap is already a client component, so it will be rendered client-side automatically
@@ -73,6 +74,9 @@ export default function HomePage() {
       </section>
       <section id="features" aria-label="Funkcie platformy">
         <Features />
+      </section>
+      <section id="why-sria" aria-label="Prečo SRIA">
+        <CompetitiveAdvantage />
       </section>
       <Testimonials />
       <Pricing />
