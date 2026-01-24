@@ -1,3 +1,5 @@
+import { PropertyList } from "@/components/dashboard/PropertyList";
+
 export default function PropertiesPage() {
   return (
     <div className="space-y-6">
@@ -10,11 +12,7 @@ export default function PropertiesPage() {
         </p>
       </div>
 
-      <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
-        <p className="text-slate-400">
-          Komponent inteligentných filtrov čoskoro...
-        </p>
-      </div>
+      <PropertyList />
     </div>
   );
 }

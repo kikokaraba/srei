@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma, SlovakCity, PropertyCondition, EnergyCertificate } from "@/generated/prisma/client";
 
 export async function GET(request: Request) {
   try {
@@ -18,112 +18,113 @@ export async function GET(request: Request) {
     const sortBy = searchParams.get("sortBy") || undefined;
     const sortOrder = searchParams.get("sortOrder") || "desc";
     const limit = parseInt(searchParams.get("limit") || "100", 10);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const skip = (page - 1) * limit;
 
-    // Načítaj preferencie používateľa
-    const preferences = await prisma.userPreferences.findUnique({
-      where: { userId: session.user.id },
-    });
+    // Priame filtre z query parametrov
+    const cityParam = searchParams.get("city");
+    const minPrice = searchParams.get("minPrice");
+    const maxPrice = searchParams.get("maxPrice");
+    const minArea = searchParams.get("minArea");
+    const maxArea = searchParams.get("maxArea");
+    const minRooms = searchParams.get("minRooms");
+    const maxRooms = searchParams.get("maxRooms");
+    const conditionParam = searchParams.get("condition");
+    const minYield = searchParams.get("minYield");
+    const maxYield = searchParams.get("maxYield");
+    const search = searchParams.get("search");
+    const onlyDistressed = searchParams.get("onlyDistressed") === "true";
+    const useUserPreferences = searchParams.get("usePreferences") === "true";
 
-    // Ak nie sú preferencie, vrátime všetky nehnuteľnosti s defaultnými filtrami
-    const usePreferences = preferences !== null;
+    // Načítaj preferencie používateľa len ak je to vyžiadané
+    const preferences = useUserPreferences
+      ? await prisma.userPreferences.findUnique({
+          where: { userId: session.user.id },
+        })
+      : null;
 
-    // Zostav filter na základe preferencií
+    // Zostav filter - prioritne z query parametrov, potom z preferencií
     const where: Prisma.PropertyWhereInput = {};
 
-    if (usePreferences && preferences) {
-      // Lokalita
-      if (preferences.trackedCities) {
-        const cities = JSON.parse(preferences.trackedCities);
-        if (cities.length > 0) {
-          where.city = { in: cities };
-        }
-      }
+    // Vyhľadávanie v názve a adrese
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { address: { contains: search, mode: "insensitive" } },
+        { district: { contains: search, mode: "insensitive" } },
+      ];
+    }
 
-      // Cena
-      if (preferences.minPrice || preferences.maxPrice) {
-        where.price = {};
-        if (preferences.minPrice) {
-          where.price.gte = preferences.minPrice;
-        }
-        if (preferences.maxPrice) {
-          where.price.lte = preferences.maxPrice;
-        }
+    // Mesto - prioritne z query, potom z preferencií
+    if (cityParam) {
+      // Podporuje viac miest oddelených čiarkou
+      const cities = cityParam.split(",").filter(Boolean) as SlovakCity[];
+      if (cities.length > 0) {
+        where.city = { in: cities };
       }
-
-      // Cena za m²
-      if (preferences.minPricePerM2 || preferences.maxPricePerM2) {
-        where.price_per_m2 = {};
-        if (preferences.minPricePerM2) {
-          where.price_per_m2.gte = preferences.minPricePerM2;
-        }
-        if (preferences.maxPricePerM2) {
-          where.price_per_m2.lte = preferences.maxPricePerM2;
-        }
-      }
-
-      // Plocha
-      if (preferences.minArea || preferences.maxArea) {
-        where.area_m2 = {};
-        if (preferences.minArea) {
-          where.area_m2.gte = preferences.minArea;
-        }
-        if (preferences.maxArea) {
-          where.area_m2.lte = preferences.maxArea;
-        }
-      }
-
-      // Izby
-      if (preferences.minRooms || preferences.maxRooms) {
-        where.rooms = {};
-        if (preferences.minRooms) {
-          where.rooms.gte = preferences.minRooms;
-        }
-        if (preferences.maxRooms) {
-          where.rooms.lte = preferences.maxRooms;
-        }
-      }
-
-      // Stav
-      if (preferences.condition) {
-        const conditions = JSON.parse(preferences.condition);
-        if (conditions.length > 0) {
-          where.condition = { in: conditions };
-        }
-      }
-
-      // Energetický certifikát
-      if (preferences.energyCertificates) {
-        const certs = JSON.parse(preferences.energyCertificates);
-        if (certs.length > 0) {
-          where.energy_certificate = { in: certs };
-        }
-      }
-
-      // Poschodie
-      if (preferences.minFloor || preferences.maxFloor) {
-        where.floor = {};
-        if (preferences.minFloor) {
-          where.floor.gte = preferences.minFloor;
-        }
-        if (preferences.maxFloor) {
-          where.floor.lte = preferences.maxFloor;
-        }
-      }
-
-      // Len nehnuteľnosti v núdzi
-      if (preferences.onlyDistressed) {
-        where.is_distressed = true;
-      }
-
-      // Dni v ponuke
-      if (preferences.maxDaysOnMarket) {
-        where.days_on_market = { lte: preferences.maxDaysOnMarket };
+    } else if (preferences?.trackedCities) {
+      const cities = JSON.parse(preferences.trackedCities);
+      if (cities.length > 0) {
+        where.city = { in: cities };
       }
     }
 
+    // Cena
+    if (minPrice || maxPrice) {
+      where.price = {};
+      if (minPrice) where.price.gte = parseFloat(minPrice);
+      if (maxPrice) where.price.lte = parseFloat(maxPrice);
+    } else if (preferences?.minPrice || preferences?.maxPrice) {
+      where.price = {};
+      if (preferences.minPrice) where.price.gte = preferences.minPrice;
+      if (preferences.maxPrice) where.price.lte = preferences.maxPrice;
+    }
+
+    // Plocha
+    if (minArea || maxArea) {
+      where.area_m2 = {};
+      if (minArea) where.area_m2.gte = parseFloat(minArea);
+      if (maxArea) where.area_m2.lte = parseFloat(maxArea);
+    } else if (preferences?.minArea || preferences?.maxArea) {
+      where.area_m2 = {};
+      if (preferences.minArea) where.area_m2.gte = preferences.minArea;
+      if (preferences.maxArea) where.area_m2.lte = preferences.maxArea;
+    }
+
+    // Izby
+    if (minRooms || maxRooms) {
+      where.rooms = {};
+      if (minRooms) where.rooms.gte = parseInt(minRooms);
+      if (maxRooms) where.rooms.lte = parseInt(maxRooms);
+    } else if (preferences?.minRooms || preferences?.maxRooms) {
+      where.rooms = {};
+      if (preferences.minRooms) where.rooms.gte = preferences.minRooms;
+      if (preferences.maxRooms) where.rooms.lte = preferences.maxRooms;
+    }
+
+    // Stav nehnuteľnosti
+    if (conditionParam) {
+      const conditions = conditionParam.split(",").filter(Boolean) as PropertyCondition[];
+      if (conditions.length > 0) {
+        where.condition = { in: conditions };
+      }
+    } else if (preferences?.condition) {
+      const conditions = JSON.parse(preferences.condition);
+      if (conditions.length > 0) {
+        where.condition = { in: conditions };
+      }
+    }
+
+    // Distressed
+    if (onlyDistressed) {
+      where.is_distressed = true;
+    } else if (preferences?.onlyDistressed) {
+      where.is_distressed = true;
+    }
+
     // Urči radenie - preferuj query parametre, potom user preferences
-    const actualSortBy = sortBy || (usePreferences && preferences?.sortBy) || "createdAt";
-    const actualSortOrder = sortOrder || (usePreferences && preferences?.sortOrder) || "desc";
+    const actualSortBy = sortBy || preferences?.sortBy || "createdAt";
+    const actualSortOrder = sortOrder || preferences?.sortOrder || "desc";
 
     // Zostav orderBy objekt
     let orderBy: Prisma.PropertyOrderByWithRelationInput = { createdAt: "desc" };
@@ -133,76 +134,50 @@ export async function GET(request: Request) {
       orderBy = { area_m2: actualSortOrder === "desc" ? "desc" : "asc" };
     } else if (actualSortBy === "createdAt") {
       orderBy = { createdAt: actualSortOrder === "desc" ? "desc" : "asc" };
+    } else if (actualSortBy === "price_per_m2") {
+      orderBy = { price_per_m2: actualSortOrder === "desc" ? "desc" : "asc" };
     }
 
-    // Načítaj nehnuteľnosti s filtrami
+    // Získaj celkový počet
+    const totalCount = await prisma.property.count({ where });
+
+    // Načítaj nehnuteľnosti s filtrami a stránkovaním
     const properties = await prisma.property.findMany({
       where,
       include: {
         investmentMetrics: true,
-        marketGaps: true,
-        propertyImpacts: {
-          include: {
-            urbanDevelopment: true,
-          },
+        priceHistory: {
+          orderBy: { recorded_at: "desc" },
+          take: 1,
         },
       },
+      skip,
       take: limit,
       orderBy,
     });
 
-    // Filtruj podľa investičných metrík (ak sú preferencie)
+    // Filtruj podľa výnosu (ak je zadaný)
     let filteredProperties = properties;
-
-    if (usePreferences && preferences) {
-      if (preferences.minYield || preferences.maxYield) {
-        filteredProperties = filteredProperties.filter((p) => {
-          const yieldValue = p.investmentMetrics?.gross_yield;
-          if (!yieldValue) return false;
-          if (preferences.minYield && yieldValue < preferences.minYield) return false;
-          if (preferences.maxYield && yieldValue > preferences.maxYield) return false;
-          return true;
-        });
-      }
-
-      if (preferences.minGrossYield || preferences.maxGrossYield) {
-        filteredProperties = filteredProperties.filter((p) => {
-          const grossYield = p.investmentMetrics?.gross_yield;
-          if (!grossYield) return false;
-          if (preferences.minGrossYield && grossYield < preferences.minGrossYield) return false;
-          if (preferences.maxGrossYield && grossYield > preferences.maxGrossYield) return false;
-          return true;
-        });
-      }
-
-      if (preferences.minCashOnCash) {
-        filteredProperties = filteredProperties.filter((p) => {
-          const coc = p.investmentMetrics?.cash_on_cash;
-          return coc && coc >= preferences.minCashOnCash!;
-        });
-      }
-
-      // Market Gaps filter
-      if (preferences.minGapPercentage) {
-        filteredProperties = filteredProperties.filter((p) => {
-          const gap = p.marketGaps[0];
-          return gap && gap.gap_percentage >= preferences.minGapPercentage!;
-        });
-      }
-
-      // Urban Development filter
-      if (preferences.minUrbanImpact) {
-        filteredProperties = filteredProperties.filter((p) => {
-          const impact = p.propertyImpacts[0]?.estimated_appreciation;
-          return impact && impact >= preferences.minUrbanImpact!;
-        });
-      }
+    if (minYield || maxYield) {
+      filteredProperties = filteredProperties.filter((p) => {
+        const yieldValue = p.investmentMetrics?.gross_yield;
+        if (!yieldValue) return !minYield; // Ak nie je yield, vráť len ak nie je minYield
+        if (minYield && yieldValue < parseFloat(minYield)) return false;
+        if (maxYield && yieldValue > parseFloat(maxYield)) return false;
+        return true;
+      });
     }
 
     return NextResponse.json({
       success: true,
       data: filteredProperties,
-      count: filteredProperties.length,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        hasMore: page * limit < totalCount,
+      },
     });
   } catch (error) {
     console.error("Error fetching filtered properties:", error);
