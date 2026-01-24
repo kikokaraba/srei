@@ -504,12 +504,21 @@ export function parseListingElement(
       siblingCount++;
     }
     
-    // Fallback - skús nájsť cenu v parent kontexte
+    // Fallback - hľadaj cenu v najbližších nasledujúcich elementoch s € symbolom
+    // NEPOUŽÍVAJ parent.text() - obsahuje všetky inzeráty!
     if (!priceText) {
-      const parentText = $parent.text();
-      const priceMatch = parentText.match(/(\d{1,3}[\s\u00a0]?\d{3}(?:[\s\u00a0]?\d{3})?)\s*€/);
-      if (priceMatch) {
-        priceText = priceMatch[0];
+      // Skús nájsť bold element v najbližších 5 súrodencoch
+      let $search = $el.next();
+      for (let i = 0; i < 5 && $search.length; i++) {
+        const boldEl = $search.is("b, strong") ? $search : $search.find("b, strong").first();
+        if (boldEl.length) {
+          const boldText = boldEl.text().trim();
+          if (boldText.includes("€")) {
+            priceText = boldText;
+            break;
+          }
+        }
+        $search = $search.next();
       }
     }
     
