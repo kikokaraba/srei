@@ -25,14 +25,14 @@ function LandingHeroComponent() {
             </span>
           </h1>
 
-          <p className="text-base sm:text-lg lg:text-xl text-slate-400 mb-3 sm:mb-4 max-w-2xl mx-auto leading-relaxed px-2">
+          <p className="text-base sm:text-lg lg:text-xl text-slate-300 mb-3 sm:mb-4 max-w-2xl mx-auto leading-relaxed px-2">
             Jediná platforma, ktorá kombinuje <span className="text-emerald-400 font-semibold">AI predikcie</span>,{" "}
             <span className="text-emerald-400 font-semibold">real-time dáta</span> a{" "}
             <span className="text-emerald-400 font-semibold">pokročilé analytické nástroje</span>{" "}
             pre maximálny výnos z vašich investícií.
           </p>
           
-          <p className="text-sm sm:text-base lg:text-lg text-slate-500 mb-8 sm:mb-12 max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base lg:text-lg text-slate-400 mb-8 sm:mb-12 max-w-2xl mx-auto">
             Pripojte sa k 500+ investorom na slovenskom trhu.
           </p>
 
@@ -52,7 +52,7 @@ function LandingHeroComponent() {
             </Link>
           </div>
           
-          <p className="text-xs sm:text-sm text-slate-500 mb-10 sm:mb-16 px-4">
+          <p className="text-xs sm:text-sm text-slate-400 mb-10 sm:mb-16 px-4">
             <span className="hidden sm:inline">✓ Bezplatná 14-dňová skúšobná verzia • ✓ Žiadna kreditná karta • ✓ Zrušiteľné kedykoľvek</span>
             <span className="sm:hidden">✓ 14 dní zdarma • ✓ Bez karty</span>
           </p>
@@ -66,7 +66,7 @@ function LandingHeroComponent() {
                 <h3 className="text-slate-100 font-semibold mb-0.5 sm:mb-1 text-sm sm:text-base">
                   Real-time analýzy
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-400">
+                <p className="text-xs sm:text-sm text-slate-300">
                   Aktuálne dáta z celého Slovenska
                 </p>
               </div>
@@ -80,7 +80,7 @@ function LandingHeroComponent() {
                 <h3 className="text-slate-100 font-semibold mb-0.5 sm:mb-1 text-sm sm:text-base">
                   AI predikcie
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-400">
+                <p className="text-xs sm:text-sm text-slate-300">
                   Prognózy výnosov a trendov
                 </p>
               </div>
@@ -94,7 +94,7 @@ function LandingHeroComponent() {
                 <h3 className="text-slate-100 font-semibold mb-0.5 sm:mb-1 text-sm sm:text-base">
                   Bezpečná platforma
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-400">
+                <p className="text-xs sm:text-sm text-slate-300">
                   Bank-level zabezpečenie
                 </p>
               </div>

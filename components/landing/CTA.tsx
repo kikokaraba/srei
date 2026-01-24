@@ -23,7 +23,7 @@ export function CTA() {
             investovania?
           </h2>
 
-          <p className="text-xl text-slate-400 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
             Začnite zdarma ešte dnes a zistite, prečo si 500+ investorov vybralo SRIA
             pre svoje investičné rozhodnutia.
           </p>
@@ -47,19 +47,19 @@ export function CTA() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto mb-8">
             <div className="text-center">
               <div className="text-2xl mb-2">⚡</div>
-              <p className="text-sm text-slate-400">Okamžitý prístup</p>
+              <p className="text-sm text-slate-300">Okamžitý prístup</p>
             </div>
             <div className="text-center">
               <div className="text-2xl mb-2">🔒</div>
-              <p className="text-sm text-slate-400">100% bezpečné</p>
+              <p className="text-sm text-slate-300">100% bezpečné</p>
             </div>
             <div className="text-center">
               <div className="text-2xl mb-2">💳</div>
-              <p className="text-sm text-slate-400">Žiadna karta</p>
+              <p className="text-sm text-slate-300">Žiadna karta</p>
             </div>
             <div className="text-center">
               <div className="text-2xl mb-2">↩️</div>
-              <p className="text-sm text-slate-400">Zrušiteľné</p>
+              <p className="text-sm text-slate-300">Zrušiteľné</p>
             </div>
           </div>
         </div>

@@ -69,7 +69,7 @@ export function Features() {
             Všetko, čo potrebujete pre{" "}
             <span className="text-emerald-400">úspešné investovanie</span>
           </h2>
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-300 max-w-2xl mx-auto">
             Kombinácia AI technológie, real-time dát a pokročilých analytických nástrojov,
             ktoré vám dajú konkurenčnú výhodu na trhu
           </p>
@@ -110,7 +110,7 @@ export function Features() {
                 <h3 className="text-xl font-bold text-slate-100 mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-slate-400 leading-relaxed">
+                <p className="text-slate-300 leading-relaxed">
                   {feature.description}
                 </p>
               </div>

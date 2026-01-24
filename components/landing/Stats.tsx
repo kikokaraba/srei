@@ -60,7 +60,7 @@ export function Stats() {
                   prefix={stat.prefix}
                 />
               </div>
-              <div className="text-sm text-slate-400 mb-2">{stat.label}</div>
+              <div className="text-sm text-slate-300 mb-2">{stat.label}</div>
               <div
                 className={`text-xs font-medium ${
                   stat.trend === "up"
@@ -76,7 +76,7 @@ export function Stats() {
 
         {/* Trust Badges */}
         <div className="pt-8 border-t border-slate-800">
-          <p className="text-center text-sm text-slate-400 mb-6">
+          <p className="text-center text-sm text-slate-300 mb-6">
             Dôverujú nám stovky investorov
           </p>
           <div className="flex flex-wrap justify-center items-center gap-6">

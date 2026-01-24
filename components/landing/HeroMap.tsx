@@ -312,7 +312,7 @@ export function HeroMap() {
             Investičné príležitosti
             <span className="block text-emerald-400">naprieč Slovenskom</span>
           </h2>
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-300 max-w-2xl mx-auto">
             Interaktívna mapa zobrazujúca investičnú atraktivitu a výnosy v
             slovenských krajoch
           </p>

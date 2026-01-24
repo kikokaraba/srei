@@ -41,7 +41,7 @@ export function Testimonials() {
             Čo hovoria naši{" "}
             <span className="text-emerald-400">používatelia</span>
           </h2>
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-300 max-w-2xl mx-auto">
             Pripojte sa k stovkám investorov, ktorí už maximalizujú svoje výnosy
           </p>
         </div>
@@ -63,7 +63,7 @@ export function Testimonials() {
                 ))}
               </div>
 
-              <p className="text-slate-300 mb-6 leading-relaxed relative z-10">
+              <p className="text-slate-200 mb-6 leading-relaxed relative z-10">
                 "{testimonial.content}"
               </p>
 
@@ -98,19 +98,19 @@ export function Testimonials() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <p className="text-3xl font-bold text-emerald-400 mb-2">500+</p>
-              <p className="text-sm text-slate-400">Aktívnych investorov</p>
+              <p className="text-sm text-slate-300">Aktívnych investorov</p>
             </div>
             <div>
               <p className="text-3xl font-bold text-emerald-400 mb-2">2,500+</p>
-              <p className="text-sm text-slate-400">Sledovaných nehnuteľností</p>
+              <p className="text-sm text-slate-300">Sledovaných nehnuteľností</p>
             </div>
             <div>
               <p className="text-3xl font-bold text-emerald-400 mb-2">4.9/5</p>
-              <p className="text-sm text-slate-400">Priemerné hodnotenie</p>
+              <p className="text-sm text-slate-300">Priemerné hodnotenie</p>
             </div>
             <div>
               <p className="text-3xl font-bold text-emerald-400 mb-2">€1.2M</p>
-              <p className="text-sm text-slate-400">Spravovaný kapitál</p>
+              <p className="text-sm text-slate-300">Spravovaný kapitál</p>
             </div>
           </div>
         </div>

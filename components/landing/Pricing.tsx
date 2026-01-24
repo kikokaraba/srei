@@ -94,10 +94,10 @@ export function Pricing() {
             </span>
           </h2>
           
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-4">
+          <p className="text-xl text-slate-300 max-w-2xl mx-auto mb-4">
             Začnite zdarma a upgradeujte, keď budete pripravení na viac
           </p>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-400">
             Všetky plány zahŕňajú 14-dňovú bezplatnú skúšobnú verziu • Zrušiteľné kedykoľvek
           </p>
         </div>
@@ -152,14 +152,14 @@ export function Pricing() {
                     <Icon className="w-7 h-7" />
                   </div>
                   <h3 className="text-2xl font-bold text-slate-100 mb-2">{plan.name}</h3>
-                  <p className="text-slate-400 text-sm mb-4">{plan.description}</p>
+                  <p className="text-slate-300 text-sm mb-4">{plan.description}</p>
                   
                   <div className="flex items-baseline gap-2 mb-2">
                     <span className="text-5xl font-bold text-slate-100">
                       €{plan.price}
                     </span>
                     {plan.price !== "0" && (
-                      <span className="text-slate-500 text-lg">/{plan.period}</span>
+                      <span className="text-slate-400 text-lg">/{plan.period}</span>
                     )}
                   </div>
                   
@@ -174,7 +174,7 @@ export function Pricing() {
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-start gap-3">
                       <Check className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-slate-300 text-sm">{feature}</span>
+                      <span className="text-slate-200 text-sm">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -207,7 +207,7 @@ export function Pricing() {
                 <span>Môžem zrušiť kedykoľvek?</span>
                 <span className="text-emerald-400 group-open:rotate-180 transition-transform">▼</span>
               </summary>
-              <p className="text-slate-400 mt-4">
+              <p className="text-slate-300 mt-4">
                 Áno, môžete zrušiť svoj plán kedykoľvek bez akýchkoľvek poplatkov. Váš prístup zostane aktívny do konca fakturačného obdobia.
               </p>
             </details>
@@ -217,7 +217,7 @@ export function Pricing() {
                 <span>Čo zahŕňa 14-dňová skúšobná verzia?</span>
                 <span className="text-emerald-400 group-open:rotate-180 transition-transform">▼</span>
               </summary>
-              <p className="text-slate-400 mt-4">
+              <p className="text-slate-300 mt-4">
                 Skúšobná verzia zahŕňa plný prístup ku všetkým funkciám vybraného plánu. Žiadna kreditná karta sa nevyžaduje. Môžete testovať všetko zdarma 14 dní.
               </p>
             </details>
@@ -227,7 +227,7 @@ export function Pricing() {
                 <span>Môžem upgradeovať alebo downgradeovať plán?</span>
                 <span className="text-emerald-400 group-open:rotate-180 transition-transform">▼</span>
               </summary>
-              <p className="text-slate-400 mt-4">
+              <p className="text-slate-300 mt-4">
                 Áno, môžete zmeniť plán kedykoľvek. Pri upgrade sa vám príde prorated kredit, pri downgrade sa zmena prejaví od ďalšieho fakturačného obdobia.
               </p>
             </details>
@@ -237,7 +237,7 @@ export function Pricing() {
                 <span>Aké platobné metódy akceptujete?</span>
                 <span className="text-emerald-400 group-open:rotate-180 transition-transform">▼</span>
               </summary>
-              <p className="text-slate-400 mt-4">
+              <p className="text-slate-300 mt-4">
                 Akceptujeme kreditné karty (Visa, Mastercard, Amex), bankové prevody a pre Enterprise zákazníkov aj faktúry.
               </p>
             </details>
