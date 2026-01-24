@@ -15,10 +15,12 @@ import {
   Menu,
   X,
   Database,
+  Brain,
 } from "lucide-react";
 
 const adminNav = [
   { name: "Prehľad", href: "/admin", icon: LayoutDashboard },
+  { name: "AI Brain", href: "/admin/ai-brain", icon: Brain },
   { name: "Používatelia", href: "/admin/users", icon: Users },
   { name: "Nehnuteľnosti", href: "/admin/properties", icon: Building },
   { name: "Dáta & Scraper", href: "/admin/data", icon: Database },
