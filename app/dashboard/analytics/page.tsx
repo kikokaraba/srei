@@ -1,3 +1,5 @@
+import { AnalyticsDashboard } from "@/components/dashboard/AnalyticsDashboard";
+
 export default function AnalyticsPage() {
   return (
     <div className="space-y-6">
@@ -10,11 +12,7 @@ export default function AnalyticsPage() {
         </p>
       </div>
 
-      <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
-        <p className="text-slate-400">
-          Pokročilý analytický dashboard čoskoro...
-        </p>
-      </div>
+      <AnalyticsDashboard />
     </div>
   );
 }

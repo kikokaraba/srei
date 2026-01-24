@@ -1,3 +1,5 @@
+import { PropertyComparison } from "@/components/dashboard/PropertyComparison";
+
 export default function ComparisonPage() {
   return (
     <div className="space-y-6">
@@ -10,11 +12,7 @@ export default function ComparisonPage() {
         </p>
       </div>
 
-      <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
-        <p className="text-slate-400">
-          Komponent porovnávacieho nástroja čoskoro...
-        </p>
-      </div>
+      <PropertyComparison />
     </div>
   );
 }
