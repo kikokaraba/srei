@@ -89,7 +89,7 @@ export function Pricing() {
           
           <h2 className="text-4xl lg:text-6xl font-bold text-slate-100 mb-6">
             Vyberte si{" "}
-            <span className="bg-gradient-to-r from-emerald-400 to-emerald-200 bg-clip-text text-transparent" suppressHydrationWarning>
+            <span className="text-emerald-400">
               svoj plán
             </span>
           </h2>

@@ -24,7 +24,7 @@ function LandingHeroComponent() {
 
           {/* Main headline with gradient */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-bold mb-6 sm:mb-8 leading-[1.1] tracking-tight">
-            <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-gold-400 bg-clip-text text-transparent" suppressHydrationWarning>
+            <span className="text-emerald-400">
               Investujte
             </span>
             <br />

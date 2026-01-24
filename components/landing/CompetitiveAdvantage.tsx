@@ -111,7 +111,7 @@ export function CompetitiveAdvantage() {
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
             Prečo investori volia{" "}
-            <span className="bg-gradient-to-r from-emerald-400 to-gold-400 bg-clip-text text-transparent">SRIA</span>
+            <span className="text-emerald-400">SRIA</span>
           </h2>
           <p className="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto">
             Ostatné portály sú pre bežných kupujúcich. SRIA je postavená špeciálne pre investorov, 

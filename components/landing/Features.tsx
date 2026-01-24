@@ -76,7 +76,7 @@ export function Features() {
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white mb-6">
             Všetko pre{" "}
-            <span className="bg-gradient-to-r from-emerald-400 to-gold-400 bg-clip-text text-transparent">úspešné investovanie</span>
+            <span className="text-emerald-400">úspešné investovanie</span>
           </h2>
           <p className="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto">
             Kombinácia AI technológie, real-time dát a pokročilých analytických nástrojov,

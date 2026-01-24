@@ -73,7 +73,7 @@ export function LandingMap() {
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
             Celé{" "}
-            <span className="bg-gradient-to-r from-emerald-400 to-gold-400 bg-clip-text text-transparent">Slovensko</span>
+            <span className="text-emerald-400">Slovensko</span>
             {" "}na dosah
           </h2>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto">
