@@ -48,7 +48,7 @@ const features = [
     description:
       "PostGIS-powered mapy a analýzy investičnej atraktivity podľa lokalít. Urban development tracker pre budúci rast.",
     color: "gold",
-    stat: "8 miest",
+    stat: "8 regiónov",
   },
   {
     icon: Shield,

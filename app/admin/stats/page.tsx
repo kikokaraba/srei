@@ -106,9 +106,9 @@ export default function AdminStatsPage() {
           color="purple"
         />
         <MetricCard
-          title="Pokrytie miest"
+          title="Pokrytie regiónov"
           value={stats.propertiesByCity.length.toString()}
-          subtitle="Miest s nehnuteľnosťami"
+          subtitle="Regiónov s nehnuteľnosťami"
           icon={<MapPin className="w-6 h-6" />}
           color="yellow"
         />

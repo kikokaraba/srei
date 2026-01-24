@@ -88,7 +88,7 @@ function LandingHeroComponent() {
                 Real-time analýzy
               </h3>
               <p className="text-sm text-slate-400">
-                Aktuálne dáta z 8 slovenských miest, aktualizované každých 15 minút
+                Aktuálne dáta zo všetkých slovenských regiónov, aktualizované každých 15 minút
               </p>
             </div>
 

@@ -694,7 +694,7 @@ export function OnboardingFlow() {
                   {
                     id: "notifyNewProperties",
                     title: "Nové nehnuteľnosti",
-                    description: "Nové príležitosti vo vašich sledovaných mestách",
+                    description: "Nové príležitosti vo vašich sledovaných regiónoch",
                   },
                   {
                     id: "notifyUrbanDevelopment",
