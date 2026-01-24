@@ -63,6 +63,7 @@ model User {
   savedProperties SavedProperty[]
   dashboardLayout DashboardLayout?
   preferences   UserPreferences?
+  portfolioProperties PortfolioProperty[]
 }
 
 model Account {

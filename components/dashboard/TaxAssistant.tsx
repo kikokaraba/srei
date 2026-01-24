@@ -16,6 +16,8 @@ import {
   Euro,
   FileText,
   Sparkles,
+  HelpCircle,
+  Scale,
 } from "lucide-react";
 
 interface TaxInputs {
@@ -23,9 +25,13 @@ interface TaxInputs {
   purchasePrice: number;
   currentValue: number;
   saleDate: string;
-  isPrimaryResidence: boolean;
   ownershipType: "individual" | "sro";
-  investmentCosts: number; // Rekonštrukcia, právnik, atď.
+  investmentCosts: number;
+  wasInBusinessAssets: boolean; // Bola nehnuteľnosť v obchodnom majetku?
+  removedFromAssetsDate: string; // Kedy bola vyradená z obchodného majetku?
+  acquiredByInheritance: boolean; // Nadobudnutá dedením?
+  inheritanceDirectLine: boolean; // Dedenie v priamom rade?
+  originalOwnerPurchaseDate: string; // Kedy ju nadobudol poručiteľ?
 }
 
 interface TaxResults {
@@ -42,11 +48,29 @@ interface TaxResults {
   healthInsurance: number;
   totalDeductions: number;
   effectiveTaxRate: number;
+  exemptionReason: string;
+  taxBreakdown: { label: string; amount: number; rate: number }[];
 }
 
-const TAX_RATE_INDIVIDUAL = 19; // 19% daň z príjmu
+// Aktuálne sadzby podľa zákona o dani z príjmov 2026
+// Zdroj: Zákon č. 595/2003 Z. z. o dani z príjmov
+const TAX_THRESHOLDS_2026 = {
+  // 176,8-násobok životného minima (284,13 € pre 2026)
+  firstThreshold: 50234, // 19% do tejto hranice
+  // Ďalšie pásma pre bežné príjmy (mzdy) - pre kapitálové príjmy platí 19%/25%
+};
+
+const TAX_RATE_INDIVIDUAL_LOW = 19; // 19% do hranice
+const TAX_RATE_INDIVIDUAL_HIGH = 25; // 25% nad hranicu
 const TAX_RATE_SRO = 21; // 21% daň z príjmu právnických osôb
-const HEALTH_INSURANCE_RATE = 14; // 14% zdravotné poistenie pre SZČO
+
+// Zdravotné poistenie z kapitálových príjmov
+// Zdroj: Zákon č. 580/2004 Z. z. o zdravotnom poistení
+const HEALTH_INSURANCE_RATE = 15; // 15% (od 2026 pre SZČO 16%, ale pre § 8 príjmy ostáva 15%)
+const HEALTH_INSURANCE_RATE_DISABLED = 7.5; // Pre osoby so ZŤP
+
+// Minimálny vymeriavací základ pre zdravotné poistenie
+const MIN_ASSESSMENT_BASE_2026 = 652.00; // mesačne
 
 export function TaxAssistant() {
   const [inputs, setInputs] = useState<TaxInputs>({
@@ -54,10 +78,16 @@ export function TaxAssistant() {
     purchasePrice: 120000,
     currentValue: 155000,
     saleDate: new Date().toISOString().split("T")[0],
-    isPrimaryResidence: false,
     ownershipType: "individual",
     investmentCosts: 8000,
+    wasInBusinessAssets: false,
+    removedFromAssetsDate: "",
+    acquiredByInheritance: false,
+    inheritanceDirectLine: true,
+    originalOwnerPurchaseDate: "",
   });
+
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const results = useMemo<TaxResults>(() => calculateTax(inputs), [inputs]);
 
@@ -65,17 +95,21 @@ export function TaxAssistant() {
     setInputs((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Score for tax efficiency
-  const taxScore = useMemo(() => {
-    if (results.isExempt) return 100;
-    if (results.effectiveTaxRate < 5) return 85;
-    if (results.effectiveTaxRate < 10) return 70;
-    if (results.effectiveTaxRate < 15) return 50;
-    return 30;
-  }, [results]);
-
   return (
     <div className="space-y-6">
+      {/* Legal Notice */}
+      <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 flex items-start gap-3">
+        <Scale className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
+        <div className="text-sm">
+          <p className="text-blue-300 font-medium">Právne informácie</p>
+          <p className="text-slate-400 mt-1">
+            Výpočet vychádza zo zákona č. 595/2003 Z. z. o dani z príjmov a zákona č. 580/2004 Z. z. 
+            o zdravotnom poistení v znení platnom pre rok 2026. Pre presné posúdenie odporúčame 
+            konzultáciu s daňovým poradcom.
+          </p>
+        </div>
+      </div>
+
       {/* Tax Status Card */}
       <div className={`rounded-2xl p-6 border ${
         results.isExempt
@@ -106,10 +140,14 @@ export function TaxAssistant() {
             </div>
 
             {results.isExempt ? (
-              <p className="text-slate-300">
-                Nehnuteľnosť vlastníte viac ako 5 rokov. Predaj je{" "}
-                <strong className="text-emerald-400">oslobodený od dane z príjmu</strong>.
-              </p>
+              <div>
+                <p className="text-slate-300">
+                  Predaj je <strong className="text-emerald-400">oslobodený od dane z príjmu</strong>.
+                </p>
+                <p className="text-sm text-slate-400 mt-1">
+                  Dôvod: {results.exemptionReason}
+                </p>
+              </div>
             ) : (
               <div>
                 <p className="text-slate-300 mb-2">
@@ -170,7 +208,7 @@ export function TaxAssistant() {
             <div className={`text-2xl font-bold ${results.isExempt ? "text-emerald-400" : "text-red-400"}`}>
               €{results.taxAmount.toLocaleString()}
             </div>
-            <div className="text-xs text-slate-400">Daň</div>
+            <div className="text-xs text-slate-400">Daň + odvody</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-emerald-400">
@@ -216,7 +254,7 @@ export function TaxAssistant() {
                   <div className={inputs.ownershipType === "individual" ? "text-emerald-400" : "text-slate-100"}>
                     Fyzická osoba
                   </div>
-                  <div className="text-xs text-slate-400">19% daň</div>
+                  <div className="text-xs text-slate-400">19% / 25% daň + 15% ZP</div>
                 </div>
               </button>
               <button
@@ -234,39 +272,18 @@ export function TaxAssistant() {
                   <div className={inputs.ownershipType === "sro" ? "text-emerald-400" : "text-slate-100"}>
                     s.r.o.
                   </div>
-                  <div className="text-xs text-slate-400">21% daň</div>
+                  <div className="text-xs text-slate-400">21% daň z príjmu PO</div>
                 </div>
               </button>
             </div>
           </div>
-
-          {/* Primary Residence */}
-          {inputs.ownershipType === "individual" && (
-            <label className="flex items-center gap-3 p-4 rounded-xl border border-slate-700 bg-slate-800 cursor-pointer hover:border-slate-600 transition-colors">
-              <input
-                type="checkbox"
-                checked={inputs.isPrimaryResidence}
-                onChange={(e) => handleChange("isPrimaryResidence", e.target.checked)}
-                className="w-5 h-5 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500"
-              />
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <Home className="w-4 h-4 text-slate-400" />
-                  <span className="font-medium text-slate-100">Trvalý pobyt</span>
-                </div>
-                <p className="text-sm text-slate-400 mt-1">
-                  Mali ste na tejto adrese trvalý pobyt min. 2 roky?
-                </p>
-              </div>
-            </label>
-          )}
 
           {/* Dates */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
                 <Calendar className="w-4 h-4 inline mr-2" />
-                Dátum kúpy
+                Dátum nadobudnutia
               </label>
               <input
                 type="date"
@@ -294,7 +311,7 @@ export function TaxAssistant() {
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
                 <Euro className="w-4 h-4 inline mr-2" />
-                Kúpna cena
+                Nadobúdacia cena
               </label>
               <input
                 type="number"
@@ -302,6 +319,9 @@ export function TaxAssistant() {
                 onChange={(e) => handleChange("purchasePrice", Number(e.target.value))}
                 className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-emerald-500"
               />
+              <p className="text-xs text-slate-500 mt-1">
+                Pri dedení: hodnota z dedičského konania
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -320,7 +340,7 @@ export function TaxAssistant() {
           {/* Investment Costs */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Investičné náklady (odpočítateľné)
+              Preukázateľné výdavky (§ 8 ods. 5)
             </label>
             <input
               type="number"
@@ -330,16 +350,109 @@ export function TaxAssistant() {
               className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-emerald-500"
             />
             <p className="text-xs text-slate-500 mt-1">
-              Rekonštrukcia, právne služby, realitná provízia...
+              Technické zhodnotenie, poplatky, služby súvisiace s predajom
             </p>
           </div>
+
+          {/* Advanced Options */}
+          <button
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300"
+          >
+            <HelpCircle className="w-4 h-4" />
+            {showAdvanced ? "Skryť" : "Zobraziť"} rozšírené možnosti
+          </button>
+
+          {showAdvanced && (
+            <div className="space-y-4 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+              {/* Was in business assets */}
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={inputs.wasInBusinessAssets}
+                  onChange={(e) => handleChange("wasInBusinessAssets", e.target.checked)}
+                  className="mt-1 w-5 h-5 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500"
+                />
+                <div>
+                  <span className="font-medium text-slate-100">Bola v obchodnom majetku</span>
+                  <p className="text-sm text-slate-400 mt-1">
+                    Ak bola nehnuteľnosť zaradená v obchodnom majetku, oslobodenie nastáva až 5 rokov 
+                    od jej vyradenia do osobného užívania.
+                  </p>
+                </div>
+              </label>
+
+              {inputs.wasInBusinessAssets && (
+                <div className="ml-8">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Dátum vyradenia z obchodného majetku
+                  </label>
+                  <input
+                    type="date"
+                    value={inputs.removedFromAssetsDate}
+                    onChange={(e) => handleChange("removedFromAssetsDate", e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              )}
+
+              {/* Inheritance */}
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={inputs.acquiredByInheritance}
+                  onChange={(e) => handleChange("acquiredByInheritance", e.target.checked)}
+                  className="mt-1 w-5 h-5 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500"
+                />
+                <div>
+                  <span className="font-medium text-slate-100">Nadobudnutá dedením</span>
+                  <p className="text-sm text-slate-400 mt-1">
+                    Pri dedení v priamom rade sa do 5-ročnej lehoty započítava aj doba vlastníctva poručiteľa.
+                  </p>
+                </div>
+              </label>
+
+              {inputs.acquiredByInheritance && (
+                <div className="ml-8 space-y-4">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={inputs.inheritanceDirectLine}
+                      onChange={(e) => handleChange("inheritanceDirectLine", e.target.checked)}
+                      className="w-5 h-5 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500"
+                    />
+                    <div>
+                      <span className="font-medium text-slate-100">Dedenie v priamom rade</span>
+                      <p className="text-xs text-slate-400">
+                        Rodičia, deti, starí rodičia, vnuci, manžel/manželka
+                      </p>
+                    </div>
+                  </label>
+
+                  {inputs.inheritanceDirectLine && (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        Kedy poručiteľ nadobudol nehnuteľnosť?
+                      </label>
+                      <input
+                        type="date"
+                        value={inputs.originalOwnerPurchaseDate}
+                        onChange={(e) => handleChange("originalOwnerPurchaseDate", e.target.value)}
+                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Results */}
         <div className="space-y-6">
           <h4 className="font-semibold text-slate-100 flex items-center gap-2">
             <Receipt className="w-5 h-5 text-emerald-400" />
-            Výpočet dane
+            Výpočet dane (2026)
           </h4>
 
           {/* Tax Breakdown */}
@@ -349,36 +462,30 @@ export function TaxAssistant() {
               <span className="font-medium text-slate-100">€{inputs.currentValue.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-slate-400">Kúpna cena</span>
+              <span className="text-slate-400">Nadobúdacia cena</span>
               <span className="font-medium text-red-400">-€{inputs.purchasePrice.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-slate-400">Investičné náklady</span>
+              <span className="text-slate-400">Preukázateľné výdavky</span>
               <span className="font-medium text-red-400">-€{inputs.investmentCosts.toLocaleString()}</span>
             </div>
             <div className="border-t border-slate-700 pt-4 flex justify-between items-center">
-              <span className="text-slate-300 font-medium">Zdaniteľný zisk</span>
+              <span className="text-slate-300 font-medium">Základ dane (§ 8)</span>
               <span className="font-bold text-slate-100">€{results.taxableGain.toLocaleString()}</span>
             </div>
 
             {!results.isExempt && results.taxableGain > 0 && (
               <>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400">
-                    Daň z príjmu ({results.taxRate}%)
-                  </span>
-                  <span className="font-medium text-red-400">
-                    -€{Math.round(results.taxableGain * results.taxRate / 100).toLocaleString()}
-                  </span>
-                </div>
-                {inputs.ownershipType === "individual" && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Zdravotné poistenie ({HEALTH_INSURANCE_RATE}%)</span>
+                {results.taxBreakdown.map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-center">
+                    <span className="text-slate-400">
+                      {item.label} ({item.rate}%)
+                    </span>
                     <span className="font-medium text-red-400">
-                      -€{results.healthInsurance.toLocaleString()}
+                      -€{item.amount.toLocaleString()}
                     </span>
                   </div>
-                )}
+                ))}
               </>
             )}
 
@@ -388,6 +495,30 @@ export function TaxAssistant() {
                 €{results.netProfit.toLocaleString()}
               </span>
             </div>
+          </div>
+
+          {/* Oslobodenie Info */}
+          <div className="bg-slate-800/30 rounded-xl p-5 border border-slate-700">
+            <h5 className="font-medium text-slate-100 mb-3 flex items-center gap-2">
+              <Shield className="w-4 h-4 text-emerald-400" />
+              Podmienky oslobodenia (§ 9 ods. 1)
+            </h5>
+            <ul className="space-y-2 text-sm text-slate-400">
+              <li className="flex items-start gap-2">
+                <span className={results.yearsOwned >= 5 ? "text-emerald-400" : "text-slate-500"}>
+                  {results.yearsOwned >= 5 ? "✓" : "○"}
+                </span>
+                <span>5 rokov od nadobudnutia (ak nie je v obchodnom majetku)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-slate-500">○</span>
+                <span>Pri dedení v priamom rade sa započítava doba poručiteľa</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-slate-500">○</span>
+                <span>Pri obchodnom majetku: 5 rokov od vyradenia</span>
+              </li>
+            </ul>
           </div>
 
           {/* Tips */}
@@ -402,29 +533,39 @@ export function TaxAssistant() {
                   <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
                   <span>
                     Počkajte {Math.ceil(results.daysUntilExemption / 30)} mesiacov a ušetríte{" "}
-                    <strong className="text-emerald-400">€{results.taxAmount.toLocaleString()}</strong> na daniach.
-                  </span>
-                </li>
-              )}
-              {inputs.ownershipType === "individual" && !inputs.isPrimaryResidence && (
-                <li className="flex items-start gap-2">
-                  <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-                  <span>
-                    Ak ste mali na adrese trvalý pobyt 2+ roky, môžete byť oslobodený od dane.
+                    <strong className="text-emerald-400">€{results.totalDeductions.toLocaleString()}</strong> na daniach a odvodoch.
                   </span>
                 </li>
               )}
               <li className="flex items-start gap-2">
                 <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
                 <span>
-                  Všetky náklady na rekonštrukciu a právne služby si môžete odpočítať zo základu dane.
+                  Všetky náklady na technické zhodnotenie a služby súvisiace s predajom 
+                  si môžete odpočítať zo základu dane.
                 </span>
               </li>
-              {inputs.ownershipType === "individual" && results.taxableGain > 0 && (
+              {inputs.ownershipType === "individual" && (
+                <li className="flex items-start gap-2">
+                  <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+                  <span>
+                    Zaplatené zdravotné poistenie si môžete uplatniť ako výdavok v nasledujúcom roku.
+                  </span>
+                </li>
+              )}
+              {inputs.ownershipType === "individual" && results.taxableGain > 0 && !results.isExempt && (
                 <li className="flex items-start gap-2">
                   <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 shrink-0" />
                   <span>
-                    Nezabudnite podať daňové priznanie do 31. marca nasledujúceho roka.
+                    Daňové priznanie typu B podajte do <strong>31. marca</strong> nasledujúceho roka 
+                    (v roku prijatia príjmu).
+                  </span>
+                </li>
+              )}
+              {inputs.ownershipType === "individual" && results.taxableGain > 0 && !results.isExempt && (
+                <li className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 shrink-0" />
+                  <span>
+                    Zdravotné poistenie vám vypočíta poisťovňa v ročnom zúčtovaní (do októbra).
                   </span>
                 </li>
               )}
@@ -437,13 +578,30 @@ export function TaxAssistant() {
             <div className="relative">
               <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-700" />
               
-              {/* Purchase */}
+              {/* Original Purchase (if inheritance) */}
+              {inputs.acquiredByInheritance && inputs.inheritanceDirectLine && inputs.originalOwnerPurchaseDate && (
+                <div className="relative flex items-center gap-4 pb-4">
+                  <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center z-10">
+                    <div className="w-3 h-3 rounded-full bg-purple-400" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-slate-100">Nadobudnutie poručiteľom</div>
+                    <div className="text-xs text-slate-400">
+                      {new Date(inputs.originalOwnerPurchaseDate).toLocaleDateString("sk-SK")}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Purchase/Inheritance */}
               <div className="relative flex items-center gap-4 pb-4">
                 <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center z-10">
                   <div className="w-3 h-3 rounded-full bg-blue-400" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-slate-100">Kúpa nehnuteľnosti</div>
+                  <div className="text-sm font-medium text-slate-100">
+                    {inputs.acquiredByInheritance ? "Nadobudnutie dedením" : "Kúpa nehnuteľnosti"}
+                  </div>
                   <div className="text-xs text-slate-400">
                     {new Date(inputs.purchaseDate).toLocaleDateString("sk-SK")}
                   </div>
@@ -491,16 +649,44 @@ function calculateTax(inputs: TaxInputs): TaxResults {
   const purchaseDate = new Date(inputs.purchaseDate);
   const saleDate = new Date(inputs.saleDate);
   
-  // Days owned
+  // Determine effective purchase date for exemption calculation
+  let effectivePurchaseDate = purchaseDate;
+  let exemptionReason = "";
+  
+  // If inherited in direct line, use original owner's purchase date
+  if (inputs.acquiredByInheritance && inputs.inheritanceDirectLine && inputs.originalOwnerPurchaseDate) {
+    effectivePurchaseDate = new Date(inputs.originalOwnerPurchaseDate);
+  }
+  
+  // If was in business assets, use removal date
+  if (inputs.wasInBusinessAssets && inputs.removedFromAssetsDate) {
+    effectivePurchaseDate = new Date(inputs.removedFromAssetsDate);
+  }
+  
+  // Days owned (for display, use actual ownership)
   const daysOwned = Math.floor((saleDate.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24));
   const yearsOwned = daysOwned / 365;
+  
+  // Days for exemption calculation
+  const daysForExemption = Math.floor((saleDate.getTime() - effectivePurchaseDate.getTime()) / (1000 * 60 * 60 * 24));
 
-  // Exemption date (5 years from purchase)
-  const exemptionDate = new Date(purchaseDate);
+  // Exemption date (5 years from effective purchase)
+  const exemptionDate = new Date(effectivePurchaseDate);
   exemptionDate.setFullYear(exemptionDate.getFullYear() + 5);
 
-  // Is exempt?
-  const isExempt = daysOwned >= 5 * 365 || (inputs.ownershipType === "individual" && inputs.isPrimaryResidence && yearsOwned >= 2);
+  // Is exempt? (5 years rule - § 9 ods. 1 písm. a)
+  const isExempt = daysForExemption >= 5 * 365;
+  
+  if (isExempt) {
+    if (inputs.wasInBusinessAssets) {
+      exemptionReason = "Uplynulo 5 rokov od vyradenia z obchodného majetku";
+    } else if (inputs.acquiredByInheritance && inputs.inheritanceDirectLine) {
+      exemptionReason = "Uplynulo 5 rokov od nadobudnutia poručiteľom (dedenie v priamom rade)";
+    } else {
+      exemptionReason = "Uplynulo 5 rokov od nadobudnutia nehnuteľnosti";
+    }
+  }
+  
   const daysUntilExemption = Math.max(0, Math.floor((exemptionDate.getTime() - saleDate.getTime()) / (1000 * 60 * 60 * 24)));
 
   // Capital gain
@@ -508,17 +694,56 @@ function calculateTax(inputs: TaxInputs): TaxResults {
   const taxableGain = Math.max(0, capitalGain - inputs.investmentCosts);
 
   // Tax calculation
-  const taxRate = inputs.ownershipType === "sro" ? TAX_RATE_SRO : TAX_RATE_INDIVIDUAL;
-  
   let taxAmount = 0;
   let healthInsurance = 0;
+  const taxBreakdown: { label: string; amount: number; rate: number }[] = [];
 
   if (!isExempt && taxableGain > 0) {
-    taxAmount = Math.round(taxableGain * taxRate / 100);
-    
-    // Health insurance only for individuals
-    if (inputs.ownershipType === "individual") {
+    if (inputs.ownershipType === "sro") {
+      // s.r.o. - flat 21% corporate tax
+      taxAmount = Math.round(taxableGain * TAX_RATE_SRO / 100);
+      taxBreakdown.push({
+        label: "Daň z príjmu PO",
+        amount: taxAmount,
+        rate: TAX_RATE_SRO,
+      });
+    } else {
+      // Individual - progressive tax + health insurance
+      // For "other income" (§ 8), progressive rates apply
+      if (taxableGain <= TAX_THRESHOLDS_2026.firstThreshold) {
+        // All at 19%
+        taxAmount = Math.round(taxableGain * TAX_RATE_INDIVIDUAL_LOW / 100);
+        taxBreakdown.push({
+          label: "Daň z príjmu (do €50 234)",
+          amount: taxAmount,
+          rate: TAX_RATE_INDIVIDUAL_LOW,
+        });
+      } else {
+        // Split: 19% on first threshold, 25% on rest
+        const taxLow = Math.round(TAX_THRESHOLDS_2026.firstThreshold * TAX_RATE_INDIVIDUAL_LOW / 100);
+        const taxHigh = Math.round((taxableGain - TAX_THRESHOLDS_2026.firstThreshold) * TAX_RATE_INDIVIDUAL_HIGH / 100);
+        taxAmount = taxLow + taxHigh;
+        
+        taxBreakdown.push({
+          label: "Daň z príjmu 19% (do €50 234)",
+          amount: taxLow,
+          rate: TAX_RATE_INDIVIDUAL_LOW,
+        });
+        taxBreakdown.push({
+          label: "Daň z príjmu 25% (nad €50 234)",
+          amount: taxHigh,
+          rate: TAX_RATE_INDIVIDUAL_HIGH,
+        });
+      }
+      
+      // Health insurance (15% for capital gains)
+      // Only for individuals, calculated from taxable gain
       healthInsurance = Math.round(taxableGain * HEALTH_INSURANCE_RATE / 100);
+      taxBreakdown.push({
+        label: "Zdravotné poistenie",
+        amount: healthInsurance,
+        rate: HEALTH_INSURANCE_RATE,
+      });
     }
   }
 
@@ -534,11 +759,13 @@ function calculateTax(inputs: TaxInputs): TaxResults {
     daysUntilExemption,
     capitalGain,
     taxableGain,
-    taxRate,
-    taxAmount,
+    taxRate: inputs.ownershipType === "sro" ? TAX_RATE_SRO : TAX_RATE_INDIVIDUAL_LOW,
+    taxAmount: totalDeductions, // Include health insurance in total
     netProfit,
     healthInsurance,
     totalDeductions,
     effectiveTaxRate,
+    exemptionReason,
+    taxBreakdown,
   };
 }
