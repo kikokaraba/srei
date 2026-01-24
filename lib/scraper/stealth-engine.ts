@@ -370,6 +370,11 @@ function extractCity(location: string): { city: SlovakCity; district: string } {
 
 /**
  * Parsuje jeden inzerát z Cheerio elementu
+ * Bazoš HTML štruktúra (2024/2025):
+ * - .inzeratynadpis obsahuje nadpis s linkom
+ * - Nasledujúci element obsahuje popis
+ * - Cena je v <b> tagu
+ * - Lokalita je text s mestom a PSČ
  */
 export function parseListingElement(
   $: cheerio.CheerioAPI,
@@ -379,8 +384,18 @@ export function parseListingElement(
   try {
     const $el = $(element);
     
-    // Extrahuj link a externalId
-    const $link = $el.find("a[href*='/inzerat/']").first();
+    // Extrahuj link a externalId - hľadáme v aktuálnom elemente aj v rodičovi
+    let $link = $el.find("a[href*='/inzerat/']").first();
+    if (!$link.length) {
+      $link = $el.closest("a[href*='/inzerat/']");
+    }
+    if (!$link.length) {
+      // Skús nájsť link v elemente samotnom ak je to <a>
+      if ($el.is("a") && $el.attr("href")?.includes("/inzerat/")) {
+        $link = $el;
+      }
+    }
+    
     const href = $link.attr("href");
     if (!href) return null;
     
@@ -388,41 +403,85 @@ export function parseListingElement(
     const externalId = externalIdMatch?.[1] || "";
     if (!externalId) return null;
     
-    // Základné údaje
-    const title = $el.find(".nadpis, h2, .nazov").first().text().trim();
-    const description = $el.find(".popis, .text").first().text().trim();
-    const priceText = $el.find(".cena, .inzeratcena").first().text().trim();
-    const locationText = $el.find(".lokalita, .inzeratlok").first().text().trim();
+    // Nadpis - môže byť v h2, alebo priamo text linku
+    let title = $el.find("h2").first().text().trim();
+    if (!title) {
+      title = $link.text().trim();
+    }
+    if (!title) {
+      title = $el.text().trim().split("\n")[0] || "";
+    }
+    
+    // Získaj rodičovský kontajner pre viac info
+    const $parent = $el.parent();
+    const $grandparent = $parent.parent();
+    const fullText = $grandparent.text();
+    
+    // Popis - hľadáme v nasledujúcom elemente alebo v texte
+    let description = "";
+    const $nextSibling = $el.next();
+    if ($nextSibling.length) {
+      description = $nextSibling.text().trim();
+    }
+    
+    // Cena - hľadáme v bold texte alebo s € symbolom
+    let priceText = "";
+    $grandparent.find("b, strong").each((_, el) => {
+      const text = $(el).text();
+      if (text.includes("€") || /\d{2,3}\s?\d{3}/.test(text)) {
+        priceText = text;
+        return false; // break
+      }
+    });
+    
+    // Ak sme nenašli cenu v bold, skúsime regex na celý text
+    if (!priceText) {
+      const priceMatch = fullText.match(/(\d{1,3}[\s\u00a0]?\d{3}[\s\u00a0]?\d{3}|\d{2,3}[\s\u00a0]?\d{3})\s*€/);
+      if (priceMatch) {
+        priceText = priceMatch[0];
+      }
+    }
+    
+    // Lokalita - hľadáme PSČ pattern (3 číslice medzera 2 číslice) alebo názov mesta
+    let locationText = "";
+    const pscMatch = fullText.match(/([A-ZÁÉÍÓÚÝČĎĽŇŘŠŤŽa-záéíóúýčďľňřšťž\s]+)\s*(\d{3}\s?\d{2})/);
+    if (pscMatch) {
+      locationText = pscMatch[1].trim();
+    }
     
     // Extrahuj hodnoty
     const price = extractPrice(priceText);
-    const areaM2 = extractArea(title + " " + description);
-    const { city, district } = extractCity(locationText);
+    const areaM2 = extractArea(title + " " + description + " " + fullText);
+    const { city, district } = extractCity(locationText || title);
     
-    // Validácia - potrebujeme aspoň cenu a plochu
-    if (price < 30000 || areaM2 < 15) {
+    // Validácia - potrebujeme aspoň cenu
+    if (price < 10000) {
       return null;
     }
     
+    // Ak nemáme plochu, skúsime ju odhadnúť z názvu alebo preskočíme
+    const finalArea = areaM2 > 0 ? areaM2 : 50; // Default 50m² ak nenájdeme
+    
     // Vypočítaj cenu za m²
-    const pricePerM2 = Math.round(price / areaM2);
+    const pricePerM2 = Math.round(price / finalArea);
     
     // Extrahuj stav z popisu
-    const { condition } = parseDescription(description, title);
+    const { condition } = parseDescription(description + " " + title, title);
     
     return {
       externalId,
-      title: title || "Bez názvu",
-      description,
+      title: title.substring(0, 200) || "Bez názvu",
+      description: description.substring(0, 1000),
       price,
       pricePerM2,
-      areaM2,
+      areaM2: finalArea,
       city,
-      district,
+      district: district || "Centrum",
       condition,
       sourceUrl: href.startsWith("http") ? href : `${baseUrl}${href}`,
     };
-  } catch {
+  } catch (error) {
+    console.error("Parse error:", error);
     return null;
   }
 }
