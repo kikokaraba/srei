@@ -582,6 +582,12 @@ interface ScraperStats {
   errors: number;
   duration: number;
   blocked: boolean;
+  debug?: {
+    htmlLength?: number;
+    usedSelector?: string;
+    htmlPreview?: string;
+    fetchError?: string;
+  };
 }
 
 /**
@@ -603,6 +609,7 @@ export async function scrapeBazosCategory(
     errors: 0,
     duration: 0,
     blocked: false,
+    debug: {},
   };
   
   const baseUrl = "https://reality.bazos.sk";
@@ -637,6 +644,7 @@ export async function scrapeBazosCategory(
     if (!result.success) {
       console.error(`❌ Failed to fetch: ${result.error}`);
       stats.errors++;
+      stats.debug = { ...stats.debug, fetchError: result.error };
       
       // Ak sme boli blokovaní, zastavíme
       if (result.error?.includes("403") || result.error?.includes("CAPTCHA")) {
@@ -681,6 +689,14 @@ export async function scrapeBazosCategory(
     }
     
     console.log(`📄 Page ${stats.pagesScraped}: Found ${listingElements.length} listings (selector: ${usedSelector || 'none'})`);
+    
+    // Debug: Uložíme debug info
+    stats.debug = {
+      ...stats.debug,
+      htmlLength: htmlLength,
+      usedSelector: usedSelector || "none",
+      htmlPreview: listingElements.length === 0 ? result.html?.substring(0, 1000) : undefined,
+    };
     
     // Debug: Ak nič nenašiel, ukáž prvých 500 znakov HTML
     if (listingElements.length === 0 && result.html) {

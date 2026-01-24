@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
           blocked: stats.blocked,
           duration: `${Math.round(stats.duration / 1000)}s`,
         },
+        debug: stats.debug,
       });
     }
     
