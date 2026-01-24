@@ -183,29 +183,40 @@ const AVAILABLE_ACTIONS: Record<string, AutoAction> = {
             },
           });
 
-          await prisma.dailyMarketStats.upsert({
-            where: {
-              date_city: {
+          // Update stats for both PREDAJ and PRENAJOM listing types
+          for (const listingType of ["PREDAJ", "PRENAJOM"] as const) {
+            await prisma.dailyMarketStats.upsert({
+              where: {
+                date_city_listingType: {
+                  date: today,
+                  city: cityData.city,
+                  listingType,
+                },
+              },
+              update: {
+                totalListings: cityData._count.id,
+                avgPricePerM2: cityData._avg.price_per_m2 || 0,
+                newListings,
+                hotDealsCount: hotDeals,
+              },
+              create: {
                 date: today,
                 city: cityData.city,
+                listingType,
+                totalListings: cityData._count.id,
+                avgPrice: 0,
+                medianPrice: 0,
+                avgPricePerM2: cityData._avg.price_per_m2 || 0,
+                medianPricePerM2: 0,
+                minPrice: 0,
+                maxPrice: 0,
+                newListings,
+                removedListings: 0,
+                hotDealsCount: hotDeals,
+                hotDealsPercent: 0,
               },
-            },
-            update: {
-              totalListings: cityData._count.id,
-              avgPricePerM2: cityData._avg.price_per_m2 || 0,
-              newListings,
-              hotDealsCount: hotDeals,
-            },
-            create: {
-              date: today,
-              city: cityData.city,
-              totalListings: cityData._count.id,
-              avgPricePerM2: cityData._avg.price_per_m2 || 0,
-              newListings,
-              removedListings: 0,
-              hotDealsCount: hotDeals,
-            },
-          });
+            });
+          }
 
           updatedCount++;
         }
