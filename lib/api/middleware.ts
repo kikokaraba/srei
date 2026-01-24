@@ -162,10 +162,10 @@ export async function validateBody<T>(
   } catch (error) {
     if (error instanceof ZodError) {
       const errors: Record<string, string[]> = {};
-      error.errors.forEach((err) => {
-        const path = err.path.join(".");
+      error.issues.forEach((issue) => {
+        const path = issue.path.join(".");
         if (!errors[path]) errors[path] = [];
-        errors[path].push(err.message);
+        errors[path].push(issue.message);
       });
       return { error: badRequest("Validačná chyba", errors) };
     }
@@ -191,10 +191,10 @@ export function validateQuery<T>(
   } catch (error) {
     if (error instanceof ZodError) {
       const errors: Record<string, string[]> = {};
-      error.errors.forEach((err) => {
-        const path = err.path.join(".");
+      error.issues.forEach((issue) => {
+        const path = issue.path.join(".");
         if (!errors[path]) errors[path] = [];
-        errors[path].push(err.message);
+        errors[path].push(issue.message);
       });
       return { error: badRequest("Neplatné parametre", errors) };
     }
