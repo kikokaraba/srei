@@ -19,6 +19,8 @@ import {
   Menu,
   X,
   Scale,
+  Sparkles,
+  Banknote,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 
@@ -26,12 +28,13 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Portfólio", href: "/dashboard/portfolio", icon: Briefcase },
   { name: "Nehnuteľnosti", href: "/dashboard/properties", icon: Filter },
-  { name: "Mapa & Heatmapa", href: "/dashboard/map", icon: MapPin },
+  { name: "Mapa", href: "/dashboard/map", icon: MapPin },
+  { name: "Nacenenie", href: "/dashboard/valuation", icon: Sparkles },
+  { name: "Hypokalkulačka", href: "/dashboard/mortgage", icon: Banknote },
   { name: "Porovnanie cien", href: "/dashboard/matches", icon: Scale },
   { name: "AI Predikcie", href: "/dashboard/predictions", icon: Brain },
   { name: "Sledované", href: "/dashboard/saved", icon: Bookmark },
   { name: "Analytika", href: "/dashboard/analytics", icon: BarChart3 },
-  { name: "Porovnanie", href: "/dashboard/comparison", icon: TrendingUp },
   { name: "Kalkulačky", href: "/dashboard/calculators", icon: Calculator },
   { name: "Nastavenia", href: "/dashboard/settings", icon: Settings },
 ];
