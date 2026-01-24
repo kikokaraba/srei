@@ -268,13 +268,13 @@ export function BRRRRCalculator() {
                       <CompactSlider
                         key={field.key}
                         label={field.label}
-                        sublabel={field.sublabel}
+                        sublabel={"sublabel" in field ? field.sublabel : undefined}
                         value={inputs[field.key as keyof BRRRRInputs]}
                         min={field.min}
                         max={field.max}
                         step={field.step}
-                        format={field.format || "€"}
-                        decimals={field.decimals}
+                        format={"format" in field ? field.format : "€"}
+                        decimals={"decimals" in field ? field.decimals : undefined}
                         color={phase.color}
                         onChange={(v) => handleChange(field.key as keyof BRRRRInputs, v)}
                       />
