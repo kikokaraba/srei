@@ -14,6 +14,11 @@ import {
   runDataQualityAnalysis,
   runFeatureSuggesterAnalysis,
 } from "@/lib/ai-brain";
+import {
+  getAvailableActions,
+  executeAction,
+  getAllActions,
+} from "@/lib/ai-brain/auto-actions";
 
 // GET - Získať insights a štatistiky
 export async function GET(request: Request) {
@@ -65,6 +70,45 @@ export async function GET(request: Request) {
 
         return NextResponse.json({ success: true, data: insights });
 
+      case "actions":
+        // Get all available auto-actions
+        const allActions = getAllActions();
+        return NextResponse.json({ 
+          success: true, 
+          data: allActions.map(a => ({
+            id: a.id,
+            type: a.type,
+            name: a.name,
+            description: a.description,
+            risk: a.risk,
+            estimatedDuration: a.estimatedDuration,
+          })),
+        });
+
+      case "insight-actions":
+        // Get actions for specific insight
+        const insightId = url.searchParams.get("insightId");
+        if (!insightId) {
+          return NextResponse.json({ success: false, error: "Missing insightId" }, { status: 400 });
+        }
+        const targetInsights = await aiBrain.getInsights({ limit: 100 });
+        const targetInsight = targetInsights.find(i => i.id === insightId);
+        if (!targetInsight) {
+          return NextResponse.json({ success: false, error: "Insight not found" }, { status: 404 });
+        }
+        const availableActions = getAvailableActions(targetInsight);
+        return NextResponse.json({ 
+          success: true, 
+          data: availableActions.map(a => ({
+            id: a.id,
+            type: a.type,
+            name: a.name,
+            description: a.description,
+            risk: a.risk,
+            estimatedDuration: a.estimatedDuration,
+          })),
+        });
+
       default:
         // Return overview
         const overviewStats = await aiBrain.getStats();
@@ -76,6 +120,11 @@ export async function GET(request: Request) {
             stats: overviewStats,
             recentInsights,
             config: aiBrain.getConfig(),
+            availableActions: getAllActions().map(a => ({
+              id: a.id,
+              name: a.name,
+              risk: a.risk,
+            })),
           },
         });
     }
@@ -117,7 +166,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { action, insightId, reason, agentType } = body;
+    const { action, insightId, reason, agentType, actionId, autoExecute } = body;
 
     // Initialize brain
     await aiBrain.initialize();
@@ -163,10 +212,50 @@ export async function POST(request: Request) {
           );
         }
         const approved = await aiBrain.approveInsight(insightId, session.user.id);
+        
+        // If auto-execute is enabled and actionId is provided, execute the action
+        if (autoExecute && actionId && approved) {
+          const actionResult = await executeAction(approved, actionId, session.user.id);
+          return NextResponse.json({ 
+            success: true, 
+            data: approved,
+            message: "Insight schválený a akcia vykonaná",
+            actionResult,
+          });
+        }
+        
         return NextResponse.json({ 
           success: true, 
           data: approved,
           message: "Insight schválený",
+        });
+
+      case "execute-action":
+        if (!insightId || !actionId) {
+          return NextResponse.json(
+            { success: false, error: "Missing insightId or actionId" },
+            { status: 400 }
+          );
+        }
+        
+        // Get the insight
+        const allInsights = await aiBrain.getInsights({ limit: 100 });
+        const insightToExecute = allInsights.find(i => i.id === insightId);
+        
+        if (!insightToExecute) {
+          return NextResponse.json(
+            { success: false, error: "Insight not found" },
+            { status: 404 }
+          );
+        }
+        
+        // Execute the action
+        const execResult = await executeAction(insightToExecute, actionId, session.user.id);
+        
+        return NextResponse.json({ 
+          success: execResult.success, 
+          data: execResult,
+          message: execResult.message,
         });
 
       case "dismiss":

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Brain,
@@ -71,6 +71,37 @@ async function updateInsight(insightId: string, action: "approve" | "dismiss" | 
   const data = await response.json();
   if (!data.success) throw new Error(data.error);
   return data;
+}
+
+async function fetchInsightActions(insightId: string) {
+  const response = await fetch(`/api/v1/admin/ai-brain?action=insight-actions&insightId=${insightId}`);
+  const data = await response.json();
+  if (!data.success) throw new Error(data.error);
+  return data.data;
+}
+
+async function executeInsightAction(insightId: string, actionId: string, autoApprove = false) {
+  const response = await fetch("/api/v1/admin/ai-brain", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ 
+      action: autoApprove ? "approve" : "execute-action", 
+      insightId, 
+      actionId,
+      autoExecute: autoApprove,
+    }),
+  });
+  const data = await response.json();
+  return data;
+}
+
+interface AutoAction {
+  id: string;
+  type: string;
+  name: string;
+  description: string;
+  risk: "safe" | "moderate" | "high";
+  estimatedDuration: string;
 }
 
 // ============================================
@@ -401,38 +432,33 @@ export function AIBrainDashboard() {
 
                     {/* Actions */}
                     {insight.status === "new" && (
-                      <div className="flex gap-2 pt-2">
-                        <button
-                          onClick={() => updateMutation.mutate({ insightId: insight.id, action: "approve" })}
-                          disabled={updateMutation.isPending}
-                          className="flex-1 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg
-                                     hover:bg-emerald-500/30 transition-colors flex items-center justify-center gap-2"
-                        >
-                          <ThumbsUp className="w-4 h-4" />
-                          Schváliť
-                        </button>
-                        <button
-                          onClick={() => updateMutation.mutate({ insightId: insight.id, action: "dismiss" })}
-                          disabled={updateMutation.isPending}
-                          className="flex-1 px-4 py-2 bg-red-500/20 text-red-400 rounded-lg
-                                     hover:bg-red-500/30 transition-colors flex items-center justify-center gap-2"
-                        >
-                          <ThumbsDown className="w-4 h-4" />
-                          Zamietnuť
-                        </button>
-                      </div>
+                      <InsightActions 
+                        insight={insight} 
+                        onApprove={(actionId) => {
+                          if (actionId) {
+                            executeInsightAction(insight.id, actionId, true).then(() => {
+                              queryClient.invalidateQueries({ queryKey: ["ai-brain-insights"] });
+                            });
+                          } else {
+                            updateMutation.mutate({ insightId: insight.id, action: "approve" });
+                          }
+                        }}
+                        onDismiss={() => updateMutation.mutate({ insightId: insight.id, action: "dismiss" })}
+                        isPending={updateMutation.isPending}
+                      />
                     )}
 
                     {insight.status === "approved" && (
-                      <button
-                        onClick={() => updateMutation.mutate({ insightId: insight.id, action: "implement" })}
-                        disabled={updateMutation.isPending}
-                        className="w-full px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg
-                                   hover:bg-blue-500/30 transition-colors flex items-center justify-center gap-2"
-                      >
-                        <Check className="w-4 h-4" />
-                        Označiť ako implementované
-                      </button>
+                      <ApprovedInsightActions 
+                        insight={insight}
+                        onExecute={(actionId) => {
+                          executeInsightAction(insight.id, actionId).then(() => {
+                            queryClient.invalidateQueries({ queryKey: ["ai-brain-insights"] });
+                          });
+                        }}
+                        onMarkImplemented={() => updateMutation.mutate({ insightId: insight.id, action: "implement" })}
+                        isPending={updateMutation.isPending}
+                      />
                     )}
                   </div>
                 </div>
@@ -441,6 +467,253 @@ export function AIBrainDashboard() {
           ))
         )}
       </div>
+    </div>
+  );
+}
+
+// ============================================
+// INSIGHT ACTIONS COMPONENT
+// ============================================
+
+function InsightActions({ 
+  insight, 
+  onApprove, 
+  onDismiss, 
+  isPending 
+}: { 
+  insight: AIInsight;
+  onApprove: (actionId?: string) => void;
+  onDismiss: () => void;
+  isPending: boolean;
+}) {
+  const [showActions, setShowActions] = useState(false);
+  const [actions, setActions] = useState<AutoAction[]>([]);
+  const [loadingActions, setLoadingActions] = useState(false);
+  const [selectedAction, setSelectedAction] = useState<string | null>(null);
+  const [executing, setExecuting] = useState(false);
+
+  const loadActions = async () => {
+    setLoadingActions(true);
+    try {
+      const data = await fetchInsightActions(insight.id);
+      setActions(data);
+      setShowActions(true);
+    } catch (error) {
+      console.error("Failed to load actions:", error);
+    } finally {
+      setLoadingActions(false);
+    }
+  };
+
+  const getRiskColor = (risk: string) => {
+    switch (risk) {
+      case "safe": return "text-emerald-400 bg-emerald-500/10 border-emerald-500/30";
+      case "moderate": return "text-amber-400 bg-amber-500/10 border-amber-500/30";
+      case "high": return "text-red-400 bg-red-500/10 border-red-500/30";
+      default: return "text-slate-400 bg-slate-500/10 border-slate-500/30";
+    }
+  };
+
+  if (showActions && actions.length > 0) {
+    return (
+      <div className="space-y-3 pt-2">
+        <div className="flex items-center gap-2 text-sm text-slate-400">
+          <Zap className="w-4 h-4 text-amber-400" />
+          Dostupné automatické akcie:
+        </div>
+        
+        <div className="space-y-2">
+          {actions.map((action) => (
+            <button
+              key={action.id}
+              onClick={() => setSelectedAction(selectedAction === action.id ? null : action.id)}
+              className={`w-full p-3 rounded-lg border text-left transition-all ${
+                selectedAction === action.id 
+                  ? "bg-violet-500/10 border-violet-500/30" 
+                  : "bg-slate-800/30 border-slate-700 hover:border-slate-600"
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-medium text-white">{action.name}</span>
+                    <span className={`px-2 py-0.5 rounded text-xs border ${getRiskColor(action.risk)}`}>
+                      {action.risk === "safe" ? "Bezpečné" : action.risk === "moderate" ? "Stredné riziko" : "Vysoké riziko"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">{action.description}</p>
+                  <p className="text-xs text-slate-500 mt-1">Trvanie: {action.estimatedDuration}</p>
+                </div>
+                {selectedAction === action.id && (
+                  <Check className="w-5 h-5 text-violet-400" />
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-2 pt-2">
+          <button
+            onClick={() => {
+              setExecuting(true);
+              onApprove(selectedAction || undefined);
+            }}
+            disabled={isPending || executing}
+            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg
+                       hover:shadow-lg hover:shadow-emerald-500/25 transition-all flex items-center justify-center gap-2
+                       disabled:opacity-50"
+          >
+            {executing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Zap className="w-4 h-4" />
+            )}
+            {selectedAction ? "Schváliť a Vykonať" : "Schváliť"}
+          </button>
+          <button
+            onClick={onDismiss}
+            disabled={isPending || executing}
+            className="px-4 py-2.5 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors"
+          >
+            Zamietnuť
+          </button>
+          <button
+            onClick={() => setShowActions(false)}
+            className="px-4 py-2.5 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 transition-colors"
+          >
+            Späť
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-2 pt-2">
+      <button
+        onClick={() => onApprove()}
+        disabled={isPending}
+        className="flex-1 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg
+                   hover:bg-emerald-500/30 transition-colors flex items-center justify-center gap-2"
+      >
+        <ThumbsUp className="w-4 h-4" />
+        Schváliť
+      </button>
+      <button
+        onClick={loadActions}
+        disabled={isPending || loadingActions}
+        className="px-4 py-2 bg-violet-500/20 text-violet-400 rounded-lg
+                   hover:bg-violet-500/30 transition-colors flex items-center justify-center gap-2"
+        title="Zobraziť automatické akcie"
+      >
+        {loadingActions ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Zap className="w-4 h-4" />
+        )}
+        Auto-fix
+      </button>
+      <button
+        onClick={onDismiss}
+        disabled={isPending}
+        className="flex-1 px-4 py-2 bg-red-500/20 text-red-400 rounded-lg
+                   hover:bg-red-500/30 transition-colors flex items-center justify-center gap-2"
+      >
+        <ThumbsDown className="w-4 h-4" />
+        Zamietnuť
+      </button>
+    </div>
+  );
+}
+
+// ============================================
+// APPROVED INSIGHT ACTIONS COMPONENT
+// ============================================
+
+function ApprovedInsightActions({ 
+  insight, 
+  onExecute, 
+  onMarkImplemented,
+  isPending 
+}: { 
+  insight: AIInsight;
+  onExecute: (actionId: string) => void;
+  onMarkImplemented: () => void;
+  isPending: boolean;
+}) {
+  const [actions, setActions] = useState<AutoAction[]>([]);
+  const [loadingActions, setLoadingActions] = useState(false);
+  const [executing, setExecuting] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchInsightActions(insight.id).then(setActions).catch(console.error);
+  }, [insight.id]);
+
+  const getRiskColor = (risk: string) => {
+    switch (risk) {
+      case "safe": return "text-emerald-400 bg-emerald-500/10 border-emerald-500/30";
+      case "moderate": return "text-amber-400 bg-amber-500/10 border-amber-500/30";
+      case "high": return "text-red-400 bg-red-500/10 border-red-500/30";
+      default: return "text-slate-400 bg-slate-500/10 border-slate-500/30";
+    }
+  };
+
+  const handleExecute = async (actionId: string) => {
+    setExecuting(actionId);
+    try {
+      await onExecute(actionId);
+    } finally {
+      setExecuting(null);
+    }
+  };
+
+  return (
+    <div className="space-y-3 pt-2">
+      {actions.length > 0 && (
+        <>
+          <div className="flex items-center gap-2 text-sm text-slate-400">
+            <Zap className="w-4 h-4 text-amber-400" />
+            Vykonať automatickú akciu:
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {actions.map((action) => (
+              <button
+                key={action.id}
+                onClick={() => handleExecute(action.id)}
+                disabled={isPending || executing !== null}
+                className={`p-3 rounded-lg border text-left transition-all hover:border-violet-500/50 ${
+                  executing === action.id 
+                    ? "bg-violet-500/10 border-violet-500/30" 
+                    : "bg-slate-800/30 border-slate-700"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-medium text-white text-sm">{action.name}</span>
+                  {executing === action.id ? (
+                    <Loader2 className="w-4 h-4 text-violet-400 animate-spin" />
+                  ) : (
+                    <span className={`px-2 py-0.5 rounded text-xs border ${getRiskColor(action.risk)}`}>
+                      {action.risk}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500">{action.estimatedDuration}</p>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      <button
+        onClick={onMarkImplemented}
+        disabled={isPending}
+        className="w-full px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg
+                   hover:bg-blue-500/30 transition-colors flex items-center justify-center gap-2"
+      >
+        <Check className="w-4 h-4" />
+        Označiť ako implementované (manuálne)
+      </button>
     </div>
   );
 }

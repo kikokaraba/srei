@@ -34,3 +34,13 @@ export {
   runDataQualityAnalysis,
   runFeatureSuggesterAnalysis,
 } from "./agents";
+
+// Auto-Actions
+export {
+  getAvailableActions,
+  executeAction,
+  getAllActions,
+  isAutoExecutable,
+} from "./auto-actions";
+
+export type { AutoAction, ActionResult, ActionType, ActionRisk } from "./auto-actions";
