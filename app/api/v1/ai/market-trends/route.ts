@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import type { SlovakCity } from "@/generated/prisma/client";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  const city = request.nextUrl.searchParams.get("city") || "BRATISLAVA";
+  const city = (request.nextUrl.searchParams.get("city") || "BRATISLAVA") as SlovakCity;
 
   try {
     // Get current market data
@@ -41,7 +42,7 @@ export async function GET(request: NextRequest) {
     const byCondition = await prisma.property.groupBy({
       by: ["condition"],
       where: {
-        city: city as string,
+        city,
         listing_type: "PREDAJ",
       },
       _avg: { price_per_m2: true },
@@ -50,16 +51,16 @@ export async function GET(request: NextRequest) {
 
     // Get hot deals ratio
     const totalInCity = await prisma.property.count({
-      where: { city: city as string, listing_type: "PREDAJ" },
+      where: { city, listing_type: "PREDAJ" },
     });
     const hotDealsInCity = await prisma.property.count({
-      where: { city: city as string, listing_type: "PREDAJ", is_distressed: true },
+      where: { city, listing_type: "PREDAJ", is_distressed: true },
     });
 
     // Recent listings (last 7 days simulation - based on days_on_market)
     const recentListings = await prisma.property.count({
       where: {
-        city: city as string,
+        city,
         listing_type: "PREDAJ",
         days_on_market: { lte: 7 },
       },
