@@ -241,7 +241,7 @@ export function LocationPicker({
           return (
             <div key={region.id} className="rounded-xl overflow-hidden">
               {/* Region header */}
-              <div className={`flex items-center gap-2 p-3 cursor-pointer transition-all ${
+              <div className={`flex items-center gap-2 p-3 transition-all ${
                 isSelected 
                   ? "bg-emerald-500/20 border border-emerald-500/30" 
                   : isPartial
@@ -249,7 +249,10 @@ export function LocationPicker({
                   : "bg-slate-800/30 border border-slate-700/50 hover:bg-slate-800/50"
               } rounded-xl`}>
                 <button
-                  onClick={() => toggleRegionExpand(region.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleRegionExpand(region.id);
+                  }}
                   className="p-1 hover:bg-slate-700/50 rounded"
                 >
                   {isExpanded ? (
@@ -259,23 +262,26 @@ export function LocationPicker({
                   )}
                 </button>
                 
+                {/* Celý stred riadku je klikateľný pre výber regiónu */}
                 <button
                   onClick={() => toggleRegion(region.id)}
-                  className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                  className="flex items-center gap-2 flex-1 text-left"
+                >
+                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all shrink-0 ${
                     isSelected 
                       ? "bg-emerald-500 border-emerald-500" 
                       : isPartial
                       ? "border-emerald-500/50 bg-emerald-500/20"
                       : "border-slate-600 hover:border-slate-500"
-                  }`}
-                >
-                  {isSelected && <Check className="w-3 h-3 text-white" />}
-                  {isPartial && <div className="w-2 h-2 bg-emerald-500 rounded-sm" />}
+                  }`}>
+                    {isSelected && <Check className="w-3 h-3 text-white" />}
+                    {isPartial && <div className="w-2 h-2 bg-emerald-500 rounded-sm" />}
+                  </div>
+                  
+                  <Map className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span className="flex-1 font-medium text-white">{region.name}</span>
                 </button>
-                
-                <Map className="w-4 h-4 text-emerald-400" />
-                <span className="flex-1 font-medium text-white">{region.name}</span>
-                <span className="text-xs text-slate-500">{districts.length} okresov</span>
+                <span className="text-xs text-slate-500 shrink-0">{districts.length} okresov</span>
               </div>
 
               {/* Districts */}
@@ -297,7 +303,10 @@ export function LocationPicker({
                             : "bg-slate-800/20 border border-transparent hover:bg-slate-800/40"
                         }`}>
                           <button
-                            onClick={() => toggleDistrictExpand(district.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleDistrictExpand(district.id);
+                            }}
                             className="p-0.5 hover:bg-slate-700/50 rounded"
                           >
                             {isDistExpanded ? (
@@ -307,24 +316,27 @@ export function LocationPicker({
                             )}
                           </button>
                           
+                          {/* Celý stred riadku je klikateľný pre výber okresu */}
                           <button
                             onClick={() => toggleDistrict(district)}
                             disabled={isSelected}
-                            className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${
+                            className="flex items-center gap-2 flex-1 text-left disabled:opacity-50"
+                          >
+                            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all shrink-0 ${
                               isDistSelected
                                 ? "bg-blue-500 border-blue-500"
                                 : hasCitySelected
                                 ? "border-blue-500/50 bg-blue-500/20"
                                 : "border-slate-600 hover:border-slate-500"
-                            } disabled:opacity-50`}
-                          >
-                            {isDistSelected && <Check className="w-2.5 h-2.5 text-white" />}
-                            {!isDistSelected && hasCitySelected && <div className="w-1.5 h-1.5 bg-blue-500 rounded-sm" />}
+                            }`}>
+                              {isDistSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                              {!isDistSelected && hasCitySelected && <div className="w-1.5 h-1.5 bg-blue-500 rounded-sm" />}
+                            </div>
+                            
+                            <MapPin className="w-3 h-3 text-blue-400 shrink-0" />
+                            <span className="flex-1 text-sm text-slate-300">{district.name}</span>
                           </button>
-                          
-                          <MapPin className="w-3 h-3 text-blue-400" />
-                          <span className="flex-1 text-sm text-slate-300">{district.name}</span>
-                          <span className="text-xs text-slate-600">{district.cities.length}</span>
+                          <span className="text-xs text-slate-600 shrink-0">{district.cities.length}</span>
                         </div>
 
                         {/* Cities */}

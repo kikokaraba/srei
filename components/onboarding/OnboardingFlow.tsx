@@ -152,7 +152,8 @@ export function OnboardingFlow() {
           trackedRegions: data.trackedRegions,
           trackedCities: [],
           trackedDistricts: [],
-          investmentType: data.investmentTypes[0] || null, // Hlavný typ
+          investmentType: data.investmentTypes[0] || null, // Hlavný typ (legacy)
+          investmentTypes: data.investmentTypes, // Všetky typy
           minYield: data.minYield,
           maxYield: null,
           minPrice: data.minPrice,
