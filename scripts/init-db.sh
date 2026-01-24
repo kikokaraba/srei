@@ -13,3 +13,11 @@ npx prisma db push --accept-data-loss || {
 }
 
 echo "✅ Databáza inicializovaná"
+
+# Spusti seed (vytvorí admin používateľa)
+echo "🌱 Spúšťam seed..."
+npm run db:seed || {
+    echo "⚠️  Seed zlyhal alebo už bol spustený"
+}
+
+echo "✅ Seed dokončený"

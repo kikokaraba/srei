@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import { prisma } from "@/lib/prisma";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
+import { compare } from "bcryptjs";
 import type { UserRole } from "@/generated/prisma/client";
 
 const credentialsSchema = z.object({
@@ -44,34 +45,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         try {
-          let user = await prisma.user.findUnique({
+          const user = await prisma.user.findUnique({
             where: { email: validated.data.email },
           });
-
-          // Auto-create demo user if it doesn't exist and email is demo@sria.sk
-          if (!user && validated.data.email === "demo@sria.sk") {
-            console.log("Auth: Creating demo user automatically...");
-            user = await prisma.user.create({
-              data: {
-                email: "demo@sria.sk",
-                name: "Demo Používateľ",
-                role: "PREMIUM_INVESTOR",
-              },
-            });
-            console.log("Auth: Demo user created", user.email, user.id);
-          }
 
           if (!user) {
             console.log("Auth: User not found", validated.data.email);
             return null;
           }
 
-          console.log("Auth: User found", user.email, user.id);
+          // Verify password if user has one
+          if (user.password) {
+            const isValid = await compare(validated.data.password, user.password);
+            if (!isValid) {
+              console.log("Auth: Invalid password for", validated.data.email);
+              return null;
+            }
+          } else {
+            // For users without password (legacy/demo), allow any password
+            console.log("Auth: User without password, allowing access", validated.data.email);
+          }
 
-        // In production, verify password hash here
-        // For MVP, we'll use a simple check
-        // const isValid = await compare(validated.data.password, user.password);
-        // if (!isValid) return null;
+          console.log("Auth: User authenticated", user.email, user.id);
 
           return {
             id: user.id,
