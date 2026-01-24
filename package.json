@@ -42,7 +42,8 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "mapbox-gl": "^3.9.0",
-    "supercluster": "^8.0.1"
+    "supercluster": "^8.0.1",
+    "@anthropic-ai/sdk": "^0.32.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

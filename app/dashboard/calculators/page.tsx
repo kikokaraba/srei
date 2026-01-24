@@ -16,10 +16,12 @@ import {
   Repeat,
   Info,
   Banknote,
+  Brain,
 } from "lucide-react";
 import { ScenarioSimulator } from "@/components/dashboard/ScenarioSimulator";
 import { TaxAssistant } from "@/components/dashboard/TaxAssistant";
 import { BRRRRCalculator } from "@/components/calculators/BRRRRCalculator";
+import { AIValuation } from "@/components/tools/AIValuation";
 import PremiumGate from "@/components/ui/PremiumGate";
 
 // Dynamic import for MortgageCalculator to avoid SSR issues
@@ -28,7 +30,7 @@ const MortgageCalculator = dynamic(
   { ssr: false }
 );
 
-type CalculatorType = "investment" | "tax" | "brrrr" | "mortgage" | null;
+type CalculatorType = "investment" | "tax" | "brrrr" | "mortgage" | "ai-valuation" | null;
 
 export default function CalculatorsPage() {
   const [openCalculator, setOpenCalculator] = useState<CalculatorType>(null);
@@ -89,6 +91,25 @@ export default function CalculatorsPage() {
         "Nekonečná návratnosť",
         "Cash recovery %",
         "Equity pozícia",
+      ],
+    },
+    {
+      id: "ai-valuation" as const,
+      name: "AI Ocenenie",
+      subtitle: "Powered by Claude AI",
+      description: "Inteligentný odhad trhovej hodnoty nehnuteľnosti na základe analýzy podobných inzerátov v databáze. AI zohľadňuje lokalitu, stav a aktuálny trh.",
+      icon: Brain,
+      accentColor: "violet",
+      stats: [
+        { label: "AI Model", value: "Claude" },
+        { label: "Dáta", value: "Real-time" },
+        { label: "Presnosť", value: "±10%" },
+      ],
+      capabilities: [
+        "Analýza podobných nehnuteľností",
+        "Cenový rozsah",
+        "Faktory ovplyvňujúce cenu",
+        "Trhové odporúčania",
       ],
     },
     {
@@ -281,6 +302,8 @@ export default function CalculatorsPage() {
                   <div className="relative p-6">
                     {calc.id === "mortgage" ? (
                       <MortgageCalculator />
+                    ) : calc.id === "ai-valuation" ? (
+                      <AIValuation />
                     ) : (
                       <PremiumGate 
                         feature={calc.id === "tax" ? "advancedTax" : "scenarioSimulator"} 
