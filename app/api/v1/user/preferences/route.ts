@@ -41,8 +41,19 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const session = await auth();
+    console.log("POST /api/v1/user/preferences - Session check:", {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      userId: session?.user?.id,
+      userEmail: session?.user?.email,
+    });
+    
     if (!session?.user?.id) {
-      console.error("Unauthorized: No session or user ID");
+      console.error("Unauthorized: No session or user ID", {
+        session: session ? "exists" : "null",
+        user: session?.user ? "exists" : "null",
+        userId: session?.user?.id,
+      });
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
         { status: 401 }

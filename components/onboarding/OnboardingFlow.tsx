@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { ArrowRight, ArrowLeft, MapPin, TrendingUp, Target, Bell } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import type { SlovakCity } from "@/generated/prisma/client";
 
 const SLOVAK_CITIES = [
@@ -76,6 +78,8 @@ interface OnboardingData {
 }
 
 export function OnboardingFlow() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [data, setData] = useState<OnboardingData>({
     primaryCity: null,
@@ -104,6 +108,30 @@ export function OnboardingFlow() {
     notifyUrbanDevelopment: true,
   });
   const [isSaving, setIsSaving] = useState(false);
+
+  // Check if user is authenticated
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      console.log("User not authenticated, redirecting to sign in...");
+      router.push("/auth/signin?callbackUrl=/onboarding");
+    } else if (status === "authenticated") {
+      console.log("User authenticated:", session?.user?.email, "User ID:", session?.user?.id);
+    }
+  }, [status, session, router]);
+
+  // Show loading while checking authentication
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/20 flex items-center justify-center">
+        <div className="text-slate-400">Načítavam...</div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated (will redirect)
+  if (status === "unauthenticated") {
+    return null;
+  }
 
   const handleNext = useCallback(() => {
     if (step < 5) {
@@ -177,13 +205,22 @@ export function OnboardingFlow() {
   const handleSkip = useCallback(async () => {
     setIsSaving(true);
     try {
+      console.log("Skipping onboarding - sending request...");
       const response = await fetch("/api/v1/user/preferences", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+        },
         credentials: "include", // Ensure cookies are sent
         body: JSON.stringify({
           onboardingCompleted: true,
         }),
+      });
+
+      console.log("Skip onboarding response:", {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
       });
 
       if (!response.ok) {
