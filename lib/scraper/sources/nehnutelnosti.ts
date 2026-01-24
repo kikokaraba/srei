@@ -152,7 +152,7 @@ export class NehnutelnostiScraper extends BaseScraper {
 
   parseListingElement(
     $: cheerio.CheerioAPI,
-    element: cheerio.Element,
+    element: Parameters<typeof $>[0],
     listingType: ListingType
   ): ParsedListing | null {
     try {

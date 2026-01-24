@@ -205,7 +205,7 @@ export abstract class BaseScraper {
    */
   abstract parseListingElement(
     $: cheerio.CheerioAPI,
-    element: cheerio.Element,
+    element: Parameters<typeof $>[0],
     listingType: ListingType
   ): ParsedListing | null;
 
@@ -337,7 +337,7 @@ export abstract class BaseScraper {
 
       for (const element of elements) {
         try {
-          const listing = this.parseListingElement($, element as cheerio.Element, category.listingType);
+          const listing = this.parseListingElement($, element, category.listingType);
           if (listing) {
             result.listings.push(listing);
           }
