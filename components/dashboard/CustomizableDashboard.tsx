@@ -21,6 +21,18 @@ import { Settings, X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const WIDGET_REGISTRY = {
+  "hot-deals": {
+    id: "hot-deals",
+    title: "Hot Deals",
+    component: "HotDeals",
+    description: "Nehnuteľnosti 15%+ pod trhovou cenou",
+  },
+  "system-health": {
+    id: "system-health",
+    title: "System Health",
+    component: "SystemHealth",
+    description: "Stav scrapera a dátových zdrojov",
+  },
   "economic-indicators": {
     id: "economic-indicators",
     title: "Ekonomické ukazovatele",

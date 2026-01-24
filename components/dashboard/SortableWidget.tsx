@@ -12,8 +12,12 @@ import { TaxAssistant } from "./TaxAssistant";
 import { MarketOverview } from "./MarketOverview";
 import { RecentProperties } from "./RecentProperties";
 import { EconomicIndicators } from "./EconomicIndicators";
+import HotDeals from "./HotDeals";
+import SystemHealth from "./SystemHealth";
 
 const WIDGET_COMPONENTS = {
+  "hot-deals": HotDeals,
+  "system-health": SystemHealth,
   "economic-indicators": EconomicIndicators,
   "analytics-cards": AnalyticsCards,
   "market-gaps": MarketGaps,
