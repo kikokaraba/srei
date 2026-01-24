@@ -20,7 +20,7 @@ const SITE_URL = process.env.NEXTAUTH_URL || "https://sria.sk";
 
 interface TelegramUser {
   id: string;
-  telegramChatId: string;
+  telegramChatId: string | null;
   telegramEnabled: boolean;
   notifyMarketGaps: boolean;
   notifyPriceDrops: boolean;
@@ -86,6 +86,8 @@ async function getTelegramUsers(
   // Filter by city/region if specified
   if (city) {
     return users.filter((user) => {
+      if (!user.telegramChatId) return false;
+      
       const trackedCities = safeParseArray(user.trackedCities);
       const trackedRegions = safeParseArray(user.trackedRegions);
       
@@ -106,7 +108,7 @@ async function getTelegramUsers(
     });
   }
 
-  return users as TelegramUser[];
+  return users;
 }
 
 function safeParseArray(value: string | null | undefined): string[] {
