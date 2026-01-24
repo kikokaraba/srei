@@ -47,6 +47,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         try {
           const user = await prisma.user.findUnique({
             where: { email: validated.data.email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              role: true,
+              password: true,
+            },
           });
 
           if (!user) {
@@ -54,7 +61,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return null;
           }
 
-          // Verify password if user has one
+          // Verify password - required for all users
           if (user.password) {
             const isValid = await compare(validated.data.password, user.password);
             if (!isValid) {
@@ -62,8 +69,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               return null;
             }
           } else {
-            // For users without password (legacy/demo), allow any password
-            console.log("Auth: User without password, allowing access", validated.data.email);
+            // Users without password cannot log in (security)
+            console.log("Auth: User has no password set", validated.data.email);
+            return null;
           }
 
           console.log("Auth: User authenticated", user.email, user.id);

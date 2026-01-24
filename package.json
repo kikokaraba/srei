@@ -15,6 +15,7 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "db:init": "bash scripts/init-db.sh",
+    "db:auto-seed": "tsx scripts/ensure-admin.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
