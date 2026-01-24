@@ -88,7 +88,7 @@ export function Stats() {
   ];
 
   return (
-    <section className="py-20 sm:py-24 bg-slate-950 relative overflow-hidden">
+    <section id="stats" className="py-20 sm:py-24 bg-slate-950 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-grid-slate-800/[0.1] bg-[size:40px_40px]" />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />

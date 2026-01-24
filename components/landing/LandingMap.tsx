@@ -60,7 +60,7 @@ export function LandingMap() {
   }), []);
 
   return (
-    <section className="py-16 sm:py-24 bg-gradient-to-b from-slate-950 to-slate-900 relative overflow-hidden">
+    <section id="map" className="py-16 sm:py-24 bg-gradient-to-b from-slate-950 to-slate-900 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-grid-slate-800/[0.05] bg-[size:40px_40px]" />
       

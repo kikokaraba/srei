@@ -43,16 +43,11 @@ export default function HomePage() {
     <main className="min-h-screen bg-slate-950">
       <Navbar />
       <LandingHero />
+      {/* Sekcie v poradí podľa menu: Funkcie → Štatistiky → Mapa → Cenník */}
+      <Features />
       <Stats />
-      <section id="map" aria-label="Interaktívna mapa Slovenska">
-        <LandingMapWrapper />
-      </section>
-      <section id="features" aria-label="Funkcie platformy">
-        <Features />
-      </section>
-      <section id="why-sria" aria-label="Prečo SRIA">
-        <CompetitiveAdvantage />
-      </section>
+      <LandingMapWrapper />
+      <CompetitiveAdvantage />
       <Testimonials />
       <Pricing />
       <CTA />

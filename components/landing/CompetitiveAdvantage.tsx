@@ -96,7 +96,7 @@ const investorFeatures = [
 
 export function CompetitiveAdvantage() {
   return (
-    <section className="py-24 sm:py-32 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
+    <section id="why-sria" className="py-24 sm:py-32 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-grid-slate-800/[0.05] bg-[size:40px_40px]" />
       <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
