@@ -1,12 +1,22 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Filter, X, Save, ChevronDown, ChevronUp } from "lucide-react";
+import { Filter, Save, ChevronDown, ChevronUp, Check, MapPin } from "lucide-react";
 import { useUserPreferences } from "@/lib/hooks/useUserPreferences";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CITY_OPTIONS, CONDITION_OPTIONS, ENERGY_CERTIFICATE_OPTIONS } from "@/lib/constants";
+import { CONDITION_OPTIONS } from "@/lib/constants";
 
-const SLOVAK_CITIES = CITY_OPTIONS;
+// Slovenské kraje
+const SLOVAK_REGIONS = [
+  { id: "BA", name: "Bratislavský", shortName: "BA" },
+  { id: "TT", name: "Trnavský", shortName: "TT" },
+  { id: "TN", name: "Trenčiansky", shortName: "TN" },
+  { id: "NR", name: "Nitriansky", shortName: "NR" },
+  { id: "ZA", name: "Žilinský", shortName: "ZA" },
+  { id: "BB", name: "Banskobystrický", shortName: "BB" },
+  { id: "PO", name: "Prešovský", shortName: "PO" },
+  { id: "KE", name: "Košický", shortName: "KE" },
+];
 
 const PROPERTY_CONDITIONS = CONDITION_OPTIONS;
 
@@ -57,7 +67,7 @@ export function AdvancedFilters() {
   });
 
   const [filters, setFilters] = useState({
-    trackedCities: [] as string[],
+    trackedRegions: [] as string[],
     minPrice: null as number | null,
     maxPrice: null as number | null,
     minPricePerM2: null as number | null,
@@ -78,14 +88,12 @@ export function AdvancedFilters() {
     minCashOnCash: null as number | null,
     maxDaysOnMarket: null as number | null,
     minGapPercentage: null as number | null,
-    minUrbanImpact: null as number | null,
-    infrastructureTypes: [] as string[],
   });
 
   // Count active filters
   const countActiveFilters = useCallback(() => {
     let count = 0;
-    if (filters.trackedCities.length > 0) count++;
+    if (filters.trackedRegions.length > 0) count++;
     if (filters.minPrice || filters.maxPrice) count++;
     if (filters.minPricePerM2 || filters.maxPricePerM2) count++;
     if (filters.minArea || filters.maxArea) count++;
@@ -99,8 +107,6 @@ export function AdvancedFilters() {
     if (filters.minCashOnCash) count++;
     if (filters.maxDaysOnMarket) count++;
     if (filters.minGapPercentage) count++;
-    if (filters.minUrbanImpact) count++;
-    if (filters.infrastructureTypes.length > 0) count++;
     return count;
   }, [filters]);
 
@@ -108,7 +114,7 @@ export function AdvancedFilters() {
     if (preferences) {
       saveMutation.mutate({
         ...preferences,
-        trackedCities: filters.trackedCities,
+        trackedRegions: filters.trackedRegions,
         minPrice: filters.minPrice,
         maxPrice: filters.maxPrice,
         minPricePerM2: filters.minPricePerM2,
@@ -129,8 +135,6 @@ export function AdvancedFilters() {
         minCashOnCash: filters.minCashOnCash,
         maxDaysOnMarket: filters.maxDaysOnMarket,
         minGapPercentage: filters.minGapPercentage,
-        minUrbanImpact: filters.minUrbanImpact,
-        infrastructureTypes: JSON.stringify(filters.infrastructureTypes),
         onboardingCompleted: true,
       });
     }
@@ -138,7 +142,7 @@ export function AdvancedFilters() {
 
   const handleReset = useCallback(() => {
     setFilters({
-      trackedCities: [],
+      trackedRegions: [],
       minPrice: null,
       maxPrice: null,
       minPricePerM2: null,
@@ -159,8 +163,6 @@ export function AdvancedFilters() {
       minCashOnCash: null,
       maxDaysOnMarket: null,
       minGapPercentage: null,
-      minUrbanImpact: null,
-      infrastructureTypes: [],
     });
   }, []);
 
@@ -204,31 +206,78 @@ export function AdvancedFilters() {
 
       {isExpanded && (
         <div className="space-y-6 pt-4 border-t border-slate-800">
-          {/* Lokalita */}
+          {/* Lokalita - Kraje */}
           <div>
-            <label className="block text-slate-300 mb-3 font-medium">
-              Sledované mestá
-            </label>
+            <div className="flex items-center gap-2 mb-3">
+              <MapPin className="w-4 h-4 text-emerald-400" />
+              <label className="text-slate-300 font-medium">
+                Sledované kraje
+              </label>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {SLOVAK_CITIES.map((city) => (
-                <label
-                  key={city.value}
-                  className="flex items-center gap-2 p-2 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-slate-600 transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={filters.trackedCities.includes(city.value)}
-                    onChange={(e) => {
-                      const cities = e.target.checked
-                        ? [...filters.trackedCities, city.value]
-                        : filters.trackedCities.filter((c) => c !== city.value);
-                      setFilters({ ...filters, trackedCities: cities });
+              {SLOVAK_REGIONS.map((region) => {
+                const isSelected = filters.trackedRegions.includes(region.id);
+                return (
+                  <button
+                    key={region.id}
+                    type="button"
+                    onClick={() => {
+                      const regions = isSelected
+                        ? filters.trackedRegions.filter((r) => r !== region.id)
+                        : [...filters.trackedRegions, region.id];
+                      setFilters({ ...filters, trackedRegions: regions });
                     }}
-                    className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500"
-                  />
-                  <span className="text-sm text-slate-300">{city.label}</span>
-                </label>
-              ))}
+                    className={`relative p-3 rounded-xl border text-left transition-all ${
+                      isSelected
+                        ? "bg-emerald-500/10 border-emerald-500"
+                        : "bg-slate-800 border-slate-700 hover:border-slate-600"
+                    }`}
+                  >
+                    {isSelected && (
+                      <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
+                        <Check className="w-2.5 h-2.5 text-white" />
+                      </div>
+                    )}
+                    <span className={`text-lg font-bold ${isSelected ? "text-emerald-400" : "text-slate-400"}`}>
+                      {region.shortName}
+                    </span>
+                    <span className={`block text-xs mt-0.5 ${isSelected ? "text-emerald-400/70" : "text-slate-500"}`}>
+                      {region.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            {/* Quick select */}
+            <div className="flex flex-wrap gap-2 mt-3">
+              <button
+                type="button"
+                onClick={() => setFilters({ ...filters, trackedRegions: SLOVAK_REGIONS.map(r => r.id) })}
+                className="text-xs px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+              >
+                Celé Slovensko
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilters({ ...filters, trackedRegions: ["BA", "TT", "NR"] })}
+                className="text-xs px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+              >
+                Západ
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilters({ ...filters, trackedRegions: ["ZA", "BB", "TN"] })}
+                className="text-xs px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+              >
+                Stred
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilters({ ...filters, trackedRegions: ["PO", "KE"] })}
+                className="text-xs px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+              >
+                Východ
+              </button>
             </div>
           </div>
 
@@ -569,25 +618,6 @@ export function AdvancedFilters() {
               />
             </div>
 
-            <div>
-              <label className="block text-slate-300 mb-2 font-medium text-sm">
-                Minimálny Urban Impact (%)
-              </label>
-              <input
-                type="number"
-                value={filters.minUrbanImpact !== null && filters.minUrbanImpact !== undefined ? filters.minUrbanImpact : ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setFilters({
-                    ...filters,
-                    minUrbanImpact: val === "" ? null : parseFloat(val) || null,
-                  });
-                }}
-                placeholder="Napríklad 15"
-                step="0.1"
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
           </div>
 
           {/* Checkboxy */}

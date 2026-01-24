@@ -20,17 +20,29 @@ import {
   History,
 } from "lucide-react";
 
-// Slovenské mestá
-const CITIES = [
-  { value: "BRATISLAVA", label: "Bratislava" },
-  { value: "KOSICE", label: "Košice" },
-  { value: "PRESOV", label: "Prešov" },
-  { value: "ZILINA", label: "Žilina" },
-  { value: "BANSKA_BYSTRICA", label: "Banská Bystrica" },
-  { value: "TRNAVA", label: "Trnava" },
-  { value: "TRENCIN", label: "Trenčín" },
-  { value: "NITRA", label: "Nitra" },
+// Slovenské kraje
+const REGIONS = [
+  { value: "BA", label: "Bratislavský", cities: ["BRATISLAVA"] },
+  { value: "TT", label: "Trnavský", cities: ["TRNAVA"] },
+  { value: "TN", label: "Trenčiansky", cities: ["TRENCIN"] },
+  { value: "NR", label: "Nitriansky", cities: ["NITRA"] },
+  { value: "ZA", label: "Žilinský", cities: ["ZILINA"] },
+  { value: "BB", label: "Banskobystrický", cities: ["BANSKA_BYSTRICA"] },
+  { value: "PO", label: "Prešovský", cities: ["PRESOV"] },
+  { value: "KE", label: "Košický", cities: ["KOSICE"] },
 ];
+
+// Mapovanie miest na kraje
+const CITY_TO_REGION: Record<string, string> = {
+  BRATISLAVA: "Bratislavský",
+  KOSICE: "Košický",
+  PRESOV: "Prešovský",
+  ZILINA: "Žilinský",
+  BANSKA_BYSTRICA: "Banskobystrický",
+  TRNAVA: "Trnavský",
+  TRENCIN: "Trenčiansky",
+  NITRA: "Nitriansky",
+};
 
 const CONDITIONS = [
   { value: "POVODNY", label: "Pôvodný stav" },
@@ -72,7 +84,7 @@ interface Property {
 
 interface Filters {
   search: string;
-  city: string;
+  region: string;
   minPrice: string;
   maxPrice: string;
   minArea: string;
@@ -87,7 +99,7 @@ interface Filters {
 
 const defaultFilters: Filters = {
   search: "",
-  city: "",
+  region: "",
   minPrice: "",
   maxPrice: "",
   minArea: "",
@@ -129,7 +141,13 @@ export function PropertyList() {
       params.append("sortOrder", filters.sortOrder);
       
       if (filters.search) params.append("search", filters.search);
-      if (filters.city) params.append("city", filters.city);
+      // Mapuj región na mestá
+      if (filters.region) {
+        const region = REGIONS.find(r => r.value === filters.region);
+        if (region) {
+          params.append("cities", region.cities.join(","));
+        }
+      }
       if (filters.minPrice) params.append("minPrice", filters.minPrice);
       if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
       if (filters.minArea) params.append("minArea", filters.minArea);
@@ -219,8 +237,8 @@ export function PropertyList() {
     ([key, value]) => value && key !== "sortBy" && key !== "sortOrder" && value !== defaultFilters[key as keyof Filters]
   ).length;
 
-  const getCityLabel = (city: string) => {
-    return CITIES.find((c) => c.value === city)?.label || city;
+  const getRegionLabel = (city: string) => {
+    return CITY_TO_REGION[city] || city;
   };
 
   const getConditionLabel = (condition: string) => {
@@ -244,16 +262,16 @@ export function PropertyList() {
             />
           </div>
 
-          {/* City Select */}
+          {/* Region Select */}
           <select
-            value={filters.city}
-            onChange={(e) => handleFilterChange("city", e.target.value)}
-            className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-emerald-500 min-w-[160px]"
+            value={filters.region}
+            onChange={(e) => handleFilterChange("region", e.target.value)}
+            className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-emerald-500 min-w-[180px]"
           >
-            <option value="">Všetky mestá</option>
-            {CITIES.map((city) => (
-              <option key={city.value} value={city.value}>
-                {city.label}
+            <option value="">Všetky kraje</option>
+            {REGIONS.map((region) => (
+              <option key={region.value} value={region.value}>
+                {region.label} kraj
               </option>
             ))}
           </select>
@@ -477,7 +495,7 @@ export function PropertyList() {
                       </h3>
                       <div className="flex items-center gap-1 text-sm text-slate-400 mt-1">
                         <MapPin className="w-4 h-4" />
-                        <span className="truncate">{property.district}, {getCityLabel(property.city)}</span>
+                        <span className="truncate">{property.district}, {getRegionLabel(property.city)}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
@@ -599,7 +617,7 @@ export function PropertyList() {
                     <div className="flex items-center gap-4 text-sm text-slate-400">
                       <div className="flex items-center gap-1">
                         <MapPin className="w-4 h-4" />
-                        <span>{property.district}, {getCityLabel(property.city)}</span>
+                        <span>{property.district}, {getRegionLabel(property.city)}</span>
                       </div>
                       {property.rooms && (
                         <span>{property.rooms} izby</span>

@@ -6,12 +6,13 @@ import {
   ArrowUpRight, 
   ArrowDownRight, 
   TrendingUp,
-  Building2,
   Sparkles
 } from "lucide-react";
+import { useUserPreferences } from "@/lib/hooks/useUserPreferences";
 
-interface AnalyticsData {
-  city: string;
+interface RegionData {
+  region: string;
+  regionName: string;
   avg_price_m2: number;
   avg_rent_m2: number;
   yield_benchmark: number;
@@ -28,9 +29,21 @@ interface AnalyticsData {
 
 interface AnalyticsResponse {
   success: boolean;
-  data: AnalyticsData[];
+  data: RegionData[];
   timestamp: string;
 }
+
+// Mapovanie region ID na názov
+const REGION_NAMES: Record<string, string> = {
+  BA: "Bratislavský",
+  TT: "Trnavský",
+  TN: "Trenčiansky",
+  NR: "Nitriansky",
+  ZA: "Žilinský",
+  BB: "Banskobystrický",
+  PO: "Prešovský",
+  KE: "Košický",
+};
 
 async function fetchAnalytics(): Promise<AnalyticsResponse> {
   const res = await fetch("/api/v1/analytics/snapshot");
@@ -38,19 +51,8 @@ async function fetchAnalytics(): Promise<AnalyticsResponse> {
   return res.json();
 }
 
-const CITY_SHORTS: Record<string, string> = {
-  Bratislava: "BA",
-  Košice: "KE",
-  Prešov: "PO",
-  Žilina: "ZA",
-  "Banská Bystrica": "BB",
-  "B. Bystrica": "BB",
-  Trnava: "TT",
-  Trenčín: "TN",
-  Nitra: "NR",
-};
-
 export function MarketOverview() {
+  const { preferences, hasLocationPreferences } = useUserPreferences();
   const { data, isLoading } = useQuery({
     queryKey: ["analytics"],
     queryFn: fetchAnalytics,
@@ -72,7 +74,13 @@ export function MarketOverview() {
     );
   }
 
-  const analytics: AnalyticsData[] = data?.data || [];
+  const allRegions: RegionData[] = data?.data || [];
+  
+  // Filtruj podľa preferencií používateľa
+  const trackedRegions = preferences?.trackedRegions || [];
+  const analytics = hasLocationPreferences && trackedRegions.length > 0
+    ? allRegions.filter(r => trackedRegions.includes(r.region))
+    : allRegions;
 
   return (
     <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/20">
@@ -100,11 +108,11 @@ export function MarketOverview() {
           </div>
         </div>
 
-        {/* Cities Grid */}
+        {/* Regions Grid */}
         <div className="space-y-2">
-          {analytics.slice(0, 4).map((city, index) => {
-            const isPositive = (city.price_change_yoy || 0) >= 0;
-            const cityShort = CITY_SHORTS[city.city] || city.city.slice(0, 2);
+          {analytics.slice(0, 4).map((region, index) => {
+            const isPositive = (region.price_change_yoy || 0) >= 0;
+            const regionName = REGION_NAMES[region.region] || region.regionName || region.region;
             
             return (
               <div
@@ -113,18 +121,18 @@ export function MarketOverview() {
                            hover:border-emerald-500/40 hover:bg-slate-800/50 transition-all duration-300"
               >
                 <div className="flex items-center justify-between">
-                  {/* Left - City info */}
+                  {/* Left - Region info */}
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 
                                     flex items-center justify-center text-sm font-bold text-slate-300
                                     group-hover:from-emerald-500/20 group-hover:to-emerald-600/20 
                                     group-hover:text-emerald-400 transition-all duration-300">
-                      {cityShort}
+                      {region.region}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-white">{city.city}</h4>
+                      <h4 className="font-semibold text-white">{regionName} kraj</h4>
                       <p className="text-xs text-slate-500">
-                        {city.properties_count.toLocaleString()} nehnuteľností
+                        {region.properties_count.toLocaleString()} nehnuteľností
                       </p>
                     </div>
                   </div>
@@ -134,7 +142,7 @@ export function MarketOverview() {
                     {/* Price */}
                     <div className="text-right hidden sm:block">
                       <p className="text-lg font-bold text-white tabular-nums">
-                        €{city.avg_price_m2.toLocaleString()}
+                        €{region.avg_price_m2.toLocaleString()}
                       </p>
                       <p className="text-xs text-slate-500">za m²</p>
                     </div>
@@ -143,7 +151,7 @@ export function MarketOverview() {
                     <div className="text-right">
                       <div className="flex items-center justify-end gap-1">
                         <span className="text-lg font-bold text-emerald-400 tabular-nums">
-                          {city.yield_benchmark.toFixed(1)}%
+                          {region.yield_benchmark.toFixed(1)}%
                         </span>
                         <Sparkles className="w-3 h-3 text-emerald-400" />
                       </div>
@@ -162,32 +170,32 @@ export function MarketOverview() {
                         <ArrowDownRight className="w-4 h-4" />
                       )}
                       <span className="text-sm font-semibold tabular-nums">
-                        {isPositive ? "+" : ""}{city.price_change_yoy || 0}%
+                        {isPositive ? "+" : ""}{region.price_change_yoy || 0}%
                       </span>
                     </div>
                   </div>
                 </div>
                 
                 {/* Demand/Supply Bar */}
-                {city.demand_index !== undefined && city.supply_index !== undefined && (
+                {region.demand_index !== undefined && region.supply_index !== undefined && (
                   <div className="mt-3 pt-3 border-t border-slate-700/50">
                     <div className="flex items-center gap-3">
                       <div className="flex-1">
                         <div className="flex gap-0.5 h-1.5 rounded-full overflow-hidden bg-slate-700/50">
                           <div 
                             className="bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-l-full"
-                            style={{ width: `${city.demand_index}%` }}
+                            style={{ width: `${region.demand_index}%` }}
                           />
                           <div 
                             className="bg-gradient-to-r from-amber-500 to-amber-400 rounded-r-full"
-                            style={{ width: `${city.supply_index}%` }}
+                            style={{ width: `${region.supply_index}%` }}
                           />
                         </div>
                       </div>
                       <span className={`text-xs font-medium ${
-                        city.demand_index > city.supply_index ? "text-emerald-400" : "text-amber-400"
+                        region.demand_index > region.supply_index ? "text-emerald-400" : "text-amber-400"
                       }`}>
-                        {city.demand_index > city.supply_index ? "Vysoký dopyt" : "Vysoká ponuka"}
+                        {region.demand_index > region.supply_index ? "Vysoký dopyt" : "Vysoká ponuka"}
                       </span>
                     </div>
                   </div>
@@ -202,7 +210,7 @@ export function MarketOverview() {
           <button className="w-full mt-4 py-3 flex items-center justify-center gap-2 text-sm font-medium 
                              text-emerald-400 hover:text-emerald-300 transition-colors rounded-xl 
                              bg-slate-800/30 hover:bg-slate-800/50 border border-slate-700/50">
-            Zobraziť všetkých {analytics.length} miest
+            Zobraziť všetkých {analytics.length} krajov
             <TrendingUp className="w-4 h-4" />
           </button>
         )}

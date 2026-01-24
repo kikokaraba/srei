@@ -5,16 +5,28 @@ import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getAggregatedMarketData } from "@/lib/data-sources";
 
-// Mapovanie miest na slovenské názvy
-const CITY_NAMES: Record<string, string> = {
-  BRATISLAVA: "Bratislava",
-  KOSICE: "Košice",
-  ZILINA: "Žilina",
-  NITRA: "Nitra",
-  PRESOV: "Prešov",
-  BANSKA_BYSTRICA: "Banská Bystrica",
-  TRNAVA: "Trnava",
-  TRENCIN: "Trenčín",
+// Mapovanie miest na kódy krajov
+const CITY_TO_REGION: Record<string, string> = {
+  BRATISLAVA: "BA",
+  KOSICE: "KE",
+  ZILINA: "ZA",
+  NITRA: "NR",
+  PRESOV: "PO",
+  BANSKA_BYSTRICA: "BB",
+  TRNAVA: "TT",
+  TRENCIN: "TN",
+};
+
+// Mapovanie kódov na slovenské názvy
+const REGION_NAMES: Record<string, string> = {
+  BA: "Bratislavský",
+  KE: "Košický",
+  ZA: "Žilinský",
+  NR: "Nitriansky",
+  PO: "Prešovský",
+  BB: "Banskobystrický",
+  TT: "Trnavský",
+  TN: "Trenčiansky",
 };
 
 export async function GET() {
@@ -60,7 +72,7 @@ export async function GET() {
       console.warn("Could not fetch property counts:", dbError);
     }
     
-    // Transformuj na očakávaný formát
+    // Transformuj na očakávaný formát s krajmi
     const analyticsData = marketData.map(data => {
       // Určenie trendu na základe YoY zmeny
       let trend: "stable" | "rising" | "falling" = "stable";
@@ -70,8 +82,12 @@ export async function GET() {
       // Volatilita index (invertovaný demand/supply pomer)
       const volatility = Math.abs(data.demandIndex - data.supplyIndex) / 100;
       
+      // Mapuj mesto na región
+      const regionCode = CITY_TO_REGION[data.city] || data.city.slice(0, 2);
+      
       return {
-        city: CITY_NAMES[data.city] || data.city,
+        region: regionCode,
+        regionName: REGION_NAMES[regionCode] || regionCode,
         avg_price_m2: data.avgPricePerSqm,
         avg_rent_m2: data.avgRent,
         yield_benchmark: data.grossYield,
