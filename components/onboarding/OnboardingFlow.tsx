@@ -1,13 +1,21 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { ArrowRight, ArrowLeft, MapPin, TrendingUp, Target, Bell } from "lucide-react";
+import { ArrowRight, ArrowLeft, MapPin, TrendingUp, Target, Bell, Home, Coins, Check } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import type { SlovakCity } from "@/generated/prisma/client";
-import { CITY_OPTIONS } from "@/lib/constants";
 
-const SLOVAK_CITIES = CITY_OPTIONS;
+// Slovenské kraje
+const SLOVAK_REGIONS = [
+  { id: "BA", name: "Bratislavský kraj", shortName: "BA" },
+  { id: "TT", name: "Trnavský kraj", shortName: "TT" },
+  { id: "TN", name: "Trenčiansky kraj", shortName: "TN" },
+  { id: "NR", name: "Nitriansky kraj", shortName: "NR" },
+  { id: "ZA", name: "Žilinský kraj", shortName: "ZA" },
+  { id: "BB", name: "Banskobystrický kraj", shortName: "BB" },
+  { id: "PO", name: "Prešovský kraj", shortName: "PO" },
+  { id: "KE", name: "Košický kraj", shortName: "KE" },
+];
 
 const INVESTMENT_TYPES = [
   {
@@ -43,9 +51,8 @@ const INVESTMENT_TYPES = [
 ] as const;
 
 interface OnboardingData {
-  primaryCity: SlovakCity | null;
-  trackedCities: SlovakCity[];
-  investmentType: string | null;
+  trackedRegions: string[];
+  investmentTypes: string[];
   minYield: number | null;
   maxPrice: number | null;
   minPrice: number | null;
@@ -61,7 +68,6 @@ interface OnboardingData {
   minCashOnCash: number | null;
   maxDaysOnMarket: number | null;
   minGapPercentage: number | null;
-  minUrbanImpact: number | null;
   onlyDistressed: boolean;
   notifyMarketGaps: boolean;
   notifyPriceDrops: boolean;
@@ -74,9 +80,8 @@ export function OnboardingFlow() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [data, setData] = useState<OnboardingData>({
-    primaryCity: null,
-    trackedCities: [],
-    investmentType: null,
+    trackedRegions: [],
+    investmentTypes: [],
     minYield: null,
     maxPrice: null,
     minPrice: null,
@@ -92,7 +97,6 @@ export function OnboardingFlow() {
     minCashOnCash: null,
     maxDaysOnMarket: null,
     minGapPercentage: null,
-    minUrbanImpact: null,
     onlyDistressed: false,
     notifyMarketGaps: true,
     notifyPriceDrops: true,
@@ -145,9 +149,10 @@ export function OnboardingFlow() {
         headers: { "Content-Type": "application/json" },
         credentials: "include", // Ensure cookies are sent
         body: JSON.stringify({
-          primaryCity: data.primaryCity,
-          trackedCities: data.trackedCities,
-          investmentType: data.investmentType,
+          trackedRegions: data.trackedRegions,
+          trackedCities: [],
+          trackedDistricts: [],
+          investmentType: data.investmentTypes[0] || null, // Hlavný typ
           minYield: data.minYield,
           maxYield: null,
           minPrice: data.minPrice,
@@ -164,7 +169,6 @@ export function OnboardingFlow() {
           minCashOnCash: data.minCashOnCash,
           maxDaysOnMarket: data.maxDaysOnMarket,
           minGapPercentage: data.minGapPercentage,
-          minUrbanImpact: data.minUrbanImpact,
           onlyDistressed: data.onlyDistressed,
           notifyMarketGaps: data.notifyMarketGaps,
           notifyPriceDrops: data.notifyPriceDrops,
@@ -288,37 +292,80 @@ export function OnboardingFlow() {
                   Kde hľadáte investície?
                 </h2>
                 <p className="text-slate-400">
-                  Vyberte mesto, ktoré vás najviac zaujíma
+                  Vyberte kraje, ktoré vás zaujímajú (môžete vybrať viacero)
                 </p>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {SLOVAK_CITIES.map((city) => (
-                  <button
-                    key={city.value}
-                    onClick={() => {
-                      updateData({ primaryCity: city.value as SlovakCity });
-                      const tracked = data.trackedCities.includes(city.value as SlovakCity)
-                        ? data.trackedCities
-                        : [...data.trackedCities, city.value as SlovakCity];
-                      updateData({ trackedCities: tracked });
-                    }}
-                    className={`p-4 rounded-lg border transition-all ${
-                      data.primaryCity === city.value
-                        ? "bg-emerald-500/10 border-emerald-500 text-emerald-400"
-                        : "bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600"
-                    }`}
-                  >
-                    <MapPin className="w-5 h-5 mb-2 mx-auto" />
-                    <div className="text-sm font-semibold">{city.label}</div>
-                  </button>
-                ))}
+                {SLOVAK_REGIONS.map((region) => {
+                  const isSelected = data.trackedRegions.includes(region.id);
+                  return (
+                    <button
+                      key={region.id}
+                      onClick={() => {
+                        const newRegions = isSelected
+                          ? data.trackedRegions.filter(r => r !== region.id)
+                          : [...data.trackedRegions, region.id];
+                        updateData({ trackedRegions: newRegions });
+                      }}
+                      className={`relative p-4 rounded-xl border transition-all ${
+                        isSelected
+                          ? "bg-emerald-500/10 border-emerald-500"
+                          : "bg-slate-800 border-slate-700 hover:border-slate-600"
+                      }`}
+                    >
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+                          <Check className="w-3 h-3 text-white" />
+                        </div>
+                      )}
+                      <MapPin className={`w-6 h-6 mb-2 mx-auto ${isSelected ? "text-emerald-400" : "text-slate-400"}`} />
+                      <div className={`text-sm font-semibold ${isSelected ? "text-emerald-400" : "text-slate-300"}`}>
+                        {region.shortName}
+                      </div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        {region.name.replace(" kraj", "")}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
 
-              {data.primaryCity && (
-                <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+              {/* Quick select */}
+              <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-800">
+                <span className="text-xs text-slate-500">Rýchly výber:</span>
+                <button
+                  onClick={() => updateData({ trackedRegions: SLOVAK_REGIONS.map(r => r.id) })}
+                  className="text-xs px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                >
+                  Celé Slovensko
+                </button>
+                <button
+                  onClick={() => updateData({ trackedRegions: ["BA", "TT", "NR"] })}
+                  className="text-xs px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                >
+                  Západ
+                </button>
+                <button
+                  onClick={() => updateData({ trackedRegions: ["ZA", "BB", "TN"] })}
+                  className="text-xs px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                >
+                  Stred
+                </button>
+                <button
+                  onClick={() => updateData({ trackedRegions: ["PO", "KE"] })}
+                  className="text-xs px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                >
+                  Východ
+                </button>
+              </div>
+
+              {data.trackedRegions.length > 0 && (
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
                   <p className="text-sm text-emerald-400">
-                    ✓ Hlavné mesto: {SLOVAK_CITIES.find((c) => c.value === data.primaryCity)?.label}
+                    ✓ Vybrané: {data.trackedRegions.map(id => 
+                      SLOVAK_REGIONS.find(r => r.id === id)?.name.replace(" kraj", "")
+                    ).join(", ")}
                   </p>
                 </div>
               )}
@@ -332,19 +379,25 @@ export function OnboardingFlow() {
                   Aký typ investícií vás zaujíma?
                 </h2>
                 <p className="text-slate-400">
-                  Vyberte stratégiu, ktorá najlepšie zodpovedá vašim cieľom
+                  Vyberte všetky stratégie, ktoré vás zaujímajú (môžete vybrať viacero)
                 </p>
               </div>
 
               <div className="space-y-3">
                 {INVESTMENT_TYPES.map((type) => {
                   const Icon = type.icon;
+                  const isSelected = data.investmentTypes.includes(type.id);
                   return (
                     <button
                       key={type.id}
-                      onClick={() => updateData({ investmentType: type.id })}
-                      className={`w-full p-4 rounded-lg border text-left transition-all ${
-                        data.investmentType === type.id
+                      onClick={() => {
+                        const newTypes = isSelected
+                          ? data.investmentTypes.filter(t => t !== type.id)
+                          : [...data.investmentTypes, type.id];
+                        updateData({ investmentTypes: newTypes });
+                      }}
+                      className={`w-full p-4 rounded-xl border text-left transition-all ${
+                        isSelected
                           ? "bg-emerald-500/10 border-emerald-500"
                           : "bg-slate-800 border-slate-700 hover:border-slate-600"
                       }`}
@@ -352,7 +405,7 @@ export function OnboardingFlow() {
                       <div className="flex items-start gap-4">
                         <div
                           className={`p-2 rounded-lg ${
-                            data.investmentType === type.id
+                            isSelected
                               ? "bg-emerald-500/20 text-emerald-400"
                               : "bg-slate-700 text-slate-400"
                           }`}
@@ -367,11 +420,24 @@ export function OnboardingFlow() {
                             {type.description}
                           </p>
                         </div>
+                        {isSelected && (
+                          <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Check className="w-4 h-4 text-white" />
+                          </div>
+                        )}
                       </div>
                     </button>
                   );
                 })}
               </div>
+
+              {data.investmentTypes.length > 0 && (
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                  <p className="text-sm text-emerald-400">
+                    ✓ Vybrané: {data.investmentTypes.length} {data.investmentTypes.length === 1 ? "stratégia" : data.investmentTypes.length < 5 ? "stratégie" : "stratégií"}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -544,7 +610,7 @@ export function OnboardingFlow() {
 
                 <div className="min-w-0">
                   <label className="block text-slate-300 mb-2 font-medium text-sm">
-                    Minimálny Market Gap (%)
+                    Min. zľava oproti priemeru (%)
                   </label>
                   <input
                     type="number"
@@ -553,27 +619,33 @@ export function OnboardingFlow() {
                       const val = e.target.value;
                       updateData({ minGapPercentage: val === "" ? null : parseFloat(val) || null });
                     }}
-                    placeholder="Napríklad 10"
-                    step="0.1"
+                    placeholder="Napr. 10 = 10% pod priemerom"
+                    step="1"
                     className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
+                  <p className="text-xs text-slate-500 mt-1">
+                    Zobraziť len nehnuteľnosti lacnejšie ako priemer v lokalite
+                  </p>
                 </div>
 
                 <div className="min-w-0">
                   <label className="block text-slate-300 mb-2 font-medium text-sm">
-                    Minimálny Urban Impact (%)
+                    Max. doba v ponuke (dní)
                   </label>
                   <input
                     type="number"
-                    value={data.minUrbanImpact !== null && data.minUrbanImpact !== undefined ? data.minUrbanImpact : ""}
+                    value={data.maxDaysOnMarket !== null && data.maxDaysOnMarket !== undefined ? data.maxDaysOnMarket : ""}
                     onChange={(e) => {
                       const val = e.target.value;
-                      updateData({ minUrbanImpact: val === "" ? null : parseFloat(val) || null });
+                      updateData({ maxDaysOnMarket: val === "" ? null : parseInt(val) || null });
                     }}
-                    placeholder="Napríklad 15"
-                    step="0.1"
+                    placeholder="Napr. 90"
+                    step="1"
                     className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
+                  <p className="text-xs text-slate-500 mt-1">
+                    Nehnuteľnosti dlhšie v ponuke = väčší priestor na vyjednávanie
+                  </p>
                 </div>
               </div>
 
@@ -669,8 +741,8 @@ export function OnboardingFlow() {
               <button
                 onClick={handleNext}
                 disabled={
-                  (step === 1 && !data.primaryCity) ||
-                  (step === 2 && !data.investmentType)
+                  (step === 1 && data.trackedRegions.length === 0) ||
+                  (step === 2 && data.investmentTypes.length === 0)
                 }
                 className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
