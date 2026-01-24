@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { 
           success: false, 
-          error: validated.error.errors[0]?.message || "Neplatné údaje" 
+          error: validated.error.issues[0]?.message || "Neplatné údaje" 
         },
         { status: 400 }
       );
