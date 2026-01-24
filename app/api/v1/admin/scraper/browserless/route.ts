@@ -152,20 +152,32 @@ export async function POST(request: NextRequest) {
               updatedCount++;
             }
           } else {
-            // Create new property
+            // Create new property - generate slug from title
+            const slug = prop.title
+              .toLowerCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-|-$/g, "")
+              .substring(0, 100) + "-" + prop.externalId.slice(-8);
+            
             await prisma.property.create({
               data: {
                 external_id: prop.externalId,
                 source: prop.source,
                 title: prop.title,
+                slug: slug,
                 description: prop.description,
                 price: prop.price,
                 price_per_m2: prop.pricePerM2,
                 area_m2: prop.areaM2,
                 city: prop.city,
                 district: prop.district,
+                address: `${prop.city}${prop.district ? `, ${prop.district}` : ""}`,
                 rooms: prop.rooms,
                 listing_type: prop.listingType,
+                condition: "UNKNOWN",
+                energy_certificate: "UNKNOWN",
                 source_url: prop.sourceUrl,
               },
             });
