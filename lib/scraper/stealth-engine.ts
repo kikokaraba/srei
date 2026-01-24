@@ -580,7 +580,7 @@ async function getAveragePrice(city: SlovakCity, district: string): Promise<numb
 // ============================================================================
 
 /**
- * Parsuje inzerát z nehnutelnosti.sk
+ * Parsuje inzerát z nehnutelnosti.sk (2025/2026 MUI štruktúra)
  */
 export function parseNehnutelnostiElement(
   $: cheerio.CheerioAPI,
@@ -591,65 +591,69 @@ export function parseNehnutelnostiElement(
   try {
     const $el = $(element);
     
-    // Selektory pre nehnutelnosti.sk (2024/2025 štruktúra)
-    const selectors = {
-      link: "a[href*='/detail/'], a.advertisement-item__link, a[data-testid='property-link']",
-      title: ".advertisement-item__title, h2, .title, [data-testid='property-title']",
-      price: ".advertisement-item__price, .price, [data-testid='property-price']",
-      area: ".advertisement-item__area, .area, [data-testid='property-area']",
-      location: ".advertisement-item__location, .location, [data-testid='property-location']",
-    };
-    
-    // Extrahuj link
-    let href = $el.find(selectors.link).first().attr("href");
-    if (!href && $el.is("a")) {
+    // Nehnutelnosti.sk teraz používa Material UI - extrahujeme dáta z elementu
+    // Hľadáme link na detail
+    let href = $el.find("a[href*='/detail/']").first().attr("href");
+    if (!href && $el.is("a") && $el.attr("href")?.includes("/detail/")) {
       href = $el.attr("href");
     }
     if (!href) return null;
     
-    // Extrahuj ID z URL
-    const idMatch = href.match(/\/detail\/(\d+)|\/(\d+)\/?$/);
-    const externalId = idMatch?.[1] || idMatch?.[2] || href.split("/").filter(Boolean).pop() || "";
-    if (!externalId) return null;
+    // Extrahuj ID z URL - formát: /detail/ABC123/nazov-bytu
+    const idMatch = href.match(/\/detail\/([A-Za-z0-9]+)\//);
+    const externalId = idMatch?.[1] || href.split("/").filter(Boolean).pop() || "";
+    if (!externalId || externalId.length < 3) return null;
     
-    // Nadpis
-    let title = $el.find(selectors.title).first().text().trim();
-    if (!title) {
-      title = $el.find("a").first().text().trim();
-    }
-    if (!title) return null;
+    // Extrahuj text z celého elementu
+    const fullText = $el.text().replace(/\s+/g, " ").trim();
     
-    // Cena
-    const priceText = $el.find(selectors.price).first().text().trim() || $el.text();
-    const isRent = listingType === "PRENAJOM";
-    const price = extractPrice(priceText, isRent);
-    
-    // Plocha
-    const areaText = $el.find(selectors.area).first().text().trim() || $el.text();
-    let areaM2 = extractArea(areaText);
-    if (areaM2 === 0) {
-      areaM2 = extractArea(title);
+    // Extrahuj cenu - hľadáme vzor "123 456 €" alebo "123456€"
+    const priceMatch = fullText.match(/(\d[\d\s]*)\s*€/);
+    let price = 0;
+    if (priceMatch) {
+      price = parseInt(priceMatch[1].replace(/\s/g, ""), 10);
     }
     
-    // Lokalita
-    const locationText = $el.find(selectors.location).first().text().trim() || $el.text();
-    const { city, district } = extractCity(locationText || title);
+    // Extrahuj plochu - hľadáme vzor "72 m²" alebo "72m²"
+    const areaMatch = fullText.match(/(\d+(?:[.,]\d+)?)\s*m[²2]/i);
+    let areaM2 = areaMatch ? parseFloat(areaMatch[1].replace(",", ".")) : 0;
+    
+    // Extrahuj nadpis z URL alebo z textu
+    let title = "";
+    const urlParts = href.split("/").filter(Boolean);
+    if (urlParts.length >= 2) {
+      // Nadpis je zvyčajne posledná časť URL
+      title = urlParts[urlParts.length - 1]
+        .replace(/-/g, " ")
+        .replace(/^\d+\s*/, "")
+        .trim();
+    }
+    if (!title || title.length < 5) {
+      // Skús nájsť MuiTypography-h5 alebo podobný
+      title = $el.find("[class*='Typography-h'], [class*='Typography-body']").first().text().trim();
+    }
+    if (!title || title.length < 5) {
+      title = `Byt ${areaM2}m² - ${listingType === "PRENAJOM" ? "prenájom" : "predaj"}`;
+    }
+    
+    // Lokalita - hľadaj v texte
+    const { city, district } = extractCity(fullText);
     
     // Validácia
+    const isRent = listingType === "PRENAJOM";
     const minPrice = isRent ? 100 : 10000;
     if (price < minPrice) return null;
     
     const finalArea = areaM2 > 0 ? areaM2 : 50;
     const pricePerM2 = Math.round(price / finalArea);
     
-    // Popis
-    const description = $el.find(".description, .text").first().text().trim();
-    const { condition } = parseDescription(description + " " + title, title);
+    // Stav nehnuteľnosti
+    const { condition } = parseDescription(fullText, title);
     
     return {
       externalId,
       title: title.substring(0, 200),
-      description: description.substring(0, 1000),
+      description: fullText.substring(0, 500),
       price,
       pricePerM2,
       areaM2: finalArea,
@@ -657,7 +661,7 @@ export function parseNehnutelnostiElement(
       district: district || "Centrum",
       condition,
       listingType,
-      sourceUrl: href.startsWith("http") ? href : `${baseUrl}${href}`,
+      sourceUrl: href.startsWith("http") ? href : `https://www.nehnutelnosti.sk${href}`,
       source: "NEHNUTELNOSTI",
     };
   } catch (error) {
@@ -907,15 +911,15 @@ function getSelectorsForSource(source: "BAZOS" | "NEHNUTELNOSTI" | "REALITY") {
     case "NEHNUTELNOSTI":
       return {
         listing: [
-          ".advertisement-item",
-          ".property-list__item",
-          "[data-testid='property-card']",
-          ".listing-item",
-          ".inzerat",
-          "article.property",
+          // MUI-based selectors (2025/2026) - find grid items containing detail links
+          "div.MuiGrid2-root:has(a[href*='/detail/'])",
+          "div.MuiBox-root:has(a[href*='/detail/'])",
+          "div.MuiStack-root:has(a[href*='/detail/'])",
+          // Fallback selectors
+          "a[href*='/detail/']",
         ],
-        nextPage: [".pagination__next", ".pagination a", "a[rel='next']", ".page-next a"],
-        nextPageText: ["ďalšia", "další", "next", ">>", "›"],
+        nextPage: ["a[href*='page=']", "a[rel='next']", ".MuiPagination-ul a"],
+        nextPageText: ["ďalšia", "další", "next", ">>", "›", "2", "3"],
       };
     case "REALITY":
       return {
