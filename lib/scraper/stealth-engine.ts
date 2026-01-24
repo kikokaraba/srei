@@ -251,16 +251,25 @@ interface ParsedListing {
   city: SlovakCity;
   district: string;
   condition: "NOVOSTAVBA" | "REKONSTRUKCIA" | "POVODNY";
+  listingType: "PREDAJ" | "PRENAJOM";
   sourceUrl: string;
 }
 
 /**
  * Regex patterny pre extrakciu dát
+ * Vylepšené pre rôzne formáty cien na Bazoši
  */
 const PATTERNS = {
-  price: /(\d{1,3}[\s\u00a0]?\d{3}[\s\u00a0]?\d{3}|\d{1,3}[\s\u00a0]?\d{3})\s*€/i,
-  area: /(\d{2,3}(?:[,\.]\d{1,2})?)\s*m[²2]/i,
-  areaAlt: /(\d{2,3})\s*(?:štvorcov|metrov)/i,
+  // Cena - viacero formátov:
+  // "149 000 €", "149000€", "149 000€", "1 200 000 €", "85000 €"
+  price: /(\d{1,3}[\s\u00a0.,]?\d{3}[\s\u00a0.,]?\d{0,3})\s*€/i,
+  // Alternatívne formáty bez €
+  priceAlt: /(\d{1,3}[\s\u00a0.,]?\d{3}[\s\u00a0.,]?\d{0,3})\s*(?:eur|euro)/i,
+  // Prenájom - mesačne
+  priceRent: /(\d{2,4})\s*€\s*(?:\/\s*mes|mesačne|mes\.)/i,
+  // Plocha
+  area: /(\d{2,4}(?:[,\.]\d{1,2})?)\s*m[²2]/i,
+  areaAlt: /(\d{2,4})\s*(?:štvorcov|metrov|m2)/i,
 };
 
 /**
@@ -318,12 +327,41 @@ const CITY_MAP: Record<string, SlovakCity> = {
 /**
  * Extrahuje cenu z textu
  */
-function extractPrice(text: string): number {
-  const match = text.match(PATTERNS.price);
-  if (match) {
-    // Odstráň medzery a konvertuj
-    return parseInt(match[1].replace(/[\s\u00a0]/g, ""), 10);
+function extractPrice(text: string, isRent: boolean = false): number {
+  // Pre prenájom hľadáme mesačnú cenu
+  if (isRent) {
+    const rentMatch = text.match(PATTERNS.priceRent);
+    if (rentMatch) {
+      return parseInt(rentMatch[1].replace(/[\s\u00a0.,]/g, ""), 10);
+    }
   }
+  
+  // Štandardná cena
+  let match = text.match(PATTERNS.price);
+  if (match) {
+    // Odstráň medzery, bodky, čiarky a konvertuj
+    const cleanPrice = match[1].replace(/[\s\u00a0.,]/g, "");
+    const price = parseInt(cleanPrice, 10);
+    
+    // Validácia - cena musí byť rozumná
+    if (price > 0 && price < 100000000) {
+      return price;
+    }
+  }
+  
+  // Skús alternatívny formát (EUR bez symbolu €)
+  match = text.match(PATTERNS.priceAlt);
+  if (match) {
+    const cleanPrice = match[1].replace(/[\s\u00a0.,]/g, "");
+    return parseInt(cleanPrice, 10);
+  }
+  
+  // Posledný pokus - nájdi akékoľvek číslo s 5-6 ciframi (typická cena bytu)
+  const fallbackMatch = text.match(/(\d{5,7})/);
+  if (fallbackMatch) {
+    return parseInt(fallbackMatch[1], 10);
+  }
+  
   return 0;
 }
 
@@ -379,7 +417,8 @@ function extractCity(location: string): { city: SlovakCity; district: string } {
 export function parseListingElement(
   $: cheerio.CheerioAPI,
   element: Parameters<typeof $>[0],
-  baseUrl: string
+  baseUrl: string,
+  listingType: "PREDAJ" | "PRENAJOM" = "PREDAJ"
 ): ParsedListing | null {
   try {
     const $el = $(element);
@@ -447,13 +486,15 @@ export function parseListingElement(
       locationText = pscMatch[1].trim();
     }
     
-    // Extrahuj hodnoty
-    const price = extractPrice(priceText);
+    // Extrahuj hodnoty - pre prenájom iná logika
+    const isRent = listingType === "PRENAJOM";
+    const price = extractPrice(priceText, isRent);
     const areaM2 = extractArea(title + " " + description + " " + fullText);
     const { city, district } = extractCity(locationText || title);
     
-    // Validácia - potrebujeme aspoň cenu
-    if (price < 10000) {
+    // Validácia - pre prenájom nižšia minimálna cena
+    const minPrice = isRent ? 100 : 10000;
+    if (price < minPrice) {
       return null;
     }
     
@@ -476,6 +517,7 @@ export function parseListingElement(
       city,
       district: district || "Centrum",
       condition,
+      listingType,
       sourceUrl: href.startsWith("http") ? href : `${baseUrl}${href}`,
     };
   } catch (error) {
@@ -591,6 +633,7 @@ export async function syncProperty(listing: ParsedListing): Promise<SyncResult> 
       price_per_m2: listing.pricePerM2,
       condition: listing.condition,
       energy_certificate: "NONE", // Default, ak nie je špecifikovaný
+      listing_type: listing.listingType, // Predaj alebo prenájom
       source_url: listing.sourceUrl,
       is_distressed: isHotDeal, // Používame is_distressed ako is_hot_deal
       first_listed_at: new Date(),
@@ -647,15 +690,22 @@ interface ScraperStats {
   };
 }
 
+interface CategoryOptions {
+  listingType?: "PREDAJ" | "PRENAJOM";
+  baseUrl?: string;
+}
+
 /**
  * Scrapuje Bazoš kategóriu (byty/domy) pre dané mesto
  */
 export async function scrapeBazosCategory(
   category: string,
   city?: string,
-  config: Partial<StealthConfig> = {}
+  config: Partial<StealthConfig> = {},
+  options: CategoryOptions = {}
 ): Promise<ScraperStats> {
   const cfg = { ...DEFAULT_CONFIG, ...config };
+  const listingType = options.listingType || "PREDAJ";
   const startTime = Date.now();
   const stats: ScraperStats = {
     pagesScraped: 0,
@@ -669,10 +719,9 @@ export async function scrapeBazosCategory(
     debug: {},
   };
   
-  const baseUrl = "https://reality.bazos.sk";
+  const baseUrl = options.baseUrl || "https://reality.bazos.sk";
   // Bazoš URL štruktúra: základná URL s query parametrami
-  // Príklad: https://reality.bazos.sk/?hlokalita=Nitra&humkreis=25
-  // Kategória /byty/ alebo /domy/ sa pridáva pred parametre
+  // Príklad: https://reality.bazos.sk/byty/?hlokalita=Nitra&humkreis=25
   let categoryUrl = `${baseUrl}${category}`;
   
   // Pridaj mesto do URL ak je špecifikované
@@ -763,7 +812,7 @@ export async function scrapeBazosCategory(
     
     // Spracuj každý inzerát
     for (const element of listingElements) {
-      const listing = parseListingElement($, element, baseUrl);
+      const listing = parseListingElement($, element, baseUrl, listingType);
       
       if (listing) {
         stats.listingsFound++;
@@ -815,19 +864,41 @@ export async function scrapeBazosCategory(
 }
 
 /**
+ * Definícia kategórií pre scraping
+ * Bazoš má rôzne subdomény pre predaj a prenájom
+ */
+interface ScrapingCategory {
+  name: string;
+  baseUrl: string;
+  path: string;
+  listingType: "PREDAJ" | "PRENAJOM";
+}
+
+const SCRAPING_CATEGORIES: ScrapingCategory[] = [
+  // Predaj - reality.bazos.sk
+  { name: "Byty predaj", baseUrl: "https://reality.bazos.sk", path: "/byty/", listingType: "PREDAJ" },
+  { name: "Domy predaj", baseUrl: "https://reality.bazos.sk", path: "/domy/", listingType: "PREDAJ" },
+  // Prenájom - prenajom.bazos.sk  
+  { name: "Byty prenájom", baseUrl: "https://reality.bazos.sk", path: "/prenajom/byty/", listingType: "PRENAJOM" },
+  { name: "Domy prenájom", baseUrl: "https://reality.bazos.sk", path: "/prenajom/domy/", listingType: "PRENAJOM" },
+];
+
+/**
  * Kompletný scrape všetkých kategórií
  */
 export async function runStealthScrape(
   cities?: string[],
-  config?: Partial<StealthConfig>
+  config?: Partial<StealthConfig>,
+  options?: { listingTypes?: ("PREDAJ" | "PRENAJOM")[] }
 ): Promise<{
   totalStats: ScraperStats;
   categoryStats: { category: string; city?: string; stats: ScraperStats }[];
 }> {
-  // Bazoš reality URL štruktúra - používame základnú URL s parametrami
-  // Kategória sa pridáva ako podadresár: /byty/, /domy/, alebo / pre všetko
-  const categories = ["/"];
   const targetCities = cities || ["Bratislava", "Košice", "Žilina"];
+  const allowedTypes = options?.listingTypes || ["PREDAJ", "PRENAJOM"];
+  
+  // Filtruj kategórie podľa požadovaných typov
+  const categories = SCRAPING_CATEGORIES.filter(c => allowedTypes.includes(c.listingType));
   
   const categoryStats: { category: string; city?: string; stats: ScraperStats }[] = [];
   const totalStats: ScraperStats = {
@@ -843,10 +914,10 @@ export async function runStealthScrape(
   
   console.log("🚀 Starting Stealth Scrape Engine");
   console.log(`📍 Cities: ${targetCities.join(", ")}`);
-  console.log(`📂 Categories: ${categories.join(", ")}`);
+  console.log(`📂 Categories: ${categories.map(c => c.name).join(", ")}`);
   
   for (const city of targetCities) {
-    for (const category of categories) {
+    for (const cat of categories) {
       // Dlhší delay medzi mestami/kategóriami
       if (categoryStats.length > 0) {
         const longDelay = getRandomDelay(10000, 20000);
@@ -854,9 +925,14 @@ export async function runStealthScrape(
         await sleep(longDelay);
       }
       
-      const stats = await scrapeBazosCategory(category, city, config);
+      const stats = await scrapeBazosCategory(
+        cat.path, 
+        city, 
+        config,
+        { listingType: cat.listingType, baseUrl: cat.baseUrl }
+      );
       
-      categoryStats.push({ category, city, stats });
+      categoryStats.push({ category: cat.name, city, stats });
       
       // Akumuluj do total
       totalStats.pagesScraped += stats.pagesScraped;

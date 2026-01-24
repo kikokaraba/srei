@@ -47,6 +47,11 @@ enum EnergyCertificate {
   NONE
 }
 
+enum ListingType {
+  PREDAJ    // Sale
+  PRENAJOM  // Rent
+}
+
 enum PortfolioPropertyStatus {
   OWNED        // Vlastnená
   SOLD         // Predaná
@@ -153,6 +158,7 @@ model Property {
   floor             Int?
   condition         PropertyCondition
   energy_certificate EnergyCertificate
+  listing_type      ListingType       @default(PREDAJ) // Predaj alebo prenájom
   source_url        String?          @db.Text
   is_distressed     Boolean          @default(false)
   days_on_market    Int              @default(0) // Počet dní v ponuke

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Prisma, SlovakCity, PropertyCondition, EnergyCertificate } from "@/generated/prisma/client";
+import { Prisma, SlovakCity, PropertyCondition, EnergyCertificate, ListingType } from "@/generated/prisma/client";
 
 export async function GET(request: Request) {
   try {
@@ -23,6 +23,7 @@ export async function GET(request: Request) {
 
     // Priame filtre z query parametrov
     const cityParam = searchParams.get("city");
+    const listingTypeParam = searchParams.get("listingType"); // PREDAJ alebo PRENAJOM
     const minPrice = searchParams.get("minPrice");
     const maxPrice = searchParams.get("maxPrice");
     const minArea = searchParams.get("minArea");
@@ -53,6 +54,14 @@ export async function GET(request: Request) {
         { address: { contains: search, mode: "insensitive" } },
         { district: { contains: search, mode: "insensitive" } },
       ];
+    }
+
+    // Typ inzerátu (predaj/prenájom)
+    if (listingTypeParam) {
+      const types = listingTypeParam.split(",").filter(Boolean) as ListingType[];
+      if (types.length > 0) {
+        where.listing_type = { in: types };
+      }
     }
 
     // Mesto - prioritne z query, potom z preferencií
