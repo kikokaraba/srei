@@ -613,15 +613,15 @@ export async function scrapeBazosCategory(
   };
   
   const baseUrl = "https://reality.bazos.sk";
-  // Bazoš URL štruktúra: /predaj/byty/ alebo s hľadaním /predaj/byty/?hledession=...
-  // Pre celé Slovensko: bez parametrov
-  // Pre konkrétne mesto: použijeme parameter hleession (správny názov)
+  // Bazoš URL štruktúra: základná URL s query parametrami
+  // Príklad: https://reality.bazos.sk/?hlokalita=Nitra&humkreis=25
+  // Kategória /byty/ alebo /domy/ sa pridáva pred parametre
   let categoryUrl = `${baseUrl}${category}`;
   
   // Pridaj mesto do URL ak je špecifikované
   if (city) {
-    // Bazoš hľadá podľa lokality cez parameter "hleession" (áno, s dvoma 's')
-    categoryUrl += `?hledession=${encodeURIComponent(city)}`;
+    // Bazoš hľadá podľa lokality cez parameter "hlokalita"
+    categoryUrl += `?hlokalita=${encodeURIComponent(city)}&humkreis=25`;
   }
   
   console.log(`\n🏠 Starting scrape: ${categoryUrl}`);
@@ -767,8 +767,9 @@ export async function runStealthScrape(
   totalStats: ScraperStats;
   categoryStats: { category: string; city?: string; stats: ScraperStats }[];
 }> {
-  // Bazoš reality URL štruktúra: https://reality.bazos.sk/byty/ (nie /predaj/byty/)
-  const categories = ["/byty/", "/domy/"];
+  // Bazoš reality URL štruktúra - používame základnú URL s parametrami
+  // Kategória sa pridáva ako podadresár: /byty/, /domy/, alebo / pre všetko
+  const categories = ["/"];
   const targetCities = cities || ["Bratislava", "Košice", "Žilina"];
   
   const categoryStats: { category: string; city?: string; stats: ScraperStats }[] = [];
