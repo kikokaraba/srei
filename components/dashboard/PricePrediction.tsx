@@ -15,7 +15,19 @@ import {
   ChevronUp,
   Sparkles,
 } from "lucide-react";
-import { CITY_LABELS } from "@/lib/constants";
+import { REGION_LABELS, CITY_TO_REGION } from "@/lib/constants";
+
+// Mapovanie regiónu na mesto pre API
+const REGION_TO_CITY: Record<string, string> = {
+  BA: "BRATISLAVA",
+  KE: "KOSICE",
+  PO: "PRESOV",
+  ZA: "ZILINA",
+  BB: "BANSKA_BYSTRICA",
+  TT: "TRNAVA",
+  TN: "TRENCIN",
+  NR: "NITRA",
+};
 
 interface CityPrediction {
   city: string;
@@ -135,19 +147,19 @@ export function PricePrediction() {
         </div>
       </div>
 
-      {/* City Selector */}
+      {/* Region Selector */}
       <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
-        {Object.entries(CITY_LABELS).map(([value, label]) => (
+        {Object.entries(REGION_LABELS).map(([code, name]) => (
           <button
-            key={value}
-            onClick={() => setSelectedCity(value)}
+            key={code}
+            onClick={() => setSelectedCity(REGION_TO_CITY[code])}
             className={`px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg whitespace-nowrap transition-colors shrink-0 ${
-              selectedCity === value
+              selectedCity === REGION_TO_CITY[code]
                 ? "bg-purple-500 text-white"
                 : "bg-slate-800 text-slate-300 hover:bg-slate-700"
             }`}
           >
-            {label}
+            {code}
           </button>
         ))}
       </div>
@@ -159,7 +171,7 @@ export function PricePrediction() {
           <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 lg:p-6">
             <h3 className="font-semibold text-slate-100 mb-3 lg:mb-4 flex items-center gap-2 text-sm lg:text-base">
               <BarChart3 className="w-4 h-4 lg:w-5 lg:h-5 text-blue-400" />
-              <span className="truncate">Stav - {CITY_LABELS[selectedCity]}</span>
+              <span className="truncate">Stav - {REGION_LABELS[CITY_TO_REGION[selectedCity]] || selectedCity}</span>
             </h3>
             <div className="grid grid-cols-2 gap-2 sm:gap-4">
               <div className="p-3 lg:p-4 bg-slate-800/50 rounded-lg">
@@ -317,7 +329,7 @@ export function PricePrediction() {
                     {marketData.cities.map((city) => (
                       <tr key={city.city} className="hover:bg-slate-800/30">
                         <td className="py-2 px-3 text-slate-100">
-                          {CITY_LABELS[city.city] || city.city}
+                          {REGION_LABELS[CITY_TO_REGION[city.city]] || city.city}
                         </td>
                         <td className="py-2 px-3 text-right text-slate-300">
                           €{city.avgPricePerM2.toLocaleString()}

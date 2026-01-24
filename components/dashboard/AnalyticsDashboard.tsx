@@ -14,7 +14,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
-import { CITY_LABELS, CONDITION_LABELS } from "@/lib/constants";
+import { getCityRegionLabel, CONDITION_LABELS } from "@/lib/constants";
 
 interface CityStats {
   city: string;
@@ -102,7 +102,7 @@ export function AnalyticsDashboard() {
 
       const cityStatsArray: CityStats[] = Object.entries(cityMap).map(([city, stats]) => ({
         city,
-        cityLabel: CITY_LABELS[city] || city,
+        cityLabel: getCityRegionLabel(city),
         count: stats.count,
         avgPrice: Math.round(stats.totalPrice / stats.count),
         avgPricePerM2: Math.round(stats.totalPricePerM2 / stats.count),

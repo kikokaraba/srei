@@ -16,7 +16,7 @@ import {
   Scale,
   ArrowRight,
 } from "lucide-react";
-import { CITY_LABELS, CONDITION_LABELS } from "@/lib/constants";
+import { getCityRegionLabel, CONDITION_LABELS } from "@/lib/constants";
 
 interface Property {
   id: string;
@@ -152,7 +152,7 @@ export function PropertyComparison() {
               </h3>
               <div className="flex items-center gap-1 text-sm text-slate-400 mb-4">
                 <MapPin className="w-4 h-4" />
-                <span>{property.district}, {CITY_LABELS[property.city] || property.city}</span>
+                <span>{property.district}, {getCityRegionLabel(property.city)}</span>
               </div>
               <div className="text-2xl font-bold text-slate-100">
                 €{property.price.toLocaleString()}
