@@ -119,7 +119,7 @@ export function useUserPreferences() {
   });
 
   // Získaj regióny ako kódy pre API (BRATISLAVSKY, KOSICKY, atď.)
-  const trackedRegionCodes = getTrackedRegionCodes(data);
+  const trackedRegionCodes = getTrackedRegionCodes(data ?? null);
   
   // Ak nie sú žiadne preferencie, vráť všetky regióny
   const hasLocationPreferences = (data?.trackedRegions?.length || 0) > 0 || 
