@@ -5,6 +5,16 @@ import * as cheerio from "cheerio";
 import { prisma } from "@/lib/prisma";
 import type { SlovakCity } from "@/generated/prisma/client";
 import { parseDescription } from "./parser";
+import { createPropertyFingerprint } from "@/lib/deduplication/fingerprint";
+
+// Async wrapper pre fingerprint (nečakáme na dokončenie)
+async function createPropertyFingerprintAsync(propertyId: string): Promise<void> {
+  try {
+    await createPropertyFingerprint(propertyId);
+  } catch (error) {
+    console.error(`Fingerprint creation failed for ${propertyId}:`, error);
+  }
+}
 
 // ============================================================================
 // KONFIGURÁCIA
@@ -854,6 +864,9 @@ export async function syncProperty(listing: ParsedListing): Promise<SyncResult> 
       price_per_m2: listing.pricePerM2,
     },
   });
+  
+  // Vytvor fingerprint pre deduplikáciu (async, nečakáme)
+  createPropertyFingerprintAsync(property.id).catch(console.error);
   
   return {
     isNew: true,

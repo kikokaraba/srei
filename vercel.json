@@ -26,6 +26,10 @@
       "schedule": "0 14 * * *"
     },
     {
+      "path": "/api/cron/deduplicate",
+      "schedule": "0 16 * * *"
+    },
+    {
       "path": "/api/cron/sync-data?type=market",
       "schedule": "0 7 * * *"
     },
