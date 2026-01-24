@@ -25,12 +25,21 @@ const INVESTMENT_TYPES = [
 ] as const;
 
 async function fetchPreferences() {
-  const response = await fetch("/api/v1/user/preferences");
-  const data = await response.json();
-  if (!data.success) {
-    throw new Error(data.error || "Failed to fetch preferences");
+  try {
+    const response = await fetch("/api/v1/user/preferences");
+    if (!response.ok) {
+      // Return null for non-OK responses (like 401) instead of throwing
+      return null;
+    }
+    const data = await response.json();
+    if (!data.success) {
+      return null;
+    }
+    return data.data;
+  } catch (error) {
+    console.error("Error fetching preferences:", error);
+    return null;
   }
-  return data.data;
 }
 
 async function savePreferences(preferences: any) {
@@ -48,9 +57,11 @@ async function savePreferences(preferences: any) {
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
-  const { data: preferences, isLoading } = useQuery({
+  const { data: preferences, isLoading, isError } = useQuery({
     queryKey: ["user-preferences"],
     queryFn: fetchPreferences,
+    retry: 1,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const saveMutation = useMutation({
@@ -104,6 +115,21 @@ export default function SettingsPage() {
         <div>
           <h1 className="text-3xl font-bold text-slate-100 mb-2">Nastavenia</h1>
           <p className="text-slate-400">Načítavam preferencie...</p>
+        </div>
+        <div className="animate-pulse space-y-4">
+          <div className="h-40 bg-slate-800 rounded-xl" />
+          <div className="h-40 bg-slate-800 rounded-xl" />
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-100 mb-2">Nastavenia</h1>
+          <p className="text-red-400">Nepodarilo sa načítať preferencie. Skúste obnoviť stránku.</p>
         </div>
       </div>
     );
