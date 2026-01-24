@@ -16,9 +16,9 @@ import {
 } from "lucide-react";
 import { getCityRegionLabel, CONDITION_LABELS } from "@/lib/constants";
 
-interface CityStats {
-  city: string;
-  cityLabel: string;
+interface RegionStats {
+  region: string;
+  regionLabel: string;
   count: number;
   avgPrice: number;
   avgPricePerM2: number;
@@ -41,7 +41,7 @@ interface PriceRangeStats {
 
 export function AnalyticsDashboard() {
   const [loading, setLoading] = useState(true);
-  const [cityStats, setCityStats] = useState<CityStats[]>([]);
+  const [regionStats, setRegionStats] = useState<RegionStats[]>([]);
   const [conditionStats, setConditionStats] = useState<ConditionStats[]>([]);
   const [priceRanges, setPriceRanges] = useState<PriceRangeStats[]>([]);
   const [totalStats, setTotalStats] = useState({
@@ -83,26 +83,29 @@ export function AnalyticsDashboard() {
         avgDaysOnMarket: Math.round(totalDays / properties.length),
       });
 
-      // Calculate city stats
-      const cityMap: Record<string, { count: number; totalPrice: number; totalPricePerM2: number; totalYield: number; totalArea: number; yieldCount: number }> = {};
+      // Calculate region stats - group cities by region
+      const regionMap: Record<string, { count: number; totalPrice: number; totalPricePerM2: number; totalYield: number; totalArea: number; yieldCount: number }> = {};
       
       for (const p of properties) {
-        if (!cityMap[p.city]) {
-          cityMap[p.city] = { count: 0, totalPrice: 0, totalPricePerM2: 0, totalYield: 0, totalArea: 0, yieldCount: 0 };
+        // Map city to region using getCityRegionLabel which returns region name
+        const regionLabel = getCityRegionLabel(p.city);
+        
+        if (!regionMap[regionLabel]) {
+          regionMap[regionLabel] = { count: 0, totalPrice: 0, totalPricePerM2: 0, totalYield: 0, totalArea: 0, yieldCount: 0 };
         }
-        cityMap[p.city].count++;
-        cityMap[p.city].totalPrice += p.price;
-        cityMap[p.city].totalPricePerM2 += p.price_per_m2;
-        cityMap[p.city].totalArea += p.area_m2;
+        regionMap[regionLabel].count++;
+        regionMap[regionLabel].totalPrice += p.price;
+        regionMap[regionLabel].totalPricePerM2 += p.price_per_m2;
+        regionMap[regionLabel].totalArea += p.area_m2;
         if (p.investmentMetrics?.gross_yield) {
-          cityMap[p.city].totalYield += p.investmentMetrics.gross_yield;
-          cityMap[p.city].yieldCount++;
+          regionMap[regionLabel].totalYield += p.investmentMetrics.gross_yield;
+          regionMap[regionLabel].yieldCount++;
         }
       }
 
-      const cityStatsArray: CityStats[] = Object.entries(cityMap).map(([city, stats]) => ({
-        city,
-        cityLabel: getCityRegionLabel(city),
+      const regionStatsArray: RegionStats[] = Object.entries(regionMap).map(([regionLabel, stats]) => ({
+        region: regionLabel,
+        regionLabel: regionLabel,
         count: stats.count,
         avgPrice: Math.round(stats.totalPrice / stats.count),
         avgPricePerM2: Math.round(stats.totalPricePerM2 / stats.count),
@@ -110,7 +113,7 @@ export function AnalyticsDashboard() {
         avgArea: Math.round(stats.totalArea / stats.count),
       }));
 
-      setCityStats(cityStatsArray.sort((a, b) => b.count - a.count));
+      setRegionStats(regionStatsArray.sort((a, b) => b.count - a.count));
 
       // Calculate condition stats
       const conditionMap: Record<string, number> = {};
@@ -225,24 +228,24 @@ export function AnalyticsDashboard() {
         <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
           <div className="flex items-center gap-2 mb-6">
             <Activity className="w-5 h-5 text-emerald-400" />
-            <h3 className="text-lg font-bold text-slate-100">Porovnanie miest</h3>
+            <h3 className="text-lg font-bold text-slate-100">Porovnanie regiónov</h3>
           </div>
 
           <div className="space-y-4">
-            {cityStats.map((city) => (
-              <div key={city.city} className="space-y-2">
+            {regionStats.map((region) => (
+              <div key={region.region} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-slate-100">{city.cityLabel}</span>
+                  <span className="font-medium text-slate-100">{region.regionLabel}</span>
                   <div className="flex items-center gap-4 text-sm">
-                    <span className="text-slate-400">{city.count} ponúk</span>
-                    <span className="text-slate-100">€{city.avgPricePerM2}/m²</span>
-                    <span className="text-emerald-400 font-medium">{city.avgYield.toFixed(1)}%</span>
+                    <span className="text-slate-400">{region.count} ponúk</span>
+                    <span className="text-slate-100">€{region.avgPricePerM2}/m²</span>
+                    <span className="text-emerald-400 font-medium">{region.avgYield.toFixed(1)}%</span>
                   </div>
                 </div>
                 <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
-                    style={{ width: `${(city.count / (cityStats[0]?.count || 1)) * 100}%` }}
+                    style={{ width: `${(region.count / (regionStats[0]?.count || 1)) * 100}%` }}
                   />
                 </div>
               </div>
@@ -334,16 +337,16 @@ export function AnalyticsDashboard() {
         <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
           <div className="flex items-center gap-2 mb-6">
             <TrendingUp className="w-5 h-5 text-emerald-400" />
-            <h3 className="text-lg font-bold text-slate-100">Najlepšie investičné mestá</h3>
+            <h3 className="text-lg font-bold text-slate-100">Najlepšie investičné regióny</h3>
           </div>
 
           <div className="space-y-4">
-            {[...cityStats]
+            {[...regionStats]
               .sort((a, b) => b.avgYield - a.avgYield)
               .slice(0, 5)
-              .map((city, idx) => (
+              .map((region, idx) => (
                 <div
-                  key={city.city}
+                  key={region.region}
                   className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg"
                 >
                   <div className="flex items-center gap-3">
@@ -356,14 +359,14 @@ export function AnalyticsDashboard() {
                       {idx + 1}
                     </div>
                     <div>
-                      <div className="font-medium text-slate-100">{city.cityLabel}</div>
-                      <div className="text-sm text-slate-400">€{city.avgPricePerM2}/m²</div>
+                      <div className="font-medium text-slate-100">{region.regionLabel}</div>
+                      <div className="text-sm text-slate-400">€{region.avgPricePerM2}/m²</div>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="flex items-center gap-1 text-emerald-400 font-bold">
                       <ArrowUpRight className="w-4 h-4" />
-                      {city.avgYield.toFixed(1)}%
+                      {region.avgYield.toFixed(1)}%
                     </div>
                     <div className="text-sm text-slate-400">hrubý výnos</div>
                   </div>

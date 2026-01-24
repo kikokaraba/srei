@@ -474,10 +474,10 @@ export function SlovakiaHeatmap() {
             <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
               <div className="flex items-center gap-2 text-slate-400 mb-4">
                 <Info className="w-5 h-5" />
-                <span>Vyberte mesto na mape</span>
+                <span>Vyberte lokalitu na mape</span>
               </div>
               <p className="text-sm text-slate-500">
-                Kliknite na mesto pre zobrazenie detailných štatistík a nehnuteľností.
+                Kliknite na bod pre zobrazenie detailných štatistík regiónu.
               </p>
             </div>
           )}

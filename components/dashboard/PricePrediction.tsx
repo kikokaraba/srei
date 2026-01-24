@@ -312,7 +312,7 @@ export function PricePrediction() {
                   <thead className="bg-slate-800/50">
                     <tr>
                       <th className="text-left py-2 px-3 text-sm font-medium text-slate-400">
-                        Mesto
+                        Región
                       </th>
                       <th className="text-right py-2 px-3 text-sm font-medium text-slate-400">
                         Cena/m²
