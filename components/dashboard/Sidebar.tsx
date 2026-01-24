@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -12,8 +13,9 @@ import {
   TrendingUp,
   Bookmark,
   Calculator,
+  Shield,
 } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -28,6 +30,21 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    // Check if user is admin
+    if (session?.user?.id) {
+      fetch("/api/v1/admin/stats")
+        .then((res) => {
+          if (res.ok) {
+            setIsAdmin(true);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [session?.user?.id]);
 
   return (
     <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col">
@@ -58,6 +75,17 @@ export function Sidebar() {
             </Link>
           );
         })}
+
+        {/* Admin Link */}
+        {isAdmin && (
+          <Link
+            href="/admin"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors mt-4 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20"
+          >
+            <Shield className="w-5 h-5" />
+            <span className="font-medium">Admin Panel</span>
+          </Link>
+        )}
       </nav>
 
       <div className="p-4 border-t border-slate-800">
