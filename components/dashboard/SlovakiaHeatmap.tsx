@@ -485,7 +485,7 @@ export function SlovakiaHeatmap() {
           {/* City Rankings */}
           <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
             <h3 className="font-bold text-slate-100 mb-4">
-              {metric === "price" && "Najdrahšie mestá"}
+              {metric === "price" && "Najdrahšie regióny"}
               {metric === "yield" && "Najvyšší výnos"}
               {metric === "properties" && "Najviac ponúk"}
             </h3>

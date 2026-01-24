@@ -13,15 +13,15 @@ interface ScraperStats {
   blocked: boolean;
 }
 
-const CITIES = [
-  "Bratislava",
-  "Košice", 
-  "Prešov",
-  "Žilina",
-  "Banská Bystrica",
-  "Trnava",
-  "Trenčín",
-  "Nitra",
+const REGIONS = [
+  { code: "BA", name: "Bratislavský", city: "Bratislava" },
+  { code: "KE", name: "Košický", city: "Košice" },
+  { code: "PO", name: "Prešovský", city: "Prešov" },
+  { code: "ZA", name: "Žilinský", city: "Žilina" },
+  { code: "BB", name: "Banskobystrický", city: "Banská Bystrica" },
+  { code: "TT", name: "Trnavský", city: "Trnava" },
+  { code: "TN", name: "Trenčiansky", city: "Trenčín" },
+  { code: "NR", name: "Nitriansky", city: "Nitra" },
 ];
 
 export default function ScraperControl() {
@@ -31,11 +31,11 @@ export default function ScraperControl() {
     stats?: ScraperStats;
     error?: string;
   } | null>(null);
-  const [selectedCities, setSelectedCities] = useState<string[]>(["Bratislava"]);
+  const [selectedRegions, setSelectedRegions] = useState<string[]>(["Bratislava"]);
   const [testMode, setTestMode] = useState(true);
 
-  const toggleCity = (city: string) => {
-    setSelectedCities(prev => 
+  const toggleRegion = (city: string) => {
+    setSelectedRegions(prev => 
       prev.includes(city) 
         ? prev.filter(c => c !== city)
         : [...prev, city]
@@ -52,7 +52,7 @@ export default function ScraperControl() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           testMode,
-          cities: selectedCities,
+          cities: selectedRegions,
         }),
       });
 
@@ -87,24 +87,24 @@ export default function ScraperControl() {
         </div>
       </div>
 
-      {/* Výber miest */}
+      {/* Výber regiónov */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-slate-300 mb-3">
-          Vyber mestá na scraping:
+          Vyber regióny na scraping:
         </label>
         <div className="flex flex-wrap gap-2">
-          {CITIES.map(city => (
+          {REGIONS.map(region => (
             <button
-              key={city}
-              onClick={() => toggleCity(city)}
+              key={region.code}
+              onClick={() => toggleRegion(region.city)}
               disabled={isRunning}
               className={`px-3 py-1.5 text-sm rounded-lg border transition-all ${
-                selectedCities.includes(city)
+                selectedRegions.includes(region.city)
                   ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300"
                   : "bg-slate-700/50 border-slate-600 text-slate-400 hover:border-slate-500"
               } disabled:opacity-50`}
             >
-              {city}
+              {region.code}
             </button>
           ))}
         </div>
@@ -132,7 +132,7 @@ export default function ScraperControl() {
       {/* Spustiť tlačidlo */}
       <button
         onClick={runScraper}
-        disabled={isRunning || selectedCities.length === 0}
+        disabled={isRunning || selectedRegions.length === 0}
         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-600 text-white font-semibold rounded-lg transition-colors disabled:cursor-not-allowed"
       >
         {isRunning ? (
