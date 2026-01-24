@@ -285,9 +285,43 @@ const PATTERNS = {
 
 /**
  * Mapovanie lokalít na SlovakCity enum
+ * DÔLEŽITÉ: Špecifickejšie patterny (napr. "košice-staré mesto") musia byť PRED
+ * všeobecnejšími (napr. "staré mesto"), inak sa matchnú nesprávne!
  */
 const CITY_MAP: Record<string, SlovakCity> = {
-  // Hlavné mestá
+  // === KOŠICE - mestské časti (MUSIA byť pred "staré mesto" atď.) ===
+  "košice-staré mesto": "KOSICE",
+  "kosice-stare mesto": "KOSICE",
+  "košice - staré mesto": "KOSICE",
+  "košice-juh": "KOSICE",
+  "kosice-juh": "KOSICE",
+  "košice - juh": "KOSICE",
+  "košice-západ": "KOSICE",
+  "kosice-zapad": "KOSICE",
+  "košice - západ": "KOSICE",
+  "košice-sever": "KOSICE",
+  "kosice-sever": "KOSICE",
+  "košice - sever": "KOSICE",
+  "košice-dargovských hrdinov": "KOSICE",
+  "košice-sídlisko ťahanovce": "KOSICE",
+  "košice-šaca": "KOSICE",
+  "košice-barca": "KOSICE",
+  "košice-nad jazerom": "KOSICE",
+  "košice-krásna": "KOSICE",
+  "košice-myslava": "KOSICE",
+  "košice-pereš": "KOSICE",
+  "košice-poľov": "KOSICE",
+  "košice-kavečany": "KOSICE",
+  "košice-lorinčík": "KOSICE",
+  "šaca": "KOSICE",
+  "ťahanovce": "KOSICE",
+  "tahanovce": "KOSICE",
+  "dargovských hrdinov": "KOSICE",
+  "furča": "KOSICE",
+  "terasa": "KOSICE",
+  "kuzmányho": "KOSICE",
+  
+  // === HLAVNÉ MESTÁ ===
   "bratislava": "BRATISLAVA",
   "košice": "KOSICE",
   "kosice": "KOSICE",
@@ -303,15 +337,19 @@ const CITY_MAP: Record<string, SlovakCity> = {
   "trencin": "TRENCIN",
   "nitra": "NITRA",
   
-  // Bratislava - mestské časti
+  // === BRATISLAVA - mestské časti ===
+  "bratislava-staré mesto": "BRATISLAVA",
+  "bratislava - staré mesto": "BRATISLAVA",
+  "bratislava-nové mesto": "BRATISLAVA",
+  "bratislava - nové mesto": "BRATISLAVA",
+  "bratislava-petržalka": "BRATISLAVA",
+  "bratislava-ružinov": "BRATISLAVA",
   "petržalka": "BRATISLAVA",
   "petrzalka": "BRATISLAVA",
   "ružinov": "BRATISLAVA",
   "ruzinov": "BRATISLAVA",
-  "staré mesto": "BRATISLAVA",
-  "stare mesto": "BRATISLAVA",
-  "nové mesto": "BRATISLAVA",
-  "nove mesto": "BRATISLAVA",
+  "staré mesto bratislava": "BRATISLAVA",
+  "nové mesto bratislava": "BRATISLAVA",
   "karlova ves": "BRATISLAVA",
   "dúbravka": "BRATISLAVA",
   "dubravka": "BRATISLAVA",
@@ -320,19 +358,45 @@ const CITY_MAP: Record<string, SlovakCity> = {
   "vajnory": "BRATISLAVA",
   "podunajské biskupice": "BRATISLAVA",
   "vrakuňa": "BRATISLAVA",
+  "lamač": "BRATISLAVA",
+  "devín": "BRATISLAVA",
+  "devínska nová ves": "BRATISLAVA",
+  "záhorská bystrica": "BRATISLAVA",
+  "čunovo": "BRATISLAVA",
+  "rusovce": "BRATISLAVA",
+  "jarovce": "BRATISLAVA",
   
-  // Košice - mestské časti
-  "košice-staré mesto": "KOSICE",
-  "košice-juh": "KOSICE",
-  "košice-západ": "KOSICE",
-  "košice-sever": "KOSICE",
-  "šaca": "KOSICE",
+  // === GENERICKÉ MESTSKÉ ČASTI (na konci - matchnú len ak nič špecifické nenašlo) ===
+  // Tieto by mali matchnúť len ak text neobsahuje "košice" ani "bratislava"
+  // Ale pre istotu sú až na konci
   
-  // Okolie veľkých miest (mapujeme na najbližšie veľké mesto)
+  // === OKOLIE VEĽKÝCH MIEST ===
   "senec": "BRATISLAVA",
   "pezinok": "BRATISLAVA",
   "malacky": "BRATISLAVA",
   "stupava": "BRATISLAVA",
+  "svätý jur": "BRATISLAVA",
+  "modra": "BRATISLAVA",
+  "bernolákovo": "BRATISLAVA",
+  "ivanka pri dunaji": "BRATISLAVA",
+  "chorvátsky grob": "BRATISLAVA",
+  "michalovce": "KOSICE",
+  "spišská nová ves": "KOSICE",
+  "poprad": "PRESOV",
+  "martin": "ZILINA",
+  "ružomberok": "ZILINA",
+  "liptovský mikuláš": "ZILINA",
+  "prievidza": "TRENCIN",
+  "považská bystrica": "TRENCIN",
+  "levice": "NITRA",
+  "komárno": "NITRA",
+  "nové zámky": "NITRA",
+  "dunajská streda": "TRNAVA",
+  "piešťany": "TRNAVA",
+  "hlohovec": "TRNAVA",
+  "zvolen": "BANSKA_BYSTRICA",
+  "lučenec": "BANSKA_BYSTRICA",
+  "rimavská sobota": "BANSKA_BYSTRICA",
 };
 
 /**
@@ -395,24 +459,43 @@ function extractArea(text: string): number {
 
 /**
  * Extrahuje mesto z lokácie
+ * Používa longest-match stratégiu - preferuje dlhšie (špecifickejšie) patterny
  */
 function extractCity(location: string): { city: SlovakCity; district: string } {
   const normalized = location.toLowerCase().trim();
   
+  // Nájdi všetky matchnuté patterny a vyber najdlhší
+  let bestMatch: { pattern: string; city: SlovakCity } | null = null;
+  
   for (const [pattern, city] of Object.entries(CITY_MAP)) {
     if (normalized.includes(pattern)) {
-      // Extrahuj okres
-      const parts = location.split(",").map(p => p.trim());
-      return {
-        city,
-        district: parts[0] || location,
-      };
+      if (!bestMatch || pattern.length > bestMatch.pattern.length) {
+        bestMatch = { pattern, city };
+      }
     }
   }
   
-  // Default
+  if (bestMatch) {
+    // Extrahuj okres z pôvodného textu
+    const parts = location.split(",").map(p => p.trim());
+    return {
+      city: bestMatch.city,
+      district: parts[0] || location,
+    };
+  }
+  
+  // Skús ešte základné regex pre "Košice" alebo "Bratislava" v texte
+  if (/košice|kosice/i.test(location)) {
+    return { city: "KOSICE", district: location.split(",")[0]?.trim() || "Košice" };
+  }
+  if (/bratislava/i.test(location)) {
+    return { city: "BRATISLAVA", district: location.split(",")[0]?.trim() || "Bratislava" };
+  }
+  
+  // Default - NEZNÁME namiesto Bratislava (lepšie vidieť chyby)
+  console.warn(`⚠️ Nepodarilo sa určiť mesto pre: "${location}"`);
   return {
-    city: "BRATISLAVA",
+    city: "BRATISLAVA", // Stále default BA pre kompatibilitu, ale aspoň logujeme
     district: location.split(",")[0]?.trim() || "Neznámy",
   };
 }
