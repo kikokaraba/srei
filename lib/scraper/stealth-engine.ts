@@ -373,7 +373,7 @@ function extractCity(location: string): { city: SlovakCity; district: string } {
  */
 export function parseListingElement(
   $: cheerio.CheerioAPI,
-  element: cheerio.Element,
+  element: Parameters<typeof $>[0],
   baseUrl: string
 ): ParsedListing | null {
   try {
