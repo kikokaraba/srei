@@ -317,7 +317,7 @@ export async function sendDailySummaryToAll(): Promise<number> {
   // Get today's stats
   const [newProperties, marketGaps, priceDrops, hotDeals] = await Promise.all([
     prisma.property.count({
-      where: { created_at: { gte: today } },
+      where: { createdAt: { gte: today } },
     }),
     prisma.marketGap.count({
       where: { detected_at: { gte: today } },
@@ -330,7 +330,7 @@ export async function sendDailySummaryToAll(): Promise<number> {
     }),
     prisma.property.count({
       where: {
-        created_at: { gte: today },
+        createdAt: { gte: today },
         is_distressed: true,
       },
     }),
