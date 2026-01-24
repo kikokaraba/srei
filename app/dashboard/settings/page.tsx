@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { TrendingUp, Bell, Save, Settings as SettingsIcon, Check, Sparkles, Map } from "lucide-react";
 import { AdvancedFilters } from "@/components/dashboard/AdvancedFilters";
 import { LocationPicker } from "@/components/ui/LocationPicker";
+import { TelegramSettings } from "@/components/dashboard/TelegramSettings";
 
 const INVESTMENT_TYPES = [
   { id: "future-potential", label: "Investície s budúcim potenciálom", icon: "🚀" },
@@ -299,6 +300,9 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Telegram Bot - Pro funkcia */}
+      <TelegramSettings />
 
       {/* Notifikácie */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-violet-950/20 p-6">

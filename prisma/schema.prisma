@@ -487,6 +487,12 @@ model UserPreferences {
   notifyDistressed      Boolean  @default(false) // Upozornenia na nehnuteľnosti v núdzi
   notificationFrequency String?  @default("daily") // "realtime", "hourly", "daily", "weekly"
   
+  // Telegram integrácia (Pro funkcia)
+  telegramChatId        String?  // Chat ID pre Telegram notifikácie
+  telegramUsername      String?  // Telegram username
+  telegramConnectedAt   DateTime? // Kedy bol Telegram pripojený
+  telegramEnabled       Boolean  @default(false) // Či sú Telegram notifikácie zapnuté
+  
   // Dashboard preferences
   defaultView           String?  @default("dashboard") // "dashboard", "map", "list"
   itemsPerPage          Int?     @default(20) // Počet položiek na stránku
