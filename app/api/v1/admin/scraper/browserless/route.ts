@@ -194,17 +194,18 @@ export async function POST(request: NextRequest) {
     // Log the scrape
     await prisma.dataFetchLog.create({
       data: {
-        source: portal,
-        fetchType: "SCRAPE_BROWSERLESS",
+        source: `${portal}_BROWSERLESS`,
+        status: result.errors.length === 0 ? "success" : "partial",
         recordsCount: result.properties.length,
-        duration: result.duration,
-        success: result.errors.length === 0,
-        notes: JSON.stringify({
-          pagesScraped: result.pagesScraped,
-          savedCount,
-          updatedCount,
-          errors: result.errors.slice(0, 5),
-        }),
+        duration_ms: result.duration,
+        error: result.errors.length > 0 
+          ? JSON.stringify({
+              pagesScraped: result.pagesScraped,
+              savedCount,
+              updatedCount,
+              errors: result.errors.slice(0, 5),
+            })
+          : null,
       },
     });
 
