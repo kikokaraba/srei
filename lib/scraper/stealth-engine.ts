@@ -767,7 +767,8 @@ export async function runStealthScrape(
   totalStats: ScraperStats;
   categoryStats: { category: string; city?: string; stats: ScraperStats }[];
 }> {
-  const categories = ["/predaj/byty/", "/predaj/domy/"];
+  // Bazoš reality URL štruktúra: https://reality.bazos.sk/byty/ (nie /predaj/byty/)
+  const categories = ["/byty/", "/domy/"];
   const targetCities = cities || ["Bratislava", "Košice", "Žilina"];
   
   const categoryStats: { category: string; city?: string; stats: ScraperStats }[] = [];

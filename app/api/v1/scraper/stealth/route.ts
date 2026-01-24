@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     // 3. Test mode - scrapuj len 1 stranu 1 mesta
     if (testMode) {
       const testCity = cities?.[0] || "Nitra";
-      const testCategory = category || "/predaj/byty/";
+      const testCategory = category || "/byty/";
       
       console.log(`🧪 TEST MODE: ${testCity} - ${testCategory}`);
       
