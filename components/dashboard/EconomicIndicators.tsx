@@ -131,7 +131,7 @@ export function EconomicIndicators() {
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">Ekonomické ukazovatele</h2>
-            <p className="text-xs text-slate-400">Slovensko Q4 2025</p>
+            <p className="text-xs text-slate-400">Slovensko Q3 2025 (posledné dostupné)</p>
           </div>
         </div>
         <div className="text-right">

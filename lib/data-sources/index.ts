@@ -11,6 +11,14 @@ export {
   getHistoricalPriceData,
 } from "./nbs";
 
+// NBS Scraper
+export {
+  checkForNewNBSData,
+  scrapeNBSData,
+  sendNewDataNotification,
+  runNBSDataCheck,
+} from "./nbs-scraper";
+
 // Štatistický úrad SR
 export {
   getAvailableDatasets,

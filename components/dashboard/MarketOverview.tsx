@@ -63,7 +63,7 @@ export function MarketOverview() {
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">Prehľad trhu</h2>
-            <p className="text-xs text-slate-400">Dáta: NBS, Štatistický úrad SR</p>
+            <p className="text-xs text-slate-400">NBS Q3 2025 • Ďalšia aktualizácia: Feb 2026</p>
           </div>
         </div>
         <div className="flex items-center gap-2 text-xs text-slate-500">
