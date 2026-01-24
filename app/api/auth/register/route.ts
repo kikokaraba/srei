@@ -64,6 +64,7 @@ export async function POST(request: Request) {
       data: {
         userId: user.id,
         onboardingCompleted: false,
+        trackedRegions: JSON.stringify([]),
         trackedCities: JSON.stringify([]),
         trackedDistricts: JSON.stringify([]),
         trackedStreets: JSON.stringify([]),
