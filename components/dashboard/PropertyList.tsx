@@ -21,6 +21,7 @@ import {
   Layers,
 } from "lucide-react";
 import { DuplicatesBadge } from "./DuplicatesBadge";
+import { FairValueBadge } from "./FairValueBadge";
 
 // Slovenské kraje
 const REGIONS = [
@@ -751,6 +752,9 @@ export function PropertyList() {
                       currentPrice={property.price} 
                       compact 
                     />
+
+                    {/* AI Fair Value Badge */}
+                    <FairValueBadge propertyId={property.id} compact />
                   </div>
                 </div>
               </div>
@@ -813,6 +817,8 @@ export function PropertyList() {
                         currentPrice={property.price} 
                         compact 
                       />
+                      {/* AI Fair Value Badge */}
+                      <FairValueBadge propertyId={property.id} compact />
                     </div>
                     <div className="flex items-center gap-4 text-sm text-slate-400">
                       <div className="flex items-center gap-1">
