@@ -33,6 +33,12 @@ export function Navbar() {
               Funkcie
             </Link>
             <Link
+              href="#stats"
+              className="text-slate-400 hover:text-slate-100 transition-colors"
+            >
+              Štatistiky
+            </Link>
+            <Link
               href="#map"
               className="text-slate-400 hover:text-slate-100 transition-colors"
             >
@@ -45,13 +51,13 @@ export function Navbar() {
               Cenník
             </Link>
             <Link
-              href="#pricing"
-              className="text-slate-300 hover:text-slate-100 transition-colors"
+              href="/auth/signin"
+              className="text-slate-400 hover:text-slate-100 transition-colors"
             >
-              Cenník
+              Prihlásiť sa
             </Link>
             <Link
-              href="/auth/signin"
+              href="/auth/signup"
               className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40"
             >
               Začať zdarma
@@ -79,39 +85,48 @@ export function Navbar() {
             <div className="flex flex-col gap-4">
               <Link
                 href="#features"
-                className="text-slate-400 hover:text-slate-100 transition-colors"
+                className="text-slate-400 hover:text-slate-100 transition-colors py-2"
                 onClick={closeMobileMenu}
               >
                 Funkcie
               </Link>
               <Link
+                href="#stats"
+                className="text-slate-400 hover:text-slate-100 transition-colors py-2"
+                onClick={closeMobileMenu}
+              >
+                Štatistiky
+              </Link>
+              <Link
                 href="#map"
-                className="text-slate-400 hover:text-slate-100 transition-colors"
+                className="text-slate-400 hover:text-slate-100 transition-colors py-2"
                 onClick={closeMobileMenu}
               >
                 Mapa
               </Link>
               <Link
                 href="#pricing"
-                className="text-slate-400 hover:text-slate-100 transition-colors"
+                className="text-slate-400 hover:text-slate-100 transition-colors py-2"
                 onClick={closeMobileMenu}
               >
                 Cenník
               </Link>
-              <Link
-                href="#pricing"
-                className="text-slate-300 hover:text-slate-100 transition-colors"
-                onClick={closeMobileMenu}
-              >
-                Cenník
-              </Link>
-              <Link
-                href="/auth/signin"
-                className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-all duration-200 text-center shadow-lg shadow-emerald-500/25"
-                onClick={closeMobileMenu}
-              >
-                Začať zdarma
-              </Link>
+              <div className="pt-4 border-t border-slate-800 flex flex-col gap-3">
+                <Link
+                  href="/auth/signin"
+                  className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-lg transition-all duration-200 text-center"
+                  onClick={closeMobileMenu}
+                >
+                  Prihlásiť sa
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-all duration-200 text-center shadow-lg shadow-emerald-500/25"
+                  onClick={closeMobileMenu}
+                >
+                  Začať zdarma
+                </Link>
+              </div>
             </div>
           </div>
         )}
