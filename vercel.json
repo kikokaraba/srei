@@ -2,16 +2,32 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/cron/scraper-stealth",
-      "schedule": "0 3 * * *"
+      "path": "/api/cron/scraper-stealth?sources=NEHNUTELNOSTI&cities=Bratislava",
+      "schedule": "0 2 * * *"
     },
     {
-      "path": "/api/cron/scraper-stealth",
+      "path": "/api/cron/scraper-stealth?sources=NEHNUTELNOSTI&cities=Kosice,Presov,Zilina",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/scraper-stealth?sources=NEHNUTELNOSTI&cities=Nitra,Trnava,Trencin,Banska_Bystrica",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/scraper-stealth?sources=REALITY&cities=Bratislava,Kosice",
+      "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/cron/scraper-stealth?sources=REALITY&cities=Zilina,Presov,Nitra,Trnava",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/scraper-stealth?sources=BAZOS",
       "schedule": "0 14 * * *"
     },
     {
       "path": "/api/cron/sync-data?type=market",
-      "schedule": "0 6 * * *"
+      "schedule": "0 7 * * *"
     },
     {
       "path": "/api/cron/check-nbs",
