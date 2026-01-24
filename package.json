@@ -13,9 +13,7 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "db:setup": "tsx scripts/setup-postgis.ts && prisma migrate deploy",
-    "postinstall": "prisma generate",
-    "railway:init": "bash scripts/init-railway-db.sh"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
