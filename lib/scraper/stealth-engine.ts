@@ -606,11 +606,15 @@ export async function scrapeBazosCategory(
   };
   
   const baseUrl = "https://reality.bazos.sk";
+  // Bazoš URL štruktúra: /predaj/byty/ alebo s hľadaním /predaj/byty/?hledession=...
+  // Pre celé Slovensko: bez parametrov
+  // Pre konkrétne mesto: použijeme parameter hleession (správny názov)
   let categoryUrl = `${baseUrl}${category}`;
   
   // Pridaj mesto do URL ak je špecifikované
   if (city) {
-    categoryUrl += `?hleession=${encodeURIComponent(city)}`;
+    // Bazoš hľadá podľa lokality cez parameter "hleession" (áno, s dvoma 's')
+    categoryUrl += `?hledession=${encodeURIComponent(city)}`;
   }
   
   console.log(`\n🏠 Starting scrape: ${categoryUrl}`);
@@ -649,10 +653,39 @@ export async function scrapeBazosCategory(
     // Parse HTML
     const $ = cheerio.load(result.html!);
     
-    // Nájdi všetky inzeráty
-    const listingElements = $(".inzeraty .inzerat, .vypis .inzerat").toArray();
+    // Debug: Loguj HTML snippet pre diagnostiku
+    const htmlLength = result.html?.length || 0;
+    console.log(`📄 HTML loaded: ${htmlLength} bytes`);
     
-    console.log(`📄 Page ${stats.pagesScraped}: Found ${listingElements.length} listings`);
+    // Bazoš 2024/2025 selektory - skúšame viacero variantov
+    const selectors = [
+      ".inzeraty .inzerat",
+      ".vypis .inzerat", 
+      ".inzeratynadpis",
+      ".inzeratyflex",
+      "[class*='inzerat']",
+      ".nadpis",
+      "table.inzeraty tr",
+    ];
+    
+    let listingElements: ReturnType<typeof $.fn.toArray> = [];
+    let usedSelector = "";
+    
+    for (const selector of selectors) {
+      const found = $(selector).toArray();
+      if (found.length > 0) {
+        listingElements = found;
+        usedSelector = selector;
+        break;
+      }
+    }
+    
+    console.log(`📄 Page ${stats.pagesScraped}: Found ${listingElements.length} listings (selector: ${usedSelector || 'none'})`);
+    
+    // Debug: Ak nič nenašiel, ukáž prvých 500 znakov HTML
+    if (listingElements.length === 0 && result.html) {
+      console.log(`⚠️ No listings found. HTML preview: ${result.html.substring(0, 500)}...`);
+    }
     
     // Spracuj každý inzerát
     for (const element of listingElements) {
