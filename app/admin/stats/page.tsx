@@ -11,7 +11,7 @@ import {
   Calendar,
   MapPin,
 } from "lucide-react";
-import { CITY_LABELS } from "@/lib/constants";
+import { getCityRegionLabel } from "@/lib/constants";
 
 interface AdminStats {
   overview: {
@@ -136,7 +136,7 @@ export default function AdminStatsPage() {
                     <div className="flex-1">
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-slate-100 font-medium">
-                          {CITY_LABELS[item.city] || item.city}
+                          {getCityRegionLabel(item.city)}
                         </span>
                         <span className="text-slate-400">
                           {item.count} ({share}%)

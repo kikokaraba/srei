@@ -14,7 +14,7 @@ import {
   Bookmark,
   History,
 } from "lucide-react";
-import { CITY_LABELS } from "@/lib/constants";
+import { REGION_OPTIONS, getCityRegionLabel } from "@/lib/constants";
 
 interface PropertyData {
   id: string;
@@ -40,7 +40,7 @@ interface PropertyData {
   };
 }
 
-const CITIES = Object.keys(CITY_LABELS);
+const REGIONS = REGION_OPTIONS.map(r => r.value);
 
 export default function AdminPropertiesPage() {
   const [properties, setProperties] = useState<PropertyData[]>([]);
@@ -139,10 +139,10 @@ export default function AdminPropertiesPage() {
             }}
             className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-red-500"
           >
-            <option value="">Všetky mestá</option>
-            {CITIES.map((city) => (
-              <option key={city} value={city}>
-                {CITY_LABELS[city]}
+            <option value="">Všetky kraje</option>
+            {REGION_OPTIONS.map((region) => (
+              <option key={region.value} value={region.value}>
+                {region.label}
               </option>
             ))}
           </select>
@@ -187,7 +187,7 @@ export default function AdminPropertiesPage() {
                         <div className="font-medium text-slate-100 line-clamp-1">{property.title}</div>
                         <div className="flex items-center gap-1 text-sm text-slate-400">
                           <MapPin className="w-3 h-3" />
-                          {property.district}, {CITY_LABELS[property.city]}
+                          {property.district}, {getCityRegionLabel(property.city)}
                         </div>
                       </div>
                     </td>

@@ -14,7 +14,7 @@ import {
   ArrowDownRight,
 } from "lucide-react";
 import Link from "next/link";
-import { CITY_LABELS, ROLE_LABELS } from "@/lib/constants";
+import { getCityRegionLabel, ROLE_LABELS } from "@/lib/constants";
 
 interface AdminStats {
   overview: {
@@ -161,7 +161,7 @@ export default function AdminDashboard() {
                 return (
                   <div key={item.city}>
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="text-slate-300">{CITY_LABELS[item.city] || item.city}</span>
+                      <span className="text-slate-300">{getCityRegionLabel(item.city)}</span>
                       <span className="text-slate-400">{item.count}</span>
                     </div>
                     <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
