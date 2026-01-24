@@ -212,11 +212,20 @@ export function HeroMap() {
         setLoading(true);
         setError(false);
         const response = await fetch(
-          "https://raw.githubusercontent.com/duhaime/re-atlas/master/data/geojson/slovakia-regions.geojson"
+          "https://raw.githubusercontent.com/duhaime/re-atlas/master/data/geojson/slovakia-regions.geojson",
+          { 
+            mode: 'cors',
+            cache: 'no-cache'
+          }
         );
         
         if (!response.ok) {
-          throw new Error(`Failed to fetch GeoJSON: ${response.status} ${response.statusText}`);
+          // GeoJSON nie je kritický - len logujeme warning
+          console.warn(`GeoJSON not available: ${response.status} ${response.statusText}`);
+          setGeojson(null);
+          setError(false); // Nezobrazujeme error, len pokračujeme bez GeoJSON
+          setLoading(false);
+          return;
         }
         
         const data = await response.json();

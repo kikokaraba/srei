@@ -20,28 +20,51 @@ const prisma = new PrismaClient({
 
 async function ensureAdmin() {
   try {
+    console.log("🔍 Kontrolujem admin používateľa...");
+    
     const adminEmail = "admin@sria.sk";
     const adminPassword = "Admin123!";
     const hashedPassword = await hash(adminPassword, 10);
 
-    const adminUser = await prisma.user.upsert({
+    // Skús najprv nájsť existujúceho používateľa
+    const existingUser = await prisma.user.findUnique({
       where: { email: adminEmail },
-      update: {
-        // Aktualizuj heslo len ak používateľ nemá heslo
-        password: hashedPassword,
-        role: "ADMIN",
-      },
-      create: {
-        email: adminEmail,
-        password: hashedPassword,
-        name: "Administrátor",
-        role: "ADMIN",
-      },
     });
 
-    console.log("✅ Admin používateľ pripravený:", adminUser.email);
+    let adminUser;
+    if (existingUser) {
+      // Aktualizuj len ak nemá heslo alebo ak chceme resetnúť heslo
+      if (!existingUser.password) {
+        adminUser = await prisma.user.update({
+          where: { email: adminEmail },
+          data: {
+            password: hashedPassword,
+            role: "ADMIN",
+          },
+        });
+        console.log("✅ Admin používateľ aktualizovaný (pridané heslo):", adminUser.email);
+      } else {
+        console.log("✅ Admin používateľ už existuje:", existingUser.email);
+        adminUser = existingUser;
+      }
+    } else {
+      // Vytvor nového admin používateľa
+      adminUser = await prisma.user.create({
+        data: {
+          email: adminEmail,
+          password: hashedPassword,
+          name: "Administrátor",
+          role: "ADMIN",
+        },
+      });
+      console.log("✅ Admin používateľ vytvorený:", adminUser.email);
+    }
+
+    console.log("🔐 Prihlasovacie údaje:");
+    console.log("   Email: admin@sria.sk");
+    console.log("   Heslo: Admin123!");
   } catch (error) {
-    console.error("⚠️  Chyba pri vytváraní admin používateľa:", error);
+    console.error("❌ Chyba pri vytváraní admin používateľa:", error);
     // Neukonči proces - aplikácia môže bežať aj bez admin používateľa
   } finally {
     await prisma.$disconnect();
