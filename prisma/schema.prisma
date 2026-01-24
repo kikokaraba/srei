@@ -420,9 +420,9 @@ model UserPreferences {
   
   // Lokalita
   primaryCity           SlovakCity? // Hlavné mesto záujmu (legacy - pre spätnú kompatibilitu)
-  trackedRegions        String   @db.Text // JSON array of region IDs (BA, KE, etc.)
-  trackedCities         String   @db.Text // JSON array of city names
-  trackedDistricts      String   @db.Text // JSON array of district IDs
+  trackedRegions        String   @default("[]") @db.Text // JSON array of region IDs (BA, KE, etc.)
+  trackedCities         String   @default("[]") @db.Text // JSON array of city names
+  trackedDistricts      String   @default("[]") @db.Text // JSON array of district IDs
   trackedStreets        String   @db.Text // JSON array of street names
   
   // Typ investície
