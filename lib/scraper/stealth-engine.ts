@@ -676,7 +676,8 @@ export async function scrapeBazosCategory(
       "table.inzeraty tr",
     ];
     
-    let listingElements: ReturnType<typeof $.fn.toArray> = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let listingElements: any[] = [];
     let usedSelector = "";
     
     for (const selector of selectors) {
