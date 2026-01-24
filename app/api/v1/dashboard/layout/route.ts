@@ -16,11 +16,9 @@ export async function GET() {
       where: { userId: session.user.id },
     });
 
-    // Všetky dostupné widgety
+    // Všetky dostupné widgety (scraper-control a system-health sú v /admin)
     const allWidgets = [
-      "scraper-control",
       "hot-deals",
-      "system-health",
       "economic-indicators",
       "analytics-cards",
       "market-overview",
@@ -34,7 +32,6 @@ export async function GET() {
 
     // Default layout pre nových používateľov
     const defaultWidgets = [
-      "scraper-control",
       "hot-deals",
       "economic-indicators",
       "analytics-cards",

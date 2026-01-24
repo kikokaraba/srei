@@ -14,12 +14,14 @@ import {
   BarChart3,
   Menu,
   X,
+  Database,
 } from "lucide-react";
 
 const adminNav = [
   { name: "Prehľad", href: "/admin", icon: LayoutDashboard },
   { name: "Používatelia", href: "/admin/users", icon: Users },
   { name: "Nehnuteľnosti", href: "/admin/properties", icon: Building },
+  { name: "Dáta & Scraper", href: "/admin/data", icon: Database },
   { name: "Štatistiky", href: "/admin/stats", icon: BarChart3 },
 ];
 

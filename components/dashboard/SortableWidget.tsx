@@ -13,13 +13,9 @@ import { MarketOverview } from "./MarketOverview";
 import { RecentProperties } from "./RecentProperties";
 import { EconomicIndicators } from "./EconomicIndicators";
 import HotDeals from "./HotDeals";
-import SystemHealth from "./SystemHealth";
-import ScraperControl from "./ScraperControl";
 
 const WIDGET_COMPONENTS = {
-  "scraper-control": ScraperControl,
   "hot-deals": HotDeals,
-  "system-health": SystemHealth,
   "economic-indicators": EconomicIndicators,
   "analytics-cards": AnalyticsCards,
   "market-gaps": MarketGaps,

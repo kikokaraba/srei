@@ -21,23 +21,11 @@ import { Settings, X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const WIDGET_REGISTRY = {
-  "scraper-control": {
-    id: "scraper-control",
-    title: "Scraper Control",
-    component: "ScraperControl",
-    description: "Manuálne spustenie scrapera",
-  },
   "hot-deals": {
     id: "hot-deals",
     title: "Hot Deals",
     component: "HotDeals",
     description: "Nehnuteľnosti 15%+ pod trhovou cenou",
-  },
-  "system-health": {
-    id: "system-health",
-    title: "System Health",
-    component: "SystemHealth",
-    description: "Stav scrapera a dátových zdrojov",
   },
   "economic-indicators": {
     id: "economic-indicators",

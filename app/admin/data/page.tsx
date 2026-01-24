@@ -12,6 +12,8 @@ import {
   Bell,
   Download
 } from "lucide-react";
+import SystemHealth from "@/components/dashboard/SystemHealth";
+import ScraperControl from "@/components/dashboard/ScraperControl";
 
 interface DataStatus {
   source: string;
@@ -166,6 +168,12 @@ export default function DataManagementPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Scraper Control & System Health */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ScraperControl />
+        <SystemHealth />
       </div>
 
       {/* NBS Data Editor */}
