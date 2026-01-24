@@ -1,16 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   TrendingUp,
   TrendingDown,
-  Minus,
-  Calendar,
-  BarChart3,
-  ArrowUpRight,
-  ArrowDownRight,
-  Info,
-  RefreshCw,
+  Sparkles,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 
 interface YearlyData {
@@ -39,56 +35,63 @@ interface HistoryData {
 }
 
 const REGIONS = [
-  { code: "SLOVENSKO", name: "Slovensko" },
-  { code: "BRATISLAVSKY", name: "Bratislava" },
-  { code: "KOSICKY", name: "Košice" },
-  { code: "PRESOVSKY", name: "Prešov" },
-  { code: "ZILINSKY", name: "Žilina" },
-  { code: "BANSKOBYSTRICKY", name: "B. Bystrica" },
-  { code: "TRNAVSKY", name: "Trnava" },
-  { code: "TRENCIANSKY", name: "Trenčín" },
-  { code: "NITRIANSKY", name: "Nitra" },
+  { code: "SLOVENSKO", name: "SK" },
+  { code: "BRATISLAVSKY", name: "BA" },
+  { code: "KOSICKY", name: "KE" },
+  { code: "PRESOVSKY", name: "PO" },
+  { code: "ZILINSKY", name: "ZA" },
+  { code: "BANSKOBYSTRICKY", name: "BB" },
+  { code: "TRNAVSKY", name: "TT" },
+  { code: "TRENCIANSKY", name: "TN" },
+  { code: "NITRIANSKY", name: "NR" },
 ];
 
-const PERIOD_OPTIONS = [
-  { value: "5", label: "5 rokov" },
-  { value: "10", label: "10 rokov" },
-  { value: "20", label: "20 rokov" },
-];
+const REGION_FULL_NAMES: Record<string, string> = {
+  SLOVENSKO: "Slovensko",
+  BRATISLAVSKY: "Bratislava",
+  KOSICKY: "Košice",
+  PRESOVSKY: "Prešov",
+  ZILINSKY: "Žilina",
+  BANSKOBYSTRICKY: "Banská Bystrica",
+  TRNAVSKY: "Trnava",
+  TRENCIANSKY: "Trenčín",
+  NITRIANSKY: "Nitra",
+};
 
 export function PriceHistory() {
-  const [selectedRegion, setSelectedRegion] = useState("SLOVENSKO");
-  const [period, setPeriod] = useState("10");
+  const [selectedRegion, setSelectedRegion] = useState("BRATISLAVSKY");
+  const [period, setPeriod] = useState(10);
   const [data, setData] = useState<HistoryData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
+  const [isAnimated, setIsAnimated] = useState(false);
+  const chartRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     fetchData();
   }, [selectedRegion, period]);
 
+  useEffect(() => {
+    if (data) {
+      setIsAnimated(false);
+      const timer = setTimeout(() => setIsAnimated(true), 50);
+      return () => clearTimeout(timer);
+    }
+  }, [data]);
+
   const fetchData = async () => {
     setLoading(true);
-    setError(null);
-    
     try {
-      const fromYear = 2025 - parseInt(period);
-      const response = await fetch(
-        `/api/v1/price-history?region=${selectedRegion}&type=yearly&from=${fromYear}&to=2025`
-      );
-      
-      if (!response.ok) {
-        throw new Error("Nepodarilo sa načítať dáta");
-      }
+      const fromYear = 2025 - period;
+      const [response, statsResponse] = await Promise.all([
+        fetch(`/api/v1/price-history?region=${selectedRegion}&type=yearly&from=${fromYear}&to=2025`),
+        fetch(`/api/v1/price-history?region=${selectedRegion}&type=stats`),
+      ]);
       
       const result = await response.json();
+      const statsResult = await statsResponse.json();
+      
       if (result.success) {
-        // Fetch stats separately
-        const statsResponse = await fetch(
-          `/api/v1/price-history?region=${selectedRegion}&type=stats`
-        );
-        const statsResult = await statsResponse.json();
-        
         setData({
           region: selectedRegion,
           name: result.data.name,
@@ -96,252 +99,354 @@ export function PriceHistory() {
           stats: statsResult.data?.stats || {},
           source: result.data.source,
         });
-      } else {
-        setError(result.error);
       }
     } catch (err) {
-      setError("Nepodarilo sa načítať historické dáta");
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Výpočet pre graf
   const chartData = useMemo(() => {
     if (!data?.yearly?.length) return null;
     
     const prices = data.yearly.map(d => d.avgPrice);
     const maxPrice = Math.max(...prices);
     const minPrice = Math.min(...prices);
-    const range = maxPrice - minPrice || 1;
+    const padding = (maxPrice - minPrice) * 0.1;
+    const adjustedMax = maxPrice + padding;
+    const adjustedMin = minPrice - padding;
+    const range = adjustedMax - adjustedMin || 1;
+    
+    const points = data.yearly.map((d, i) => ({
+      ...d,
+      x: (i / (data.yearly.length - 1)) * 100,
+      y: 100 - ((d.avgPrice - adjustedMin) / range) * 100,
+    }));
+    
+    // Smooth curve path
+    const pathD = points.reduce((acc, point, i) => {
+      if (i === 0) return `M ${point.x} ${point.y}`;
+      
+      const prev = points[i - 1];
+      const cpX = (prev.x + point.x) / 2;
+      return `${acc} C ${cpX} ${prev.y}, ${cpX} ${point.y}, ${point.x} ${point.y}`;
+    }, "");
+    
+    // Area path (for gradient fill)
+    const areaD = `${pathD} L 100 100 L 0 100 Z`;
     
     return {
-      points: data.yearly.map((d, i) => ({
-        ...d,
-        height: ((d.avgPrice - minPrice) / range) * 100,
-        x: (i / (data.yearly.length - 1)) * 100,
-      })),
+      points,
+      pathD,
+      areaD,
       maxPrice,
       minPrice,
-      trend: prices[prices.length - 1] > prices[0] ? "up" : "down",
+      isUp: prices[prices.length - 1] > prices[0],
+      changePercent: ((prices[prices.length - 1] - prices[0]) / prices[0]) * 100,
     };
   }, [data]);
 
-  const getTrendIcon = (change: number) => {
-    if (change > 0) return <TrendingUp className="w-4 h-4 text-emerald-400" />;
-    if (change < 0) return <TrendingDown className="w-4 h-4 text-red-400" />;
-    return <Minus className="w-4 h-4 text-slate-400" />;
-  };
-
-  const getTrendColor = (change: number) => {
-    if (change > 0) return "text-emerald-400";
-    if (change < 0) return "text-red-400";
-    return "text-slate-400";
-  };
-
-  const formatChange = (change: number) => {
-    const sign = change > 0 ? "+" : "";
-    return `${sign}${change.toFixed(1)}%`;
+  const formatPrice = (price: number) => {
+    if (price >= 1000) {
+      return `${(price / 1000).toFixed(1)}k`;
+    }
+    return price.toLocaleString();
   };
 
   if (loading && !data) {
     return (
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-slate-800 rounded w-1/3"></div>
-          <div className="h-48 bg-slate-800 rounded"></div>
+          <div className="h-8 bg-slate-800/50 rounded-lg w-2/3"></div>
+          <div className="h-64 bg-slate-800/30 rounded-xl"></div>
         </div>
       </div>
     );
   }
 
+  const currentPrice = data?.stats?.currentPrice || 0;
+  const priceChange = data?.stats?.priceChange1Y || 0;
+  const isPositive = priceChange >= 0;
+
   return (
-    <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-500/10 rounded-lg">
-            <BarChart3 className="w-6 h-6 text-blue-400" />
-          </div>
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800">
+      {/* Ambient glow */}
+      <div 
+        className={`absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 transition-colors duration-1000 ${
+          isPositive ? "bg-emerald-500" : "bg-rose-500"
+        }`}
+      />
+      
+      <div className="relative p-6">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-6">
           <div>
-            <h3 className="text-xl font-bold text-slate-100">Vývoj cien</h3>
-            <p className="text-sm text-slate-400">Historický vývoj cien nehnuteľností</p>
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                Vývoj cien
+              </span>
+            </div>
+            <h3 className="text-2xl font-bold text-white">
+              {REGION_FULL_NAMES[selectedRegion]}
+            </h3>
+          </div>
+          
+          {/* Current price badge */}
+          <div className="text-right">
+            <div className="text-3xl font-bold text-white tabular-nums">
+              {currentPrice.toLocaleString()}
+              <span className="text-lg text-slate-400 ml-1">€/m²</span>
+            </div>
+            <div className={`flex items-center justify-end gap-1 mt-1 ${
+              isPositive ? "text-emerald-400" : "text-rose-400"
+            }`}>
+              {isPositive ? (
+                <ArrowUp className="w-4 h-4" />
+              ) : (
+                <ArrowDown className="w-4 h-4" />
+              )}
+              <span className="font-semibold tabular-nums">
+                {isPositive ? "+" : ""}{priceChange.toFixed(1)}%
+              </span>
+              <span className="text-slate-500 text-sm">/ rok</span>
+            </div>
           </div>
         </div>
-        <button
-          onClick={fetchData}
-          disabled={loading}
-          className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
-          title="Obnoviť"
-        >
-          <RefreshCw className={`w-4 h-4 text-slate-400 ${loading ? "animate-spin" : ""}`} />
-        </button>
-      </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-6">
-        {/* Region selector */}
-        <div className="flex gap-1 overflow-x-auto pb-1 -mx-2 px-2">
+        {/* Region pills */}
+        <div className="flex gap-1.5 mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
           {REGIONS.map((region) => (
             <button
               key={region.code}
               onClick={() => setSelectedRegion(region.code)}
-              className={`px-3 py-1.5 text-xs sm:text-sm rounded-lg whitespace-nowrap transition-colors ${
+              className={`relative px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-300 ${
                 selectedRegion === region.code
-                  ? "bg-blue-500 text-white"
-                  : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                  ? "text-white"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
               }`}
             >
-              {region.name}
+              {selectedRegion === region.code && (
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-violet-600 rounded-full" />
+              )}
+              <span className="relative z-10">{region.name}</span>
             </button>
           ))}
         </div>
-        
-        {/* Period selector */}
-        <div className="flex gap-1 ml-auto">
-          {PERIOD_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setPeriod(opt.value)}
-              className={`px-3 py-1.5 text-xs sm:text-sm rounded-lg transition-colors ${
-                period === opt.value
-                  ? "bg-slate-700 text-white"
-                  : "bg-slate-800/50 text-slate-400 hover:bg-slate-700"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      {error ? (
-        <div className="text-center py-8 text-red-400">{error}</div>
-      ) : data && chartData ? (
-        <>
-          {/* Stats cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <div className="bg-slate-800/50 rounded-lg p-3">
-              <div className="text-xs text-slate-400 mb-1">Aktuálna cena</div>
-              <div className="text-xl font-bold text-slate-100">
-                {data.stats.currentPrice?.toLocaleString()} €/m²
-              </div>
-            </div>
-            <div className="bg-slate-800/50 rounded-lg p-3">
-              <div className="text-xs text-slate-400 mb-1">Zmena 1 rok</div>
-              <div className={`text-xl font-bold flex items-center gap-1 ${getTrendColor(data.stats.priceChange1Y)}`}>
-                {getTrendIcon(data.stats.priceChange1Y)}
-                {formatChange(data.stats.priceChange1Y)}
-              </div>
-            </div>
-            <div className="bg-slate-800/50 rounded-lg p-3">
-              <div className="text-xs text-slate-400 mb-1">Zmena 5 rokov</div>
-              <div className={`text-xl font-bold flex items-center gap-1 ${getTrendColor(data.stats.priceChange5Y)}`}>
-                {getTrendIcon(data.stats.priceChange5Y)}
-                {formatChange(data.stats.priceChange5Y)}
-              </div>
-            </div>
-            <div className="bg-slate-800/50 rounded-lg p-3">
-              <div className="text-xs text-slate-400 mb-1">Zmena 10 rokov</div>
-              <div className={`text-xl font-bold flex items-center gap-1 ${getTrendColor(data.stats.priceChange10Y)}`}>
-                {getTrendIcon(data.stats.priceChange10Y)}
-                {formatChange(data.stats.priceChange10Y)}
-              </div>
-            </div>
-          </div>
-
-          {/* Chart */}
-          <div className="relative h-48 mb-4">
+        {/* Chart */}
+        {chartData && (
+          <div className="relative h-56 mt-4">
             {/* Y-axis labels */}
-            <div className="absolute left-0 top-0 bottom-0 w-16 flex flex-col justify-between text-xs text-slate-500 pr-2">
-              <span>{chartData.maxPrice.toLocaleString()} €</span>
-              <span>{Math.round((chartData.maxPrice + chartData.minPrice) / 2).toLocaleString()} €</span>
-              <span>{chartData.minPrice.toLocaleString()} €</span>
+            <div className="absolute left-0 top-0 bottom-8 w-12 flex flex-col justify-between text-xs text-slate-500 font-medium">
+              <span>{formatPrice(chartData.maxPrice)} €</span>
+              <span>{formatPrice(chartData.minPrice)} €</span>
             </div>
             
             {/* Chart area */}
-            <div className="ml-16 h-full relative">
-              {/* Grid lines */}
-              <div className="absolute inset-0 flex flex-col justify-between">
-                <div className="border-b border-slate-800"></div>
-                <div className="border-b border-slate-800/50"></div>
-                <div className="border-b border-slate-800"></div>
-              </div>
-              
-              {/* Bars */}
-              <div className="absolute inset-0 flex items-end gap-1 px-1">
+            <div className="ml-12 h-full relative">
+              <svg
+                ref={chartRef}
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                className="w-full h-[calc(100%-2rem)]"
+              >
+                {/* Gradient definitions */}
+                <defs>
+                  <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor={chartData.isUp ? "#10b981" : "#f43f5e"} stopOpacity="0.3" />
+                    <stop offset="100%" stopColor={chartData.isUp ? "#10b981" : "#f43f5e"} stopOpacity="0" />
+                  </linearGradient>
+                  <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor={chartData.isUp ? "#10b981" : "#f43f5e"} />
+                    <stop offset="100%" stopColor={chartData.isUp ? "#34d399" : "#fb7185"} />
+                  </linearGradient>
+                  <filter id="glow">
+                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                    <feMerge>
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+                </defs>
+                
+                {/* Grid lines */}
+                <line x1="0" y1="25" x2="100" y2="25" stroke="#334155" strokeWidth="0.2" strokeDasharray="2,2" />
+                <line x1="0" y1="50" x2="100" y2="50" stroke="#334155" strokeWidth="0.2" strokeDasharray="2,2" />
+                <line x1="0" y1="75" x2="100" y2="75" stroke="#334155" strokeWidth="0.2" strokeDasharray="2,2" />
+                
+                {/* Area fill */}
+                <path
+                  d={chartData.areaD}
+                  fill="url(#areaGradient)"
+                  className={`transition-all duration-1000 ${isAnimated ? "opacity-100" : "opacity-0"}`}
+                />
+                
+                {/* Main line */}
+                <path
+                  d={chartData.pathD}
+                  fill="none"
+                  stroke="url(#lineGradient)"
+                  strokeWidth="0.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  filter="url(#glow)"
+                  className={`transition-all duration-1000 ${isAnimated ? "opacity-100" : "opacity-0"}`}
+                  style={{
+                    strokeDasharray: isAnimated ? "none" : "1000",
+                    strokeDashoffset: isAnimated ? "0" : "1000",
+                  }}
+                />
+                
+                {/* Data points */}
                 {chartData.points.map((point, i) => (
-                  <div
-                    key={point.year}
-                    className="flex-1 flex flex-col items-center group relative"
-                  >
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full mb-2 hidden group-hover:block z-10">
-                      <div className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs whitespace-nowrap shadow-lg">
-                        <div className="font-semibold text-slate-100">{point.year}</div>
-                        <div className="text-slate-300">{point.avgPrice.toLocaleString()} €/m²</div>
-                        <div className="text-slate-500">
-                          Min: {point.minPrice.toLocaleString()} € | Max: {point.maxPrice.toLocaleString()} €
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Bar */}
-                    <div
-                      className={`w-full rounded-t transition-all cursor-pointer ${
-                        chartData.trend === "up"
-                          ? "bg-gradient-to-t from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300"
-                          : "bg-gradient-to-t from-red-600 to-red-400 hover:from-red-500 hover:to-red-300"
-                      }`}
-                      style={{ height: `${Math.max(point.height, 5)}%` }}
+                  <g key={point.year}>
+                    {/* Hover area */}
+                    <rect
+                      x={point.x - 100 / chartData.points.length / 2}
+                      y="0"
+                      width={100 / chartData.points.length}
+                      height="100"
+                      fill="transparent"
+                      className="cursor-pointer"
+                      onMouseEnter={() => setHoveredPoint(i)}
+                      onMouseLeave={() => setHoveredPoint(null)}
                     />
-                  </div>
+                    
+                    {/* Vertical line on hover */}
+                    {hoveredPoint === i && (
+                      <line
+                        x1={point.x}
+                        y1="0"
+                        x2={point.x}
+                        y2="100"
+                        stroke={chartData.isUp ? "#10b981" : "#f43f5e"}
+                        strokeWidth="0.3"
+                        strokeDasharray="2,2"
+                        opacity="0.5"
+                      />
+                    )}
+                    
+                    {/* Point */}
+                    <circle
+                      cx={point.x}
+                      cy={point.y}
+                      r={hoveredPoint === i ? "1.5" : i === chartData.points.length - 1 ? "1.2" : "0.6"}
+                      fill={chartData.isUp ? "#10b981" : "#f43f5e"}
+                      className={`transition-all duration-300 ${isAnimated ? "opacity-100" : "opacity-0"}`}
+                      style={{ transitionDelay: `${i * 50}ms` }}
+                    />
+                    
+                    {/* Pulse on last point */}
+                    {i === chartData.points.length - 1 && (
+                      <circle
+                        cx={point.x}
+                        cy={point.y}
+                        r="2.5"
+                        fill="none"
+                        stroke={chartData.isUp ? "#10b981" : "#f43f5e"}
+                        strokeWidth="0.3"
+                        className="animate-ping opacity-75"
+                      />
+                    )}
+                  </g>
                 ))}
+              </svg>
+              
+              {/* Tooltip */}
+              {hoveredPoint !== null && chartData.points[hoveredPoint] && (
+                <div
+                  className="absolute z-20 pointer-events-none"
+                  style={{
+                    left: `${chartData.points[hoveredPoint].x}%`,
+                    top: `${chartData.points[hoveredPoint].y}%`,
+                    transform: "translate(-50%, -120%)",
+                  }}
+                >
+                  <div className="bg-slate-800/90 backdrop-blur-xl border border-slate-700/50 rounded-xl px-4 py-3 shadow-2xl">
+                    <div className="text-sm font-bold text-white mb-1">
+                      {chartData.points[hoveredPoint].year}
+                    </div>
+                    <div className="text-lg font-bold text-white tabular-nums">
+                      {chartData.points[hoveredPoint].avgPrice.toLocaleString()} €/m²
+                    </div>
+                    <div className="flex gap-3 mt-1 text-xs">
+                      <span className="text-slate-400">
+                        Min: <span className="text-rose-400">{chartData.points[hoveredPoint].minPrice.toLocaleString()}</span>
+                      </span>
+                      <span className="text-slate-400">
+                        Max: <span className="text-emerald-400">{chartData.points[hoveredPoint].maxPrice.toLocaleString()}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* X-axis labels */}
+              <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-slate-500 font-medium px-1">
+                {chartData.points
+                  .filter((_, i) => i === 0 || i === chartData.points.length - 1 || (chartData.points.length > 10 ? i % 3 === 0 : i % 2 === 0))
+                  .map((point) => (
+                    <span key={point.year}>{point.year}</span>
+                  ))}
               </div>
             </div>
           </div>
+        )}
 
-          {/* X-axis labels */}
-          <div className="ml-16 flex justify-between text-xs text-slate-500 px-1">
-            {chartData.points
-              .filter((_, i) => i === 0 || i === chartData.points.length - 1 || i % Math.ceil(chartData.points.length / 5) === 0)
-              .map((point) => (
-                <span key={point.year}>{point.year}</span>
-              ))}
-          </div>
+        {/* Period selector */}
+        <div className="flex items-center justify-center gap-2 mt-6">
+          {[5, 10, 20].map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
+                period === p
+                  ? "bg-white/10 text-white backdrop-blur-sm"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              {p} rokov
+            </button>
+          ))}
+        </div>
 
-          {/* Additional stats */}
-          <div className="mt-6 pt-4 border-t border-slate-800 grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-xs text-slate-500 mb-1">Historické maximum</div>
-              <div className="text-sm font-semibold text-emerald-400 flex items-center justify-center gap-1">
-                <ArrowUpRight className="w-3 h-3" />
-                {data.stats.allTimeHigh?.toLocaleString()} €/m²
+        {/* Stats footer */}
+        {data?.stats && (
+          <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-800/50">
+            <div className="text-center">
+              <div className="text-xs text-slate-500 mb-1">5 rokov</div>
+              <div className={`text-lg font-bold ${
+                (data.stats.priceChange5Y || 0) >= 0 ? "text-emerald-400" : "text-rose-400"
+              }`}>
+                {(data.stats.priceChange5Y || 0) >= 0 ? "+" : ""}{data.stats.priceChange5Y?.toFixed(1)}%
               </div>
             </div>
-            <div>
-              <div className="text-xs text-slate-500 mb-1">Historické minimum</div>
-              <div className="text-sm font-semibold text-red-400 flex items-center justify-center gap-1">
-                <ArrowDownRight className="w-3 h-3" />
-                {data.stats.allTimeLow?.toLocaleString()} €/m²
+            <div className="text-center">
+              <div className="text-xs text-slate-500 mb-1">Maximum</div>
+              <div className="text-lg font-bold text-white">
+                {data.stats.allTimeHigh?.toLocaleString()} €
               </div>
             </div>
-            <div>
-              <div className="text-xs text-slate-500 mb-1">Priemerná cena</div>
-              <div className="text-sm font-semibold text-slate-300">
-                {data.stats.averagePrice?.toLocaleString()} €/m²
+            <div className="text-center">
+              <div className="text-xs text-slate-500 mb-1">10 rokov</div>
+              <div className={`text-lg font-bold ${
+                (data.stats.priceChange10Y || 0) >= 0 ? "text-emerald-400" : "text-rose-400"
+              }`}>
+                {(data.stats.priceChange10Y || 0) >= 0 ? "+" : ""}{data.stats.priceChange10Y?.toFixed(1)}%
               </div>
             </div>
           </div>
+        )}
 
-          {/* Source */}
-          <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
-            <Info className="w-3 h-3" />
-            <span>Zdroj: {data.source} | Údaje za byty (€/m²)</span>
-          </div>
-        </>
-      ) : null}
+        {/* Source tag */}
+        <div className="flex items-center justify-center gap-2 mt-4 text-xs text-slate-600">
+          <span>Zdroj: NBS</span>
+          <span>•</span>
+          <span>Aktualizované Q3 2025</span>
+        </div>
+      </div>
     </div>
   );
 }
