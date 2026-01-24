@@ -109,14 +109,15 @@ export async function POST(request: NextRequest) {
 /**
  * GET /api/v1/scraper/stealth
  * Vracia stav posledného scrapu a Hot Deals
+ * Prístup: všetci prihlásení používatelia (nie len admin)
  */
 export async function GET(request: NextRequest) {
   try {
-    // Autentifikácia
-    const authResult = await authenticateRequest(request);
-    if (!authResult.success) {
+    // Jednoduchá autentifikácia - stačí byť prihlásený
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json(
-        { success: false, error: authResult.error },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }

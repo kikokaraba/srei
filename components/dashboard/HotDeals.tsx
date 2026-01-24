@@ -42,6 +42,10 @@ interface HotDealsData {
 async function fetchHotDeals(): Promise<HotDealsData> {
   const response = await fetch("/api/v1/scraper/stealth");
   if (!response.ok) {
+    // Pre 401/403 vrať prázdne dáta namiesto chyby
+    if (response.status === 401 || response.status === 403) {
+      return { success: true, hotDeals: [], stats: { newLast24h: 0, totalHotDeals: 0 } };
+    }
     throw new Error("Failed to fetch hot deals");
   }
   return response.json();
