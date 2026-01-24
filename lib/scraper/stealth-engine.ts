@@ -419,11 +419,11 @@ function extractCity(location: string): { city: SlovakCity; district: string } {
 
 /**
  * Parsuje jeden inzerát z Cheerio elementu
- * Bazoš HTML štruktúra (2024/2025):
- * - .inzeratynadpis obsahuje nadpis s linkom
- * - Nasledujúci element obsahuje popis
- * - Cena je v <b> tagu
- * - Lokalita je text s mestom a PSČ
+ * Bazoš HTML štruktúra (2025/2026):
+ * - h2 obsahuje anchor s linkom na /inzerat/{id}/
+ * - Nasledujúci text obsahuje popis
+ * - Cena je v bold/strong (napr. "149 000 €")
+ * - Lokalita a PSČ sú za cenou
  */
 export function parseListingElement(
   $: cheerio.CheerioAPI,
@@ -434,77 +434,102 @@ export function parseListingElement(
   try {
     const $el = $(element);
     
-    // Extrahuj link a externalId - hľadáme v aktuálnom elemente aj v rodičovi
-    let href = $el.find("a[href*='/inzerat/']").first().attr("href");
-    if (!href) {
-      href = $el.closest("a[href*='/inzerat/']").first().attr("href");
-    }
-    if (!href && $el.is("a")) {
-      const elHref = $el.attr("href");
-      if (elHref?.includes("/inzerat/")) {
-        href = elHref;
+    // Element je h2 s linkom alebo wrapper
+    let href: string | undefined;
+    let title: string = "";
+    
+    // Ak je element h2, link je priamo v ňom
+    if ($el.is("h2")) {
+      const $link = $el.find("a[href*='/inzerat/']").first();
+      href = $link.attr("href");
+      title = $link.text().trim();
+    } else {
+      // Skús nájsť link v elemente
+      const $link = $el.find("a[href*='/inzerat/']").first();
+      if ($link.length) {
+        href = $link.attr("href");
+        title = $link.text().trim();
+      } else if ($el.is("a[href*='/inzerat/']")) {
+        href = $el.attr("href");
+        title = $el.text().trim();
       }
     }
+    
     if (!href) return null;
     
     const externalIdMatch = href.match(/inzerat\/(\d+)/);
     const externalId = externalIdMatch?.[1] || "";
     if (!externalId) return null;
     
-    // Nadpis - môže byť v h2, alebo priamo text linku
-    let title = $el.find("h2").first().text().trim();
-    if (!title) {
-      title = $el.find("a[href*='/inzerat/']").first().text().trim();
-    }
-    if (!title) {
-      title = $el.text().trim().split("\n")[0] || "";
-    }
+    // Vyčisti title
+    title = title.replace(/\s+/g, " ").trim();
+    if (!title || title.length < 5) return null;
     
-    // Získaj rodičovský kontajner pre viac info
+    // Získaj kontext okolo h2 - zbierame text z okolitých elementov
     const $parent = $el.parent();
-    const $grandparent = $parent.parent();
-    const fullText = $grandparent.text();
     
-    // Popis - hľadáme v nasledujúcom elemente alebo v texte
+    // Hľadaj cenu a lokalitu v blízkych elementoch
+    let priceText = "";
+    let locationText = "";
     let description = "";
-    const $nextSibling = $el.next();
-    if ($nextSibling.length) {
-      description = $nextSibling.text().trim();
+    
+    // Prejdi nasledujúce elementy (siblings)
+    let $current = $el.next();
+    let siblingCount = 0;
+    const maxSiblings = 10;
+    
+    while ($current.length && siblingCount < maxSiblings) {
+      const text = $current.text().trim();
+      
+      // Cena v bold
+      if ($current.is("b, strong") || $current.find("b, strong").length) {
+        const boldText = $current.is("b, strong") ? text : $current.find("b, strong").first().text();
+        if (boldText.includes("€") || /\d{2,3}[\s\u00a0]?\d{3}/.test(boldText)) {
+          priceText = boldText;
+        }
+      }
+      
+      // PSČ pattern pre lokalitu (napr. "Košice 040 01")
+      const pscMatch = text.match(/^([A-ZÁÉÍÓÚÝČĎĽŇŘŠŤŽa-záéíóúýčďľňřšťž\s-]+?)\s*(\d{3}\s?\d{2})/);
+      if (pscMatch && !locationText) {
+        locationText = pscMatch[1].trim();
+      }
+      
+      // Ak je to dlhší text bez PSČ, je to asi popis
+      if (text.length > 50 && !text.includes("€") && !description) {
+        description = text.substring(0, 500);
+      }
+      
+      $current = $current.next();
+      siblingCount++;
     }
     
-    // Cena - hľadáme v bold texte alebo s € symbolom
-    let priceText = "";
-    $grandparent.find("b, strong").each((_, el) => {
-      const text = $(el).text();
-      if (text.includes("€") || /\d{2,3}\s?\d{3}/.test(text)) {
-        priceText = text;
-        return false; // break
-      }
-    });
-    
-    // Ak sme nenašli cenu v bold, skúsime regex na celý text
+    // Fallback - skús nájsť cenu v parent kontexte
     if (!priceText) {
-      const priceMatch = fullText.match(/(\d{1,3}[\s\u00a0]?\d{3}[\s\u00a0]?\d{3}|\d{2,3}[\s\u00a0]?\d{3})\s*€/);
+      const parentText = $parent.text();
+      const priceMatch = parentText.match(/(\d{1,3}[\s\u00a0]?\d{3}(?:[\s\u00a0]?\d{3})?)\s*€/);
       if (priceMatch) {
         priceText = priceMatch[0];
       }
     }
     
-    // Lokalita - hľadáme PSČ pattern (3 číslice medzera 2 číslice) alebo názov mesta
-    let locationText = "";
-    const pscMatch = fullText.match(/([A-ZÁÉÍÓÚÝČĎĽŇŘŠŤŽa-záéíóúýčďľňřšťž\s]+)\s*(\d{3}\s?\d{2})/);
-    if (pscMatch) {
-      locationText = pscMatch[1].trim();
+    // Fallback pre lokalitu z title
+    if (!locationText) {
+      // Skús extrahovať mesto z title (napr. "3-izb. byt Košice-Západ")
+      const cityMatch = title.match(/(?:Bratislava|Košice|Prešov|Žilina|Nitra|Trnava|Trenčín|Banská Bystrica)(?:[-\s][A-Za-záéíóúýčďľňřšťž]+)?/i);
+      if (cityMatch) {
+        locationText = cityMatch[0];
+      }
     }
     
-    // Extrahuj hodnoty - pre prenájom iná logika
+    // Extrahuj hodnoty
     const isRent = listingType === "PRENAJOM";
     const price = extractPrice(priceText, isRent);
-    const areaM2 = extractArea(title + " " + description + " " + fullText);
+    const areaM2 = extractArea(title + " " + description);
     const { city, district } = extractCity(locationText || title);
     
-    // Validácia - pre prenájom nižšia minimálna cena
-    const minPrice = isRent ? 100 : 10000;
+    // Validácia
+    const minPrice = isRent ? 50 : 5000;
     if (price < minPrice) {
       return null;
     }
@@ -910,16 +935,16 @@ function getSelectorsForSource(source: "BAZOS" | "NEHNUTELNOSTI" | "REALITY") {
     case "BAZOS":
       return {
         listing: [
+          // Nová štruktúra 2025/2026 - h2 s linkom na inzerát
+          "h2:has(a[href*='/inzerat/'])",
+          // Fallback selektory
           ".inzeraty .inzerat",
           ".vypis .inzerat", 
           ".inzeratynadpis",
-          ".inzeratyflex",
           "[class*='inzerat']",
-          ".nadpis",
-          "table.inzeraty tr",
         ],
-        nextPage: [".strankovani a", ".pagination a"],
-        nextPageText: ["ďalšia", "další", ">>"],
+        nextPage: ["a:contains('Ďalšia')", "a[href*='/20/']", "a[href*='/40/']"],
+        nextPageText: ["ďalšia", "Ďalšia", "další", ">>"],
       };
     case "NEHNUTELNOSTI":
       return {
@@ -1172,12 +1197,12 @@ interface ScrapingCategory {
   source: "BAZOS" | "NEHNUTELNOSTI" | "REALITY";
 }
 
-// Bazoš kategórie
+// Bazoš kategórie - aktualizované URL 2025/2026
 const BAZOS_CATEGORIES: ScrapingCategory[] = [
-  { name: "Byty predaj", baseUrl: "https://reality.bazos.sk", path: "/byty/", listingType: "PREDAJ", source: "BAZOS" },
-  { name: "Domy predaj", baseUrl: "https://reality.bazos.sk", path: "/domy/", listingType: "PREDAJ", source: "BAZOS" },
-  { name: "Byty prenájom", baseUrl: "https://reality.bazos.sk", path: "/prenajom/byty/", listingType: "PRENAJOM", source: "BAZOS" },
-  { name: "Domy prenájom", baseUrl: "https://reality.bazos.sk", path: "/prenajom/domy/", listingType: "PRENAJOM", source: "BAZOS" },
+  { name: "Byty predaj", baseUrl: "https://reality.bazos.sk", path: "/predam/byt/", listingType: "PREDAJ", source: "BAZOS" },
+  { name: "Domy predaj", baseUrl: "https://reality.bazos.sk", path: "/predam/dom/", listingType: "PREDAJ", source: "BAZOS" },
+  { name: "Byty prenájom", baseUrl: "https://reality.bazos.sk", path: "/prenajmu/byt/", listingType: "PRENAJOM", source: "BAZOS" },
+  { name: "Domy prenájom", baseUrl: "https://reality.bazos.sk", path: "/prenajmu/dom/", listingType: "PRENAJOM", source: "BAZOS" },
 ];
 
 // Nehnutelnosti.sk kategórie
