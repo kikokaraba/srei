@@ -154,7 +154,10 @@ export async function trackRemovedListings(
   const existingProperties = await prisma.property.findMany({
     where: {
       source,
-      external_id: { notIn: currentExternalIds },
+      external_id: { 
+        not: null,
+        notIn: currentExternalIds,
+      },
       // Only check properties we've seen in last 30 days
       updatedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
     },
@@ -184,6 +187,9 @@ export async function trackRemovedListings(
   const removedCount = { total: 0, tracked: 0 };
   
   for (const prop of existingProperties) {
+    // Skip if no external_id (shouldn't happen but safety check)
+    if (!prop.external_id) continue;
+    
     removedCount.total++;
     
     const firstSeenAt = prop.first_listed_at || prop.createdAt;
