@@ -3,18 +3,18 @@ import { analyticsRateLimiter } from "@/lib/rate-limit";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import type { SlovakCity } from "@/generated/prisma/client";
+import { getAggregatedMarketData } from "@/lib/data-sources";
 
-// Fallback data ak databáza nemá dáta
-const fallbackAnalytics = {
-  BRATISLAVA: { avg_price_m2: 3200, avg_rent_m2: 12.5, yield_benchmark: 4.7, volatility_index: 0.35 },
-  KOSICE: { avg_price_m2: 1850, avg_rent_m2: 8.2, yield_benchmark: 5.3, volatility_index: 0.42 },
-  NITRA: { avg_price_m2: 1650, avg_rent_m2: 7.8, yield_benchmark: 5.7, volatility_index: 0.38 },
-  PRESOV: { avg_price_m2: 1550, avg_rent_m2: 7.2, yield_benchmark: 5.6, volatility_index: 0.40 },
-  ZILINA: { avg_price_m2: 1950, avg_rent_m2: 8.5, yield_benchmark: 5.2, volatility_index: 0.38 },
-  BANSKA_BYSTRICA: { avg_price_m2: 1700, avg_rent_m2: 7.5, yield_benchmark: 5.3, volatility_index: 0.39 },
-  TRNAVA: { avg_price_m2: 2100, avg_rent_m2: 9.0, yield_benchmark: 5.1, volatility_index: 0.36 },
-  TRENCIN: { avg_price_m2: 1800, avg_rent_m2: 7.8, yield_benchmark: 5.2, volatility_index: 0.37 },
+// Mapovanie miest na slovenské názvy
+const CITY_NAMES: Record<string, string> = {
+  BRATISLAVA: "Bratislava",
+  KOSICE: "Košice",
+  ZILINA: "Žilina",
+  NITRA: "Nitra",
+  PRESOV: "Prešov",
+  BANSKA_BYSTRICA: "Banská Bystrica",
+  TRNAVA: "Trnava",
+  TRENCIN: "Trenčín",
 };
 
 export async function GET() {
@@ -45,82 +45,48 @@ export async function GET() {
       console.error("Auth error:", authError);
     }
 
-    // Skúsime načítať reálne dáta z databázy
-    let analyticsData: Array<{
-      city: string;
-      avg_price_m2: number;
-      avg_rent_m2: number;
-      yield_benchmark: number;
-      volatility_index: number;
-      properties_count: number;
-      trend: "stable" | "rising" | "falling";
-      last_updated: string;
-    }> = [];
-
+    // Načítaj agregované trhové dáta z NBS a ŠÚ SR
+    const marketData = await getAggregatedMarketData();
+    
+    // Spočítaj počet nehnuteľností v databáze pre každé mesto
+    let propertyCounts = new Map<string, number>();
     try {
-      // Načítaj najnovšie MarketAnalytics pre každé mesto
-      const marketAnalytics = await prisma.marketAnalytics.findMany({
-        orderBy: { timestamp: "desc" },
-        distinct: ["city"],
-      });
-
-      // Spočítaj počet nehnuteľností pre každé mesto
-      const propertyCounts = await prisma.property.groupBy({
+      const counts = await prisma.property.groupBy({
         by: ["city"],
         _count: { id: true },
       });
-
-      const countMap = new Map(propertyCounts.map(p => [p.city, p._count.id]));
-
-      if (marketAnalytics.length > 0) {
-        analyticsData = marketAnalytics.map(ma => ({
-          city: ma.city,
-          avg_price_m2: ma.avg_price_m2,
-          avg_rent_m2: ma.avg_rent_m2,
-          yield_benchmark: ma.yield_benchmark,
-          volatility_index: ma.volatility_index,
-          properties_count: countMap.get(ma.city) || 0,
-          trend: ma.volatility_index < 0.35 ? "stable" as const : ma.volatility_index < 0.45 ? "rising" as const : "falling" as const,
-          last_updated: ma.timestamp.toISOString(),
-        }));
-      } else {
-        // Ak nie sú MarketAnalytics, spočítaj z Property
-        const propertyStats = await prisma.property.groupBy({
-          by: ["city"],
-          _avg: { price_per_m2: true },
-          _count: { id: true },
-        });
-
-        if (propertyStats.length > 0) {
-          analyticsData = propertyStats.map(ps => {
-            const fallback = fallbackAnalytics[ps.city as keyof typeof fallbackAnalytics] || fallbackAnalytics.BRATISLAVA;
-            return {
-              city: ps.city,
-              avg_price_m2: ps._avg.price_per_m2 || fallback.avg_price_m2,
-              avg_rent_m2: fallback.avg_rent_m2,
-              yield_benchmark: fallback.yield_benchmark,
-              volatility_index: fallback.volatility_index,
-              properties_count: ps._count.id,
-              trend: "stable" as const,
-              last_updated: new Date().toISOString(),
-            };
-          });
-        }
-      }
+      propertyCounts = new Map(counts.map(p => [p.city, p._count.id]));
     } catch (dbError) {
-      console.error("Database error:", dbError);
+      console.warn("Could not fetch property counts:", dbError);
     }
-
-    // Ak nemáme reálne dáta, použijeme fallback
-    if (analyticsData.length === 0) {
-      analyticsData = Object.entries(fallbackAnalytics).map(([city, data]) => ({
-        city,
-        ...data,
-        properties_count: 0,
-        trend: "stable" as const,
-        last_updated: new Date().toISOString(),
-      }));
-    }
+    
+    // Transformuj na očakávaný formát
+    const analyticsData = marketData.map(data => {
+      // Určenie trendu na základe YoY zmeny
+      let trend: "stable" | "rising" | "falling" = "stable";
+      if (data.priceChangeYoY > 3) trend = "rising";
+      else if (data.priceChangeYoY < -1) trend = "falling";
+      
+      // Volatilita index (invertovaný demand/supply pomer)
+      const volatility = Math.abs(data.demandIndex - data.supplyIndex) / 100;
+      
+      return {
+        city: CITY_NAMES[data.city] || data.city,
+        avg_price_m2: data.avgPricePerSqm,
+        avg_rent_m2: data.avgRent,
+        yield_benchmark: data.grossYield,
+        volatility_index: Math.round(volatility * 100) / 100,
+        properties_count: propertyCounts.get(data.city) || data.listingsCount,
+        trend,
+        last_updated: data.updatedAt.toISOString(),
+        // Nové polia z reálnych dát
+        price_change_yoy: data.priceChangeYoY,
+        price_change_qoq: data.priceChangeQoQ,
+        demand_index: data.demandIndex,
+        supply_index: data.supplyIndex,
+        avg_days_on_market: data.avgDaysOnMarket,
+      };
+    });
 
     return NextResponse.json({
       success: true,

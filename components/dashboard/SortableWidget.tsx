@@ -11,8 +11,10 @@ import { UrbanDevelopment } from "./UrbanDevelopment";
 import { TaxAssistant } from "./TaxAssistant";
 import { MarketOverview } from "./MarketOverview";
 import { RecentProperties } from "./RecentProperties";
+import { EconomicIndicators } from "./EconomicIndicators";
 
 const WIDGET_COMPONENTS = {
+  "economic-indicators": EconomicIndicators,
   "analytics-cards": AnalyticsCards,
   "market-gaps": MarketGaps,
   "liquidity-tracker": LiquidityTracker,

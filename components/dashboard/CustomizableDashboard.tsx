@@ -21,11 +21,23 @@ import { Settings, X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const WIDGET_REGISTRY = {
+  "economic-indicators": {
+    id: "economic-indicators",
+    title: "Ekonomické ukazovatele",
+    component: "EconomicIndicators",
+    description: "HDP, inflácia, hypotéky z NBS",
+  },
   "analytics-cards": {
     id: "analytics-cards",
     title: "Analytické karty",
     component: "AnalyticsCards",
     description: "KPI metriky a prehľad trhu",
+  },
+  "market-overview": {
+    id: "market-overview",
+    title: "Prehľad trhu",
+    component: "MarketOverview",
+    description: "Live dáta z NBS a ŠÚ SR",
   },
   "market-gaps": {
     id: "market-gaps",
@@ -56,12 +68,6 @@ const WIDGET_REGISTRY = {
     title: "Daňový asistent",
     component: "TaxAssistant",
     description: "Daňové kalkulácie pre SK",
-  },
-  "market-overview": {
-    id: "market-overview",
-    title: "Prehľad trhu",
-    component: "MarketOverview",
-    description: "Trhové trendy podľa miest",
   },
   "recent-properties": {
     id: "recent-properties",
