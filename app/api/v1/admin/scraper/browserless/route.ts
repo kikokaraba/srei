@@ -176,8 +176,8 @@ export async function POST(request: NextRequest) {
                 address: `${prop.city}${prop.district ? `, ${prop.district}` : ""}`,
                 rooms: prop.rooms,
                 listing_type: prop.listingType,
-                condition: "UNKNOWN",
-                energy_certificate: "UNKNOWN",
+                condition: "POVODNY",
+                energy_certificate: "NONE",
                 source_url: prop.sourceUrl,
               },
             });
