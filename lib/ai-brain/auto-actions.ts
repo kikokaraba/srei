@@ -212,6 +212,7 @@ const AVAILABLE_ACTIONS: Record<string, AutoAction> = {
                 maxPrice: 0,
                 newListings,
                 removedListings: 0,
+                avgDaysOnMarket: 0,
                 hotDealsCount: hotDeals,
                 hotDealsPercent: 0,
               },
