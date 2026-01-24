@@ -339,7 +339,7 @@ export async function sendDailySummaryToAll(): Promise<number> {
   // Get top deals
   const topGaps = await prisma.marketGap.findMany({
     where: { detected_at: { gte: today } },
-    orderBy: { gap_percent: "desc" },
+    orderBy: { gap_percentage: "desc" },
     take: 3,
     include: { property: true },
   });
@@ -351,7 +351,7 @@ export async function sendDailySummaryToAll(): Promise<number> {
     city: gap.property.city,
     district: gap.property.district || undefined,
     price: gap.property.price,
-    gapPercent: gap.gap_percent,
+    gapPercent: gap.gap_percentage,
     siteUrl: `${SITE_URL}/dashboard/properties/${gap.propertyId}`,
   }));
 
@@ -404,7 +404,7 @@ export async function notifyUnnotifiedMarketGaps(): Promise<{
   const gaps = await prisma.marketGap.findMany({
     where: {
       notified: false,
-      gap_percent: { gte: 10 }, // Only notify for 10%+ gaps
+      gap_percentage: { gte: 10 }, // Only notify for 10%+ gaps
       detected_at: {
         gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
       },
@@ -416,10 +416,12 @@ export async function notifyUnnotifiedMarketGaps(): Promise<{
   let notifiedCount = 0;
 
   for (const gap of gaps) {
+    // Calculate fair value from street average and property area
+    const fairValue = gap.street_avg_price * (gap.property.area_m2 || 1);
     const count = await notifyMarketGap(
       gap.propertyId,
-      gap.gap_percent,
-      gap.fair_value
+      gap.gap_percentage,
+      fairValue
     );
     if (count > 0) notifiedCount++;
   }
