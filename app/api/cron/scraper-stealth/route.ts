@@ -59,10 +59,19 @@ export async function GET(request: NextRequest) {
     console.log(`📍 Cities: ${cities.join(", ")}`);
     console.log(`📋 Types: ${listingTypes.join(", ")}`);
     
-    // Konfigurácia pre cron - konzervativnejšie nastavenia
-    const cronConfig = {
-      maxPagesPerCategory: 2, // Len prvé 2 strany (viac zdrojov = menej strán)
-      minDelay: 5000,         // 5-12 sekúnd delay
+    // Konfigurácia - prispôsobená podľa test módu
+    const isTestMode = request.nextUrl.searchParams.get("test") === "true";
+    
+    const cronConfig = isTestMode ? {
+      // Test mód - rýchly, len 1 strana, minimálny delay
+      maxPagesPerCategory: 1,
+      minDelay: 500,
+      maxDelay: 1000,
+      maxRetries: 1,
+    } : {
+      // Produkčný mód - bezpečnejšie nastavenia
+      maxPagesPerCategory: 2,
+      minDelay: 5000,
       maxDelay: 12000,
       maxRetries: 3,
     };
