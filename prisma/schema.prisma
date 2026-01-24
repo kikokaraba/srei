@@ -578,3 +578,117 @@ model PropertyValuation {
   
   @@index([portfolioPropertyId, valuationDate])
 }
+
+// ==========================================
+// EXTERNÉ DÁTOVÉ ZDROJE
+// ==========================================
+
+// Slovenský kraj
+enum SlovakRegion {
+  BRATISLAVSKY
+  TRNAVSKY
+  TRENCIANSKY
+  NITRIANSKY
+  ZILINSKY
+  BANSKOBYSTRICKY
+  PRESOVSKY
+  KOSICKY
+}
+
+// Typ nehnuteľnosti pre NBS dáta
+enum NBSPropertyType {
+  APARTMENT
+  HOUSE
+  ALL
+}
+
+// NBS Ceny nehnuteľností - štvrťročné dáta
+model NBSPropertyPrice {
+  id            String   @id @default(cuid())
+  year          Int
+  quarter       Int      // 1-4
+  region        SlovakRegion
+  propertyType  NBSPropertyType
+  pricePerSqm   Float    // EUR/m²
+  priceIndex    Float    // Index (100 = base year)
+  changeYoY     Float    // % zmena medziročne
+  changeQoQ     Float    // % zmena medzištvrťročne
+  fetchedAt     DateTime @default(now())
+  
+  @@unique([year, quarter, region, propertyType])
+  @@index([region, year, quarter])
+}
+
+// Ekonomické ukazovatele
+model EconomicIndicator {
+  id                  String   @id @default(cuid())
+  date                DateTime
+  gdpGrowth           Float    // % medziročne
+  inflation           Float    // % medziročne
+  unemployment        Float    // %
+  avgWage             Float    // EUR
+  wageGrowth          Float    // % medziročne
+  constructionIndex   Float    // Index (100 = base year)
+  consumerConfidence  Float    // Balance
+  mortgageRate        Float?   // Priemerná hypotekárna sadzba
+  fetchedAt           DateTime @default(now())
+  
+  @@index([date])
+}
+
+// Demografické dáta miest
+model CityDemographics {
+  id              String     @id @default(cuid())
+  city            SlovakCity
+  year            Int
+  population      Int
+  populationChange Float     // % zmena
+  avgAge          Float
+  householdCount  Int?
+  avgHouseholdSize Float?
+  migrationBalance Int?      // Čistá migrácia
+  fetchedAt       DateTime   @default(now())
+  
+  @@unique([city, year])
+  @@index([city])
+}
+
+// Trhové dáta pre mestá - agregované
+model CityMarketData {
+  id                String     @id @default(cuid())
+  city              SlovakCity
+  date              DateTime   // Dátum aktualizácie
+  
+  // Ceny
+  avgPricePerSqm    Float
+  medianPricePerSqm Float
+  priceChangeYoY    Float      // % zmena medziročne
+  priceChangeQoQ    Float      // % zmena medzištvrťročne
+  
+  // Prenájom
+  avgRentPerSqm     Float?
+  grossYield        Float?     // %
+  
+  // Trh
+  listingsCount     Int
+  avgDaysOnMarket   Int
+  demandIndex       Float      // 0-100
+  supplyIndex       Float      // 0-100
+  
+  fetchedAt         DateTime   @default(now())
+  
+  @@index([city, date])
+}
+
+// Log zberu dát
+model DataFetchLog {
+  id          String   @id @default(cuid())
+  source      String   // "NBS", "SUSR", "scraper"
+  status      String   // "success", "error", "partial"
+  recordsCount Int?
+  error       String?  @db.Text
+  duration_ms Int?
+  fetchedAt   DateTime @default(now())
+  
+  @@index([source, fetchedAt])
+}
