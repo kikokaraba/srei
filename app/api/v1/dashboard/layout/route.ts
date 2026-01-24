@@ -16,23 +16,52 @@ export async function GET() {
       where: { userId: session.user.id },
     });
 
-    // Default layout ak ešte neexistuje
-    const defaultWidgets = [
+    // Všetky dostupné widgety
+    const allWidgets = [
+      "economic-indicators",
       "analytics-cards",
+      "market-overview",
       "market-gaps",
       "liquidity-tracker",
       "scenario-simulator",
       "urban-development",
       "tax-assistant",
-      "market-overview",
       "recent-properties",
     ];
+
+    // Default layout pre nových používateľov
+    const defaultWidgets = [
+      "economic-indicators",
+      "analytics-cards",
+      "market-overview",
+      "market-gaps",
+      "liquidity-tracker",
+      "scenario-simulator",
+    ];
+
+    let currentWidgets = defaultWidgets;
+    let currentHidden: string[] = [];
+
+    if (layout?.widgets) {
+      currentWidgets = JSON.parse(layout.widgets);
+      currentHidden = layout.hiddenWidgets ? JSON.parse(layout.hiddenWidgets) : [];
+      
+      // Pridaj nové widgety, ktoré ešte nie sú v layoute (ani zobrazené, ani skryté)
+      const newWidgets = allWidgets.filter(
+        w => !currentWidgets.includes(w) && !currentHidden.includes(w)
+      );
+      
+      // Pridaj nové widgety na začiatok
+      if (newWidgets.length > 0) {
+        currentWidgets = [...newWidgets, ...currentWidgets];
+      }
+    }
 
     return NextResponse.json({
       success: true,
       data: {
-        widgets: layout?.widgets ? JSON.parse(layout.widgets) : defaultWidgets,
-        hiddenWidgets: layout?.hiddenWidgets ? JSON.parse(layout.hiddenWidgets) : [],
+        widgets: currentWidgets,
+        hiddenWidgets: currentHidden,
       },
     });
   } catch (error) {
