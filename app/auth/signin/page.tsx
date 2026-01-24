@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Building2 } from "lucide-react";
 
 function SignInForm() {
@@ -112,10 +113,14 @@ function SignInForm() {
             </button>
           </form>
 
-          <p className="mt-6 text-xs text-center text-slate-500">
-            Demo účet:<br />
-            Email: <span className="text-emerald-400 font-mono">demo@sria.sk</span><br />
-            Heslo: <span className="text-emerald-400">akékoľvek (momentálne sa nekontroluje)</span>
+          <p className="mt-6 text-sm text-center text-slate-400">
+            Nemáte účet?{" "}
+            <Link
+              href="/auth/signup"
+              className="text-emerald-400 hover:text-emerald-300 font-medium"
+            >
+              Zaregistrujte sa
+            </Link>
           </p>
         </div>
       </div>
