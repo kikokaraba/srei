@@ -28,6 +28,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.log("Auth: Missing credentials");
           return null;
         }
 
@@ -38,28 +39,37 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
 
         if (!validated.success) {
+          console.log("Auth: Validation failed", validated.error);
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: validated.data.email },
-        });
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: validated.data.email },
+          });
 
-        if (!user) {
-          return null;
-        }
+          if (!user) {
+            console.log("Auth: User not found", validated.data.email);
+            return null;
+          }
+
+          console.log("Auth: User found", user.email, user.id);
 
         // In production, verify password hash here
         // For MVP, we'll use a simple check
         // const isValid = await compare(validated.data.password, user.password);
         // if (!isValid) return null;
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role as UserRole,
-        };
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role as UserRole,
+          };
+        } catch (error) {
+          console.error("Auth: Database error", error);
+          return null;
+        }
       },
     }),
   ],

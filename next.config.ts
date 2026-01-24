@@ -52,7 +52,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self' data:",
-              "connect-src 'self' https://api.upstash.io",
+              "connect-src 'self' https://api.upstash.io https://raw.githubusercontent.com https://*.githubusercontent.com",
               "frame-ancestors 'self'",
             ].join("; "),
           },

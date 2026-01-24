@@ -27,10 +27,15 @@ function SignInForm() {
       });
 
       if (result?.error) {
-        setError("Neplatné prihlasovacie údaje");
-      } else {
+        console.error("Sign in error:", result.error);
+        setError("Neplatné prihlasovacie údaje. Uistite sa, že demo účet existuje (spustite: npm run db:seed)");
+      } else if (result?.ok) {
+        console.log("Sign in successful");
         router.push(callbackUrl);
         router.refresh();
+      } else {
+        console.error("Sign in failed:", result);
+        setError("Nastala chyba pri prihlasovaní. Skúste to znova.");
       }
     } catch {
       setError("Nastala chyba. Skúste to znova.");
