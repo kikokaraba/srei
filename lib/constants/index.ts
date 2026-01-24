@@ -37,4 +37,4 @@ export {
 } from "./cities";
 
 // Regióny
-export { REGIONS, type RegionData } from "./regions";
+export { SLOVAK_REGIONS, type RegionData } from "./regions";
