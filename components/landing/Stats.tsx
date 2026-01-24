@@ -1,43 +1,45 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { AnimatedCounter } from "./AnimatedCounter";
-import { Shield, Lock, Award, CheckCircle2, TrendingUp } from "lucide-react";
+import { Shield, Lock, Award, CheckCircle2, TrendingUp, Zap } from "lucide-react";
 
-const stats = [
-  {
-    value: "500",
-    suffix: "+",
-    label: "Aktívnych investorov",
-    change: "+127 tento mesiac",
-    trend: "up",
-    color: "emerald",
-  },
-  {
-    value: "2500",
-    suffix: "+",
-    label: "Sledovaných nehnuteľností",
-    change: "+12% rast",
-    trend: "up",
-    color: "gold",
-  },
-  {
-    value: "5.2",
-    suffix: "%",
-    label: "Priemerný výnos",
-    change: "+0.4% vs. trh",
-    trend: "up",
-    color: "emerald",
-  },
-  {
-    value: "1.2",
-    suffix: "M+",
-    prefix: "€",
-    label: "Spravovaný kapitál",
-    change: "+28% rast",
-    trend: "up",
-    color: "gold",
-  },
-];
+interface LiveStats {
+  totalProperties: number;
+  hotDeals: number;
+  totalUsers: number;
+  avgYield: string;
+  managedCapital: string;
+}
+
+const defaultStats: LiveStats = {
+  totalProperties: 2847,
+  hotDeals: 127,
+  totalUsers: 500,
+  avgYield: "5.2",
+  managedCapital: "1.2M+",
+};
+
+function useLiveStats() {
+  const [stats, setStats] = useState<LiveStats>(defaultStats);
+  const [isLive, setIsLive] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/public/stats")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setStats(data.stats);
+          setIsLive(data.live);
+        }
+      })
+      .catch(() => {
+        // Use defaults on error
+      });
+  }, []);
+
+  return { stats, isLive };
+}
 
 const trustBadges = [
   { icon: Shield, title: "GDPR Compliant", color: "emerald" },
@@ -47,6 +49,44 @@ const trustBadges = [
 ];
 
 export function Stats() {
+  const { stats, isLive } = useLiveStats();
+  
+  const displayStats = [
+    {
+      value: stats.totalUsers.toString(),
+      suffix: "+",
+      label: "Aktívnych investorov",
+      change: "+127 tento mesiac",
+      trend: "up",
+      color: "emerald",
+    },
+    {
+      value: stats.totalProperties.toString(),
+      suffix: "+",
+      label: "Sledovaných nehnuteľností",
+      change: `${stats.hotDeals} hot deals`,
+      trend: "up",
+      color: "gold",
+    },
+    {
+      value: stats.avgYield,
+      suffix: "%",
+      label: "Priemerný výnos",
+      change: "+0.4% vs. trh",
+      trend: "up",
+      color: "emerald",
+    },
+    {
+      value: "1.2",
+      suffix: "M+",
+      prefix: "€",
+      label: "Spravovaný kapitál",
+      change: "+28% rast",
+      trend: "up",
+      color: "gold",
+    },
+  ];
+
   return (
     <section className="py-20 sm:py-24 bg-slate-950 relative overflow-hidden">
       {/* Background effects */}
@@ -55,9 +95,20 @@ export function Stats() {
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/30 to-transparent" />
       
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
+        {/* Live indicator */}
+        {isLive && (
+          <div className="text-center mb-8">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
+              <Zap className="w-3 h-3" />
+              Live dáta
+              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+            </span>
+          </div>
+        )}
+        
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-16">
-          {stats.map((stat, index) => {
+          {displayStats.map((stat, index) => {
             const colorClasses = {
               emerald: {
                 text: "text-emerald-400",
