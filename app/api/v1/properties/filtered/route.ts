@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Prisma, SlovakCity, PropertyCondition, EnergyCertificate, ListingType } from "@/generated/prisma/client";
+import { Prisma, SlovakCity, PropertyCondition, EnergyCertificate, ListingType, PropertySource } from "@/generated/prisma/client";
 
 export async function GET(request: Request) {
   try {
@@ -23,7 +23,9 @@ export async function GET(request: Request) {
 
     // Priame filtre z query parametrov
     const cityParam = searchParams.get("city");
+    const citiesParam = searchParams.get("cities"); // Podpora pre viac miest
     const listingTypeParam = searchParams.get("listingType"); // PREDAJ alebo PRENAJOM
+    const sourceParam = searchParams.get("source"); // BAZOS, NEHNUTELNOSTI, REALITY, TOPREALITY
     const minPrice = searchParams.get("minPrice");
     const maxPrice = searchParams.get("maxPrice");
     const minArea = searchParams.get("minArea");
@@ -64,10 +66,19 @@ export async function GET(request: Request) {
       }
     }
 
+    // Zdroj inzerátu (BAZOS, NEHNUTELNOSTI, REALITY, TOPREALITY)
+    if (sourceParam) {
+      const sources = sourceParam.split(",").filter(Boolean) as PropertySource[];
+      if (sources.length > 0) {
+        where.source = { in: sources };
+      }
+    }
+
     // Mesto - prioritne z query, potom z preferencií
-    if (cityParam) {
+    const citiesInput = citiesParam || cityParam;
+    if (citiesInput) {
       // Podporuje viac miest oddelených čiarkou
-      const cities = cityParam.split(",").filter(Boolean) as SlovakCity[];
+      const cities = citiesInput.split(",").filter(Boolean) as SlovakCity[];
       if (cities.length > 0) {
         where.city = { in: cities };
       }

@@ -77,6 +77,8 @@ interface Property {
   source_url: string | null;
   is_distressed: boolean;
   days_on_market: number;
+  listing_type: "PREDAJ" | "PRENAJOM";
+  source: "BAZOS" | "NEHNUTELNOSTI" | "REALITY" | "TOPREALITY";
   investmentMetrics: {
     gross_yield: number;
     net_yield: number;
@@ -84,9 +86,27 @@ interface Property {
   } | null;
 }
 
+// Typy inzerátov
+const LISTING_TYPES = [
+  { value: "", label: "Všetky typy" },
+  { value: "PREDAJ", label: "🏠 Predaj" },
+  { value: "PRENAJOM", label: "🔑 Prenájom" },
+];
+
+// Zdroje inzerátov
+const SOURCES = [
+  { value: "", label: "Všetky zdroje" },
+  { value: "NEHNUTELNOSTI", label: "Nehnutelnosti.sk" },
+  { value: "REALITY", label: "Reality.sk" },
+  { value: "BAZOS", label: "Bazoš" },
+  { value: "TOPREALITY", label: "TopReality" },
+];
+
 interface Filters {
   search: string;
   region: string;
+  listingType: string;
+  source: string;
   minPrice: string;
   maxPrice: string;
   minArea: string;
@@ -102,6 +122,8 @@ interface Filters {
 const defaultFilters: Filters = {
   search: "",
   region: "",
+  listingType: "",
+  source: "",
   minPrice: "",
   maxPrice: "",
   minArea: "",
@@ -158,6 +180,29 @@ function getScoreLabel(score: number): string {
   return "Nízka";
 }
 
+// Štýly pre zdroje
+function getSourceStyle(source: string): { label: string; bg: string; text: string } {
+  switch (source) {
+    case "NEHNUTELNOSTI":
+      return { label: "Nehnutelnosti", bg: "bg-blue-500/20", text: "text-blue-400" };
+    case "REALITY":
+      return { label: "Reality.sk", bg: "bg-purple-500/20", text: "text-purple-400" };
+    case "BAZOS":
+      return { label: "Bazoš", bg: "bg-orange-500/20", text: "text-orange-400" };
+    case "TOPREALITY":
+      return { label: "TopReality", bg: "bg-green-500/20", text: "text-green-400" };
+    default:
+      return { label: source, bg: "bg-slate-500/20", text: "text-slate-400" };
+  }
+}
+
+// Štýly pre typ inzerátu
+function getListingTypeStyle(type: string): { label: string; bg: string; text: string } {
+  return type === "PRENAJOM"
+    ? { label: "Prenájom", bg: "bg-amber-500/20", text: "text-amber-400" }
+    : { label: "Predaj", bg: "bg-emerald-500/20", text: "text-emerald-400" };
+}
+
 export function PropertyList() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -187,6 +232,8 @@ export function PropertyList() {
       params.append("sortOrder", filters.sortOrder);
       
       if (filters.search) params.append("search", filters.search);
+      if (filters.listingType) params.append("listingType", filters.listingType);
+      if (filters.source) params.append("source", filters.source);
       // Mapuj región na mestá
       if (filters.region) {
         const region = REGIONS.find(r => r.value === filters.region);
@@ -378,13 +425,48 @@ export function PropertyList() {
           </div>
         </div>
 
+        {/* Quick Type Tabs */}
+        <div className="mt-4 flex items-center gap-2">
+          {LISTING_TYPES.map((type) => (
+            <button
+              key={type.value}
+              onClick={() => handleFilterChange("listingType", type.value)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                filters.listingType === type.value
+                  ? "bg-emerald-600 text-white"
+                  : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+              }`}
+            >
+              {type.label}
+            </button>
+          ))}
+          
+          <div className="ml-auto flex items-center gap-2">
+            {SOURCES.slice(1).map((src) => (
+              <button
+                key={src.value}
+                onClick={() => handleFilterChange("source", filters.source === src.value ? "" : src.value)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  filters.source === src.value
+                    ? "bg-indigo-600 text-white"
+                    : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                }`}
+              >
+                {src.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Expanded Filters */}
         {showFilters && (
           <div className="mt-4 pt-4 border-t border-slate-700">
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {/* Price Range */}
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Min. cena (€)</label>
+                <label className="block text-sm text-slate-400 mb-1">
+                  {filters.listingType === "PRENAJOM" ? "Min. nájom (€/mes)" : "Min. cena (€)"}
+                </label>
                 <input
                   type="number"
                   placeholder="0"
@@ -534,6 +616,25 @@ export function PropertyList() {
               >
                 {/* Header with badges */}
                 <div className="p-4 border-b border-slate-800">
+                  {/* Source & Type badges */}
+                  <div className="flex items-center gap-2 mb-2">
+                    {(() => {
+                      const typeStyle = getListingTypeStyle(property.listing_type);
+                      return (
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${typeStyle.bg} ${typeStyle.text}`}>
+                          {typeStyle.label}
+                        </span>
+                      );
+                    })()}
+                    {(() => {
+                      const srcStyle = getSourceStyle(property.source);
+                      return (
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${srcStyle.bg} ${srcStyle.text}`}>
+                          {srcStyle.label}
+                        </span>
+                      );
+                    })()}
+                  </div>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-slate-100 truncate group-hover:text-emerald-400 transition-colors">
@@ -672,6 +773,23 @@ export function PropertyList() {
                   {/* Main Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
+                      {/* Type & Source badges */}
+                      {(() => {
+                        const typeStyle = getListingTypeStyle(property.listing_type);
+                        return (
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${typeStyle.bg} ${typeStyle.text}`}>
+                            {typeStyle.label}
+                          </span>
+                        );
+                      })()}
+                      {(() => {
+                        const srcStyle = getSourceStyle(property.source);
+                        return (
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${srcStyle.bg} ${srcStyle.text}`}>
+                            {srcStyle.label}
+                          </span>
+                        );
+                      })()}
                       <h3 className="font-semibold text-slate-100 truncate">
                         {property.title}
                       </h3>
