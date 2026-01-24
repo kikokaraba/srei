@@ -67,12 +67,23 @@ export default function SettingsPage() {
 
   const [saved, setSaved] = useState(false);
 
+  // Helper function to safely parse JSON
+  const safeJsonParse = (value: string | null | undefined, fallback: unknown[] = []): unknown[] => {
+    if (!value || value === "" || value === "null") return fallback;
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
   useEffect(() => {
     if (preferences) {
       setFormData({
-        trackedRegions: preferences.trackedRegions ? JSON.parse(preferences.trackedRegions) : [],
-        trackedDistricts: preferences.trackedDistricts ? JSON.parse(preferences.trackedDistricts) : [],
-        trackedCities: preferences.trackedCities ? JSON.parse(preferences.trackedCities) : [],
+        trackedRegions: safeJsonParse(preferences.trackedRegions, []) as string[],
+        trackedDistricts: safeJsonParse(preferences.trackedDistricts, []) as string[],
+        trackedCities: safeJsonParse(preferences.trackedCities, []) as string[],
         investmentType: preferences.investmentType || null,
         minYield: preferences.minYield || null,
         maxPrice: preferences.maxPrice || null,
