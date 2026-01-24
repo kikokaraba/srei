@@ -173,16 +173,16 @@ export function CustomizableDashboard() {
   );
 
   const handleToggleWidget = useCallback((widgetId: WidgetId) => {
-    setLocalWidgets((widgets) => {
-      if (widgets.includes(widgetId)) {
-        // Odstrániť widget
-        return widgets.filter((id) => id !== widgetId);
-      } else {
-        // Pridať widget
-        return [...widgets, widgetId];
-      }
-    });
-  }, []);
+    if (localWidgets.includes(widgetId)) {
+      // Odstrániť widget - pridať do hidden
+      setLocalWidgets((widgets) => widgets.filter((id) => id !== widgetId));
+      setLocalHiddenWidgets((hidden) => [...hidden, widgetId]);
+    } else {
+      // Pridať widget - odstrániť z hidden
+      setLocalWidgets((widgets) => [...widgets, widgetId]);
+      setLocalHiddenWidgets((hidden) => hidden.filter((id) => id !== widgetId));
+    }
+  }, [localWidgets]);
 
   const handleSave = useCallback(() => {
     if (layout) {
