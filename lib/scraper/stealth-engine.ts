@@ -253,6 +253,7 @@ interface ParsedListing {
   condition: "NOVOSTAVBA" | "REKONSTRUKCIA" | "POVODNY";
   listingType: "PREDAJ" | "PRENAJOM";
   sourceUrl: string;
+  source?: "BAZOS" | "NEHNUTELNOSTI" | "REALITY";
 }
 
 /**
@@ -574,11 +575,198 @@ async function getAveragePrice(city: SlovakCity, district: string): Promise<numb
   return propAvg._avg.price_per_m2 || null;
 }
 
+// ============================================================================
+// NEHNUTELNOSTI.SK PARSER
+// ============================================================================
+
+/**
+ * Parsuje inzerát z nehnutelnosti.sk
+ */
+export function parseNehnutelnostiElement(
+  $: cheerio.CheerioAPI,
+  element: Parameters<typeof $>[0],
+  baseUrl: string,
+  listingType: "PREDAJ" | "PRENAJOM" = "PREDAJ"
+): ParsedListing | null {
+  try {
+    const $el = $(element);
+    
+    // Selektory pre nehnutelnosti.sk (2024/2025 štruktúra)
+    const selectors = {
+      link: "a[href*='/detail/'], a.advertisement-item__link, a[data-testid='property-link']",
+      title: ".advertisement-item__title, h2, .title, [data-testid='property-title']",
+      price: ".advertisement-item__price, .price, [data-testid='property-price']",
+      area: ".advertisement-item__area, .area, [data-testid='property-area']",
+      location: ".advertisement-item__location, .location, [data-testid='property-location']",
+    };
+    
+    // Extrahuj link
+    let href = $el.find(selectors.link).first().attr("href");
+    if (!href && $el.is("a")) {
+      href = $el.attr("href");
+    }
+    if (!href) return null;
+    
+    // Extrahuj ID z URL
+    const idMatch = href.match(/\/detail\/(\d+)|\/(\d+)\/?$/);
+    const externalId = idMatch?.[1] || idMatch?.[2] || href.split("/").filter(Boolean).pop() || "";
+    if (!externalId) return null;
+    
+    // Nadpis
+    let title = $el.find(selectors.title).first().text().trim();
+    if (!title) {
+      title = $el.find("a").first().text().trim();
+    }
+    if (!title) return null;
+    
+    // Cena
+    const priceText = $el.find(selectors.price).first().text().trim() || $el.text();
+    const isRent = listingType === "PRENAJOM";
+    const price = extractPrice(priceText, isRent);
+    
+    // Plocha
+    const areaText = $el.find(selectors.area).first().text().trim() || $el.text();
+    let areaM2 = extractArea(areaText);
+    if (areaM2 === 0) {
+      areaM2 = extractArea(title);
+    }
+    
+    // Lokalita
+    const locationText = $el.find(selectors.location).first().text().trim() || $el.text();
+    const { city, district } = extractCity(locationText || title);
+    
+    // Validácia
+    const minPrice = isRent ? 100 : 10000;
+    if (price < minPrice) return null;
+    
+    const finalArea = areaM2 > 0 ? areaM2 : 50;
+    const pricePerM2 = Math.round(price / finalArea);
+    
+    // Popis
+    const description = $el.find(".description, .text").first().text().trim();
+    const { condition } = parseDescription(description + " " + title, title);
+    
+    return {
+      externalId,
+      title: title.substring(0, 200),
+      description: description.substring(0, 1000),
+      price,
+      pricePerM2,
+      areaM2: finalArea,
+      city,
+      district: district || "Centrum",
+      condition,
+      listingType,
+      sourceUrl: href.startsWith("http") ? href : `${baseUrl}${href}`,
+      source: "NEHNUTELNOSTI",
+    };
+  } catch (error) {
+    console.error("[Nehnutelnosti] Parse error:", error);
+    return null;
+  }
+}
+
+// ============================================================================
+// REALITY.SK PARSER
+// ============================================================================
+
+/**
+ * Parsuje inzerát z reality.sk
+ */
+export function parseRealityElement(
+  $: cheerio.CheerioAPI,
+  element: Parameters<typeof $>[0],
+  baseUrl: string,
+  listingType: "PREDAJ" | "PRENAJOM" = "PREDAJ"
+): ParsedListing | null {
+  try {
+    const $el = $(element);
+    
+    // Selektory pre reality.sk
+    const selectors = {
+      link: "a[href*='/detail/'], a.estate-card__link, a[href*='/inzerat/']",
+      title: ".estate-card__title, h2, .title, .nadpis",
+      price: ".estate-card__price, .price, .cena",
+      area: ".estate-card__area, .area, .vymera",
+      location: ".estate-card__location, .location, .lokalita",
+    };
+    
+    // Extrahuj link
+    let href = $el.find(selectors.link).first().attr("href");
+    if (!href && $el.is("a")) {
+      href = $el.attr("href");
+    }
+    if (!href) return null;
+    
+    // Extrahuj ID
+    const idMatch = href.match(/\/detail\/(\d+)|id=(\d+)|\/(\d+)\/?$/);
+    const externalId = idMatch?.[1] || idMatch?.[2] || idMatch?.[3] || href.split("/").filter(Boolean).pop() || "";
+    if (!externalId) return null;
+    
+    // Nadpis
+    let title = $el.find(selectors.title).first().text().trim();
+    if (!title) {
+      title = $el.find("a").first().text().trim();
+    }
+    if (!title) return null;
+    
+    // Cena
+    const priceText = $el.find(selectors.price).first().text().trim() || $el.text();
+    const isRent = listingType === "PRENAJOM";
+    const price = extractPrice(priceText, isRent);
+    
+    // Plocha
+    const areaText = $el.find(selectors.area).first().text().trim() || $el.text();
+    let areaM2 = extractArea(areaText);
+    if (areaM2 === 0) {
+      areaM2 = extractArea(title);
+    }
+    
+    // Lokalita
+    const locationText = $el.find(selectors.location).first().text().trim() || $el.text();
+    const { city, district } = extractCity(locationText || title);
+    
+    // Validácia
+    const minPrice = isRent ? 100 : 10000;
+    if (price < minPrice) return null;
+    
+    const finalArea = areaM2 > 0 ? areaM2 : 50;
+    const pricePerM2 = Math.round(price / finalArea);
+    
+    // Popis
+    const description = $el.find(".description, .text").first().text().trim();
+    const { condition } = parseDescription(description + " " + title, title);
+    
+    return {
+      externalId,
+      title: title.substring(0, 200),
+      description: description.substring(0, 1000),
+      price,
+      pricePerM2,
+      areaM2: finalArea,
+      city,
+      district: district || "Centrum",
+      condition,
+      listingType,
+      sourceUrl: href.startsWith("http") ? href : `${baseUrl}${href}`,
+      source: "REALITY",
+    };
+  } catch (error) {
+    console.error("[Reality] Parse error:", error);
+    return null;
+  }
+}
+
+// ============================================================================
+// DATABASE SYNC & MARKET GAP DETECTION
+// ============================================================================
+
 /**
  * Upsert nehnuteľnosti s Market Gap detection
  */
 export async function syncProperty(listing: ParsedListing): Promise<SyncResult> {
-  const slug = `bazos-${listing.externalId}`;
+  const source = listing.source || "BAZOS";
+  const slug = `${source.toLowerCase()}-${listing.externalId}`;
   
   // Skontroluj či existuje
   const existing = await prisma.property.findFirst({
@@ -624,7 +812,7 @@ export async function syncProperty(listing: ParsedListing): Promise<SyncResult> 
     data: {
       slug,
       external_id: listing.externalId,
-      source: "BAZOS", // Bazos scraper
+      source: source, // Dynamický zdroj
       title: listing.title,
       description: listing.description,
       city: listing.city,
@@ -698,16 +886,91 @@ interface CategoryOptions {
 }
 
 /**
- * Scrapuje Bazoš kategóriu (byty/domy) pre dané mesto
+ * Získa selektory pre daný zdroj
  */
-export async function scrapeBazosCategory(
-  category: string,
+function getSelectorsForSource(source: "BAZOS" | "NEHNUTELNOSTI" | "REALITY") {
+  switch (source) {
+    case "BAZOS":
+      return {
+        listing: [
+          ".inzeraty .inzerat",
+          ".vypis .inzerat", 
+          ".inzeratynadpis",
+          ".inzeratyflex",
+          "[class*='inzerat']",
+          ".nadpis",
+          "table.inzeraty tr",
+        ],
+        nextPage: [".strankovani a", ".pagination a"],
+        nextPageText: ["ďalšia", "další", ">>"],
+      };
+    case "NEHNUTELNOSTI":
+      return {
+        listing: [
+          ".advertisement-item",
+          ".property-list__item",
+          "[data-testid='property-card']",
+          ".listing-item",
+          ".inzerat",
+          "article.property",
+        ],
+        nextPage: [".pagination__next", ".pagination a", "a[rel='next']", ".page-next a"],
+        nextPageText: ["ďalšia", "další", "next", ">>", "›"],
+      };
+    case "REALITY":
+      return {
+        listing: [
+          ".estate-card",
+          ".property-card",
+          ".listing-item",
+          ".inzerat",
+          "article.estate",
+          "[data-id]",
+        ],
+        nextPage: [".pagination a", ".paging a", "a[rel='next']"],
+        nextPageText: ["ďalšia", "další", "next", ">>", "›"],
+      };
+  }
+}
+
+/**
+ * Vytvára URL pre daný zdroj a mesto
+ */
+function buildCategoryUrl(
+  baseUrl: string, 
+  path: string, 
+  city: string | undefined, 
+  source: "BAZOS" | "NEHNUTELNOSTI" | "REALITY",
+  page?: number
+): string {
+  let url = `${baseUrl}${path}`;
+  
+  if (source === "BAZOS") {
+    if (city) {
+      url += `?hlokalita=${encodeURIComponent(city)}&humkreis=25`;
+    }
+  } else if (source === "NEHNUTELNOSTI" || source === "REALITY") {
+    if (city) {
+      const slug = CITY_SLUGS[city] || city.toLowerCase().replace(/\s+/g, "-");
+      url += `${slug}/`;
+    }
+    if (page && page > 1) {
+      url += `?p=${page}`;
+    }
+  }
+  
+  return url;
+}
+
+/**
+ * Generická funkcia pre scrapovanie kategórie z akéhokoľvek zdroja
+ */
+export async function scrapeCategory(
+  category: ScrapingCategory,
   city?: string,
-  config: Partial<StealthConfig> = {},
-  options: CategoryOptions = {}
+  config: Partial<StealthConfig> = {}
 ): Promise<ScraperStats> {
   const cfg = { ...DEFAULT_CONFIG, ...config };
-  const listingType = options.listingType || "PREDAJ";
   const startTime = Date.now();
   const stats: ScraperStats = {
     pagesScraped: 0,
@@ -721,25 +984,18 @@ export async function scrapeBazosCategory(
     debug: {},
   };
   
-  const baseUrl = options.baseUrl || "https://reality.bazos.sk";
-  // Bazoš URL štruktúra: základná URL s query parametrami
-  // Príklad: https://reality.bazos.sk/byty/?hlokalita=Nitra&humkreis=25
-  let categoryUrl = `${baseUrl}${category}`;
+  const { baseUrl, path, listingType, source } = category;
+  const selectors = getSelectorsForSource(source);
+  let categoryUrl = buildCategoryUrl(baseUrl, path, city, source);
   
-  // Pridaj mesto do URL ak je špecifikované
-  if (city) {
-    // Bazoš hľadá podľa lokality cez parameter "hlokalita"
-    categoryUrl += `?hlokalita=${encodeURIComponent(city)}&humkreis=25`;
-  }
-  
-  console.log(`\n🏠 Starting scrape: ${categoryUrl}`);
+  console.log(`\n🏠 [${source}] Starting scrape: ${categoryUrl}`);
   console.log(`⚙️ Config: maxPages=${cfg.maxPagesPerCategory}, delay=${cfg.minDelay}-${cfg.maxDelay}ms`);
   
   let currentUrl: string | undefined = categoryUrl;
   let referer = baseUrl;
   
   while (currentUrl && stats.pagesScraped < cfg.maxPagesPerCategory) {
-    // Náhodný delay pred requestom (simulácia ľudského správania)
+    // Náhodný delay pred requestom
     if (stats.pagesScraped > 0) {
       const delay = getRandomDelay(cfg.minDelay, cfg.maxDelay);
       console.log(`⏳ Waiting ${Math.round(delay / 1000)}s before next page...`);
@@ -750,16 +1006,14 @@ export async function scrapeBazosCategory(
     const result = await fetchWithRetry(currentUrl, { config: cfg, referer });
     
     if (!result.success) {
-      console.error(`❌ Failed to fetch: ${result.error}`);
+      console.error(`❌ [${source}] Failed to fetch: ${result.error}`);
       stats.errors++;
       stats.debug = { ...stats.debug, fetchError: result.error };
       
-      // Ak sme boli blokovaní, zastavíme
       if (result.error?.includes("403") || result.error?.includes("CAPTCHA")) {
         stats.blocked = true;
         break;
       }
-      
       break;
     }
     
@@ -768,27 +1022,15 @@ export async function scrapeBazosCategory(
     
     // Parse HTML
     const $ = cheerio.load(result.html!);
-    
-    // Debug: Loguj HTML snippet pre diagnostiku
     const htmlLength = result.html?.length || 0;
-    console.log(`📄 HTML loaded: ${htmlLength} bytes`);
+    console.log(`📄 [${source}] HTML loaded: ${htmlLength} bytes`);
     
-    // Bazoš 2024/2025 selektory - skúšame viacero variantov
-    const selectors = [
-      ".inzeraty .inzerat",
-      ".vypis .inzerat", 
-      ".inzeratynadpis",
-      ".inzeratyflex",
-      "[class*='inzerat']",
-      ".nadpis",
-      "table.inzeraty tr",
-    ];
-    
+    // Nájdi listing elementy
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let listingElements: any[] = [];
     let usedSelector = "";
     
-    for (const selector of selectors) {
+    for (const selector of selectors.listing) {
       const found = $(selector).toArray();
       if (found.length > 0) {
         listingElements = found;
@@ -797,24 +1039,35 @@ export async function scrapeBazosCategory(
       }
     }
     
-    console.log(`📄 Page ${stats.pagesScraped}: Found ${listingElements.length} listings (selector: ${usedSelector || 'none'})`);
+    console.log(`📄 [${source}] Page ${stats.pagesScraped}: Found ${listingElements.length} listings (selector: ${usedSelector || 'none'})`);
     
-    // Debug: Uložíme debug info
     stats.debug = {
       ...stats.debug,
-      htmlLength: htmlLength,
+      htmlLength,
       usedSelector: usedSelector || "none",
       htmlPreview: listingElements.length === 0 ? result.html?.substring(0, 1000) : undefined,
     };
     
-    // Debug: Ak nič nenašiel, ukáž prvých 500 znakov HTML
     if (listingElements.length === 0 && result.html) {
-      console.log(`⚠️ No listings found. HTML preview: ${result.html.substring(0, 500)}...`);
+      console.log(`⚠️ [${source}] No listings found. HTML preview: ${result.html.substring(0, 500)}...`);
     }
     
-    // Spracuj každý inzerát
+    // Spracuj každý inzerát podľa zdroja
     for (const element of listingElements) {
-      const listing = parseListingElement($, element, baseUrl, listingType);
+      let listing: ParsedListing | null = null;
+      
+      switch (source) {
+        case "BAZOS":
+          listing = parseListingElement($, element, baseUrl, listingType);
+          if (listing) listing.source = "BAZOS";
+          break;
+        case "NEHNUTELNOSTI":
+          listing = parseNehnutelnostiElement($, element, baseUrl, listingType);
+          break;
+        case "REALITY":
+          listing = parseRealityElement($, element, baseUrl, listingType);
+          break;
+      }
       
       if (listing) {
         stats.listingsFound++;
@@ -832,7 +1085,7 @@ export async function scrapeBazosCategory(
             stats.hotDeals++;
           }
         } catch (error) {
-          console.warn(`⚠️ Sync error: ${error}`);
+          console.warn(`⚠️ [${source}] Sync error: ${error}`);
           stats.errors++;
         }
       }
@@ -840,20 +1093,25 @@ export async function scrapeBazosCategory(
     
     // Nájdi odkaz na ďalšiu stránku
     currentUrl = undefined;
-    $(".strankovani a, .pagination a").each((_, el) => {
-      const text = $(el).text().toLowerCase();
-      if (text.includes("ďalšia") || text.includes("další") || text === ">>") {
+    for (const pageSelector of selectors.nextPage) {
+      $(pageSelector).each((_, el) => {
+        const text = $(el).text().toLowerCase();
         const href = $(el).attr("href");
-        if (href) {
-          currentUrl = href.startsWith("http") ? href : `${baseUrl}${href}`;
+        
+        for (const keyword of selectors.nextPageText) {
+          if (text.includes(keyword) && href) {
+            currentUrl = href.startsWith("http") ? href : `${baseUrl}${href}`;
+            return false; // break
+          }
         }
-      }
-    });
+      });
+      if (currentUrl) break;
+    }
   }
   
   stats.duration = Date.now() - startTime;
   
-  console.log(`\n✅ Scrape completed:`);
+  console.log(`\n✅ [${source}] Scrape completed:`);
   console.log(`   📄 Pages: ${stats.pagesScraped}`);
   console.log(`   🏠 Listings: ${stats.listingsFound}`);
   console.log(`   🆕 New: ${stats.newListings}`);
@@ -866,43 +1124,104 @@ export async function scrapeBazosCategory(
 }
 
 /**
+ * Scrapuje Bazoš kategóriu (zachované pre spätnú kompatibilitu)
+ */
+export async function scrapeBazosCategory(
+  categoryPath: string,
+  city?: string,
+  config: Partial<StealthConfig> = {},
+  options: CategoryOptions = {}
+): Promise<ScraperStats> {
+  const category: ScrapingCategory = {
+    name: "Legacy",
+    baseUrl: options.baseUrl || "https://reality.bazos.sk",
+    path: categoryPath,
+    listingType: options.listingType || "PREDAJ",
+    source: "BAZOS",
+  };
+  
+  return scrapeCategory(category, city, config);
+}
+
+/**
  * Definícia kategórií pre scraping
- * Bazoš má rôzne subdomény pre predaj a prenájom
+ * Podporujeme viaceré zdroje: Bazoš, Nehnutelnosti.sk, Reality.sk
  */
 interface ScrapingCategory {
   name: string;
   baseUrl: string;
   path: string;
   listingType: "PREDAJ" | "PRENAJOM";
+  source: "BAZOS" | "NEHNUTELNOSTI" | "REALITY";
 }
 
-const SCRAPING_CATEGORIES: ScrapingCategory[] = [
-  // Predaj - reality.bazos.sk
-  { name: "Byty predaj", baseUrl: "https://reality.bazos.sk", path: "/byty/", listingType: "PREDAJ" },
-  { name: "Domy predaj", baseUrl: "https://reality.bazos.sk", path: "/domy/", listingType: "PREDAJ" },
-  // Prenájom - prenajom.bazos.sk  
-  { name: "Byty prenájom", baseUrl: "https://reality.bazos.sk", path: "/prenajom/byty/", listingType: "PRENAJOM" },
-  { name: "Domy prenájom", baseUrl: "https://reality.bazos.sk", path: "/prenajom/domy/", listingType: "PRENAJOM" },
+// Bazoš kategórie
+const BAZOS_CATEGORIES: ScrapingCategory[] = [
+  { name: "Byty predaj", baseUrl: "https://reality.bazos.sk", path: "/byty/", listingType: "PREDAJ", source: "BAZOS" },
+  { name: "Domy predaj", baseUrl: "https://reality.bazos.sk", path: "/domy/", listingType: "PREDAJ", source: "BAZOS" },
+  { name: "Byty prenájom", baseUrl: "https://reality.bazos.sk", path: "/prenajom/byty/", listingType: "PRENAJOM", source: "BAZOS" },
+  { name: "Domy prenájom", baseUrl: "https://reality.bazos.sk", path: "/prenajom/domy/", listingType: "PRENAJOM", source: "BAZOS" },
 ];
 
+// Nehnutelnosti.sk kategórie
+const NEHNUTELNOSTI_CATEGORIES: ScrapingCategory[] = [
+  { name: "Byty predaj", baseUrl: "https://www.nehnutelnosti.sk", path: "/byty/predaj/", listingType: "PREDAJ", source: "NEHNUTELNOSTI" },
+  { name: "Domy predaj", baseUrl: "https://www.nehnutelnosti.sk", path: "/domy/predaj/", listingType: "PREDAJ", source: "NEHNUTELNOSTI" },
+  { name: "Byty prenájom", baseUrl: "https://www.nehnutelnosti.sk", path: "/byty/prenajom/", listingType: "PRENAJOM", source: "NEHNUTELNOSTI" },
+  { name: "Domy prenájom", baseUrl: "https://www.nehnutelnosti.sk", path: "/domy/prenajom/", listingType: "PRENAJOM", source: "NEHNUTELNOSTI" },
+];
+
+// Reality.sk kategórie
+const REALITY_CATEGORIES: ScrapingCategory[] = [
+  { name: "Byty predaj", baseUrl: "https://www.reality.sk", path: "/byty/predaj/", listingType: "PREDAJ", source: "REALITY" },
+  { name: "Domy predaj", baseUrl: "https://www.reality.sk", path: "/domy/predaj/", listingType: "PREDAJ", source: "REALITY" },
+  { name: "Byty prenájom", baseUrl: "https://www.reality.sk", path: "/byty/prenajom/", listingType: "PRENAJOM", source: "REALITY" },
+  { name: "Domy prenájom", baseUrl: "https://www.reality.sk", path: "/domy/prenajom/", listingType: "PRENAJOM", source: "REALITY" },
+];
+
+// Všetky kategórie
+const SCRAPING_CATEGORIES: ScrapingCategory[] = [
+  ...BAZOS_CATEGORIES,
+  ...NEHNUTELNOSTI_CATEGORIES,
+  ...REALITY_CATEGORIES,
+];
+
+// Slugy miest pre nehnutelnosti.sk a reality.sk
+const CITY_SLUGS: Record<string, string> = {
+  "Bratislava": "bratislava",
+  "Košice": "kosice",
+  "Prešov": "presov",
+  "Žilina": "zilina",
+  "Banská Bystrica": "banska-bystrica",
+  "Trnava": "trnava",
+  "Trenčín": "trencin",
+  "Nitra": "nitra",
+};
+
 /**
- * Kompletný scrape všetkých kategórií
+ * Kompletný scrape všetkých kategórií zo všetkých zdrojov
  */
 export async function runStealthScrape(
   cities?: string[],
   config?: Partial<StealthConfig>,
-  options?: { listingTypes?: ("PREDAJ" | "PRENAJOM")[] }
+  options?: { 
+    listingTypes?: ("PREDAJ" | "PRENAJOM")[];
+    sources?: ("BAZOS" | "NEHNUTELNOSTI" | "REALITY")[];
+  }
 ): Promise<{
   totalStats: ScraperStats;
-  categoryStats: { category: string; city?: string; stats: ScraperStats }[];
+  categoryStats: { category: string; source: string; city?: string; stats: ScraperStats }[];
 }> {
   const targetCities = cities || ["Bratislava", "Košice", "Žilina"];
   const allowedTypes = options?.listingTypes || ["PREDAJ", "PRENAJOM"];
+  const allowedSources = options?.sources || ["BAZOS", "NEHNUTELNOSTI", "REALITY"];
   
-  // Filtruj kategórie podľa požadovaných typov
-  const categories = SCRAPING_CATEGORIES.filter(c => allowedTypes.includes(c.listingType));
+  // Filtruj kategórie podľa požadovaných typov a zdrojov
+  const categories = SCRAPING_CATEGORIES.filter(
+    c => allowedTypes.includes(c.listingType) && allowedSources.includes(c.source)
+  );
   
-  const categoryStats: { category: string; city?: string; stats: ScraperStats }[] = [];
+  const categoryStats: { category: string; source: string; city?: string; stats: ScraperStats }[] = [];
   const totalStats: ScraperStats = {
     pagesScraped: 0,
     listingsFound: 0,
@@ -914,61 +1233,101 @@ export async function runStealthScrape(
     blocked: false,
   };
   
-  console.log("🚀 Starting Stealth Scrape Engine");
+  console.log("🚀 Starting Multi-Source Stealth Scrape Engine");
   console.log(`📍 Cities: ${targetCities.join(", ")}`);
-  console.log(`📂 Categories: ${categories.map(c => c.name).join(", ")}`);
+  console.log(`🌐 Sources: ${allowedSources.join(", ")}`);
+  console.log(`📂 Categories: ${categories.length} total`);
   
-  for (const city of targetCities) {
-    for (const cat of categories) {
-      // Dlhší delay medzi mestami/kategóriami
-      if (categoryStats.length > 0) {
-        const longDelay = getRandomDelay(10000, 20000);
-        console.log(`\n⏳ Waiting ${Math.round(longDelay / 1000)}s before next category...`);
-        await sleep(longDelay);
+  // Groupuj kategórie podľa zdroja pre lepší prehľad
+  const sourceGroups = allowedSources.map(source => ({
+    source,
+    categories: categories.filter(c => c.source === source),
+  }));
+  
+  for (const { source, categories: sourceCats } of sourceGroups) {
+    if (sourceCats.length === 0) continue;
+    
+    console.log(`\n${"=".repeat(50)}`);
+    console.log(`🌐 Starting ${source} scrape...`);
+    console.log(`${"=".repeat(50)}`);
+    
+    for (const city of targetCities) {
+      for (const cat of sourceCats) {
+        // Dlhší delay medzi kategóriami
+        if (categoryStats.length > 0) {
+          // Dlhší delay medzi rôznymi zdrojmi
+          const isNewSource = categoryStats.length > 0 && 
+            categoryStats[categoryStats.length - 1].source !== source;
+          const longDelay = getRandomDelay(
+            isNewSource ? 15000 : 8000, 
+            isNewSource ? 30000 : 15000
+          );
+          console.log(`\n⏳ Waiting ${Math.round(longDelay / 1000)}s before next category...`);
+          await sleep(longDelay);
+        }
+        
+        const stats = await scrapeCategory(cat, city, config);
+        
+        categoryStats.push({ 
+          category: cat.name, 
+          source: cat.source,
+          city, 
+          stats 
+        });
+        
+        // Akumuluj do total
+        totalStats.pagesScraped += stats.pagesScraped;
+        totalStats.listingsFound += stats.listingsFound;
+        totalStats.newListings += stats.newListings;
+        totalStats.updatedListings += stats.updatedListings;
+        totalStats.hotDeals += stats.hotDeals;
+        totalStats.errors += stats.errors;
+        totalStats.duration += stats.duration;
+        
+        // Ak sme boli blokovaní na tomto zdroji, preskočíme ho
+        if (stats.blocked) {
+          console.error(`\n🚫 [${source}] BLOCKED! Skipping this source...`);
+          break;
+        }
       }
       
-      const stats = await scrapeBazosCategory(
-        cat.path, 
-        city, 
-        config,
-        { listingType: cat.listingType, baseUrl: cat.baseUrl }
-      );
-      
-      categoryStats.push({ category: cat.name, city, stats });
-      
-      // Akumuluj do total
-      totalStats.pagesScraped += stats.pagesScraped;
-      totalStats.listingsFound += stats.listingsFound;
-      totalStats.newListings += stats.newListings;
-      totalStats.updatedListings += stats.updatedListings;
-      totalStats.hotDeals += stats.hotDeals;
-      totalStats.errors += stats.errors;
-      totalStats.duration += stats.duration;
-      
-      // Ak sme boli blokovaní, zastavíme
-      if (stats.blocked) {
-        console.error("\n🚫 BLOCKED! Stopping scrape to prevent IP ban.");
-        totalStats.blocked = true;
+      // Ak sme boli blokovaní, prejdeme na ďalšie mesto
+      const lastStat = categoryStats[categoryStats.length - 1];
+      if (lastStat?.stats.blocked) {
         break;
       }
     }
-    
-    if (totalStats.blocked) break;
   }
+  
+  // Spočítaj blocked sources
+  const blockedSources = new Set(
+    categoryStats.filter(s => s.stats.blocked).map(s => s.source)
+  );
   
   // Log do databázy
   await prisma.dataFetchLog.create({
     data: {
-      source: "STEALTH_BAZOS",
-      status: totalStats.blocked ? "blocked" : totalStats.errors > 0 ? "partial" : "success",
+      source: "STEALTH_MULTI",
+      status: blockedSources.size === allowedSources.length 
+        ? "blocked" 
+        : totalStats.errors > 0 || blockedSources.size > 0 
+          ? "partial" 
+          : "success",
       recordsCount: totalStats.newListings + totalStats.updatedListings,
-      error: totalStats.blocked ? "IP blocked or CAPTCHA detected" : null,
+      error: blockedSources.size > 0 
+        ? `Blocked on: ${Array.from(blockedSources).join(", ")}` 
+        : null,
       duration_ms: totalStats.duration,
+      metadata: {
+        sources: allowedSources,
+        cities: targetCities,
+        blockedSources: Array.from(blockedSources),
+      },
     },
   });
   
   console.log("\n" + "=".repeat(50));
-  console.log("📊 TOTAL STATS:");
+  console.log("📊 TOTAL STATS (ALL SOURCES):");
   console.log(`   📄 Pages: ${totalStats.pagesScraped}`);
   console.log(`   🏠 Listings: ${totalStats.listingsFound}`);
   console.log(`   🆕 New: ${totalStats.newListings}`);
@@ -976,11 +1335,48 @@ export async function runStealthScrape(
   console.log(`   🔥 Hot Deals: ${totalStats.hotDeals}`);
   console.log(`   ❌ Errors: ${totalStats.errors}`);
   console.log(`   ⏱️ Duration: ${Math.round(totalStats.duration / 1000)}s`);
+  if (blockedSources.size > 0) {
+    console.log(`   🚫 Blocked: ${Array.from(blockedSources).join(", ")}`);
+  }
   console.log("=".repeat(50));
   
   return { totalStats, categoryStats };
 }
 
+/**
+ * Scrapuje len konkrétny zdroj
+ */
+export async function runSourceScrape(
+  source: "BAZOS" | "NEHNUTELNOSTI" | "REALITY",
+  cities?: string[],
+  config?: Partial<StealthConfig>,
+  options?: { listingTypes?: ("PREDAJ" | "PRENAJOM")[] }
+): Promise<{
+  totalStats: ScraperStats;
+  categoryStats: { category: string; city?: string; stats: ScraperStats }[];
+}> {
+  const result = await runStealthScrape(cities, config, {
+    ...options,
+    sources: [source],
+  });
+  
+  return {
+    totalStats: result.totalStats,
+    categoryStats: result.categoryStats.map(({ category, city, stats }) => ({
+      category,
+      city,
+      stats,
+    })),
+  };
+}
+
 // Export pre použitie v API
-export { DEFAULT_CONFIG, USER_AGENTS };
-export type { StealthConfig, ScraperStats, ParsedListing };
+export { 
+  DEFAULT_CONFIG, 
+  USER_AGENTS,
+  SCRAPING_CATEGORIES,
+  BAZOS_CATEGORIES,
+  NEHNUTELNOSTI_CATEGORIES,
+  REALITY_CATEGORIES,
+};
+export type { StealthConfig, ScraperStats, ParsedListing, ScrapingCategory };
