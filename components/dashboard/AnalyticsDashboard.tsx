@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   TrendingUp,
   TrendingDown,
@@ -323,7 +323,7 @@ export function AnalyticsDashboard() {
                   );
                   acc.offset += angle;
                   return acc;
-                }, { paths: [] as JSX.Element[], offset: 0 }).paths}
+                }, { paths: [] as React.ReactElement[], offset: 0 }).paths}
               </svg>
             </div>
 
