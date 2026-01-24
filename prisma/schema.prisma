@@ -47,6 +47,40 @@ enum EnergyCertificate {
   NONE
 }
 
+enum PortfolioPropertyStatus {
+  OWNED        // Vlastnená
+  SOLD         // Predaná
+  RENTED       // Prenajatá
+  VACANT       // Prázdna
+  RENOVATING   // V rekonštrukcii
+}
+
+enum TransactionType {
+  PURCHASE          // Kúpa
+  SALE              // Predaj
+  RENT_INCOME       // Príjem z nájmu
+  MAINTENANCE       // Údržba
+  RENOVATION        // Rekonštrukcia
+  TAX               // Daň z nehnuteľnosti
+  INSURANCE         // Poistenie
+  MORTGAGE_PAYMENT  // Splátka hypotéky
+  UTILITIES         // Energie (ak platí majiteľ)
+  MANAGEMENT_FEE    // Správa nehnuteľnosti
+  OTHER_INCOME      // Iný príjem
+  OTHER_EXPENSE     // Iný výdavok
+}
+
+enum InfrastructureType {
+  METRO_STATION
+  TRAM_STATION
+  HIGHWAY
+  SHOPPING_CENTER
+  SCHOOL
+  HOSPITAL
+  PARK
+  BUSINESS_DISTRICT
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -204,18 +238,6 @@ model MarketGap {
   
   @@unique([propertyId])
   @@index([detected_at, notified])
-}
-
-// Urbanistický rozvoj - plánovaná infraštruktúra
-enum InfrastructureType {
-  METRO_STATION
-  TRAM_STATION
-  HIGHWAY
-  SHOPPING_CENTER
-  SCHOOL
-  HOSPITAL
-  PARK
-  BUSINESS_DISTRICT
 }
 
 model UrbanDevelopment {
@@ -446,3 +468,113 @@ model UserPreferences {
   updatedAt             DateTime @updatedAt
 }
 
+// ==========================================
+// PORTFÓLIO INVESTORA
+// ==========================================
+
+// Nehnuteľnosť v portfóliu používateľa
+model PortfolioProperty {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Základné info
+  name            String   // Vlastný názov (napr. "Byt Petržalka")
+  address         String
+  city            SlovakCity
+  district        String?
+  
+  // Nehnuteľnosť
+  propertyType    String   // "apartment", "house", "studio", "commercial", "land"
+  area_m2         Float
+  rooms           Int?
+  floor           Int?
+  
+  // Nákup
+  purchaseDate    DateTime
+  purchasePrice   Float
+  purchaseCosts   Float    @default(0) // Náklady na kúpu (právnik, daň, atď.)
+  
+  // Predaj (ak predané)
+  saleDate        DateTime?
+  salePrice       Float?
+  saleCosts       Float?   // Náklady na predaj
+  
+  // Aktuálna hodnota
+  currentValue    Float    // Odhadovaná aktuálna hodnota
+  lastValuationDate DateTime @default(now())
+  
+  // Hypotéka
+  hasMortgage     Boolean  @default(false)
+  mortgageAmount  Float?   // Výška hypotéky
+  mortgageRate    Float?   // Úroková sadzba (%)
+  mortgagePayment Float?   // Mesačná splátka
+  mortgageStart   DateTime?
+  mortgageEnd     DateTime?
+  
+  // Prenájom
+  isRented        Boolean  @default(false)
+  monthlyRent     Float?   // Mesačný nájom
+  tenantName      String?
+  leaseStart      DateTime?
+  leaseEnd        DateTime?
+  depositAmount   Float?   // Kaucia
+  
+  // Náklady
+  monthlyExpenses Float    @default(0) // Priemerné mesačné náklady
+  annualTax       Float?   // Ročná daň z nehnuteľnosti
+  annualInsurance Float?   // Ročné poistenie
+  
+  // Status
+  status          PortfolioPropertyStatus @default(OWNED)
+  notes           String?  @db.Text
+  
+  // Fotky
+  photos          String   @db.Text @default("[]") // JSON array of photo URLs
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  transactions    PortfolioTransaction[]
+  valuations      PropertyValuation[]
+  
+  @@index([userId])
+  @@index([userId, status])
+}
+
+// Transakcie (príjmy a výdavky)
+model PortfolioTransaction {
+  id              String   @id @default(cuid())
+  portfolioPropertyId String
+  portfolioProperty   PortfolioProperty @relation(fields: [portfolioPropertyId], references: [id], onDelete: Cascade)
+  
+  type            TransactionType
+  amount          Float    // Kladná = príjem, záporná = výdavok
+  date            DateTime
+  description     String?
+  category        String?  // Vlastná kategória
+  
+  // Pre opakujúce sa transakcie
+  isRecurring     Boolean  @default(false)
+  recurringFrequency String? // "monthly", "quarterly", "yearly"
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([portfolioPropertyId])
+  @@index([portfolioPropertyId, date])
+  @@index([portfolioPropertyId, type])
+}
+
+// História oceňovania nehnuteľnosti
+model PropertyValuation {
+  id              String   @id @default(cuid())
+  portfolioPropertyId String
+  portfolioProperty   PortfolioProperty @relation(fields: [portfolioPropertyId], references: [id], onDelete: Cascade)
+  
+  value           Float
+  source          String?  // "manual", "market", "appraisal"
+  notes           String?
+  valuationDate   DateTime @default(now())
+  
+  @@index([portfolioPropertyId, valuationDate])
+}

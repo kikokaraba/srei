@@ -14,13 +14,15 @@ import {
   Bookmark,
   Calculator,
   Shield,
+  Briefcase,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Heatmapa", href: "/dashboard/heatmap", icon: Map },
+  { name: "Portfólio", href: "/dashboard/portfolio", icon: Briefcase },
   { name: "Nehnuteľnosti", href: "/dashboard/properties", icon: Filter },
+  { name: "Heatmapa", href: "/dashboard/heatmap", icon: Map },
   { name: "Sledované", href: "/dashboard/saved", icon: Bookmark },
   { name: "Analytika", href: "/dashboard/analytics", icon: BarChart3 },
   { name: "Porovnanie", href: "/dashboard/comparison", icon: TrendingUp },
