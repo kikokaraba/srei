@@ -8,14 +8,13 @@ import {
   LayoutDashboard,
   Users,
   Building,
-  Settings,
   ArrowLeft,
   Shield,
   Loader2,
   BarChart3,
-  Database,
+  Menu,
+  X,
 } from "lucide-react";
-import { signOut } from "next-auth/react";
 
 const adminNav = [
   { name: "Prehľad", href: "/admin", icon: LayoutDashboard },
@@ -29,6 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Check if user is admin
@@ -53,6 +53,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       });
   }, [router]);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
@@ -68,59 +73,106 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return null;
   }
 
-  return (
-    <div className="min-h-screen bg-slate-950 flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col">
-        <div className="p-6 border-b border-slate-800">
+  const SidebarContent = () => (
+    <>
+      <div className="p-4 lg:p-6 border-b border-slate-800">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6 text-red-400" />
+            <Shield className="w-5 h-5 lg:w-6 lg:h-6 text-red-400" />
             <div>
-              <h2 className="text-xl font-bold text-red-400">Admin Panel</h2>
-              <p className="text-xs text-slate-500">SRIA Management</p>
+              <h2 className="text-lg lg:text-xl font-bold text-red-400">Admin</h2>
+              <p className="text-xs text-slate-500 hidden lg:block">SRIA Management</p>
             </div>
           </div>
-        </div>
-
-        <nav className="flex-1 p-4 space-y-1">
-          {adminNav.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
-
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive
-                    ? "bg-red-500/10 text-red-400 border border-red-500/20"
-                    : "text-slate-300 hover:bg-slate-800 hover:text-slate-100"
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{item.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="p-4 border-t border-slate-800 space-y-2">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="lg:hidden p-2 text-slate-400 hover:text-slate-100"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">Späť do appky</span>
-          </Link>
+            <X className="w-5 h-5" />
+          </button>
         </div>
+      </div>
+
+      <nav className="flex-1 p-3 lg:p-4 space-y-1">
+        {adminNav.map((item) => {
+          const isActive = pathname === item.href;
+          const Icon = item.icon;
+
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-lg transition-colors ${
+                isActive
+                  ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                  : "text-slate-300 hover:bg-slate-800 hover:text-slate-100"
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="font-medium text-sm lg:text-base">{item.name}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="p-3 lg:p-4 border-t border-slate-800 space-y-2">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 w-full rounded-lg text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="font-medium text-sm lg:text-base">Späť do appky</span>
+        </Link>
+      </div>
+    </>
+  );
+
+  return (
+    <div className="min-h-screen bg-slate-950">
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Shield className="w-5 h-5 text-red-400" />
+          <h2 className="text-lg font-bold text-red-400">Admin</h2>
+        </div>
+        <button
+          onClick={() => setMobileMenuOpen(true)}
+          className="p-2 text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-800"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-50 bg-black/50"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile Sidebar */}
+      <aside
+        className={`lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-slate-900 border-r border-slate-800 flex flex-col transform transition-transform duration-300 ease-in-out ${
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <SidebarContent />
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
-          {children}
-        </div>
-      </main>
+      <div className="flex">
+        {/* Desktop Sidebar */}
+        <aside className="hidden lg:flex w-64 bg-slate-900 border-r border-slate-800 flex-col shrink-0 fixed top-0 left-0 bottom-0">
+          <SidebarContent />
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 lg:ml-64 pt-14 lg:pt-0">
+          <div className="p-4 lg:p-8 max-w-7xl mx-auto">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

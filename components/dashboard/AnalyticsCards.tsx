@@ -34,14 +34,14 @@ export function AnalyticsCards() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
         {[...Array(4)].map((_, i) => (
           <div
             key={i}
-            className="bg-slate-900 rounded-lg border border-slate-800 p-6 animate-pulse"
+            className="bg-slate-900 rounded-lg border border-slate-800 p-3 sm:p-4 lg:p-6 animate-pulse"
           >
-            <div className="h-4 bg-slate-800 rounded w-24 mb-4"></div>
-            <div className="h-8 bg-slate-800 rounded w-32"></div>
+            <div className="h-3 sm:h-4 bg-slate-800 rounded w-16 sm:w-24 mb-3 sm:mb-4"></div>
+            <div className="h-6 sm:h-8 bg-slate-800 rounded w-20 sm:w-32"></div>
           </div>
         ))}
       </div>
@@ -99,7 +99,7 @@ export function AnalyticsCards() {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
       {cards.map((card, index) => {
         const Icon = card.icon;
         const colorClasses = {
@@ -111,24 +111,24 @@ export function AnalyticsCards() {
         return (
           <div
             key={index}
-            className={`bg-slate-900 rounded-lg border ${colorClasses[card.color as keyof typeof colorClasses]} p-6`}
+            className={`bg-slate-900 rounded-lg border ${colorClasses[card.color as keyof typeof colorClasses]} p-3 sm:p-4 lg:p-6`}
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className={`p-2 rounded-lg ${colorClasses[card.color as keyof typeof colorClasses]}`}>
-                <Icon className="w-5 h-5" />
+            <div className="flex items-center justify-between mb-2 sm:mb-3 lg:mb-4">
+              <div className={`p-1.5 sm:p-2 rounded-lg ${colorClasses[card.color as keyof typeof colorClasses]}`}>
+                <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               {card.trend === "up" && (
-                <span className="text-xs text-emerald-400 flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" />
-                  {card.change}
+                <span className="text-[10px] sm:text-xs text-emerald-400 flex items-center gap-0.5 sm:gap-1">
+                  <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                  <span className="hidden sm:inline">{card.change}</span>
                 </span>
               )}
               {card.trend === "neutral" && (
-                <span className="text-xs text-slate-400">{card.change}</span>
+                <span className="text-[10px] sm:text-xs text-slate-400 hidden sm:block">{card.change}</span>
               )}
             </div>
-            <h3 className="text-sm text-slate-400 mb-1">{card.title}</h3>
-            <p className="text-2xl font-bold text-slate-100">{card.value}</p>
+            <h3 className="text-xs sm:text-sm text-slate-400 mb-0.5 sm:mb-1 line-clamp-1">{card.title}</h3>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-100 truncate">{card.value}</p>
           </div>
         );
       })}

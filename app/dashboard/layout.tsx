@@ -10,10 +10,13 @@ export default function DashboardLayout({
 }) {
   return (
     <OnboardingGuard>
-      <div className="flex h-screen bg-slate-950">
+      <div className="flex min-h-screen bg-slate-950">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-6">{children}</div>
+        <main className="flex-1 overflow-y-auto w-full">
+          {/* Padding top for mobile header */}
+          <div className="pt-14 lg:pt-0">
+            <div className="container mx-auto p-4 lg:p-6 max-w-7xl">{children}</div>
+          </div>
         </main>
       </div>
     </OnboardingGuard>

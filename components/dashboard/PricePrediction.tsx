@@ -136,12 +136,12 @@ export function PricePrediction() {
       </div>
 
       {/* City Selector */}
-      <div className="flex gap-2 overflow-x-auto pb-2">
+      <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
         {Object.entries(CITY_LABELS).map(([value, label]) => (
           <button
             key={value}
             onClick={() => setSelectedCity(value)}
-            className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
+            className={`px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg whitespace-nowrap transition-colors shrink-0 ${
               selectedCity === value
                 ? "bg-purple-500 text-white"
                 : "bg-slate-800 text-slate-300 hover:bg-slate-700"
@@ -154,23 +154,23 @@ export function PricePrediction() {
 
       {/* City Analysis */}
       {cityData && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
           {/* Current Stats */}
-          <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-            <h3 className="font-semibold text-slate-100 mb-4 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-blue-400" />
-              Aktuálny stav - {CITY_LABELS[selectedCity]}
+          <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 lg:p-6">
+            <h3 className="font-semibold text-slate-100 mb-3 lg:mb-4 flex items-center gap-2 text-sm lg:text-base">
+              <BarChart3 className="w-4 h-4 lg:w-5 lg:h-5 text-blue-400" />
+              <span className="truncate">Stav - {CITY_LABELS[selectedCity]}</span>
             </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-slate-800/50 rounded-lg">
-                <div className="text-sm text-slate-400">Priemerná cena/m²</div>
-                <div className="text-2xl font-bold text-slate-100">
+            <div className="grid grid-cols-2 gap-2 sm:gap-4">
+              <div className="p-3 lg:p-4 bg-slate-800/50 rounded-lg">
+                <div className="text-xs lg:text-sm text-slate-400">Cena/m²</div>
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-100">
                   €{cityData.stats.avgPricePerM2.toLocaleString()}
                 </div>
               </div>
-              <div className="p-4 bg-slate-800/50 rounded-lg">
-                <div className="text-sm text-slate-400">Nehnuteľností</div>
-                <div className="text-2xl font-bold text-slate-100">
+              <div className="p-3 lg:p-4 bg-slate-800/50 rounded-lg">
+                <div className="text-xs lg:text-sm text-slate-400">Nehnuteľností</div>
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-100">
                   {cityData.stats.totalProperties}
                 </div>
               </div>

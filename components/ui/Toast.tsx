@@ -36,22 +36,22 @@ export function ToastContainer() {
   if (!mounted) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm">
+    <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 z-[100] flex flex-col gap-2 sm:max-w-sm safe-area-inset-bottom">
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`flex items-start gap-3 p-4 rounded-lg border backdrop-blur-sm animate-in slide-in-from-right-5 fade-in duration-200 ${COLORS[toast.type]}`}
+          className={`flex items-start gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg border backdrop-blur-sm animate-in slide-in-from-right-5 fade-in duration-200 ${COLORS[toast.type]}`}
         >
-          <div className={ICON_COLORS[toast.type]}>{ICONS[toast.type]}</div>
+          <div className={`shrink-0 ${ICON_COLORS[toast.type]}`}>{ICONS[toast.type]}</div>
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-slate-100">{toast.title}</p>
+            <p className="font-medium text-slate-100 text-sm sm:text-base">{toast.title}</p>
             {toast.message && (
-              <p className="text-sm text-slate-400 mt-1">{toast.message}</p>
+              <p className="text-xs sm:text-sm text-slate-400 mt-0.5 sm:mt-1">{toast.message}</p>
             )}
           </div>
           <button
             onClick={() => removeToast(toast.id)}
-            className="text-slate-400 hover:text-slate-100 transition-colors"
+            className="text-slate-400 hover:text-slate-100 transition-colors shrink-0 p-1"
           >
             <X className="w-4 h-4" />
           </button>

@@ -146,64 +146,64 @@ export function Portfolio() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-slate-100 flex items-center gap-3">
-            <Briefcase className="w-7 h-7 text-emerald-400" />
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-100 flex items-center gap-2 sm:gap-3">
+            <Briefcase className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-400" />
             Moje portfólio
           </h2>
-          <p className="text-slate-400 mt-1">
+          <p className="text-sm text-slate-400 mt-1 hidden sm:block">
             Spravujte svoje investičné nehnuteľnosti a sledujte výnosy
           </p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors"
+          className="flex items-center justify-center gap-2 px-3 py-2 sm:px-4 bg-emerald-500 hover:bg-emerald-600 text-white text-sm sm:text-base font-medium rounded-lg transition-colors"
         >
-          <Plus className="w-5 h-5" />
-          Pridať nehnuteľnosť
+          <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span>Pridať</span>
         </button>
       </div>
 
       {/* Portfolio Overview */}
       {metrics && (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-4">
           <MetricCard
-            icon={<Wallet className="w-5 h-5" />}
-            label="Hodnota portfólia"
+            icon={<Wallet className="w-4 h-4 sm:w-5 sm:h-5" />}
+            label="Hodnota"
             value={`€${metrics.totalValue.toLocaleString()}`}
             color="emerald"
           />
           <MetricCard
-            icon={<PiggyBank className="w-5 h-5" />}
-            label="Celkový kapitál"
+            icon={<PiggyBank className="w-4 h-4 sm:w-5 sm:h-5" />}
+            label="Kapitál"
             value={`€${metrics.totalEquity.toLocaleString()}`}
             color="blue"
           />
           <MetricCard
-            icon={<TrendingUp className="w-5 h-5" />}
+            icon={<TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />}
             label="Zhodnotenie"
             value={`${metrics.appreciationPercent >= 0 ? "+" : ""}${metrics.appreciationPercent.toFixed(1)}%`}
             subValue={`€${metrics.totalAppreciation.toLocaleString()}`}
             color={metrics.appreciationPercent >= 0 ? "emerald" : "red"}
           />
           <MetricCard
-            icon={<Euro className="w-5 h-5" />}
-            label="Mesačný cash flow"
+            icon={<Euro className="w-4 h-4 sm:w-5 sm:h-5" />}
+            label="Cash flow"
             value={`€${metrics.monthlyCashFlow.toLocaleString()}`}
             subValue={`€${metrics.annualCashFlow.toLocaleString()}/rok`}
             color={metrics.monthlyCashFlow >= 0 ? "emerald" : "red"}
           />
           <MetricCard
-            icon={<Percent className="w-5 h-5" />}
+            icon={<Percent className="w-4 h-4 sm:w-5 sm:h-5" />}
             label="Hrubý výnos"
             value={`${metrics.grossYield.toFixed(1)}%`}
             color="purple"
           />
           <MetricCard
-            icon={<BarChart3 className="w-5 h-5" />}
+            icon={<BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" />}
             label="Čistý výnos"
             value={`${metrics.netYield.toFixed(1)}%`}
             color="yellow"
@@ -213,48 +213,48 @@ export function Portfolio() {
 
       {/* Cash Flow Breakdown */}
       {metrics && metrics.monthlyRentIncome > 0 && (
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-          <h3 className="font-semibold text-slate-100 mb-4">Mesačný prehľad</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-              <div className="flex items-center gap-2 text-emerald-400 mb-2">
-                <ArrowUpRight className="w-4 h-4" />
-                <span className="text-sm">Príjem z nájmu</span>
+        <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 lg:p-6">
+          <h3 className="font-semibold text-slate-100 mb-3 lg:mb-4 text-sm lg:text-base">Mesačný prehľad</h3>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
+            <div className="p-3 lg:p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-emerald-400 mb-1.5 sm:mb-2">
+                <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm">Príjem z nájmu</span>
               </div>
-              <div className="text-2xl font-bold text-slate-100">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-100">
                 €{metrics.monthlyRentIncome.toLocaleString()}
               </div>
             </div>
-            <div className="p-4 bg-red-500/10 rounded-lg border border-red-500/20">
-              <div className="flex items-center gap-2 text-red-400 mb-2">
-                <ArrowDownRight className="w-4 h-4" />
-                <span className="text-sm">Splátky hypoték</span>
+            <div className="p-3 lg:p-4 bg-red-500/10 rounded-lg border border-red-500/20">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-red-400 mb-1.5 sm:mb-2">
+                <ArrowDownRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm">Hypotéky</span>
               </div>
-              <div className="text-2xl font-bold text-slate-100">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-100">
                 €{metrics.monthlyMortgagePayments.toLocaleString()}
               </div>
             </div>
-            <div className="p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
-              <div className="flex items-center gap-2 text-orange-400 mb-2">
-                <ArrowDownRight className="w-4 h-4" />
-                <span className="text-sm">Prevádzkové náklady</span>
+            <div className="p-3 lg:p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-orange-400 mb-1.5 sm:mb-2">
+                <ArrowDownRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm">Náklady</span>
               </div>
-              <div className="text-2xl font-bold text-slate-100">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-100">
                 €{metrics.monthlyExpenses.toLocaleString()}
               </div>
             </div>
-            <div className={`p-4 rounded-lg border ${
+            <div className={`p-3 lg:p-4 rounded-lg border ${
               metrics.monthlyCashFlow >= 0
                 ? "bg-emerald-500/10 border-emerald-500/20"
                 : "bg-red-500/10 border-red-500/20"
             }`}>
-              <div className={`flex items-center gap-2 mb-2 ${
+              <div className={`flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 ${
                 metrics.monthlyCashFlow >= 0 ? "text-emerald-400" : "text-red-400"
               }`}>
-                <Euro className="w-4 h-4" />
-                <span className="text-sm">Čistý cash flow</span>
+                <Euro className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm">Čistý CF</span>
               </div>
-              <div className="text-2xl font-bold text-slate-100">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-100">
                 €{metrics.monthlyCashFlow.toLocaleString()}
               </div>
             </div>

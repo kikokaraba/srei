@@ -195,56 +195,56 @@ export function CustomizableDashboard() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       {/* Header s edit mode toggle */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-100 mb-2">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-100 mb-1 sm:mb-2">
             Investičný Dashboard
           </h1>
-          <p className="text-slate-400">
+          <p className="text-sm lg:text-base text-slate-400">
             Real-time trhová inteligencia pre slovenské nehnuteľnosti
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {isEditMode && (
             <>
               <button
                 onClick={handleReset}
-                className="px-4 py-2 text-slate-300 hover:text-slate-100 transition-colors"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm text-slate-300 hover:text-slate-100 transition-colors"
               >
                 Zrušiť
               </button>
               <button
                 onClick={handleSave}
                 disabled={saveMutation.isPending}
-                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors disabled:opacity-50"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors disabled:opacity-50"
               >
-                {saveMutation.isPending ? "Ukladám..." : "Uložiť zmeny"}
+                {saveMutation.isPending ? "Ukladám..." : "Uložiť"}
               </button>
             </>
           )}
           <button
             onClick={() => setIsEditMode(!isEditMode)}
-            className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+            className={`px-3 py-1.5 sm:px-4 sm:py-2 text-sm rounded-lg transition-colors flex items-center gap-2 ${
               isEditMode
                 ? "bg-slate-700 text-slate-100"
                 : "bg-slate-800 text-slate-300 hover:bg-slate-700"
             }`}
           >
             <Settings className="w-4 h-4" />
-            {isEditMode ? "Ukončiť úpravy" : "Prispôsobiť"}
+            <span className="hidden sm:inline">{isEditMode ? "Ukončiť úpravy" : "Prispôsobiť"}</span>
           </button>
         </div>
       </div>
 
       {/* Edit mode - Widget selector */}
       {isEditMode && (
-        <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
-          <h3 className="text-lg font-semibold text-slate-100 mb-4">
+        <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-4 lg:p-6">
+          <h3 className="text-base lg:text-lg font-semibold text-slate-100 mb-3 lg:mb-4">
             Dostupné widgety
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
             {availableWidgets.map((widgetId) => {
               const widget = WIDGET_REGISTRY[widgetId];
               const isVisible = localWidgets.includes(widgetId);
@@ -252,21 +252,21 @@ export function CustomizableDashboard() {
                 <button
                   key={widgetId}
                   onClick={() => handleToggleWidget(widgetId)}
-                  className={`p-4 rounded-lg border transition-all text-left ${
+                  className={`p-3 lg:p-4 rounded-lg border transition-all text-left ${
                     isVisible
                       ? "bg-emerald-500/10 border-emerald-500/30 text-slate-100"
                       : "bg-slate-900/50 border-slate-700 text-slate-400 hover:border-slate-600"
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold">{widget.title}</span>
+                  <div className="flex items-center justify-between mb-1 sm:mb-2">
+                    <span className="text-xs sm:text-sm font-semibold line-clamp-1">{widget.title}</span>
                     {isVisible ? (
-                      <div className="w-2 h-2 bg-emerald-400 rounded-full" />
+                      <div className="w-2 h-2 bg-emerald-400 rounded-full shrink-0" />
                     ) : (
-                      <X className="w-4 h-4" />
+                      <X className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
                     )}
                   </div>
-                  <p className="text-xs text-slate-500">{widget.description}</p>
+                  <p className="text-xs text-slate-500 line-clamp-2 hidden sm:block">{widget.description}</p>
                 </button>
               );
             })}
