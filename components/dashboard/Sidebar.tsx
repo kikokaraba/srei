@@ -11,6 +11,7 @@ import {
   LogOut,
   TrendingUp,
   Bookmark,
+  Calculator,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -21,6 +22,7 @@ const navigation = [
   { name: "Sledované", href: "/dashboard/saved", icon: Bookmark },
   { name: "Analytika", href: "/dashboard/analytics", icon: BarChart3 },
   { name: "Porovnanie", href: "/dashboard/comparison", icon: TrendingUp },
+  { name: "Kalkulačky", href: "/dashboard/calculators", icon: Calculator },
   { name: "Nastavenia", href: "/dashboard/settings", icon: Settings },
 ];
 
