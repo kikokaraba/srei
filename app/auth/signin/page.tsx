@@ -108,7 +108,9 @@ function SignInForm() {
           </form>
 
           <p className="mt-6 text-xs text-center text-slate-500">
-            Demo: Použite ľubovoľný email/heslo na testovanie (autentifikácia bude plne implementovaná)
+            Demo účet:<br />
+            Email: <span className="text-emerald-400 font-mono">demo@sria.sk</span><br />
+            Heslo: <span className="text-emerald-400">akékoľvek (momentálne sa nekontroluje)</span>
           </p>
         </div>
       </div>
