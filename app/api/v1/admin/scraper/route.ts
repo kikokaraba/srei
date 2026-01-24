@@ -15,36 +15,59 @@ const SCRAPER_SOURCES = {
     name: "Bazoš.sk",
     url: "https://reality.bazos.sk",
     enabled: true,
-    description: "Inzertný portál - byty a domy",
+    description: "Inzertný portál - všetky nehnuteľnosti",
     categories: [
+      // Predaj
       { path: "/byty/", type: "PREDAJ" as ListingType, name: "Byty predaj" },
       { path: "/domy/", type: "PREDAJ" as ListingType, name: "Domy predaj" },
+      { path: "/pozemky/", type: "PREDAJ" as ListingType, name: "Pozemky predaj" },
+      { path: "/chaty/", type: "PREDAJ" as ListingType, name: "Chaty predaj" },
+      { path: "/komercne/", type: "PREDAJ" as ListingType, name: "Komerčné predaj" },
+      { path: "/garaze/", type: "PREDAJ" as ListingType, name: "Garáže predaj" },
+      // Prenájom
       { path: "/prenajom/byty/", type: "PRENAJOM" as ListingType, name: "Byty prenájom" },
       { path: "/prenajom/domy/", type: "PRENAJOM" as ListingType, name: "Domy prenájom" },
+      { path: "/prenajom/komercne/", type: "PRENAJOM" as ListingType, name: "Komerčné prenájom" },
     ],
   },
   NEHNUTELNOSTI: {
     name: "Nehnutelnosti.sk",
     url: "https://www.nehnutelnosti.sk",
     enabled: true,
-    description: "Najväčší realitný portál",
+    description: "Najväčší realitný portál - všetky nehnuteľnosti",
     categories: [
+      // Predaj
       { path: "/byty/predaj/", type: "PREDAJ" as ListingType, name: "Byty predaj" },
       { path: "/domy/predaj/", type: "PREDAJ" as ListingType, name: "Domy predaj" },
+      { path: "/pozemky/predaj/", type: "PREDAJ" as ListingType, name: "Pozemky predaj" },
+      { path: "/chaty-chalupy/predaj/", type: "PREDAJ" as ListingType, name: "Chaty a chalupy predaj" },
+      { path: "/komercne-priestory/predaj/", type: "PREDAJ" as ListingType, name: "Komerčné priestory predaj" },
+      { path: "/garaze/predaj/", type: "PREDAJ" as ListingType, name: "Garáže predaj" },
+      // Prenájom
       { path: "/byty/prenajom/", type: "PRENAJOM" as ListingType, name: "Byty prenájom" },
       { path: "/domy/prenajom/", type: "PRENAJOM" as ListingType, name: "Domy prenájom" },
+      { path: "/komercne-priestory/prenajom/", type: "PRENAJOM" as ListingType, name: "Komerčné priestory prenájom" },
+      { path: "/garaze/prenajom/", type: "PRENAJOM" as ListingType, name: "Garáže prenájom" },
     ],
   },
   REALITY: {
     name: "Reality.sk",
     url: "https://www.reality.sk",
     enabled: true,
-    description: "Druhý najväčší realitný portál",
+    description: "Druhý najväčší realitný portál - všetky nehnuteľnosti",
     categories: [
+      // Predaj
       { path: "/byty/predaj/", type: "PREDAJ" as ListingType, name: "Byty predaj" },
       { path: "/domy/predaj/", type: "PREDAJ" as ListingType, name: "Domy predaj" },
+      { path: "/pozemky/predaj/", type: "PREDAJ" as ListingType, name: "Pozemky predaj" },
+      { path: "/chaty-chalupy/predaj/", type: "PREDAJ" as ListingType, name: "Chaty a chalupy predaj" },
+      { path: "/komercne-nehnutelnosti/predaj/", type: "PREDAJ" as ListingType, name: "Komerčné nehnuteľnosti predaj" },
+      { path: "/garaze-parkovanie/predaj/", type: "PREDAJ" as ListingType, name: "Garáže predaj" },
+      // Prenájom
       { path: "/byty/prenajom/", type: "PRENAJOM" as ListingType, name: "Byty prenájom" },
       { path: "/domy/prenajom/", type: "PRENAJOM" as ListingType, name: "Domy prenájom" },
+      { path: "/komercne-nehnutelnosti/prenajom/", type: "PRENAJOM" as ListingType, name: "Komerčné nehnuteľnosti prenájom" },
+      { path: "/garaze-parkovanie/prenajom/", type: "PRENAJOM" as ListingType, name: "Garáže prenájom" },
     ],
   },
   TOPREALITY: {

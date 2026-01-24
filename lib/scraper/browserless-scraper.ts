@@ -73,9 +73,18 @@ const NEHNUTELNOSTI_CONFIG: PortalConfig = {
     nextPage: "a[rel='next'], button:has-text('Ďalšia'), [aria-label='next']",
   },
   categories: [
+    // Predaj
     { path: "/byty/predaj/", listingType: "PREDAJ", name: "Byty predaj" },
     { path: "/domy/predaj/", listingType: "PREDAJ", name: "Domy predaj" },
+    { path: "/pozemky/predaj/", listingType: "PREDAJ", name: "Pozemky predaj" },
+    { path: "/chaty-chalupy/predaj/", listingType: "PREDAJ", name: "Chaty a chalupy predaj" },
+    { path: "/komercne-priestory/predaj/", listingType: "PREDAJ", name: "Komerčné priestory predaj" },
+    { path: "/garaze/predaj/", listingType: "PREDAJ", name: "Garáže predaj" },
+    // Prenájom
     { path: "/byty/prenajom/", listingType: "PRENAJOM", name: "Byty prenájom" },
+    { path: "/domy/prenajom/", listingType: "PRENAJOM", name: "Domy prenájom" },
+    { path: "/komercne-priestory/prenajom/", listingType: "PRENAJOM", name: "Komerčné priestory prenájom" },
+    { path: "/garaze/prenajom/", listingType: "PRENAJOM", name: "Garáže prenájom" },
   ],
 };
 
@@ -93,9 +102,18 @@ const REALITY_CONFIG: PortalConfig = {
     nextPage: ".pagination__next, a[rel='next'], .next-page",
   },
   categories: [
+    // Predaj
     { path: "/byty/predaj/", listingType: "PREDAJ", name: "Byty predaj" },
     { path: "/domy/predaj/", listingType: "PREDAJ", name: "Domy predaj" },
+    { path: "/pozemky/predaj/", listingType: "PREDAJ", name: "Pozemky predaj" },
+    { path: "/chaty-chalupy/predaj/", listingType: "PREDAJ", name: "Chaty a chalupy predaj" },
+    { path: "/komercne-nehnutelnosti/predaj/", listingType: "PREDAJ", name: "Komerčné nehnuteľnosti predaj" },
+    { path: "/garaze-parkovanie/predaj/", listingType: "PREDAJ", name: "Garáže predaj" },
+    // Prenájom
     { path: "/byty/prenajom/", listingType: "PRENAJOM", name: "Byty prenájom" },
+    { path: "/domy/prenajom/", listingType: "PRENAJOM", name: "Domy prenájom" },
+    { path: "/komercne-nehnutelnosti/prenajom/", listingType: "PRENAJOM", name: "Komerčné nehnuteľnosti prenájom" },
+    { path: "/garaze-parkovanie/prenajom/", listingType: "PRENAJOM", name: "Garáže prenájom" },
   ],
 };
 
