@@ -5,17 +5,9 @@ import { ArrowRight, ArrowLeft, MapPin, TrendingUp, Target, Bell } from "lucide-
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import type { SlovakCity } from "@/generated/prisma/client";
+import { CITY_OPTIONS } from "@/lib/constants";
 
-const SLOVAK_CITIES = [
-  { value: "BRATISLAVA", label: "Bratislava" },
-  { value: "KOSICE", label: "Košice" },
-  { value: "PRESOV", label: "Prešov" },
-  { value: "ZILINA", label: "Žilina" },
-  { value: "BANSKA_BYSTRICA", label: "Banská Bystrica" },
-  { value: "TRNAVA", label: "Trnava" },
-  { value: "TRENCIN", label: "Trenčín" },
-  { value: "NITRA", label: "Nitra" },
-] as const;
+const SLOVAK_CITIES = CITY_OPTIONS;
 
 const INVESTMENT_TYPES = [
   {

@@ -90,32 +90,11 @@ interface PortfolioMetrics {
   vacantProperties: number;
 }
 
-const CITY_LABELS: Record<string, string> = {
-  BRATISLAVA: "Bratislava",
-  KOSICE: "Košice",
-  PRESOV: "Prešov",
-  ZILINA: "Žilina",
-  BANSKA_BYSTRICA: "B. Bystrica",
-  TRNAVA: "Trnava",
-  TRENCIN: "Trenčín",
-  NITRA: "Nitra",
-};
-
-const PROPERTY_TYPE_LABELS: Record<string, string> = {
-  apartment: "Byt",
-  house: "Dom",
-  studio: "Garsónka",
-  commercial: "Komerčný priestor",
-  land: "Pozemok",
-};
-
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  OWNED: { label: "Vlastnená", color: "bg-blue-500/20 text-blue-400" },
-  SOLD: { label: "Predaná", color: "bg-slate-500/20 text-slate-400" },
-  RENTED: { label: "Prenajatá", color: "bg-emerald-500/20 text-emerald-400" },
-  VACANT: { label: "Prázdna", color: "bg-yellow-500/20 text-yellow-400" },
-  RENOVATING: { label: "V rekonštrukcii", color: "bg-purple-500/20 text-purple-400" },
-};
+import { 
+  CITY_LABELS, 
+  PROPERTY_TYPE_LABELS, 
+  PORTFOLIO_STATUS_LABELS as STATUS_LABELS 
+} from "@/lib/constants";
 
 export function Portfolio() {
   const [properties, setProperties] = useState<PortfolioProperty[]>([]);

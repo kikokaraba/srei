@@ -14,6 +14,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
+import { CITY_LABELS, CONDITION_LABELS } from "@/lib/constants";
 
 interface CityStats {
   city: string;
@@ -37,23 +38,6 @@ interface PriceRangeStats {
   count: number;
   percentage: number;
 }
-
-const CITY_LABELS: Record<string, string> = {
-  BRATISLAVA: "Bratislava",
-  KOSICE: "Košice",
-  PRESOV: "Prešov",
-  ZILINA: "Žilina",
-  BANSKA_BYSTRICA: "B. Bystrica",
-  TRNAVA: "Trnava",
-  TRENCIN: "Trenčín",
-  NITRA: "Nitra",
-};
-
-const CONDITION_LABELS: Record<string, string> = {
-  POVODNY: "Pôvodný stav",
-  REKONSTRUKCIA: "Po rekonštrukcii",
-  NOVOSTAVBA: "Novostavba",
-};
 
 export function AnalyticsDashboard() {
   const [loading, setLoading] = useState(true);

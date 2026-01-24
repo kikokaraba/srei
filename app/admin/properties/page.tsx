@@ -14,6 +14,7 @@ import {
   Bookmark,
   History,
 } from "lucide-react";
+import { CITY_LABELS } from "@/lib/constants";
 
 interface PropertyData {
   id: string;
@@ -38,17 +39,6 @@ interface PropertyData {
     priceHistory: number;
   };
 }
-
-const CITY_LABELS: Record<string, string> = {
-  BRATISLAVA: "Bratislava",
-  KOSICE: "Košice",
-  PRESOV: "Prešov",
-  ZILINA: "Žilina",
-  BANSKA_BYSTRICA: "B. Bystrica",
-  TRNAVA: "Trnava",
-  TRENCIN: "Trenčín",
-  NITRA: "Nitra",
-};
 
 const CITIES = Object.keys(CITY_LABELS);
 

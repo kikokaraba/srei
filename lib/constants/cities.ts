@@ -6,6 +6,7 @@
 export interface CityData {
   readonly name: string;
   readonly slug: string;
+  readonly enumValue: string; // Pre Prisma enum (napr. "BRATISLAVA")
   readonly coordinates: {
     readonly x: number; // Percentage from left (0-100)
     readonly y: number; // Percentage from top (0-100)
@@ -17,12 +18,50 @@ export interface CityData {
   };
 }
 
+// Pre selecty a dropdowny (value/label format)
+export interface CityOption {
+  value: string;
+  label: string;
+}
+
+/**
+ * Konvertuje SLOVAK_CITIES na CityOption[] pre selecty
+ * Používa enumValue ako value (pre Prisma kompatibilitu)
+ */
+export function getCityOptions(): CityOption[] {
+  return SLOVAK_CITIES.map((city) => ({
+    value: city.enumValue,
+    label: city.name,
+  }));
+}
+
+/**
+ * Nájde mesto podľa enum hodnoty (napr. "BRATISLAVA")
+ */
+export function getCityByEnum(enumValue: string): CityData | undefined {
+  return SLOVAK_CITIES.find((city) => city.enumValue === enumValue);
+}
+
+/**
+ * Nájde mesto podľa slug (napr. "bratislava")
+ */
+export function getCityBySlug(slug: string): CityData | undefined {
+  return SLOVAK_CITIES.find((city) => city.slug === slug);
+}
+
+/**
+ * Získa názov mesta z enum hodnoty
+ */
+export function getCityName(enumValue: string): string {
+  const city = getCityByEnum(enumValue);
+  return city?.name || enumValue;
+}
+
 export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Bratislava",
     slug: "bratislava",
-    // Southwest - bottom area (48.15°N, 17.11°E)
-    // Adjusted to be more centered within map boundaries
+    enumValue: "BRATISLAVA",
     coordinates: { x: 12, y: 85 },
     metrics: {
       avgPrice: 3200,
@@ -33,8 +72,7 @@ export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Košice",
     slug: "kosice",
-    // Far East - right side (48.72°N, 21.26°E)
-    // Adjusted to be more inside map boundaries
+    enumValue: "KOSICE",
     coordinates: { x: 85, y: 60 },
     metrics: {
       avgPrice: 1850,
@@ -45,8 +83,7 @@ export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Prešov",
     slug: "presov",
-    // Northeast - top-right (49.00°N, 21.24°E)
-    // Adjusted to be more inside map boundaries
+    enumValue: "PRESOV",
     coordinates: { x: 88, y: 20 },
     metrics: {
       avgPrice: 1650,
@@ -57,7 +94,7 @@ export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Žilina",
     slug: "zilina",
-    // North - top-center (49.22°N, 18.74°E)
+    enumValue: "ZILINA",
     coordinates: { x: 42, y: 30 },
     metrics: {
       avgPrice: 1950,
@@ -68,7 +105,7 @@ export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Banská Bystrica",
     slug: "banska-bystrica",
-    // Center (48.74°N, 19.15°E)
+    enumValue: "BANSKA_BYSTRICA",
     coordinates: { x: 52, y: 58 },
     metrics: {
       avgPrice: 1750,
@@ -79,8 +116,7 @@ export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Trnava",
     slug: "trnava",
-    // West - left-center (48.38°N, 17.59°E)
-    // Adjusted to be more inside map boundaries
+    enumValue: "TRNAVA",
     coordinates: { x: 15, y: 75 },
     metrics: {
       avgPrice: 2100,
@@ -91,7 +127,7 @@ export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Trenčín",
     slug: "trencin",
-    // Northwest - top-left (48.89°N, 18.04°E)
+    enumValue: "TRENCIN",
     coordinates: { x: 28, y: 48 },
     metrics: {
       avgPrice: 1900,
@@ -102,7 +138,7 @@ export const SLOVAK_CITIES: readonly CityData[] = [
   {
     name: "Nitra",
     slug: "nitra",
-    // Southwest - left-center, below Trnava (48.31°N, 18.09°E)
+    enumValue: "NITRA",
     coordinates: { x: 18, y: 82 },
     metrics: {
       avgPrice: 1650,

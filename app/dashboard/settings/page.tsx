@@ -4,17 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MapPin, TrendingUp, Bell, Save, Settings as SettingsIcon } from "lucide-react";
 import { AdvancedFilters } from "@/components/dashboard/AdvancedFilters";
+import { CITY_OPTIONS, INVESTMENT_TYPE_OPTIONS } from "@/lib/constants";
 
-const SLOVAK_CITIES = [
-  { value: "BRATISLAVA", label: "Bratislava" },
-  { value: "KOSICE", label: "Košice" },
-  { value: "PRESOV", label: "Prešov" },
-  { value: "ZILINA", label: "Žilina" },
-  { value: "BANSKA_BYSTRICA", label: "Banská Bystrica" },
-  { value: "TRNAVA", label: "Trnava" },
-  { value: "TRENCIN", label: "Trenčín" },
-  { value: "NITRA", label: "Nitra" },
-] as const;
+const SLOVAK_CITIES = CITY_OPTIONS;
 
 const INVESTMENT_TYPES = [
   { id: "future-potential", label: "Investície s budúcim potenciálom" },

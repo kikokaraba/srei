@@ -11,6 +11,7 @@ import {
   Calendar,
   MapPin,
 } from "lucide-react";
+import { CITY_LABELS } from "@/lib/constants";
 
 interface AdminStats {
   overview: {
@@ -23,17 +24,6 @@ interface AdminStats {
   usersByRole: Array<{ role: string; count: number }>;
   propertiesByCity: Array<{ city: string; count: number }>;
 }
-
-const CITY_LABELS: Record<string, string> = {
-  BRATISLAVA: "Bratislava",
-  KOSICE: "Košice",
-  PRESOV: "Prešov",
-  ZILINA: "Žilina",
-  BANSKA_BYSTRICA: "B. Bystrica",
-  TRNAVA: "Trnava",
-  TRENCIN: "Trenčín",
-  NITRA: "Nitra",
-};
 
 export default function AdminStatsPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);

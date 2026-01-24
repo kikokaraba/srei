@@ -4,23 +4,11 @@ import { useState, useCallback } from "react";
 import { Filter, X, Save, ChevronDown, ChevronUp } from "lucide-react";
 import { useUserPreferences } from "@/lib/hooks/useUserPreferences";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CITY_OPTIONS, CONDITION_OPTIONS, ENERGY_CERTIFICATE_OPTIONS } from "@/lib/constants";
 
-const SLOVAK_CITIES = [
-  { value: "BRATISLAVA", label: "Bratislava" },
-  { value: "KOSICE", label: "Košice" },
-  { value: "PRESOV", label: "Prešov" },
-  { value: "ZILINA", label: "Žilina" },
-  { value: "BANSKA_BYSTRICA", label: "Banská Bystrica" },
-  { value: "TRNAVA", label: "Trnava" },
-  { value: "TRENCIN", label: "Trenčín" },
-  { value: "NITRA", label: "Nitra" },
-] as const;
+const SLOVAK_CITIES = CITY_OPTIONS;
 
-const PROPERTY_CONDITIONS = [
-  { value: "POVODNY", label: "Pôvodný stav" },
-  { value: "REKONSTRUKCIA", label: "Rekonštrukcia" },
-  { value: "NOVOSTAVBA", label: "Novostavba" },
-] as const;
+const PROPERTY_CONDITIONS = CONDITION_OPTIONS;
 
 const ENERGY_CERTIFICATES = [
   { value: "A", label: "A" },

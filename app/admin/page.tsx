@@ -14,6 +14,7 @@ import {
   ArrowDownRight,
 } from "lucide-react";
 import Link from "next/link";
+import { CITY_LABELS, ROLE_LABELS } from "@/lib/constants";
 
 interface AdminStats {
   overview: {
@@ -34,23 +35,6 @@ interface AdminStats {
     _count: { savedProperties: number };
   }>;
 }
-
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Admin",
-  PREMIUM_INVESTOR: "Premium",
-  FREE_USER: "Free",
-};
-
-const CITY_LABELS: Record<string, string> = {
-  BRATISLAVA: "Bratislava",
-  KOSICE: "Košice",
-  PRESOV: "Prešov",
-  ZILINA: "Žilina",
-  BANSKA_BYSTRICA: "B. Bystrica",
-  TRNAVA: "Trnava",
-  TRENCIN: "Trenčín",
-  NITRA: "Nitra",
-};
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);

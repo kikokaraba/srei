@@ -16,6 +16,7 @@ import {
   Scale,
   ArrowRight,
 } from "lucide-react";
+import { CITY_LABELS, CONDITION_LABELS } from "@/lib/constants";
 
 interface Property {
   id: string;
@@ -36,23 +37,6 @@ interface Property {
     price_to_rent_ratio: number;
   } | null;
 }
-
-const CITY_LABELS: Record<string, string> = {
-  BRATISLAVA: "Bratislava",
-  KOSICE: "Košice",
-  PRESOV: "Prešov",
-  ZILINA: "Žilina",
-  BANSKA_BYSTRICA: "B. Bystrica",
-  TRNAVA: "Trnava",
-  TRENCIN: "Trenčín",
-  NITRA: "Nitra",
-};
-
-const CONDITION_LABELS: Record<string, string> = {
-  POVODNY: "Pôvodný stav",
-  REKONSTRUKCIA: "Po rekonštrukcii",
-  NOVOSTAVBA: "Novostavba",
-};
 
 // Compare two values and return which is better
 function compareValues(a: number, b: number, higherIsBetter: boolean): "a" | "b" | "equal" {
