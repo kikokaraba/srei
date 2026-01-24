@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Standalone output pre Railway/Docker deployment
+  output: 'standalone',
   // Note: PPR (Partial Prerendering) is available only in Next.js canary
   // Remove comment below when upgrading to canary if needed
   // experimental: {
