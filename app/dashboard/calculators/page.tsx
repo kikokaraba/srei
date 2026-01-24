@@ -7,24 +7,17 @@ import {
   Receipt, 
   TrendingUp, 
   RefreshCw,
-  ArrowRight,
   X,
-  Sparkles,
   ChevronRight,
   BarChart3,
   Shield,
   Repeat,
   Info,
   Banknote,
-  Brain,
-  Activity,
 } from "lucide-react";
 import { ScenarioSimulator } from "@/components/dashboard/ScenarioSimulator";
 import { TaxAssistant } from "@/components/dashboard/TaxAssistant";
 import { BRRRRCalculator } from "@/components/calculators/BRRRRCalculator";
-import { AIValuation } from "@/components/tools/AIValuation";
-import { InvestmentAdvisor } from "@/components/tools/InvestmentAdvisor";
-import { MarketTrends } from "@/components/tools/MarketTrends";
 import PremiumGate from "@/components/ui/PremiumGate";
 
 // Dynamic import for MortgageCalculator to avoid SSR issues
@@ -33,7 +26,7 @@ const MortgageCalculator = dynamic(
   { ssr: false }
 );
 
-type CalculatorType = "investment" | "tax" | "brrrr" | "mortgage" | "ai-valuation" | "investment-advisor" | "market-trends" | null;
+type CalculatorType = "investment" | "tax" | "brrrr" | "mortgage" | null;
 
 export default function CalculatorsPage() {
   const [openCalculator, setOpenCalculator] = useState<CalculatorType>(null);
@@ -94,63 +87,6 @@ export default function CalculatorsPage() {
         "Nekonečná návratnosť",
         "Cash recovery %",
         "Equity pozícia",
-      ],
-    },
-    {
-      id: "ai-valuation" as const,
-      name: "AI Ocenenie",
-      subtitle: "Powered by Claude AI",
-      description: "Inteligentný odhad trhovej hodnoty nehnuteľnosti na základe analýzy podobných inzerátov v databáze. AI zohľadňuje lokalitu, stav a aktuálny trh.",
-      icon: Brain,
-      accentColor: "violet",
-      stats: [
-        { label: "AI Model", value: "Claude" },
-        { label: "Dáta", value: "Real-time" },
-        { label: "Presnosť", value: "±10%" },
-      ],
-      capabilities: [
-        "Analýza podobných nehnuteľností",
-        "Cenový rozsah",
-        "Faktory ovplyvňujúce cenu",
-        "Trhové odporúčania",
-      ],
-    },
-    {
-      id: "investment-advisor" as const,
-      name: "Investičný Asistent",
-      subtitle: "AI-powered odporúčania",
-      description: "AI analyzuje celý trh podľa vašich kritérií a nájde najlepšie investičné príležitosti. Personalizované odporúčania na základe rozpočtu a stratégie.",
-      icon: Sparkles,
-      accentColor: "emerald",
-      stats: [
-        { label: "Analýza", value: "100+ nehnuteľností" },
-        { label: "Skóre", value: "0-100" },
-        { label: "AI", value: "Claude" },
-      ],
-      capabilities: [
-        "Personalizované odporúčania",
-        "Investičné skóre",
-        "Riziková analýza",
-        "Trhová stratégia",
-      ],
-    },
-    {
-      id: "market-trends" as const,
-      name: "Trhové Trendy",
-      subtitle: "AI predikcia cien",
-      description: "AI analyzuje aktuálny stav trhu a predikuje kam smerujú ceny. Krátkodobé aj dlhodobé trendy, horúce lokality a najlepší čas na kúpu/predaj.",
-      icon: Activity,
-      accentColor: "blue",
-      stats: [
-        { label: "Krátkodobý", value: "3 mesiace" },
-        { label: "Dlhodobý", value: "12 mesiacov" },
-        { label: "AI", value: "Claude" },
-      ],
-      capabilities: [
-        "Predikcia cien",
-        "Horúce lokality",
-        "Najlepší čas na akciu",
-        "Riziková analýza",
       ],
     },
     {
@@ -343,12 +279,6 @@ export default function CalculatorsPage() {
                   <div className="relative p-6">
                     {calc.id === "mortgage" ? (
                       <MortgageCalculator />
-                    ) : calc.id === "ai-valuation" ? (
-                      <AIValuation />
-                    ) : calc.id === "investment-advisor" ? (
-                      <InvestmentAdvisor />
-                    ) : calc.id === "market-trends" ? (
-                      <MarketTrends />
                     ) : (
                       <PremiumGate 
                         feature={calc.id === "tax" ? "advancedTax" : "scenarioSimulator"} 

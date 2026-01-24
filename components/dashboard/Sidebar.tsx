@@ -16,6 +16,8 @@ import {
   Briefcase,
   Menu,
   X,
+  Brain,
+  Sparkles,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 
@@ -34,6 +36,12 @@ const navigationGroups = [
       { name: "Vyhľadávanie", href: "/dashboard/properties", icon: Filter },
       { name: "Mapa", href: "/dashboard/map", icon: MapPin },
       { name: "Sledované", href: "/dashboard/saved", icon: Bookmark },
+    ],
+  },
+  {
+    title: "AI Nástroje",
+    items: [
+      { name: "AI Asistent", href: "/dashboard/ai", icon: Sparkles },
     ],
   },
   {
