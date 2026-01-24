@@ -4,8 +4,8 @@ import dynamic from "next/dynamic";
 import { Loader2 } from "lucide-react";
 
 // Dynamic import to avoid SSR issues with Leaflet
-const PropertyMap = dynamic(
-  () => import("@/components/dashboard/PropertyMap"),
+const UnifiedMap = dynamic(
+  () => import("@/components/dashboard/UnifiedMap"),
   { 
     ssr: false,
     loading: () => (
@@ -22,7 +22,7 @@ const PropertyMap = dynamic(
 export default function MapPage() {
   return (
     <div className="h-[calc(100vh-4rem)] w-full">
-      <PropertyMap />
+      <UnifiedMap />
     </div>
   );
 }

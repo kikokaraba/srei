@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Map,
   MapPin,
   Filter,
   BarChart3,
@@ -27,10 +26,9 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Portfólio", href: "/dashboard/portfolio", icon: Briefcase },
   { name: "Nehnuteľnosti", href: "/dashboard/properties", icon: Filter },
-  { name: "Mapa", href: "/dashboard/map", icon: MapPin },
+  { name: "Mapa & Heatmapa", href: "/dashboard/map", icon: MapPin },
   { name: "Porovnanie cien", href: "/dashboard/matches", icon: Scale },
   { name: "AI Predikcie", href: "/dashboard/predictions", icon: Brain },
-  { name: "Heatmapa", href: "/dashboard/heatmap", icon: Map },
   { name: "Sledované", href: "/dashboard/saved", icon: Bookmark },
   { name: "Analytika", href: "/dashboard/analytics", icon: BarChart3 },
   { name: "Porovnanie", href: "/dashboard/comparison", icon: TrendingUp },
