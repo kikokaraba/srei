@@ -385,18 +385,16 @@ export function parseListingElement(
     const $el = $(element);
     
     // Extrahuj link a externalId - hľadáme v aktuálnom elemente aj v rodičovi
-    let $link = $el.find("a[href*='/inzerat/']").first();
-    if (!$link.length) {
-      $link = $el.closest("a[href*='/inzerat/']");
+    let href = $el.find("a[href*='/inzerat/']").first().attr("href");
+    if (!href) {
+      href = $el.closest("a[href*='/inzerat/']").first().attr("href");
     }
-    if (!$link.length) {
-      // Skús nájsť link v elemente samotnom ak je to <a>
-      if ($el.is("a") && $el.attr("href")?.includes("/inzerat/")) {
-        $link = $el;
+    if (!href && $el.is("a")) {
+      const elHref = $el.attr("href");
+      if (elHref?.includes("/inzerat/")) {
+        href = elHref;
       }
     }
-    
-    const href = $link.attr("href");
     if (!href) return null;
     
     const externalIdMatch = href.match(/inzerat\/(\d+)/);
@@ -406,7 +404,7 @@ export function parseListingElement(
     // Nadpis - môže byť v h2, alebo priamo text linku
     let title = $el.find("h2").first().text().trim();
     if (!title) {
-      title = $link.text().trim();
+      title = $el.find("a[href*='/inzerat/']").first().text().trim();
     }
     if (!title) {
       title = $el.text().trim().split("\n")[0] || "";
