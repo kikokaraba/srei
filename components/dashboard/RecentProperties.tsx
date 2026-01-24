@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Home, MapPin, TrendingUp, Loader2, Bookmark, BookmarkCheck } from "lucide-react";
+import { Home, MapPin, TrendingUp, Loader2, Bookmark, BookmarkCheck, Settings } from "lucide-react";
+import Link from "next/link";
+import { useUserPreferences } from "@/lib/hooks/useUserPreferences";
 
 interface Property {
   id: string;
@@ -59,6 +61,7 @@ export function RecentProperties() {
   const [loading, setLoading] = useState(true);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [savingId, setSavingId] = useState<string | null>(null);
+  const { preferences, hasLocationPreferences } = useUserPreferences();
 
   const fetchSavedProperties = useCallback(async () => {
     try {
@@ -104,7 +107,19 @@ export function RecentProperties() {
   const fetchProperties = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/v1/properties/filtered?sortBy=createdAt&sortOrder=desc&limit=3");
+      
+      // Pridaj filtre podľa preferencií
+      const params = new URLSearchParams({
+        sortBy: "createdAt",
+        sortOrder: "desc",
+        limit: "3",
+      });
+      
+      if (preferences?.trackedRegions?.length) params.set("regions", preferences.trackedRegions.join(","));
+      if (preferences?.trackedDistricts?.length) params.set("districts", preferences.trackedDistricts.join(","));
+      if (preferences?.trackedCities?.length) params.set("cities", preferences.trackedCities.join(","));
+      
+      const response = await fetch(`/api/v1/properties/filtered?${params}`);
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -129,7 +144,7 @@ export function RecentProperties() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [preferences]);
 
   useEffect(() => {
     fetchProperties();

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { TrendingDown, MapPin, AlertCircle, ExternalLink } from "lucide-react";
+import { TrendingDown, MapPin, AlertCircle, ExternalLink, Settings } from "lucide-react";
 import Link from "next/link";
+import { useUserPreferences } from "@/lib/hooks/useUserPreferences";
 
 interface MarketGap {
   id: string;
@@ -25,11 +26,20 @@ export function MarketGaps() {
   const [gaps, setGaps] = useState<MarketGap[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { preferences, hasLocationPreferences } = useUserPreferences();
 
   const fetchMarketGaps = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/v1/market-gaps");
+      
+      // Pridaj filtre do URL
+      const params = new URLSearchParams();
+      if (preferences?.trackedRegions?.length) params.set("regions", preferences.trackedRegions.join(","));
+      if (preferences?.trackedDistricts?.length) params.set("districts", preferences.trackedDistricts.join(","));
+      if (preferences?.trackedCities?.length) params.set("cities", preferences.trackedCities.join(","));
+      
+      const url = `/api/v1/market-gaps${params.toString() ? `?${params}` : ""}`;
+      const response = await fetch(url);
       
       if (!response.ok) {
         // Ak je 401, používateľ nie je prihlásený - to nie je chyba
@@ -56,7 +66,7 @@ export function MarketGaps() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [preferences]);
 
   useEffect(() => {
     fetchMarketGaps();
@@ -97,8 +107,27 @@ export function MarketGaps() {
           </div>
         </div>
         <div className="text-center py-8">
-          <p className="text-slate-400">Momentálne nie sú detekované žiadne podhodnotené nehnuteľnosti.</p>
-          <p className="text-sm text-slate-500 mt-2">Systém automaticky skenuje trh a upozorní vás na príležitosti.</p>
+          {hasLocationPreferences ? (
+            <>
+              <p className="text-slate-400">Momentálne nie sú detekované žiadne podhodnotené nehnuteľnosti vo vašich lokalitách.</p>
+              <p className="text-sm text-slate-500 mt-2">Systém automaticky skenuje trh a upozorní vás na príležitosti.</p>
+            </>
+          ) : (
+            <>
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800/50 flex items-center justify-center">
+                <Settings className="w-8 h-8 text-slate-600" />
+              </div>
+              <p className="text-slate-400">Nastavte sledované lokality</p>
+              <p className="text-sm text-slate-500 mt-2">Pre zobrazenie podhodnotených nehnuteľností vo vašom regióne</p>
+              <Link 
+                href="/dashboard/settings" 
+                className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-500/30 transition-colors"
+              >
+                <Settings className="w-4 h-4" />
+                Nastavenia
+              </Link>
+            </>
+          )}
         </div>
       </div>
     );

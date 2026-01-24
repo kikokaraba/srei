@@ -8,8 +8,11 @@ import {
   ExternalLink,
   Sparkles,
   ArrowRight,
-  Zap
+  Zap,
+  Settings
 } from "lucide-react";
+import Link from "next/link";
+import { useUserPreferences } from "@/lib/hooks/useUserPreferences";
 
 interface HotDeal {
   id: string;
@@ -39,8 +42,16 @@ interface HotDealsData {
   };
 }
 
-async function fetchHotDeals(): Promise<HotDealsData> {
-  const response = await fetch("/api/v1/scraper/stealth");
+async function fetchHotDeals(regions: string[], districts: string[], cities: string[]): Promise<HotDealsData> {
+  // Pridaj filtre do URL
+  const params = new URLSearchParams();
+  if (regions.length > 0) params.set("regions", regions.join(","));
+  if (districts.length > 0) params.set("districts", districts.join(","));
+  if (cities.length > 0) params.set("cities", cities.join(","));
+  
+  const url = `/api/v1/scraper/stealth${params.toString() ? `?${params}` : ""}`;
+  const response = await fetch(url);
+  
   if (!response.ok) {
     // Pre 401/403 vrať prázdne dáta namiesto chyby
     if (response.status === 401 || response.status === 403) {
@@ -76,9 +87,15 @@ function getCityShort(city: string): string {
 }
 
 export default function HotDeals() {
+  const { preferences, hasLocationPreferences } = useUserPreferences();
+  
+  const regions = preferences?.trackedRegions || [];
+  const districts = preferences?.trackedDistricts || [];
+  const cities = preferences?.trackedCities || [];
+  
   const { data, isLoading, error } = useQuery({
-    queryKey: ["hot-deals"],
-    queryFn: fetchHotDeals,
+    queryKey: ["hot-deals", regions, districts, cities],
+    queryFn: () => fetchHotDeals(regions, districts, cities),
     refetchInterval: 5 * 60 * 1000,
     staleTime: 2 * 60 * 1000,
   });
@@ -152,10 +169,30 @@ export default function HotDeals() {
         {hotDeals.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-slate-800/50 flex items-center justify-center">
-              <TrendingDown className="w-10 h-10 text-slate-600" />
+              {hasLocationPreferences ? (
+                <TrendingDown className="w-10 h-10 text-slate-600" />
+              ) : (
+                <Settings className="w-10 h-10 text-slate-600" />
+              )}
             </div>
-            <p className="text-slate-400 font-medium">Žiadne Hot Deals</p>
-            <p className="text-sm text-slate-500 mt-1">Čoskoro pribudnú nové</p>
+            {hasLocationPreferences ? (
+              <>
+                <p className="text-slate-400 font-medium">Žiadne Hot Deals vo vašich lokalitách</p>
+                <p className="text-sm text-slate-500 mt-1">Čoskoro pribudnú nové</p>
+              </>
+            ) : (
+              <>
+                <p className="text-slate-400 font-medium">Nastavte sledované lokality</p>
+                <p className="text-sm text-slate-500 mt-1">Pre zobrazenie Hot Deals vo vašom regióne</p>
+                <Link 
+                  href="/dashboard/settings" 
+                  className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-orange-500/20 text-orange-400 rounded-lg text-sm font-medium hover:bg-orange-500/30 transition-colors"
+                >
+                  <Settings className="w-4 h-4" />
+                  Nastavenia
+                </Link>
+              </>
+            )}
           </div>
         ) : (
           <div className="space-y-3">

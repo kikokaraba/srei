@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import {
-  TrendingUp,
-  TrendingDown,
   Sparkles,
   ArrowUp,
   ArrowDown,
+  MapPin,
 } from "lucide-react";
+import { useUserPreferences } from "@/lib/hooks/useUserPreferences";
 
 interface YearlyData {
   year: number;
@@ -34,16 +34,16 @@ interface HistoryData {
   source: string;
 }
 
-const REGIONS = [
-  { code: "SLOVENSKO", name: "SK" },
-  { code: "BRATISLAVSKY", name: "BA" },
-  { code: "KOSICKY", name: "KE" },
-  { code: "PRESOVSKY", name: "PO" },
-  { code: "ZILINSKY", name: "ZA" },
-  { code: "BANSKOBYSTRICKY", name: "BB" },
-  { code: "TRNAVSKY", name: "TT" },
-  { code: "TRENCIANSKY", name: "TN" },
-  { code: "NITRIANSKY", name: "NR" },
+const ALL_REGIONS = [
+  { code: "SLOVENSKO", name: "SK", fullName: "Slovensko" },
+  { code: "BRATISLAVSKY", name: "BA", fullName: "Bratislava" },
+  { code: "KOSICKY", name: "KE", fullName: "Košice" },
+  { code: "PRESOVSKY", name: "PO", fullName: "Prešov" },
+  { code: "ZILINSKY", name: "ZA", fullName: "Žilina" },
+  { code: "BANSKOBYSTRICKY", name: "BB", fullName: "Banská Bystrica" },
+  { code: "TRNAVSKY", name: "TT", fullName: "Trnava" },
+  { code: "TRENCIANSKY", name: "TN", fullName: "Trenčín" },
+  { code: "NITRIANSKY", name: "NR", fullName: "Nitra" },
 ];
 
 const REGION_FULL_NAMES: Record<string, string> = {
@@ -59,7 +59,30 @@ const REGION_FULL_NAMES: Record<string, string> = {
 };
 
 export function PriceHistory() {
-  const [selectedRegion, setSelectedRegion] = useState("BRATISLAVSKY");
+  const { trackedRegionCodes, hasLocationPreferences, isLoading: prefsLoading } = useUserPreferences();
+  
+  // Filtrovať regióny podľa preferencií
+  const availableRegions = useMemo(() => {
+    if (!hasLocationPreferences || trackedRegionCodes.length === 0) {
+      // Ak nie sú nastavené preferencie, ukáž všetky
+      return ALL_REGIONS;
+    }
+    // Vždy pridaj "Slovensko" ako celkový prehľad + vybrané regióny
+    return ALL_REGIONS.filter(r => 
+      r.code === "SLOVENSKO" || trackedRegionCodes.includes(r.code)
+    );
+  }, [trackedRegionCodes, hasLocationPreferences]);
+
+  // Nastav prvý dostupný región ako default
+  const defaultRegion = availableRegions.length > 1 ? availableRegions[1].code : "SLOVENSKO";
+  const [selectedRegion, setSelectedRegion] = useState(defaultRegion);
+  
+  // Ak sa zmenia dostupné regióny a aktuálny už nie je dostupný, prepni
+  useEffect(() => {
+    if (!availableRegions.find(r => r.code === selectedRegion)) {
+      setSelectedRegion(defaultRegion);
+    }
+  }, [availableRegions, selectedRegion, defaultRegion]);
   const [period, setPeriod] = useState(10);
   const [data, setData] = useState<HistoryData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -215,13 +238,19 @@ export function PriceHistory() {
           </div>
         </div>
 
-        {/* Region pills */}
+        {/* Region pills - filtered by user preferences */}
         <div className="flex gap-1.5 mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-          {REGIONS.map((region) => (
+          {availableRegions.length === 1 && (
+            <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500">
+              <MapPin className="w-3 h-3" />
+              <span>Nastavte sledované lokality v Nastaveniach</span>
+            </div>
+          )}
+          {availableRegions.map((region) => (
             <button
               key={region.code}
               onClick={() => setSelectedRegion(region.code)}
-              className={`relative px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-300 ${
+              className={`relative px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-300 whitespace-nowrap ${
                 selectedRegion === region.code
                   ? "text-white"
                   : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"

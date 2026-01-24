@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { Clock, TrendingDown, TrendingUp, AlertTriangle, ArrowRight, Timer } from "lucide-react";
+import { Clock, TrendingDown, TrendingUp, AlertTriangle, ArrowRight, Timer, Settings } from "lucide-react";
+import Link from "next/link";
+import { useUserPreferences } from "@/lib/hooks/useUserPreferences";
 
 interface PriceChange {
   price_diff: number;
@@ -23,11 +25,21 @@ interface LiquidityData {
 export function LiquidityTracker() {
   const [properties, setProperties] = useState<LiquidityData[]>([]);
   const [loading, setLoading] = useState(true);
+  const { preferences, hasLocationPreferences } = useUserPreferences();
 
   const fetchLiquidityData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/v1/liquidity");
+      
+      // Pridaj filtre podľa preferencií
+      const params = new URLSearchParams();
+      if (preferences?.trackedRegions?.length) params.set("regions", preferences.trackedRegions.join(","));
+      if (preferences?.trackedDistricts?.length) params.set("districts", preferences.trackedDistricts.join(","));
+      if (preferences?.trackedCities?.length) params.set("cities", preferences.trackedCities.join(","));
+      
+      const url = `/api/v1/liquidity${params.toString() ? `?${params}` : ""}`;
+      const response = await fetch(url);
+      
       if (!response.ok) {
         if (response.status === 401) {
           setProperties([]);
@@ -42,7 +54,7 @@ export function LiquidityTracker() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [preferences]);
 
   useEffect(() => {
     fetchLiquidityData();
@@ -82,10 +94,29 @@ export function LiquidityTracker() {
     return (
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-rose-950/20 p-6">
         <div className="text-center py-8">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-rose-500/10 flex items-center justify-center">
-            <Timer className="w-8 h-8 text-rose-400" />
-          </div>
-          <p className="text-slate-400 font-medium">Žiadne dlhodobé ponuky</p>
+          {hasLocationPreferences ? (
+            <>
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-rose-500/10 flex items-center justify-center">
+                <Timer className="w-8 h-8 text-rose-400" />
+              </div>
+              <p className="text-slate-400 font-medium">Žiadne dlhodobé ponuky vo vašich lokalitách</p>
+            </>
+          ) : (
+            <>
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800/50 flex items-center justify-center">
+                <Settings className="w-8 h-8 text-slate-600" />
+              </div>
+              <p className="text-slate-400 font-medium">Nastavte sledované lokality</p>
+              <p className="text-sm text-slate-500 mt-1">Pre zobrazenie dlhodobých ponúk vo vašom regióne</p>
+              <Link 
+                href="/dashboard/settings" 
+                className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-rose-500/20 text-rose-400 rounded-lg text-sm font-medium hover:bg-rose-500/30 transition-colors"
+              >
+                <Settings className="w-4 h-4" />
+                Nastavenia
+              </Link>
+            </>
+          )}
         </div>
       </div>
     );
