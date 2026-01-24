@@ -18,7 +18,9 @@ import {
   List,
   X,
   History,
+  Layers,
 } from "lucide-react";
+import { DuplicatesBadge } from "./DuplicatesBadge";
 
 // Slovenské kraje
 const REGIONS = [
@@ -622,7 +624,7 @@ export function PropertyList() {
                     </div>
                   )}
 
-                  {/* Investment Score + Distressed badge */}
+                  {/* Investment Score + Distressed badge + Duplicates */}
                   <div className="flex items-center gap-2 flex-wrap">
                     {/* Investment Score */}
                     {(() => {
@@ -641,6 +643,13 @@ export function PropertyList() {
                         🔥 Hot Deal
                       </div>
                     )}
+
+                    {/* Duplicates Badge */}
+                    <DuplicatesBadge 
+                      propertyId={property.id} 
+                      currentPrice={property.price} 
+                      compact 
+                    />
                   </div>
                 </div>
               </div>
@@ -680,6 +689,12 @@ export function PropertyList() {
                           🔥 Hot
                         </span>
                       )}
+                      {/* Duplicates Badge */}
+                      <DuplicatesBadge 
+                        propertyId={property.id} 
+                        currentPrice={property.price} 
+                        compact 
+                      />
                     </div>
                     <div className="flex items-center gap-4 text-sm text-slate-400">
                       <div className="flex items-center gap-1">
