@@ -37,21 +37,37 @@ interface PortfolioProperty {
   propertyType: string;
   area_m2: number;
   rooms: number | null;
+  floor: number | null;
   purchaseDate: string;
   purchasePrice: number;
   purchaseCosts: number;
+  saleDate: string | null;
+  salePrice: number | null;
+  saleCosts: number | null;
   currentValue: number;
+  lastValuationDate: string;
   hasMortgage: boolean;
   mortgageAmount: number | null;
+  mortgageRate: number | null;
   mortgagePayment: number | null;
+  mortgageStart: string | null;
+  mortgageEnd: string | null;
   isRented: boolean;
   monthlyRent: number | null;
   tenantName: string | null;
+  leaseStart: string | null;
   leaseEnd: string | null;
+  depositAmount: number | null;
   monthlyExpenses: number;
+  annualTax: number | null;
+  annualInsurance: number | null;
   status: string;
   notes: string | null;
+  photos: string;
+  createdAt: string;
+  updatedAt: string;
   transactions: any[];
+  valuations: any[];
 }
 
 interface PortfolioMetrics {
