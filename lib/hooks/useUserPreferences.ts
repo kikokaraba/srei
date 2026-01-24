@@ -49,6 +49,28 @@ const DISTRICT_TO_REGION: Record<string, string> = {
   GE: "KE", KE1: "KE", KE2: "KE", KE3: "KE", KE4: "KE", KS: "KE", MI: "KE", RV: "KE", SO: "KE", SP_KE: "KE", TV: "KE",
 };
 
+/**
+ * Bezpečne parsuje JSON string na pole
+ */
+function safeParseArray(value: unknown): string[] {
+  if (!value) return [];
+  
+  // Ak už je to pole, vráť ho
+  if (Array.isArray(value)) return value;
+  
+  // Ak je to string, skús ho parsovať
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  
+  return [];
+}
+
 async function fetchPreferences(): Promise<UserPreferences | null> {
   try {
     const response = await fetch("/api/v1/user/preferences");
@@ -60,15 +82,9 @@ async function fetchPreferences(): Promise<UserPreferences | null> {
     const prefs = data.data;
     return {
       primaryCity: prefs.primaryCity,
-      trackedRegions: prefs.trackedRegions
-        ? JSON.parse(prefs.trackedRegions)
-        : [],
-      trackedDistricts: prefs.trackedDistricts
-        ? JSON.parse(prefs.trackedDistricts)
-        : [],
-      trackedCities: prefs.trackedCities
-        ? JSON.parse(prefs.trackedCities)
-        : [],
+      trackedRegions: safeParseArray(prefs.trackedRegions),
+      trackedDistricts: safeParseArray(prefs.trackedDistricts),
+      trackedCities: safeParseArray(prefs.trackedCities),
       investmentType: prefs.investmentType,
       minYield: prefs.minYield,
       maxPrice: prefs.maxPrice,
@@ -93,14 +109,16 @@ function getTrackedRegionCodes(prefs: UserPreferences | null): string[] {
   
   const regionCodes = new Set<string>();
   
-  // Priamo vybrané regióny
-  prefs.trackedRegions.forEach(regionId => {
+  // Priamo vybrané regióny - s extra kontrolou
+  const regions = Array.isArray(prefs.trackedRegions) ? prefs.trackedRegions : [];
+  regions.forEach(regionId => {
     const code = REGION_ID_TO_CODE[regionId];
     if (code) regionCodes.add(code);
   });
   
-  // Regióny z vybraných okresov
-  prefs.trackedDistricts.forEach(districtId => {
+  // Regióny z vybraných okresov - s extra kontrolou
+  const districts = Array.isArray(prefs.trackedDistricts) ? prefs.trackedDistricts : [];
+  districts.forEach(districtId => {
     const regionId = DISTRICT_TO_REGION[districtId];
     if (regionId) {
       const code = REGION_ID_TO_CODE[regionId];
