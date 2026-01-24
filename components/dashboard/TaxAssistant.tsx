@@ -2,22 +2,16 @@
 
 import { useState, useMemo } from "react";
 import {
-  Receipt,
   Calendar,
-  Home,
   Building,
   User,
   CheckCircle,
   AlertTriangle,
   Clock,
-  TrendingUp,
   Shield,
   Info,
-  Euro,
-  FileText,
-  Sparkles,
-  HelpCircle,
-  Scale,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 interface TaxInputs {
@@ -27,11 +21,11 @@ interface TaxInputs {
   saleDate: string;
   ownershipType: "individual" | "sro";
   investmentCosts: number;
-  wasInBusinessAssets: boolean; // Bola nehnuteľnosť v obchodnom majetku?
-  removedFromAssetsDate: string; // Kedy bola vyradená z obchodného majetku?
-  acquiredByInheritance: boolean; // Nadobudnutá dedením?
-  inheritanceDirectLine: boolean; // Dedenie v priamom rade?
-  originalOwnerPurchaseDate: string; // Kedy ju nadobudol poručiteľ?
+  wasInBusinessAssets: boolean;
+  removedFromAssetsDate: string;
+  acquiredByInheritance: boolean;
+  inheritanceDirectLine: boolean;
+  originalOwnerPurchaseDate: string;
 }
 
 interface TaxResults {
@@ -52,25 +46,14 @@ interface TaxResults {
   taxBreakdown: { label: string; amount: number; rate: number }[];
 }
 
-// Aktuálne sadzby podľa zákona o dani z príjmov 2026
-// Zdroj: Zákon č. 595/2003 Z. z. o dani z príjmov
 const TAX_THRESHOLDS_2026 = {
-  // 176,8-násobok životného minima (284,13 € pre 2026)
-  firstThreshold: 50234, // 19% do tejto hranice
-  // Ďalšie pásma pre bežné príjmy (mzdy) - pre kapitálové príjmy platí 19%/25%
+  firstThreshold: 50234,
 };
 
-const TAX_RATE_INDIVIDUAL_LOW = 19; // 19% do hranice
-const TAX_RATE_INDIVIDUAL_HIGH = 25; // 25% nad hranicu
-const TAX_RATE_SRO = 21; // 21% daň z príjmu právnických osôb
-
-// Zdravotné poistenie z kapitálových príjmov
-// Zdroj: Zákon č. 580/2004 Z. z. o zdravotnom poistení
-const HEALTH_INSURANCE_RATE = 15; // 15% (od 2026 pre SZČO 16%, ale pre § 8 príjmy ostáva 15%)
-const HEALTH_INSURANCE_RATE_DISABLED = 7.5; // Pre osoby so ZŤP
-
-// Minimálny vymeriavací základ pre zdravotné poistenie
-const MIN_ASSESSMENT_BASE_2026 = 652.00; // mesačne
+const TAX_RATE_INDIVIDUAL_LOW = 19;
+const TAX_RATE_INDIVIDUAL_HIGH = 25;
+const TAX_RATE_SRO = 21;
+const HEALTH_INSURANCE_RATE = 15;
 
 export function TaxAssistant() {
   const [inputs, setInputs] = useState<TaxInputs>({
@@ -95,352 +78,243 @@ export function TaxAssistant() {
     setInputs((prev) => ({ ...prev, [field]: value }));
   };
 
+  const progressPercent = Math.min(100, (results.yearsOwned / 5) * 100);
+
   return (
     <div className="space-y-6">
-      {/* Legal Notice */}
-      <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 flex items-start gap-3">
-        <Scale className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
-        <div className="text-sm">
-          <p className="text-blue-300 font-medium">Právne informácie</p>
-          <p className="text-slate-400 mt-1">
-            Výpočet vychádza zo zákona č. 595/2003 Z. z. o dani z príjmov a zákona č. 580/2004 Z. z. 
-            o zdravotnom poistení v znení platnom pre rok 2026. Pre presné posúdenie odporúčame 
-            konzultáciu s daňovým poradcom.
-          </p>
-        </div>
-      </div>
-
-      {/* Tax Status Card */}
-      <div className={`rounded-2xl p-6 border ${
-        results.isExempt
-          ? "bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border-emerald-500/30"
-          : results.daysUntilExemption < 365
-            ? "bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 border-yellow-500/30"
-            : "bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700"
+      {/* Hero Status Card */}
+      <div className={`relative p-6 rounded-2xl border overflow-hidden ${
+        results.isExempt 
+          ? "bg-emerald-950/30 border-emerald-500/20" 
+          : results.daysUntilExemption < 365 
+            ? "bg-amber-950/30 border-amber-500/20" 
+            : "bg-slate-800/30 border-slate-700/50"
       }`}>
-        <div className="flex items-start justify-between">
-          <div>
+        {/* Background glow */}
+        {results.isExempt && (
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl" />
+        )}
+
+        <div className="relative flex flex-col lg:flex-row lg:items-center gap-6">
+          {/* Status & Progress */}
+          <div className="lg:w-56 shrink-0">
             <div className="flex items-center gap-2 mb-3">
               {results.isExempt ? (
                 <>
-                  <Shield className="w-6 h-6 text-emerald-400" />
-                  <span className="text-lg font-semibold text-emerald-400">Oslobodené od dane</span>
+                  <Shield className="w-4 h-4 text-emerald-400" />
+                  <span className="text-xs font-medium text-emerald-400 uppercase tracking-wider">Oslobodené</span>
                 </>
               ) : results.daysUntilExemption < 365 ? (
                 <>
-                  <Clock className="w-6 h-6 text-yellow-400" />
-                  <span className="text-lg font-semibold text-yellow-400">Blízko oslobodenia</span>
+                  <Clock className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-medium text-amber-400 uppercase tracking-wider">
+                    {Math.ceil(results.daysUntilExemption / 30)} mes. do oslobodenia
+                  </span>
                 </>
               ) : (
                 <>
-                  <Receipt className="w-6 h-6 text-slate-400" />
-                  <span className="text-lg font-semibold text-slate-300">Podlieha zdaneniu</span>
+                  <AlertTriangle className="w-4 h-4 text-slate-500" />
+                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Podlieha dani</span>
                 </>
               )}
             </div>
-
-            {results.isExempt ? (
-              <div>
-                <p className="text-slate-300">
-                  Predaj je <strong className="text-emerald-400">oslobodený od dane z príjmu</strong>.
-                </p>
-                <p className="text-sm text-slate-400 mt-1">
-                  Dôvod: {results.exemptionReason}
-                </p>
-              </div>
-            ) : (
-              <div>
-                <p className="text-slate-300 mb-2">
-                  Do oslobodenia zostáva{" "}
-                  <strong className="text-yellow-400">
-                    {Math.ceil(results.daysUntilExemption / 30)} mesiacov
-                  </strong>
-                </p>
-                <p className="text-sm text-slate-400">
-                  Dátum oslobodenia: {new Date(results.exemptionDate).toLocaleDateString("sk-SK")}
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Progress Ring */}
-          <div className="relative w-24 h-24">
-            <svg className="w-full h-full transform -rotate-90">
-              <circle
-                cx="48"
-                cy="48"
-                r="40"
-                stroke="currentColor"
-                strokeWidth="6"
-                fill="none"
-                className="text-slate-700"
-              />
-              <circle
-                cx="48"
-                cy="48"
-                r="40"
-                stroke="currentColor"
-                strokeWidth="6"
-                fill="none"
-                strokeLinecap="round"
-                strokeDasharray={`${Math.min(100, (results.yearsOwned / 5) * 100) * 2.51} 251`}
-                className={results.isExempt ? "text-emerald-400" : "text-yellow-400"}
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-xl font-bold text-slate-100">
+            
+            {/* Years owned display */}
+            <div className="flex items-baseline gap-1 mb-3">
+              <span className={`text-4xl font-light tabular-nums ${
+                results.isExempt ? "text-emerald-400" : results.daysUntilExemption < 365 ? "text-amber-400" : "text-slate-300"
+              }`}>
                 {results.yearsOwned.toFixed(1)}
               </span>
-              <span className="text-xs text-slate-400">z 5 rokov</span>
+              <span className="text-lg text-slate-600">/ 5 rokov</span>
             </div>
-          </div>
-        </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-700/50">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-slate-100">
-              €{results.capitalGain.toLocaleString()}
+            {/* Progress Bar */}
+            <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <div 
+                className={`h-full rounded-full transition-all duration-500 ${
+                  results.isExempt ? "bg-emerald-500" : results.daysUntilExemption < 365 ? "bg-amber-500" : "bg-slate-600"
+                }`}
+                style={{ width: `${progressPercent}%` }}
+              />
             </div>
-            <div className="text-xs text-slate-400">Kapitálový zisk</div>
           </div>
-          <div className="text-center">
-            <div className={`text-2xl font-bold ${results.isExempt ? "text-emerald-400" : "text-red-400"}`}>
-              €{results.taxAmount.toLocaleString()}
-            </div>
-            <div className="text-xs text-slate-400">Daň + odvody</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-emerald-400">
-              €{results.netProfit.toLocaleString()}
-            </div>
-            <div className="text-xs text-slate-400">Čistý zisk</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-slate-100">
-              {results.effectiveTaxRate.toFixed(1)}%
-            </div>
-            <div className="text-xs text-slate-400">Efektívna sadzba</div>
+
+          {/* Key Metrics Grid */}
+          <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-3">
+            <TaxMetric 
+              label="Kapitálový zisk" 
+              value={`€${results.capitalGain.toLocaleString()}`}
+            />
+            <TaxMetric 
+              label="Daň + odvody" 
+              value={`€${results.taxAmount.toLocaleString()}`}
+              status={results.isExempt ? "good" : "bad"}
+            />
+            <TaxMetric 
+              label="Čistý zisk" 
+              value={`€${results.netProfit.toLocaleString()}`}
+              status="good"
+            />
+            <TaxMetric 
+              label="Efektívna sadzba" 
+              value={`${results.effectiveTaxRate.toFixed(1)}%`}
+            />
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Inputs */}
-        <div className="space-y-6">
-          <h4 className="font-semibold text-slate-100 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-emerald-400" />
-            Údaje o nehnuteľnosti
-          </h4>
-
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Inputs Column */}
+        <div className="space-y-4">
           {/* Ownership Type */}
-          <div className="space-y-3">
-            <label className="block text-sm font-medium text-slate-300">
-              Typ vlastníctva
-            </label>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50">
+            <div className="text-xs text-slate-500 uppercase tracking-wider mb-3">Typ vlastníctva</div>
+            <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => handleChange("ownershipType", "individual")}
-                className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${
+                className={`p-3 rounded-lg border transition-all flex items-center gap-2 ${
                   inputs.ownershipType === "individual"
-                    ? "bg-emerald-500/10 border-emerald-500/50"
-                    : "bg-slate-800 border-slate-700 hover:border-slate-600"
+                    ? "bg-blue-500/10 border-blue-500/30 text-blue-400"
+                    : "border-slate-800 text-slate-500 hover:border-slate-700"
                 }`}
               >
-                <User className={`w-5 h-5 ${
-                  inputs.ownershipType === "individual" ? "text-emerald-400" : "text-slate-400"
-                }`} />
+                <User className="w-4 h-4" />
                 <div className="text-left">
-                  <div className={inputs.ownershipType === "individual" ? "text-emerald-400" : "text-slate-100"}>
-                    Fyzická osoba
-                  </div>
-                  <div className="text-xs text-slate-400">19% / 25% daň + 15% ZP</div>
+                  <div className="text-sm font-medium">Fyzická osoba</div>
+                  <div className="text-[10px] opacity-70">19-25% + 15% ZP</div>
                 </div>
               </button>
               <button
                 onClick={() => handleChange("ownershipType", "sro")}
-                className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${
+                className={`p-3 rounded-lg border transition-all flex items-center gap-2 ${
                   inputs.ownershipType === "sro"
-                    ? "bg-emerald-500/10 border-emerald-500/50"
-                    : "bg-slate-800 border-slate-700 hover:border-slate-600"
+                    ? "bg-blue-500/10 border-blue-500/30 text-blue-400"
+                    : "border-slate-800 text-slate-500 hover:border-slate-700"
                 }`}
               >
-                <Building className={`w-5 h-5 ${
-                  inputs.ownershipType === "sro" ? "text-emerald-400" : "text-slate-400"
-                }`} />
+                <Building className="w-4 h-4" />
                 <div className="text-left">
-                  <div className={inputs.ownershipType === "sro" ? "text-emerald-400" : "text-slate-100"}>
-                    s.r.o.
-                  </div>
-                  <div className="text-xs text-slate-400">21% daň z príjmu PO</div>
+                  <div className="text-sm font-medium">s.r.o.</div>
+                  <div className="text-[10px] opacity-70">21% daň PO</div>
                 </div>
               </button>
             </div>
           </div>
 
-          {/* Dates */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                <Calendar className="w-4 h-4 inline mr-2" />
-                Dátum nadobudnutia
-              </label>
-              <input
+          {/* Dates & Prices */}
+          <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50 space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <InputField
+                label="Dátum nadobudnutia"
                 type="date"
                 value={inputs.purchaseDate}
-                onChange={(e) => handleChange("purchaseDate", e.target.value)}
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-emerald-500"
+                onChange={(v) => handleChange("purchaseDate", v)}
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                <Calendar className="w-4 h-4 inline mr-2" />
-                Dátum predaja
-              </label>
-              <input
+              <InputField
+                label="Dátum predaja"
                 type="date"
                 value={inputs.saleDate}
-                onChange={(e) => handleChange("saleDate", e.target.value)}
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-emerald-500"
+                onChange={(v) => handleChange("saleDate", v)}
               />
             </div>
-          </div>
-
-          {/* Prices */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                <Euro className="w-4 h-4 inline mr-2" />
-                Nadobúdacia cena
-              </label>
-              <input
+            <div className="grid grid-cols-2 gap-3">
+              <InputField
+                label="Nadobúdacia cena"
                 type="number"
                 value={inputs.purchasePrice}
-                onChange={(e) => handleChange("purchasePrice", Number(e.target.value))}
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-emerald-500"
+                onChange={(v) => handleChange("purchasePrice", Number(v))}
+                prefix="€"
               />
-              <p className="text-xs text-slate-500 mt-1">
-                Pri dedení: hodnota z dedičského konania
-              </p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                <TrendingUp className="w-4 h-4 inline mr-2" />
-                Predajná cena
-              </label>
-              <input
+              <InputField
+                label="Predajná cena"
                 type="number"
                 value={inputs.currentValue}
-                onChange={(e) => handleChange("currentValue", Number(e.target.value))}
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-emerald-500"
+                onChange={(v) => handleChange("currentValue", Number(v))}
+                prefix="€"
               />
             </div>
-          </div>
-
-          {/* Investment Costs */}
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Preukázateľné výdavky (§ 8 ods. 5)
-            </label>
-            <input
+            <InputField
+              label="Preukázateľné výdavky"
               type="number"
               value={inputs.investmentCosts}
-              onChange={(e) => handleChange("investmentCosts", Number(e.target.value))}
-              placeholder="Rekonštrukcia, právnik, realitka..."
-              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-emerald-500"
+              onChange={(v) => handleChange("investmentCosts", Number(v))}
+              prefix="€"
+              sublabel="Rekonštrukcia, právnik, realitka"
             />
-            <p className="text-xs text-slate-500 mt-1">
-              Technické zhodnotenie, poplatky, služby súvisiace s predajom
-            </p>
           </div>
 
           {/* Advanced Options */}
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300"
+            className="w-full p-3 rounded-xl bg-slate-800/20 border border-slate-800/50 flex items-center justify-between text-sm text-slate-500 hover:text-slate-400 transition-colors"
           >
-            <HelpCircle className="w-4 h-4" />
-            {showAdvanced ? "Skryť" : "Zobraziť"} rozšírené možnosti
+            <span>Rozšírené možnosti</span>
+            {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
 
           {showAdvanced && (
-            <div className="space-y-4 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
-              {/* Was in business assets */}
+            <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50 space-y-4">
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={inputs.wasInBusinessAssets}
                   onChange={(e) => handleChange("wasInBusinessAssets", e.target.checked)}
-                  className="mt-1 w-5 h-5 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500"
+                  className="mt-0.5 w-4 h-4 rounded border-slate-700 bg-slate-800 text-blue-500"
                 />
                 <div>
-                  <span className="font-medium text-slate-100">Bola v obchodnom majetku</span>
-                  <p className="text-sm text-slate-400 mt-1">
-                    Ak bola nehnuteľnosť zaradená v obchodnom majetku, oslobodenie nastáva až 5 rokov 
-                    od jej vyradenia do osobného užívania.
+                  <span className="text-sm text-slate-300">Bola v obchodnom majetku</span>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    Oslobodenie nastáva až 5 rokov od vyradenia
                   </p>
                 </div>
               </label>
 
               {inputs.wasInBusinessAssets && (
-                <div className="ml-8">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Dátum vyradenia z obchodného majetku
-                  </label>
-                  <input
+                <div className="ml-7">
+                  <InputField
+                    label="Dátum vyradenia"
                     type="date"
                     value={inputs.removedFromAssetsDate}
-                    onChange={(e) => handleChange("removedFromAssetsDate", e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-emerald-500"
+                    onChange={(v) => handleChange("removedFromAssetsDate", v)}
                   />
                 </div>
               )}
 
-              {/* Inheritance */}
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={inputs.acquiredByInheritance}
                   onChange={(e) => handleChange("acquiredByInheritance", e.target.checked)}
-                  className="mt-1 w-5 h-5 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500"
+                  className="mt-0.5 w-4 h-4 rounded border-slate-700 bg-slate-800 text-blue-500"
                 />
                 <div>
-                  <span className="font-medium text-slate-100">Nadobudnutá dedením</span>
-                  <p className="text-sm text-slate-400 mt-1">
-                    Pri dedení v priamom rade sa do 5-ročnej lehoty započítava aj doba vlastníctva poručiteľa.
+                  <span className="text-sm text-slate-300">Nadobudnutá dedením</span>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    V priamom rade sa započítava doba poručiteľa
                   </p>
                 </div>
               </label>
 
               {inputs.acquiredByInheritance && (
-                <div className="ml-8 space-y-4">
-                  <label className="flex items-center gap-3 cursor-pointer">
+                <div className="ml-7 space-y-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={inputs.inheritanceDirectLine}
                       onChange={(e) => handleChange("inheritanceDirectLine", e.target.checked)}
-                      className="w-5 h-5 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500"
+                      className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-blue-500"
                     />
-                    <div>
-                      <span className="font-medium text-slate-100">Dedenie v priamom rade</span>
-                      <p className="text-xs text-slate-400">
-                        Rodičia, deti, starí rodičia, vnuci, manžel/manželka
-                      </p>
-                    </div>
+                    <span className="text-sm text-slate-400">Dedenie v priamom rade</span>
                   </label>
-
                   {inputs.inheritanceDirectLine && (
-                    <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
-                        Kedy poručiteľ nadobudol nehnuteľnosť?
-                      </label>
-                      <input
-                        type="date"
-                        value={inputs.originalOwnerPurchaseDate}
-                        onChange={(e) => handleChange("originalOwnerPurchaseDate", e.target.value)}
-                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-emerald-500"
-                      />
-                    </div>
+                    <InputField
+                      label="Kedy poručiteľ nadobudol"
+                      type="date"
+                      value={inputs.originalOwnerPurchaseDate}
+                      onChange={(v) => handleChange("originalOwnerPurchaseDate", v)}
+                    />
                   )}
                 </div>
               )}
@@ -448,198 +322,223 @@ export function TaxAssistant() {
           )}
         </div>
 
-        {/* Results */}
-        <div className="space-y-6">
-          <h4 className="font-semibold text-slate-100 flex items-center gap-2">
-            <Receipt className="w-5 h-5 text-emerald-400" />
-            Výpočet dane (2026)
-          </h4>
-
+        {/* Results Column */}
+        <div className="space-y-4">
           {/* Tax Breakdown */}
-          <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700 space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Predajná cena</span>
-              <span className="font-medium text-slate-100">€{inputs.currentValue.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Nadobúdacia cena</span>
-              <span className="font-medium text-red-400">-€{inputs.purchasePrice.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Preukázateľné výdavky</span>
-              <span className="font-medium text-red-400">-€{inputs.investmentCosts.toLocaleString()}</span>
-            </div>
-            <div className="border-t border-slate-700 pt-4 flex justify-between items-center">
-              <span className="text-slate-300 font-medium">Základ dane (§ 8)</span>
-              <span className="font-bold text-slate-100">€{results.taxableGain.toLocaleString()}</span>
-            </div>
+          <div className="p-5 rounded-xl bg-slate-800/20 border border-slate-800/50">
+            <div className="text-xs text-slate-500 uppercase tracking-wider mb-4">Výpočet dane 2026</div>
+            <div className="space-y-3">
+              <TaxRow label="Predajná cena" value={inputs.currentValue} />
+              <TaxRow label="Nadobúdacia cena" value={-inputs.purchasePrice} />
+              <TaxRow label="Výdavky" value={-inputs.investmentCosts} />
+              <div className="pt-3 mt-3 border-t border-slate-800">
+                <TaxRow label="Základ dane" value={results.taxableGain} bold />
+              </div>
 
-            {!results.isExempt && results.taxableGain > 0 && (
-              <>
-                {results.taxBreakdown.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center">
-                    <span className="text-slate-400">
-                      {item.label} ({item.rate}%)
-                    </span>
-                    <span className="font-medium text-red-400">
-                      -€{item.amount.toLocaleString()}
-                    </span>
-                  </div>
-                ))}
-              </>
-            )}
+              {!results.isExempt && results.taxableGain > 0 && (
+                <>
+                  {results.taxBreakdown.map((item, idx) => (
+                    <TaxRow 
+                      key={idx} 
+                      label={`${item.label} (${item.rate}%)`} 
+                      value={-item.amount} 
+                    />
+                  ))}
+                </>
+              )}
 
-            <div className="border-t border-slate-700 pt-4 flex justify-between items-center">
-              <span className="text-slate-100 font-semibold">Čistý zisk z predaja</span>
-              <span className="font-bold text-2xl text-emerald-400">
-                €{results.netProfit.toLocaleString()}
-              </span>
+              <div className="pt-3 mt-3 border-t border-slate-800">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-white">Čistý zisk</span>
+                  <span className="text-2xl font-light text-emerald-400">
+                    €{results.netProfit.toLocaleString()}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Oslobodenie Info */}
-          <div className="bg-slate-800/30 rounded-xl p-5 border border-slate-700">
-            <h5 className="font-medium text-slate-100 mb-3 flex items-center gap-2">
-              <Shield className="w-4 h-4 text-emerald-400" />
-              Podmienky oslobodenia (§ 9 ods. 1)
-            </h5>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li className="flex items-start gap-2">
-                <span className={results.yearsOwned >= 5 ? "text-emerald-400" : "text-slate-500"}>
-                  {results.yearsOwned >= 5 ? "✓" : "○"}
-                </span>
-                <span>5 rokov od nadobudnutia (ak nie je v obchodnom majetku)</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-slate-500">○</span>
-                <span>Pri dedení v priamom rade sa započítava doba poručiteľa</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-slate-500">○</span>
-                <span>Pri obchodnom majetku: 5 rokov od vyradenia</span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Tips */}
-          <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl p-5 border border-blue-500/20">
+          {/* Exemption conditions */}
+          <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50">
             <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="w-5 h-5 text-blue-400" />
-              <span className="font-semibold text-slate-100">Tipy na optimalizáciu</span>
+              <Shield className="w-4 h-4 text-slate-500" />
+              <span className="text-xs text-slate-500 uppercase tracking-wider">Podmienky oslobodenia</span>
             </div>
-            <ul className="space-y-2 text-sm text-slate-300">
-              {!results.isExempt && results.daysUntilExemption < 365 && (
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
-                  <span>
-                    Počkajte {Math.ceil(results.daysUntilExemption / 30)} mesiacov a ušetríte{" "}
-                    <strong className="text-emerald-400">€{results.totalDeductions.toLocaleString()}</strong> na daniach a odvodoch.
-                  </span>
-                </li>
-              )}
-              <li className="flex items-start gap-2">
-                <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-                <span>
-                  Všetky náklady na technické zhodnotenie a služby súvisiace s predajom 
-                  si môžete odpočítať zo základu dane.
-                </span>
-              </li>
-              {inputs.ownershipType === "individual" && (
-                <li className="flex items-start gap-2">
-                  <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-                  <span>
-                    Zaplatené zdravotné poistenie si môžete uplatniť ako výdavok v nasledujúcom roku.
-                  </span>
-                </li>
-              )}
-              {inputs.ownershipType === "individual" && results.taxableGain > 0 && !results.isExempt && (
-                <li className="flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 shrink-0" />
-                  <span>
-                    Daňové priznanie typu B podajte do <strong>31. marca</strong> nasledujúceho roka 
-                    (v roku prijatia príjmu).
-                  </span>
-                </li>
-              )}
-              {inputs.ownershipType === "individual" && results.taxableGain > 0 && !results.isExempt && (
-                <li className="flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 shrink-0" />
-                  <span>
-                    Zdravotné poistenie vám vypočíta poisťovňa v ročnom zúčtovaní (do októbra).
-                  </span>
-                </li>
-              )}
-            </ul>
+            <div className="space-y-2 text-sm">
+              <ExemptionItem 
+                met={results.yearsOwned >= 5} 
+                text="5 rokov od nadobudnutia" 
+              />
+              <ExemptionItem 
+                met={false} 
+                text="Dedenie v priamom rade (započíta sa)" 
+                neutral 
+              />
+              <ExemptionItem 
+                met={false} 
+                text="Obchodný majetok: 5 rokov od vyradenia" 
+                neutral 
+              />
+            </div>
           </div>
 
           {/* Timeline */}
-          <div className="bg-slate-800/30 rounded-xl p-5 border border-slate-700">
-            <h5 className="font-medium text-slate-100 mb-4">Časová os vlastníctva</h5>
-            <div className="relative">
-              <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-700" />
+          <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50">
+            <div className="text-xs text-slate-500 uppercase tracking-wider mb-4">Časová os</div>
+            <div className="relative pl-6">
+              <div className="absolute left-2 top-1 bottom-1 w-px bg-slate-800" />
               
-              {/* Original Purchase (if inheritance) */}
               {inputs.acquiredByInheritance && inputs.inheritanceDirectLine && inputs.originalOwnerPurchaseDate && (
-                <div className="relative flex items-center gap-4 pb-4">
-                  <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center z-10">
-                    <div className="w-3 h-3 rounded-full bg-purple-400" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-slate-100">Nadobudnutie poručiteľom</div>
-                    <div className="text-xs text-slate-400">
-                      {new Date(inputs.originalOwnerPurchaseDate).toLocaleDateString("sk-SK")}
-                    </div>
-                  </div>
-                </div>
+                <TimelineItem 
+                  date={inputs.originalOwnerPurchaseDate} 
+                  label="Nadobudnutie poručiteľom" 
+                  color="violet" 
+                />
               )}
-
-              {/* Purchase/Inheritance */}
-              <div className="relative flex items-center gap-4 pb-4">
-                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center z-10">
-                  <div className="w-3 h-3 rounded-full bg-blue-400" />
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-slate-100">
-                    {inputs.acquiredByInheritance ? "Nadobudnutie dedením" : "Kúpa nehnuteľnosti"}
-                  </div>
-                  <div className="text-xs text-slate-400">
-                    {new Date(inputs.purchaseDate).toLocaleDateString("sk-SK")}
-                  </div>
-                </div>
-              </div>
-
-              {/* Today */}
-              <div className="relative flex items-center gap-4 pb-4">
-                <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center z-10">
-                  <div className="w-3 h-3 rounded-full bg-emerald-400" />
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-slate-100">
-                    {results.isExempt ? "Predaj (oslobodený)" : "Plánovaný predaj"}
-                  </div>
-                  <div className="text-xs text-slate-400">
-                    {new Date(inputs.saleDate).toLocaleDateString("sk-SK")}
-                  </div>
-                </div>
-              </div>
-
-              {/* Exemption Date */}
+              <TimelineItem 
+                date={inputs.purchaseDate} 
+                label={inputs.acquiredByInheritance ? "Dedenie" : "Kúpa"} 
+                color="blue" 
+              />
+              <TimelineItem 
+                date={inputs.saleDate} 
+                label="Plánovaný predaj" 
+                color={results.isExempt ? "emerald" : "slate"} 
+              />
               {!results.isExempt && (
-                <div className="relative flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center z-10">
-                    <Shield className="w-4 h-4 text-yellow-400" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-yellow-400">Oslobodenie od dane</div>
-                    <div className="text-xs text-slate-400">
-                      {new Date(results.exemptionDate).toLocaleDateString("sk-SK")}
-                    </div>
-                  </div>
-                </div>
+                <TimelineItem 
+                  date={results.exemptionDate} 
+                  label="Oslobodenie" 
+                  color="amber" 
+                  icon={<Shield className="w-3 h-3" />}
+                />
               )}
             </div>
           </div>
+
+          {/* Tips */}
+          {!results.isExempt && results.daysUntilExemption < 365 && (
+            <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-500/20">
+              <div className="flex items-start gap-2">
+                <Info className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+                <div className="text-sm">
+                  <span className="text-amber-400 font-medium">Tip:</span>
+                  <span className="text-slate-400 ml-1">
+                    Počkajte {Math.ceil(results.daysUntilExemption / 30)} mesiacov a ušetríte{" "}
+                    <span className="text-emerald-400 font-medium">€{results.totalDeductions.toLocaleString()}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Helper Components
+function TaxMetric({ label, value, status }: { label: string; value: string; status?: "good" | "bad" }) {
+  return (
+    <div className="p-3 rounded-lg bg-slate-800/30 border border-slate-800/50">
+      <div className="text-[10px] text-slate-600 uppercase tracking-wider">{label}</div>
+      <div className={`text-lg font-medium ${
+        status === "good" ? "text-emerald-400" : status === "bad" ? "text-red-400" : "text-slate-300"
+      }`}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function InputField({ 
+  label, 
+  type, 
+  value, 
+  onChange, 
+  prefix, 
+  sublabel 
+}: { 
+  label: string; 
+  type: string; 
+  value: string | number; 
+  onChange: (v: string) => void; 
+  prefix?: string;
+  sublabel?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-xs text-slate-500 mb-1.5">{label}</label>
+      <div className="relative">
+        {prefix && (
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 text-sm">{prefix}</span>
+        )}
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={`w-full px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500/50 ${
+            prefix ? "pl-7" : ""
+          }`}
+        />
+      </div>
+      {sublabel && <p className="text-[10px] text-slate-600 mt-1">{sublabel}</p>}
+    </div>
+  );
+}
+
+function TaxRow({ label, value, bold }: { label: string; value: number; bold?: boolean }) {
+  const isNegative = value < 0;
+  return (
+    <div className="flex justify-between items-center">
+      <span className={`text-sm ${bold ? "text-white font-medium" : "text-slate-500"}`}>{label}</span>
+      <span className={`text-sm font-medium tabular-nums ${
+        bold ? "text-white" : isNegative ? "text-red-400/80" : "text-slate-400"
+      }`}>
+        {isNegative ? "-" : ""}€{Math.abs(value).toLocaleString()}
+      </span>
+    </div>
+  );
+}
+
+function ExemptionItem({ met, text, neutral }: { met: boolean; text: string; neutral?: boolean }) {
+  return (
+    <div className="flex items-center gap-2">
+      {met ? (
+        <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+      ) : (
+        <div className={`w-3.5 h-3.5 rounded-full border ${neutral ? "border-slate-700" : "border-slate-600"}`} />
+      )}
+      <span className={met ? "text-slate-300" : "text-slate-600"}>{text}</span>
+    </div>
+  );
+}
+
+function TimelineItem({ 
+  date, 
+  label, 
+  color, 
+  icon 
+}: { 
+  date: string; 
+  label: string; 
+  color: "violet" | "blue" | "emerald" | "amber" | "slate";
+  icon?: React.ReactNode;
+}) {
+  const colors = {
+    violet: "bg-violet-500",
+    blue: "bg-blue-500",
+    emerald: "bg-emerald-500",
+    amber: "bg-amber-500",
+    slate: "bg-slate-600",
+  };
+
+  return (
+    <div className="relative flex items-center gap-3 pb-4 last:pb-0">
+      <div className={`w-2 h-2 rounded-full ${colors[color]} -ml-[5px] z-10`} />
+      <div className="flex-1 flex items-center justify-between">
+        <span className="text-sm text-slate-400">{label}</span>
+        <span className="text-xs text-slate-600">{new Date(date).toLocaleDateString("sk-SK")}</span>
       </div>
     </div>
   );

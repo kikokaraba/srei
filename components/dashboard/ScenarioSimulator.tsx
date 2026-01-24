@@ -3,17 +3,10 @@
 import { useState, useMemo, useCallback } from "react";
 import {
   TrendingUp,
-  TrendingDown,
   AlertTriangle,
   CheckCircle,
   Info,
-  Wallet,
-  Home,
-  Percent,
-  Calendar,
-  PiggyBank,
-  ArrowRight,
-  Sparkles,
+  ChevronRight,
 } from "lucide-react";
 
 interface ScenarioInputs {
@@ -74,7 +67,7 @@ export function ScenarioSimulator() {
     rentGrowth: 2,
   });
 
-  const [activeTab, setActiveTab] = useState<"basic" | "advanced" | "projection">("basic");
+  const [activeSection, setActiveSection] = useState<"inputs" | "projection">("inputs");
 
   const results = useMemo<ScenarioResults>(() => {
     return calculateScenario(inputs);
@@ -110,457 +103,360 @@ export function ScenarioSimulator() {
   }, [results]);
 
   const getScoreColor = (score: number) => {
-    if (score >= 70) return "text-emerald-400";
-    if (score >= 50) return "text-yellow-400";
-    return "text-red-400";
+    if (score >= 70) return "emerald";
+    if (score >= 50) return "amber";
+    return "red";
   };
 
-  const getScoreLabel = (score: number) => {
-    if (score >= 80) return "Výborná investícia";
-    if (score >= 70) return "Dobrá investícia";
-    if (score >= 50) return "Priemerná investícia";
-    if (score >= 30) return "Riziková investícia";
-    return "Nevýhodná investícia";
-  };
+  const scoreColor = getScoreColor(investmentScore);
 
   return (
     <div className="space-y-6">
-      {/* Investment Score Card */}
-      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 border border-slate-700">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-5 h-5 text-yellow-400" />
-              <span className="text-sm text-slate-400">Investičné skóre</span>
-            </div>
-            <div className="flex items-baseline gap-3">
-              <span className={`text-5xl font-bold ${getScoreColor(investmentScore)}`}>
-                {investmentScore}
-              </span>
-              <span className="text-slate-400">/100</span>
-            </div>
-            <p className={`text-sm mt-1 ${getScoreColor(investmentScore)}`}>
-              {getScoreLabel(investmentScore)}
-            </p>
-          </div>
-          
-          {/* Score Ring */}
-          <div className="relative w-32 h-32">
-            <svg className="w-full h-full transform -rotate-90">
-              <circle
-                cx="64"
-                cy="64"
-                r="56"
-                stroke="currentColor"
-                strokeWidth="8"
-                fill="none"
-                className="text-slate-700"
-              />
-              <circle
-                cx="64"
-                cy="64"
-                r="56"
-                stroke="currentColor"
-                strokeWidth="8"
-                fill="none"
-                strokeLinecap="round"
-                strokeDasharray={`${(investmentScore / 100) * 352} 352`}
-                className={getScoreColor(investmentScore)}
-              />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
+      {/* Score + Key Metrics Header */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Investment Score */}
+        <div className="lg:w-64 shrink-0">
+          <div className={`relative p-6 rounded-2xl border ${
+            scoreColor === "emerald" ? "bg-emerald-950/30 border-emerald-500/20" :
+            scoreColor === "amber" ? "bg-amber-950/30 border-amber-500/20" :
+            "bg-red-950/30 border-red-500/20"
+          }`}>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Skóre</span>
               {results.isPositive ? (
-                <CheckCircle className="w-10 h-10 text-emerald-400" />
+                <CheckCircle className={`w-4 h-4 ${
+                  scoreColor === "emerald" ? "text-emerald-400" :
+                  scoreColor === "amber" ? "text-amber-400" : "text-red-400"
+                }`} />
               ) : (
-                <AlertTriangle className="w-10 h-10 text-red-400" />
+                <AlertTriangle className="w-4 h-4 text-red-400" />
               )}
             </div>
+            <div className="flex items-baseline gap-1">
+              <span className={`text-5xl font-light tabular-nums ${
+                scoreColor === "emerald" ? "text-emerald-400" :
+                scoreColor === "amber" ? "text-amber-400" : "text-red-400"
+              }`}>
+                {investmentScore}
+              </span>
+              <span className="text-slate-600 text-lg">/100</span>
+            </div>
+            {/* Score Bar */}
+            <div className="mt-4 h-1 bg-slate-800 rounded-full overflow-hidden">
+              <div 
+                className={`h-full rounded-full transition-all duration-500 ${
+                  scoreColor === "emerald" ? "bg-emerald-500" :
+                  scoreColor === "amber" ? "bg-amber-500" : "bg-red-500"
+                }`}
+                style={{ width: `${investmentScore}%` }}
+              />
+            </div>
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-700">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-slate-100">
-              {results.cashOnCashReturn.toFixed(1)}%
-            </div>
-            <div className="text-xs text-slate-400">Cash-on-Cash</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-slate-100">
-              {results.grossYield.toFixed(1)}%
-            </div>
-            <div className="text-xs text-slate-400">Hrubý výnos</div>
-          </div>
-          <div className="text-center">
-            <div className={`text-2xl font-bold ${results.netAnnualIncome >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-              €{Math.abs(results.netAnnualIncome).toLocaleString()}
-            </div>
-            <div className="text-xs text-slate-400">Ročný zisk</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-slate-100">
-              €{results.monthlyPayment.toLocaleString()}
-            </div>
-            <div className="text-xs text-slate-400">Mesačná splátka</div>
-          </div>
+        {/* Key Metrics Grid */}
+        <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-3">
+          <MetricTile
+            label="Cash-on-Cash"
+            value={`${results.cashOnCashReturn.toFixed(1)}%`}
+            status={results.cashOnCashReturn >= 8 ? "good" : results.cashOnCashReturn >= 5 ? "neutral" : "bad"}
+          />
+          <MetricTile
+            label="Hrubý výnos"
+            value={`${results.grossYield.toFixed(1)}%`}
+            status={results.grossYield >= 6 ? "good" : results.grossYield >= 4 ? "neutral" : "bad"}
+          />
+          <MetricTile
+            label="Ročný zisk"
+            value={`€${Math.abs(results.netAnnualIncome).toLocaleString()}`}
+            status={results.netAnnualIncome >= 0 ? "good" : "bad"}
+            prefix={results.netAnnualIncome >= 0 ? "+" : "-"}
+          />
+          <MetricTile
+            label="Mesačná splátka"
+            value={`€${results.monthlyPayment.toLocaleString()}`}
+            status="neutral"
+          />
         </div>
       </div>
 
-      {/* Preset Scenarios */}
-      <div className="flex gap-3">
-        {PRESET_SCENARIOS.map((preset) => (
-          <button
-            key={preset.name}
-            onClick={() => applyPreset(preset)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              inputs.downPayment === preset.downPayment &&
-              inputs.interestRate === preset.interestRate
-                ? "bg-emerald-500 text-white"
-                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
-            }`}
-          >
-            {preset.name}
-          </button>
-        ))}
+      {/* Presets */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-slate-600">Scenár:</span>
+        <div className="flex gap-2">
+          {PRESET_SCENARIOS.map((preset) => {
+            const isActive = inputs.downPayment === preset.downPayment && inputs.interestRate === preset.interestRate;
+            return (
+              <button
+                key={preset.name}
+                onClick={() => applyPreset(preset)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  isActive
+                    ? "bg-slate-700 text-white"
+                    : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+                }`}
+              >
+                {preset.name}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-slate-800">
-        {[
-          { id: "basic", label: "Základné parametre" },
-          { id: "advanced", label: "Pokročilé" },
-          { id: "projection", label: "10-ročná projekcia" },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as typeof activeTab)}
-            className={`px-6 py-3 text-sm font-medium transition-colors ${
-              activeTab === tab.id
-                ? "text-emerald-400 border-b-2 border-emerald-400"
-                : "text-slate-400 hover:text-slate-100"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* Section Toggle */}
+      <div className="flex gap-1 p-1 bg-slate-800/30 rounded-lg w-fit">
+        <button
+          onClick={() => setActiveSection("inputs")}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+            activeSection === "inputs"
+              ? "bg-slate-700 text-white"
+              : "text-slate-500 hover:text-slate-300"
+          }`}
+        >
+          Parametre
+        </button>
+        <button
+          onClick={() => setActiveSection("projection")}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+            activeSection === "projection"
+              ? "bg-slate-700 text-white"
+              : "text-slate-500 hover:text-slate-300"
+          }`}
+        >
+          10-ročná projekcia
+        </button>
       </div>
 
-      {/* Tab Content */}
-      {activeTab === "basic" && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Inputs */}
-          <div className="space-y-6">
-            {/* Property Price */}
-            <InputSlider
-              icon={<Home className="w-5 h-5" />}
-              label="Cena nehnuteľnosti"
-              value={inputs.propertyPrice}
-              min={50000}
-              max={500000}
-              step={5000}
-              unit="€"
-              onChange={(v) => handleInputChange("propertyPrice", v)}
-            />
+      {/* Content */}
+      {activeSection === "inputs" && (
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* Inputs Column */}
+          <div className="lg:col-span-3 space-y-1">
+            {/* Property & Rent */}
+            <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50 space-y-4">
+              <ModernSlider
+                label="Cena nehnuteľnosti"
+                value={inputs.propertyPrice}
+                min={50000}
+                max={500000}
+                step={5000}
+                format={(v) => `€${v.toLocaleString()}`}
+                onChange={(v) => handleInputChange("propertyPrice", v)}
+              />
+              <ModernSlider
+                label="Mesačný nájom"
+                value={inputs.monthlyRent}
+                min={200}
+                max={2500}
+                step={50}
+                format={(v) => `€${v.toLocaleString()}`}
+                onChange={(v) => handleInputChange("monthlyRent", v)}
+              />
+            </div>
 
-            {/* Monthly Rent */}
-            <InputSlider
-              icon={<Wallet className="w-5 h-5" />}
-              label="Mesačný nájom"
-              value={inputs.monthlyRent}
-              min={200}
-              max={2500}
-              step={50}
-              unit="€"
-              onChange={(v) => handleInputChange("monthlyRent", v)}
-            />
+            {/* Financing */}
+            <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50 space-y-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-slate-500 uppercase tracking-wider">Financovanie</span>
+                <span className="text-xs text-slate-600">
+                  Úver: €{results.loanAmount.toLocaleString()}
+                </span>
+              </div>
+              <ModernSlider
+                label="Vlastné zdroje"
+                value={inputs.downPayment}
+                min={10}
+                max={100}
+                step={5}
+                format={(v) => `${v}%`}
+                sublabel={`€${(inputs.propertyPrice * inputs.downPayment / 100).toLocaleString()}`}
+                onChange={(v) => handleInputChange("downPayment", v)}
+              />
+              <ModernSlider
+                label="Úroková sadzba"
+                value={inputs.interestRate}
+                min={2}
+                max={8}
+                step={0.1}
+                format={(v) => `${v.toFixed(1)}%`}
+                onChange={(v) => handleInputChange("interestRate", v)}
+              />
+              <ModernSlider
+                label="Doba splácania"
+                value={inputs.loanTerm}
+                min={5}
+                max={30}
+                step={1}
+                format={(v) => `${v} rokov`}
+                onChange={(v) => handleInputChange("loanTerm", v)}
+              />
+            </div>
 
-            {/* Down Payment */}
-            <InputSlider
-              icon={<PiggyBank className="w-5 h-5" />}
-              label="Vlastné zdroje"
-              value={inputs.downPayment}
-              min={10}
-              max={100}
-              step={5}
-              unit="%"
-              onChange={(v) => handleInputChange("downPayment", v)}
-              info={`= €${(inputs.propertyPrice * inputs.downPayment / 100).toLocaleString()}`}
-            />
-
-            {/* Interest Rate */}
-            <InputSlider
-              icon={<Percent className="w-5 h-5" />}
-              label="Úroková sadzba"
-              value={inputs.interestRate}
-              min={2}
-              max={8}
-              step={0.1}
-              unit="%"
-              decimals={2}
-              onChange={(v) => handleInputChange("interestRate", v)}
-            />
-
-            {/* Loan Term */}
-            <InputSlider
-              icon={<Calendar className="w-5 h-5" />}
-              label="Doba splácania"
-              value={inputs.loanTerm}
-              min={5}
-              max={30}
-              step={1}
-              unit=" rokov"
-              onChange={(v) => handleInputChange("loanTerm", v)}
-            />
+            {/* Costs */}
+            <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50 space-y-4">
+              <span className="text-xs text-slate-500 uppercase tracking-wider">Náklady & Rast</span>
+              <ModernSlider
+                label="Výpadok nájmu"
+                value={inputs.vacancyRate}
+                min={0}
+                max={20}
+                step={1}
+                format={(v) => `${v}%`}
+                sublabel={`≈ ${(inputs.vacancyRate * 12 / 100).toFixed(1)} mes/rok`}
+                onChange={(v) => handleInputChange("vacancyRate", v)}
+              />
+              <ModernSlider
+                label="Mesačné náklady"
+                value={inputs.monthlyExpenses}
+                min={0}
+                max={500}
+                step={10}
+                format={(v) => `€${v}`}
+                onChange={(v) => handleInputChange("monthlyExpenses", v)}
+              />
+              <ModernSlider
+                label="Zhodnotenie nehnuteľnosti"
+                value={inputs.annualAppreciation}
+                min={0}
+                max={10}
+                step={0.5}
+                format={(v) => `${v.toFixed(1)}%/rok`}
+                onChange={(v) => handleInputChange("annualAppreciation", v)}
+              />
+            </div>
           </div>
 
-          {/* Results */}
-          <div className="space-y-4">
-            {/* Cash Flow Breakdown */}
-            <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700">
-              <h4 className="font-semibold text-slate-100 mb-4">Mesačný cash flow</h4>
-              <div className="space-y-3">
-                <FlowItem label="Príjem z nájmu" value={inputs.monthlyRent} positive />
-                <FlowItem label="Výpadok (vacancy)" value={-(inputs.monthlyRent * inputs.vacancyRate / 100)} />
-                <FlowItem label="Prevádzkové náklady" value={-inputs.monthlyExpenses} />
-                <FlowItem label="Splátka hypotéky" value={-results.monthlyPayment} />
-                <div className="border-t border-slate-600 pt-3 mt-3">
-                  <FlowItem
-                    label="Čistý mesačný cash flow"
-                    value={results.netAnnualIncome / 12}
-                    highlight
-                  />
+          {/* Results Column */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* Cash Flow */}
+            <div className="p-5 rounded-xl bg-slate-800/30 border border-slate-800/50">
+              <div className="text-xs text-slate-500 uppercase tracking-wider mb-4">Mesačný Cash Flow</div>
+              <div className="space-y-2">
+                <FlowRow label="Nájom" value={inputs.monthlyRent} />
+                <FlowRow label="Vacancy" value={-(inputs.monthlyRent * inputs.vacancyRate / 100)} />
+                <FlowRow label="Náklady" value={-inputs.monthlyExpenses} />
+                <FlowRow label="Splátka" value={-results.monthlyPayment} />
+                <div className="pt-3 mt-3 border-t border-slate-800">
+                  <FlowRow label="Cash Flow" value={results.netAnnualIncome / 12} highlight />
                 </div>
               </div>
             </div>
 
-            {/* Key Metrics */}
-            <div className="grid grid-cols-2 gap-4">
-              <MetricCard
-                label="Hrubý výnos"
-                value={`${results.grossYield.toFixed(2)}%`}
-                info="Ročný nájom / Cena"
-                good={results.grossYield > 5}
-              />
-              <MetricCard
+            {/* Summary Metrics */}
+            <div className="grid grid-cols-2 gap-3">
+              <SummaryCard
                 label="Čistý výnos"
                 value={`${results.netYield.toFixed(2)}%`}
-                info="Po odpočítaní nákladov"
                 good={results.netYield > 0}
               />
-              <MetricCard
+              <SummaryCard
                 label="Break-even nájom"
                 value={`€${results.breakEvenRent.toFixed(0)}`}
-                info="Min. nájom na pokrytie"
                 good={inputs.monthlyRent >= results.breakEvenRent}
               />
-              <MetricCard
+              <SummaryCard
+                label="Návratnosť"
+                value={results.cashOnCashReturn > 0 ? `${(100 / results.cashOnCashReturn).toFixed(1)} r.` : "—"}
+              />
+              <SummaryCard
                 label="Celkové úroky"
-                value={`€${results.totalInterest.toLocaleString()}`}
-                info={`Za ${inputs.loanTerm} rokov`}
+                value={`€${(results.totalInterest / 1000).toFixed(0)}k`}
+                sublabel={`za ${inputs.loanTerm} rokov`}
               />
             </div>
-
-            {/* Investment Summary */}
-            <div className="bg-gradient-to-r from-emerald-500/10 to-blue-500/10 rounded-xl p-5 border border-emerald-500/20">
-              <div className="flex items-center gap-2 mb-3">
-                <Info className="w-5 h-5 text-emerald-400" />
-                <span className="font-semibold text-slate-100">Zhrnutie investície</span>
-              </div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-slate-400">Investovaný kapitál:</span>
-                  <span className="text-slate-100 font-medium ml-2">
-                    €{results.downPaymentAmount.toLocaleString()}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400">Výška úveru:</span>
-                  <span className="text-slate-100 font-medium ml-2">
-                    €{results.loanAmount.toLocaleString()}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400">Návratnosť:</span>
-                  <span className="text-emerald-400 font-medium ml-2">
-                    {results.cashOnCashReturn > 0
-                      ? `${(100 / results.cashOnCashReturn).toFixed(1)} rokov`
-                      : "—"}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400">Ročný zisk:</span>
-                  <span className={`font-medium ml-2 ${results.netAnnualIncome >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                    €{results.netAnnualIncome.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       )}
 
-      {activeTab === "advanced" && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <InputSlider
-              label="Výpadok nájmu (vacancy)"
-              value={inputs.vacancyRate}
-              min={0}
-              max={20}
-              step={1}
-              unit="%"
-              onChange={(v) => handleInputChange("vacancyRate", v)}
-              info={`≈ ${(inputs.vacancyRate * 12 / 100).toFixed(1)} mesiacov/rok prázdny`}
-            />
-            <InputSlider
-              label="Mesačné prevádzkové náklady"
-              value={inputs.monthlyExpenses}
-              min={0}
-              max={500}
-              step={10}
-              unit="€"
-              onChange={(v) => handleInputChange("monthlyExpenses", v)}
-              info="Správa, poistenie, údržba..."
-            />
-            <InputSlider
-              label="Ročné zhodnotenie nehnuteľnosti"
-              value={inputs.annualAppreciation}
-              min={0}
-              max={10}
-              step={0.5}
-              unit="%"
-              decimals={1}
-              onChange={(v) => handleInputChange("annualAppreciation", v)}
-            />
-            <InputSlider
-              label="Ročný rast nájmu"
-              value={inputs.rentGrowth}
-              min={0}
-              max={8}
-              step={0.5}
-              unit="%"
-              decimals={1}
-              onChange={(v) => handleInputChange("rentGrowth", v)}
-            />
-          </div>
-          <div className="bg-slate-800/30 rounded-xl p-6 border border-slate-700">
-            <h4 className="font-semibold text-slate-100 mb-4">Čo znamenajú tieto parametre?</h4>
-            <div className="space-y-4 text-sm text-slate-400">
-              <p>
-                <strong className="text-slate-200">Výpadok nájmu</strong> — percento času, keď je byt prázdny
-                (hľadanie nájomníka, rekonštrukcia). Štandard je 5-10%.
-              </p>
-              <p>
-                <strong className="text-slate-200">Prevádzkové náklady</strong> — mesačné výdavky na správu,
-                poistenie, fond opráv, drobné opravy. Typicky €80-200.
-              </p>
-              <p>
-                <strong className="text-slate-200">Zhodnotenie</strong> — predpokladaný ročný rast ceny
-                nehnuteľnosti. Historicky 2-5% na Slovensku.
-              </p>
-              <p>
-                <strong className="text-slate-200">Rast nájmu</strong> — očakávané zvyšovanie nájmu ročne.
-                Závisí od lokality a inflácie.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === "projection" && (
+      {activeSection === "projection" && (
         <div className="space-y-6">
-          {/* 10 Year Chart */}
-          <div className="bg-slate-800/30 rounded-xl p-6 border border-slate-700">
-            <h4 className="font-semibold text-slate-100 mb-6">Vývoj investície za 10 rokov</h4>
-            <div className="h-64 flex items-end gap-2">
+          {/* Chart */}
+          <div className="p-6 rounded-xl bg-slate-800/20 border border-slate-800/50">
+            <div className="flex items-center justify-between mb-6">
+              <span className="text-xs text-slate-500 uppercase tracking-wider">Vývoj hodnoty a equity</span>
+              <div className="flex items-center gap-4 text-xs">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-slate-600" />
+                  <span className="text-slate-500">Hodnota</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className="text-slate-500">Equity</span>
+                </span>
+              </div>
+            </div>
+            <div className="h-48 flex items-end gap-1">
               {results.yearlyProjection.map((year, idx) => {
                 const maxValue = Math.max(...results.yearlyProjection.map(y => y.propertyValue));
                 const height = (year.propertyValue / maxValue) * 100;
-                const equityHeight = (year.equity / maxValue) * 100;
+                const equityHeight = (year.equity / year.propertyValue) * 100;
                 
                 return (
-                  <div key={idx} className="flex-1 flex flex-col items-center gap-1">
-                    <div className="w-full bg-slate-700 rounded-t relative" style={{ height: `${height}%` }}>
+                  <div key={idx} className="flex-1 flex flex-col items-center gap-1 group">
+                    <div 
+                      className="w-full bg-slate-700/50 rounded-sm relative transition-all group-hover:bg-slate-700" 
+                      style={{ height: `${height}%` }}
+                    >
                       <div
-                        className="absolute bottom-0 left-0 right-0 bg-emerald-500/50 rounded-t"
-                        style={{ height: `${(equityHeight / height) * 100}%` }}
+                        className="absolute bottom-0 left-0 right-0 bg-emerald-500/40 rounded-sm transition-all group-hover:bg-emerald-500/60"
+                        style={{ height: `${equityHeight}%` }}
                       />
                     </div>
-                    <span className="text-xs text-slate-500">{year.year}</span>
+                    <span className="text-[10px] text-slate-600">{year.year}</span>
                   </div>
                 );
               })}
             </div>
-            <div className="flex items-center justify-center gap-6 mt-4 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded bg-slate-700" />
-                <span className="text-slate-400">Hodnota nehnuteľnosti</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded bg-emerald-500/50" />
-                <span className="text-slate-400">Vaše equity</span>
-              </div>
-            </div>
           </div>
 
-          {/* Projection Table */}
-          <div className="overflow-x-auto">
+          {/* 10 Year Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <ProjectionCard
+              label="Hodnota po 10 rokoch"
+              value={`€${(results.yearlyProjection[9]?.propertyValue / 1000).toFixed(0)}k`}
+              change={`+€${((results.yearlyProjection[9]?.propertyValue || 0) - inputs.propertyPrice).toLocaleString()}`}
+              color="emerald"
+            />
+            <ProjectionCard
+              label="Kumulatívny príjem"
+              value={`€${(results.yearlyProjection[9]?.cumulativeIncome / 1000).toFixed(0)}k`}
+              change="za 10 rokov"
+              color="blue"
+            />
+            <ProjectionCard
+              label="Celkové ROI"
+              value={`${results.yearlyProjection[9]?.roi.toFixed(0) || 0}%`}
+              change="na investovaný kapitál"
+              color="violet"
+            />
+          </div>
+
+          {/* Compact Table */}
+          <div className="overflow-x-auto rounded-xl border border-slate-800/50">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-700">
-                  <th className="text-left py-3 px-4 text-slate-400 font-medium">Rok</th>
-                  <th className="text-right py-3 px-4 text-slate-400 font-medium">Hodnota</th>
-                  <th className="text-right py-3 px-4 text-slate-400 font-medium">Equity</th>
-                  <th className="text-right py-3 px-4 text-slate-400 font-medium">Ročný nájom</th>
-                  <th className="text-right py-3 px-4 text-slate-400 font-medium">Čistý zisk</th>
-                  <th className="text-right py-3 px-4 text-slate-400 font-medium">Kumulatívne</th>
-                  <th className="text-right py-3 px-4 text-slate-400 font-medium">ROI</th>
+                <tr className="bg-slate-800/30">
+                  <th className="text-left py-3 px-4 text-xs font-medium text-slate-500 uppercase tracking-wider">Rok</th>
+                  <th className="text-right py-3 px-4 text-xs font-medium text-slate-500 uppercase tracking-wider">Hodnota</th>
+                  <th className="text-right py-3 px-4 text-xs font-medium text-slate-500 uppercase tracking-wider">Equity</th>
+                  <th className="text-right py-3 px-4 text-xs font-medium text-slate-500 uppercase tracking-wider">Zisk/rok</th>
+                  <th className="text-right py-3 px-4 text-xs font-medium text-slate-500 uppercase tracking-wider">ROI</th>
                 </tr>
               </thead>
               <tbody>
-                {results.yearlyProjection.map((year) => (
-                  <tr key={year.year} className="border-b border-slate-800 hover:bg-slate-800/30">
-                    <td className="py-3 px-4 text-slate-100 font-medium">{year.year}</td>
-                    <td className="py-3 px-4 text-right text-slate-100">€{year.propertyValue.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-right text-emerald-400">€{year.equity.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-right text-slate-100">€{year.annualRent.toLocaleString()}</td>
-                    <td className={`py-3 px-4 text-right ${year.netIncome >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                {results.yearlyProjection.map((year, idx) => (
+                  <tr key={year.year} className={`border-t border-slate-800/30 ${idx % 2 === 0 ? "bg-slate-800/10" : ""}`}>
+                    <td className="py-2.5 px-4 text-slate-300 font-medium">{year.year}</td>
+                    <td className="py-2.5 px-4 text-right text-slate-400">€{year.propertyValue.toLocaleString()}</td>
+                    <td className="py-2.5 px-4 text-right text-emerald-400/80">€{year.equity.toLocaleString()}</td>
+                    <td className={`py-2.5 px-4 text-right ${year.netIncome >= 0 ? "text-emerald-400/80" : "text-red-400/80"}`}>
                       €{year.netIncome.toLocaleString()}
                     </td>
-                    <td className="py-3 px-4 text-right text-blue-400">€{year.cumulativeIncome.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-right text-yellow-400">{year.roi.toFixed(0)}%</td>
+                    <td className="py-2.5 px-4 text-right text-slate-400">{year.roi.toFixed(0)}%</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-
-          {/* 10 Year Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 rounded-xl p-5 border border-emerald-500/20">
-              <div className="text-sm text-slate-400 mb-1">Hodnota po 10 rokoch</div>
-              <div className="text-3xl font-bold text-emerald-400">
-                €{results.yearlyProjection[9]?.propertyValue.toLocaleString() || 0}
-              </div>
-              <div className="text-sm text-slate-500 mt-1">
-                +€{((results.yearlyProjection[9]?.propertyValue || 0) - inputs.propertyPrice).toLocaleString()}
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-xl p-5 border border-blue-500/20">
-              <div className="text-sm text-slate-400 mb-1">Celkový príjem z nájmu</div>
-              <div className="text-3xl font-bold text-blue-400">
-                €{results.yearlyProjection[9]?.cumulativeIncome.toLocaleString() || 0}
-              </div>
-              <div className="text-sm text-slate-500 mt-1">za 10 rokov</div>
-            </div>
-            <div className="bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 rounded-xl p-5 border border-yellow-500/20">
-              <div className="text-sm text-slate-400 mb-1">Celková návratnosť (ROI)</div>
-              <div className="text-3xl font-bold text-yellow-400">
-                {results.yearlyProjection[9]?.roi.toFixed(0) || 0}%
-              </div>
-              <div className="text-sm text-slate-500 mt-1">na investovaný kapitál</div>
-            </div>
           </div>
         </div>
       )}
@@ -568,28 +464,24 @@ export function ScenarioSimulator() {
   );
 }
 
-// Slider Input Component
-function InputSlider({
-  icon,
+// Modern Slider Component
+function ModernSlider({
   label,
   value,
   min,
   max,
   step,
-  unit,
-  decimals = 0,
-  info,
+  format,
+  sublabel,
   onChange,
 }: {
-  icon?: React.ReactNode;
   label: string;
   value: number;
   min: number;
   max: number;
   step: number;
-  unit: string;
-  decimals?: number;
-  info?: string;
+  format: (v: number) => string;
+  sublabel?: string;
   onChange: (value: number) => void;
 }) {
   const percentage = ((value - min) / (max - min)) * 100;
@@ -597,18 +489,17 @@ function InputSlider({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-slate-300">
-          {icon && <span className="text-slate-400">{icon}</span>}
-          <span className="font-medium">{label}</span>
-        </div>
+        <span className="text-sm text-slate-400">{label}</span>
         <div className="text-right">
-          <span className="text-lg font-bold text-slate-100">
-            {decimals > 0 ? value.toFixed(decimals) : value.toLocaleString()}{unit}
-          </span>
-          {info && <span className="text-xs text-slate-500 ml-2">{info}</span>}
+          <span className="text-sm font-medium text-white tabular-nums">{format(value)}</span>
+          {sublabel && <span className="text-xs text-slate-600 ml-2">{sublabel}</span>}
         </div>
       </div>
-      <div className="relative">
+      <div className="relative h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+        <div 
+          className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500/80 to-emerald-400/80 rounded-full"
+          style={{ width: `${percentage}%` }}
+        />
         <input
           type="range"
           min={min}
@@ -616,41 +507,48 @@ function InputSlider({
           step={step}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
-          style={{
-            background: `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #334155 ${percentage}%, #334155 100%)`,
-          }}
+          className="absolute inset-0 w-full opacity-0 cursor-pointer"
         />
-      </div>
-      <div className="flex justify-between text-xs text-slate-500">
-        <span>{min.toLocaleString()}{unit}</span>
-        <span>{max.toLocaleString()}{unit}</span>
       </div>
     </div>
   );
 }
 
-// Flow Item Component
-function FlowItem({
+// Metric Tile Component
+function MetricTile({
   label,
   value,
-  positive,
-  highlight,
+  status,
+  prefix,
 }: {
   label: string;
-  value: number;
-  positive?: boolean;
-  highlight?: boolean;
+  value: string;
+  status: "good" | "neutral" | "bad";
+  prefix?: string;
 }) {
-  const isPositive = value >= 0;
-  
   return (
-    <div className={`flex justify-between items-center ${highlight ? "font-semibold" : ""}`}>
-      <span className={highlight ? "text-slate-100" : "text-slate-400"}>{label}</span>
-      <span className={`font-medium ${
-        highlight
+    <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50">
+      <div className="text-xs text-slate-500 mb-1">{label}</div>
+      <div className={`text-xl font-medium tabular-nums ${
+        status === "good" ? "text-emerald-400" :
+        status === "bad" ? "text-red-400" : "text-slate-300"
+      }`}>
+        {prefix}{value}
+      </div>
+    </div>
+  );
+}
+
+// Flow Row Component
+function FlowRow({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
+  const isPositive = value >= 0;
+  return (
+    <div className="flex justify-between items-center">
+      <span className={`text-sm ${highlight ? "text-white font-medium" : "text-slate-500"}`}>{label}</span>
+      <span className={`text-sm font-medium tabular-nums ${
+        highlight 
           ? isPositive ? "text-emerald-400" : "text-red-400"
-          : isPositive ? "text-emerald-400/70" : "text-red-400/70"
+          : isPositive ? "text-slate-400" : "text-red-400/70"
       }`}>
         {isPositive ? "+" : ""}€{Math.abs(value).toFixed(0)}
       </span>
@@ -658,29 +556,33 @@ function FlowItem({
   );
 }
 
-// Metric Card Component
-function MetricCard({
-  label,
-  value,
-  info,
-  good,
-}: {
-  label: string;
-  value: string;
-  info: string;
-  good?: boolean;
-}) {
+// Summary Card Component
+function SummaryCard({ label, value, good, sublabel }: { label: string; value: string; good?: boolean; sublabel?: string }) {
   return (
-    <div className={`bg-slate-800/50 rounded-xl p-4 border ${
-      good === undefined ? "border-slate-700" : good ? "border-emerald-500/30" : "border-slate-700"
-    }`}>
-      <div className="text-xs text-slate-400 mb-1">{label}</div>
-      <div className={`text-xl font-bold ${
-        good === undefined ? "text-slate-100" : good ? "text-emerald-400" : "text-slate-100"
+    <div className="p-3 rounded-lg bg-slate-800/20 border border-slate-800/30">
+      <div className="text-[10px] text-slate-600 uppercase tracking-wider">{label}</div>
+      <div className={`text-lg font-medium ${
+        good === undefined ? "text-slate-300" : good ? "text-emerald-400" : "text-slate-400"
       }`}>
         {value}
       </div>
-      <div className="text-xs text-slate-500 mt-1">{info}</div>
+      {sublabel && <div className="text-[10px] text-slate-600">{sublabel}</div>}
+    </div>
+  );
+}
+
+// Projection Card Component
+function ProjectionCard({ label, value, change, color }: { label: string; value: string; change: string; color: "emerald" | "blue" | "violet" }) {
+  const colors = {
+    emerald: "bg-emerald-950/30 border-emerald-500/20 text-emerald-400",
+    blue: "bg-blue-950/30 border-blue-500/20 text-blue-400",
+    violet: "bg-violet-950/30 border-violet-500/20 text-violet-400",
+  };
+  return (
+    <div className={`p-5 rounded-xl border ${colors[color]}`}>
+      <div className="text-xs text-slate-500 mb-1">{label}</div>
+      <div className={`text-3xl font-light ${colors[color].split(" ")[2]}`}>{value}</div>
+      <div className="text-xs text-slate-600 mt-1">{change}</div>
     </div>
   );
 }

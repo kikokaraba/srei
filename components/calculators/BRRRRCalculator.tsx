@@ -6,21 +6,14 @@ import {
   Home,
   Wrench,
   TrendingUp,
-  Wallet,
-  Percent,
-  Calendar,
-  HelpCircle,
   CheckCircle,
   AlertTriangle,
-  Sparkles,
-  ArrowRight,
-  Info,
-  Repeat,
-  Target,
   Zap,
   DollarSign,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
-import { calculateBRRRR, type BRRRRResults } from "@/lib/math/investor-logic";
+import { calculateBRRRR } from "@/lib/math/investor-logic";
 
 interface BRRRRInputs {
   purchasePrice: number;
@@ -46,29 +39,15 @@ const DEFAULT_INPUTS: BRRRRInputs = {
   monthlyExpenses: 100,
 };
 
-// Preset scenáre
 const PRESETS = [
-  {
-    name: "Konzervatívny",
-    description: "Nízky LTV, bezpečný deal",
-    inputs: { ...DEFAULT_INPUTS, refinanceLTV: 65, renovationCost: 15000, afterRepairValue: 115000 },
-  },
-  {
-    name: "Štandardný",
-    description: "Typický BRRRR projekt",
-    inputs: DEFAULT_INPUTS,
-  },
-  {
-    name: "Agresívny",
-    description: "Max páka, vyššie riziko",
-    inputs: { ...DEFAULT_INPUTS, refinanceLTV: 80, renovationCost: 30000, afterRepairValue: 150000, monthlyRent: 650 },
-  },
+  { name: "Konzervatívny", inputs: { ...DEFAULT_INPUTS, refinanceLTV: 65, renovationCost: 15000, afterRepairValue: 115000 } },
+  { name: "Štandardný", inputs: DEFAULT_INPUTS },
+  { name: "Agresívny", inputs: { ...DEFAULT_INPUTS, refinanceLTV: 80, renovationCost: 30000, afterRepairValue: 150000, monthlyRent: 650 } },
 ];
 
 export function BRRRRCalculator() {
   const [inputs, setInputs] = useState<BRRRRInputs>(DEFAULT_INPUTS);
-  const [showGuide, setShowGuide] = useState(false);
-  const [activeStep, setActiveStep] = useState(0);
+  const [expandedPhase, setExpandedPhase] = useState<number>(0);
 
   const results = useMemo(() => calculateBRRRR(inputs), [inputs]);
 
@@ -80,618 +59,448 @@ export function BRRRRCalculator() {
     setInputs(preset.inputs);
   };
 
-  // Fázy BRRRR stratégie
+  const isSuccess = results.isInfiniteReturn || results.cashRecoveredPercent >= 100;
+  const isClose = results.cashRecoveredPercent >= 80 && !isSuccess;
+
   const phases = [
     {
-      id: "buy",
+      id: 0,
       label: "Buy",
+      sublabel: "Kúpa",
       icon: Home,
       color: "blue",
-      description: "Kúpiš podhodnotenú nehnuteľnosť",
+      fields: [
+        { key: "purchasePrice", label: "Kúpna cena", min: 30000, max: 300000, step: 5000 },
+        { key: "purchaseCosts", label: "Náklady na kúpu", min: 0, max: 20000, step: 500, sublabel: "Notár, daň, realitka" },
+      ],
     },
     {
-      id: "rehab",
+      id: 1,
       label: "Rehab",
+      sublabel: "Rekonštrukcia",
       icon: Wrench,
       color: "orange",
-      description: "Zrekonštruuješ a zvýšiš hodnotu",
+      fields: [
+        { key: "renovationCost", label: "Náklady na rekonštrukciu", min: 0, max: 80000, step: 1000 },
+        { key: "afterRepairValue", label: "Hodnota po rekonštrukcii (ARV)", min: 50000, max: 400000, step: 5000 },
+      ],
     },
     {
-      id: "rent",
+      id: 2,
       label: "Rent",
+      sublabel: "Prenájom",
       icon: DollarSign,
       color: "green",
-      description: "Prenajmeš a generuješ príjem",
+      fields: [
+        { key: "monthlyRent", label: "Mesačný nájom", min: 200, max: 1500, step: 50 },
+        { key: "monthlyExpenses", label: "Mesačné náklady", min: 0, max: 400, step: 10 },
+      ],
     },
     {
-      id: "refinance",
+      id: 3,
       label: "Refinance",
+      sublabel: "Refinancovanie",
       icon: RefreshCw,
-      color: "purple",
-      description: "Refinancuješ na novú hodnotu",
-    },
-    {
-      id: "repeat",
-      label: "Repeat",
-      icon: Repeat,
-      color: "emerald",
-      description: "Vyberieš kapitál a opakuješ",
+      color: "violet",
+      fields: [
+        { key: "refinanceLTV", label: "LTV", min: 50, max: 80, step: 5, format: "%" },
+        { key: "refinanceInterestRate", label: "Úroková sadzba", min: 2, max: 8, step: 0.1, format: "%", decimals: 1 },
+        { key: "refinanceTerm", label: "Doba splácania", min: 10, max: 30, step: 5, format: " rokov" },
+      ],
     },
   ];
 
-  const getScoreColor = (isGood: boolean) => (isGood ? "text-emerald-400" : "text-amber-400");
+  const getPhaseColor = (color: string) => {
+    const colors: Record<string, { bg: string; border: string; text: string }> = {
+      blue: { bg: "bg-blue-500/10", border: "border-blue-500/20", text: "text-blue-400" },
+      orange: { bg: "bg-orange-500/10", border: "border-orange-500/20", text: "text-orange-400" },
+      green: { bg: "bg-green-500/10", border: "border-green-500/20", text: "text-green-400" },
+      violet: { bg: "bg-violet-500/10", border: "border-violet-500/20", text: "text-violet-400" },
+    };
+    return colors[color] || colors.blue;
+  };
 
   return (
-    <div className="space-y-8">
-      {/* Header s vysvetlením */}
-      <div className="bg-gradient-to-br from-purple-500/10 via-slate-900 to-emerald-500/10 rounded-2xl p-6 border border-purple-500/20">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-emerald-500 flex items-center justify-center">
-                <RefreshCw className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white">BRRRR Stratégia</h2>
-                <p className="text-slate-400 text-sm">Buy, Rehab, Rent, Refinance, Repeat</p>
-              </div>
+    <div className="space-y-6">
+      {/* Hero Result Card */}
+      <div className={`relative p-6 rounded-2xl border overflow-hidden ${
+        isSuccess 
+          ? "bg-emerald-950/30 border-emerald-500/20" 
+          : isClose 
+            ? "bg-amber-950/30 border-amber-500/20" 
+            : "bg-slate-800/30 border-slate-700/50"
+      }`}>
+        {/* Background glow */}
+        {isSuccess && (
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl" />
+        )}
+        
+        <div className="relative flex flex-col lg:flex-row lg:items-center gap-6">
+          {/* Main Score */}
+          <div className="lg:w-48 shrink-0">
+            <div className="flex items-center gap-2 mb-2">
+              {isSuccess ? (
+                <CheckCircle className="w-5 h-5 text-emerald-400" />
+              ) : isClose ? (
+                <AlertTriangle className="w-5 h-5 text-amber-400" />
+              ) : null}
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                {isSuccess ? "Úspešný BRRRR" : isClose ? "Takmer tam" : "Cash Recovery"}
+              </span>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className={`text-5xl font-light tabular-nums ${
+                isSuccess ? "text-emerald-400" : isClose ? "text-amber-400" : "text-slate-300"
+              }`}>
+                {results.cashRecoveredPercent}
+              </span>
+              <span className="text-xl text-slate-600">%</span>
+            </div>
+            {/* Progress Bar */}
+            <div className="mt-3 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <div 
+                className={`h-full rounded-full transition-all duration-500 ${
+                  isSuccess ? "bg-emerald-500" : isClose ? "bg-amber-500" : "bg-slate-600"
+                }`}
+                style={{ width: `${Math.min(100, results.cashRecoveredPercent)}%` }}
+              />
+            </div>
+            <div className="mt-1 flex justify-between text-[10px] text-slate-600">
+              <span>0%</span>
+              <span>100%</span>
             </div>
           </div>
-          <button
-            onClick={() => setShowGuide(!showGuide)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors"
-          >
-            <HelpCircle className="w-4 h-4" />
-            <span className="text-sm">{showGuide ? "Skryť" : "Ako to funguje?"}</span>
-          </button>
-        </div>
 
-        {/* Guide */}
-        {showGuide && (
-          <div className="mt-6 pt-6 border-t border-slate-700/50">
-            <div className="grid grid-cols-5 gap-2">
-              {phases.map((phase, idx) => {
-                const Icon = phase.icon;
-                const colorClasses = {
-                  blue: "from-blue-500 to-blue-600",
-                  orange: "from-orange-500 to-orange-600",
-                  green: "from-green-500 to-green-600",
-                  purple: "from-purple-500 to-purple-600",
-                  emerald: "from-emerald-500 to-emerald-600",
-                };
-                
-                return (
-                  <div key={phase.id} className="text-center">
-                    <div className={`w-12 h-12 mx-auto rounded-xl bg-gradient-to-br ${colorClasses[phase.color as keyof typeof colorClasses]} flex items-center justify-center mb-2`}>
-                      <Icon className="w-6 h-6 text-white" />
+          {/* Key Metrics */}
+          <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-3">
+            <MiniMetric 
+              label="Investícia" 
+              value={`€${(results.totalInvestment / 1000).toFixed(0)}k`}
+            />
+            <MiniMetric 
+              label="Refinanc. úver" 
+              value={`€${(results.refinanceAmount / 1000).toFixed(0)}k`}
+              sublabel={`${inputs.refinanceLTV}% LTV`}
+            />
+            <MiniMetric 
+              label="Vybraná hotovosť" 
+              value={`€${results.cashRecovered.toLocaleString()}`}
+              highlight={results.cashRecovered > 0}
+            />
+            <MiniMetric 
+              label="Ročný Cash Flow" 
+              value={results.isInfiniteReturn ? "∞" : `€${results.annualCashFlow.toLocaleString()}`}
+              highlight={results.annualCashFlow > 0}
+              icon={results.isInfiniteReturn ? <Zap className="w-3 h-3" /> : undefined}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Presets */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-slate-600">Scenár:</span>
+        <div className="flex gap-2">
+          {PRESETS.map((preset) => {
+            const isActive = JSON.stringify(inputs) === JSON.stringify(preset.inputs);
+            return (
+              <button
+                key={preset.name}
+                onClick={() => applyPreset(preset)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  isActive
+                    ? "bg-violet-500/20 text-violet-400 border border-violet-500/30"
+                    : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+                }`}
+              >
+                {preset.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Inputs - Accordion Style */}
+        <div className="space-y-2">
+          {phases.map((phase) => {
+            const Icon = phase.icon;
+            const colors = getPhaseColor(phase.color);
+            const isExpanded = expandedPhase === phase.id;
+
+            return (
+              <div 
+                key={phase.id}
+                className={`rounded-xl border transition-all ${
+                  isExpanded ? `${colors.bg} ${colors.border}` : "bg-slate-800/20 border-slate-800/50"
+                }`}
+              >
+                {/* Phase Header */}
+                <button
+                  onClick={() => setExpandedPhase(isExpanded ? -1 : phase.id)}
+                  className="w-full p-4 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg ${colors.bg} flex items-center justify-center`}>
+                      <Icon className={`w-4 h-4 ${colors.text}`} />
                     </div>
-                    <div className="text-sm font-bold text-white">{phase.label}</div>
-                    <div className="text-xs text-slate-400 mt-1">{phase.description}</div>
-                    {idx < 4 && (
-                      <ArrowRight className="w-4 h-4 text-slate-600 mx-auto mt-2" />
+                    <div className="text-left">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-medium ${isExpanded ? "text-white" : "text-slate-300"}`}>
+                          {phase.label}
+                        </span>
+                        <span className="text-xs text-slate-600">• {phase.sublabel}</span>
+                      </div>
+                    </div>
+                  </div>
+                  {isExpanded ? (
+                    <ChevronUp className="w-4 h-4 text-slate-500" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-slate-500" />
+                  )}
+                </button>
+
+                {/* Phase Fields */}
+                {isExpanded && (
+                  <div className="px-4 pb-4 space-y-4">
+                    {phase.fields.map((field) => (
+                      <CompactSlider
+                        key={field.key}
+                        label={field.label}
+                        sublabel={field.sublabel}
+                        value={inputs[field.key as keyof BRRRRInputs]}
+                        min={field.min}
+                        max={field.max}
+                        step={field.step}
+                        format={field.format || "€"}
+                        decimals={field.decimals}
+                        color={phase.color}
+                        onChange={(v) => handleChange(field.key as keyof BRRRRInputs, v)}
+                      />
+                    ))}
+
+                    {/* Forced Equity Indicator in Rehab phase */}
+                    {phase.id === 1 && (
+                      <div className={`p-3 rounded-lg ${
+                        results.forcedEquity > 0 
+                          ? "bg-emerald-950/30 border border-emerald-500/20" 
+                          : "bg-red-950/30 border border-red-500/20"
+                      }`}>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-slate-500">Vytvorené equity</span>
+                          <span className={`text-sm font-medium ${
+                            results.forcedEquity > 0 ? "text-emerald-400" : "text-red-400"
+                          }`}>
+                            €{results.forcedEquity.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
                     )}
                   </div>
-                );
-              })}
-            </div>
-            
-            <div className="mt-6 p-4 bg-slate-800/50 rounded-xl">
-              <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
-                <Target className="w-4 h-4 text-emerald-400" />
-                Cieľ BRRRR stratégie
-              </h4>
-              <p className="text-sm text-slate-300">
-                Ideálne je vybrať <strong className="text-emerald-400">100%+ vloženého kapitálu</strong> pri refinancovaní, 
-                takže ostanete s nehnuteľnosťou, ktorá generuje pasívny príjem, 
-                ale <strong className="text-purple-400">neviazali ste v nej žiadnu hotovosť</strong>. 
-                Tú môžete použiť na ďalší deal.
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Preset scenáre */}
-      <div className="flex gap-3">
-        {PRESETS.map((preset) => (
-          <button
-            key={preset.name}
-            onClick={() => applyPreset(preset)}
-            className={`flex-1 p-4 rounded-xl border transition-all text-left ${
-              JSON.stringify(inputs) === JSON.stringify(preset.inputs)
-                ? "bg-purple-500/10 border-purple-500/50"
-                : "bg-slate-800/50 border-slate-700 hover:border-slate-600"
-            }`}
-          >
-            <div className="font-semibold text-white">{preset.name}</div>
-            <div className="text-xs text-slate-400 mt-1">{preset.description}</div>
-          </button>
-        ))}
-      </div>
-
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Inputs */}
-        <div className="space-y-6">
-          {/* Fáza 1: Buy */}
-          <div className="bg-slate-800/30 rounded-xl p-5 border border-slate-700">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                <Home className="w-4 h-4 text-blue-400" />
+                )}
               </div>
-              <h3 className="font-semibold text-white">1. Kúpa (Buy)</h3>
-            </div>
-            
-            <div className="space-y-4">
-              <SliderInput
-                label="Kúpna cena"
-                value={inputs.purchasePrice}
-                min={30000}
-                max={300000}
-                step={5000}
-                unit="€"
-                onChange={(v) => handleChange("purchasePrice", v)}
-                hint="Cena, za ktorú kúpite nehnuteľnosť"
-              />
-              <SliderInput
-                label="Náklady na kúpu"
-                value={inputs.purchaseCosts}
-                min={0}
-                max={20000}
-                step={500}
-                unit="€"
-                onChange={(v) => handleChange("purchaseCosts", v)}
-                hint="Notár, daň z prevodu, realitka..."
-              />
-            </div>
-          </div>
-
-          {/* Fáza 2: Rehab */}
-          <div className="bg-slate-800/30 rounded-xl p-5 border border-slate-700">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                <Wrench className="w-4 h-4 text-orange-400" />
-              </div>
-              <h3 className="font-semibold text-white">2. Rekonštrukcia (Rehab)</h3>
-            </div>
-            
-            <div className="space-y-4">
-              <SliderInput
-                label="Náklady na rekonštrukciu"
-                value={inputs.renovationCost}
-                min={0}
-                max={80000}
-                step={1000}
-                unit="€"
-                onChange={(v) => handleChange("renovationCost", v)}
-                hint="Celkové náklady na zhodnotenie"
-              />
-              <SliderInput
-                label="Hodnota po rekonštrukcii (ARV)"
-                value={inputs.afterRepairValue}
-                min={50000}
-                max={400000}
-                step={5000}
-                unit="€"
-                onChange={(v) => handleChange("afterRepairValue", v)}
-                hint="After Repair Value - trhovú cenu po úpravách"
-              />
-            </div>
-            
-            {/* Forced Equity indicator */}
-            <div className={`mt-4 p-3 rounded-lg ${results.forcedEquity > 0 ? "bg-emerald-500/10 border border-emerald-500/30" : "bg-red-500/10 border border-red-500/30"}`}>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-300">Vytvorené equity:</span>
-                <span className={`font-bold ${results.forcedEquity > 0 ? "text-emerald-400" : "text-red-400"}`}>
-                  €{results.forcedEquity.toLocaleString()}
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 mt-1">
-                {results.forcedEquity > 0 
-                  ? "Zhodnotili ste nehnuteľnosť! Toto equity môžete využiť pri refinancovaní."
-                  : "ARV musí byť vyššia ako celkové náklady pre úspešný BRRRR."}
-              </p>
-            </div>
-          </div>
-
-          {/* Fáza 3: Rent */}
-          <div className="bg-slate-800/30 rounded-xl p-5 border border-slate-700">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
-                <DollarSign className="w-4 h-4 text-green-400" />
-              </div>
-              <h3 className="font-semibold text-white">3. Prenájom (Rent)</h3>
-            </div>
-            
-            <div className="space-y-4">
-              <SliderInput
-                label="Mesačný nájom"
-                value={inputs.monthlyRent}
-                min={200}
-                max={1500}
-                step={50}
-                unit="€"
-                onChange={(v) => handleChange("monthlyRent", v)}
-              />
-              <SliderInput
-                label="Mesačné náklady"
-                value={inputs.monthlyExpenses}
-                min={0}
-                max={400}
-                step={10}
-                unit="€"
-                onChange={(v) => handleChange("monthlyExpenses", v)}
-                hint="Správa, poistenie, fond opráv..."
-              />
-            </div>
-          </div>
-
-          {/* Fáza 4: Refinance */}
-          <div className="bg-slate-800/30 rounded-xl p-5 border border-slate-700">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                <RefreshCw className="w-4 h-4 text-purple-400" />
-              </div>
-              <h3 className="font-semibold text-white">4. Refinancovanie (Refinance)</h3>
-            </div>
-            
-            <div className="space-y-4">
-              <SliderInput
-                label="LTV pri refinancovaní"
-                value={inputs.refinanceLTV}
-                min={50}
-                max={80}
-                step={5}
-                unit="%"
-                onChange={(v) => handleChange("refinanceLTV", v)}
-                hint="Loan-to-Value - koľko % z ARV vám banka požičia"
-              />
-              <SliderInput
-                label="Úroková sadzba"
-                value={inputs.refinanceInterestRate}
-                min={2}
-                max={8}
-                step={0.1}
-                unit="%"
-                decimals={1}
-                onChange={(v) => handleChange("refinanceInterestRate", v)}
-              />
-              <SliderInput
-                label="Doba splácania"
-                value={inputs.refinanceTerm}
-                min={10}
-                max={30}
-                step={5}
-                unit=" rokov"
-                onChange={(v) => handleChange("refinanceTerm", v)}
-              />
-            </div>
-          </div>
+            );
+          })}
         </div>
 
-        {/* Results */}
-        <div className="space-y-6">
-          {/* Hlavný výsledok */}
-          <div className={`rounded-2xl p-6 border ${
-            results.isInfiniteReturn || results.cashRecoveredPercent >= 100
-              ? "bg-gradient-to-br from-emerald-500/10 via-slate-900 to-emerald-500/5 border-emerald-500/30"
-              : results.cashRecoveredPercent >= 80
-                ? "bg-gradient-to-br from-yellow-500/10 via-slate-900 to-yellow-500/5 border-yellow-500/30"
-                : "bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 border-slate-700"
-          }`}>
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  {results.isInfiniteReturn || results.cashRecoveredPercent >= 100 ? (
-                    <>
-                      <CheckCircle className="w-6 h-6 text-emerald-400" />
-                      <span className="text-lg font-semibold text-emerald-400">Úspešný BRRRR!</span>
-                    </>
-                  ) : results.cashRecoveredPercent >= 80 ? (
-                    <>
-                      <AlertTriangle className="w-6 h-6 text-yellow-400" />
-                      <span className="text-lg font-semibold text-yellow-400">Takmer tam</span>
-                    </>
-                  ) : (
-                    <>
-                      <Info className="w-6 h-6 text-slate-400" />
-                      <span className="text-lg font-semibold text-slate-300">Upravte parametre</span>
-                    </>
-                  )}
-                </div>
-                <p className="text-sm text-slate-400">
-                  {results.isInfiniteReturn || results.cashRecoveredPercent >= 100
-                    ? "Vybrali ste všetku vloženú hotovosť a máte nehnuteľnosť s cash flow!"
-                    : results.cashRecoveredPercent >= 80
-                      ? "Blízko k vybraniu celej investície, zvážte vyššie ARV alebo LTV."
-                      : "Deal nie je optimálny pre BRRRR stratégiu."}
-                </p>
-              </div>
-              
-              <div className="text-right">
-                <div className="text-4xl font-bold tabular-nums">
-                  <span className={results.cashRecoveredPercent >= 100 ? "text-emerald-400" : results.cashRecoveredPercent >= 80 ? "text-yellow-400" : "text-slate-300"}>
-                    {results.cashRecoveredPercent}%
-                  </span>
-                </div>
-                <div className="text-xs text-slate-400">hotovosti vybranej</div>
-              </div>
+        {/* Results Column */}
+        <div className="space-y-4">
+          {/* Cash Flow Breakdown */}
+          <div className="p-5 rounded-xl bg-slate-800/20 border border-slate-800/50">
+            <div className="text-xs text-slate-500 uppercase tracking-wider mb-4">
+              Mesačný Cash Flow
             </div>
-
-            {/* Progress bar */}
-            <div className="mb-6">
-              <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    results.cashRecoveredPercent >= 100 ? "bg-emerald-500" : results.cashRecoveredPercent >= 80 ? "bg-yellow-500" : "bg-slate-500"
-                  }`}
-                  style={{ width: `${Math.min(100, results.cashRecoveredPercent)}%` }}
-                />
+            <div className="space-y-2">
+              <FlowLine label="Nájom" value={inputs.monthlyRent} />
+              <FlowLine label="Náklady" value={-inputs.monthlyExpenses} />
+              <FlowLine label="Splátka" value={-results.monthlyMortgagePayment} />
+              <div className="pt-3 mt-3 border-t border-slate-800">
+                <FlowLine label="Cash Flow" value={results.monthlyCashFlow} highlight />
               </div>
-              <div className="flex justify-between text-xs text-slate-500 mt-1">
-                <span>0%</span>
-                <span className="text-emerald-400">100% = Celá investícia</span>
-              </div>
-            </div>
-
-            {/* Key Metrics */}
-            <div className="grid grid-cols-2 gap-4">
-              <MetricCard
-                label="Celková investícia"
-                value={`€${results.totalInvestment.toLocaleString()}`}
-                sublabel="Hotovosť potrebná na začiatok"
-              />
-              <MetricCard
-                label="Refinančný úver"
-                value={`€${results.refinanceAmount.toLocaleString()}`}
-                sublabel={`${inputs.refinanceLTV}% z ARV`}
-              />
-              <MetricCard
-                label="Hotovosť vybraná"
-                value={`€${results.cashRecovered.toLocaleString()}`}
-                sublabel="Vrátená pri refinancovaní"
-                highlight={results.cashRecovered > 0}
-              />
-              <MetricCard
-                label="Hotovosť v deale"
-                value={`€${Math.max(0, results.cashLeftInDeal).toLocaleString()}`}
-                sublabel={results.cashLeftInDeal <= 0 ? "Nič! Bonus navyše." : "Ostáva viazaná"}
-                highlight={results.cashLeftInDeal <= 0}
-              />
             </div>
           </div>
 
-          {/* Cash Flow po refinancovaní */}
-          <div className="bg-slate-800/30 rounded-xl p-5 border border-slate-700">
-            <h4 className="font-semibold text-white mb-4 flex items-center gap-2">
-              <Wallet className="w-5 h-5 text-emerald-400" />
-              Cash Flow po refinancovaní
-            </h4>
-            
-            <div className="space-y-3">
-              <FlowRow label="Mesačný nájom" value={inputs.monthlyRent} isPositive />
-              <FlowRow label="Prevádzkové náklady" value={-inputs.monthlyExpenses} />
-              <FlowRow label="Splátka hypotéky" value={-results.monthlyMortgagePayment} />
-              <div className="border-t border-slate-700 pt-3">
-                <FlowRow 
-                  label="Mesačný Cash Flow" 
-                  value={results.monthlyCashFlow} 
-                  highlight 
-                />
-              </div>
+          {/* Equity Position */}
+          <div className="p-5 rounded-xl bg-slate-800/20 border border-slate-800/50">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs text-slate-500 uppercase tracking-wider">Equity pozícia</span>
+              <span className="text-xs text-slate-500">
+                {((results.equityPosition / inputs.afterRepairValue) * 100).toFixed(0)}% z ARV
+              </span>
             </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-4">
-              <div className="bg-slate-800/50 rounded-lg p-3">
-                <div className="text-xs text-slate-400 mb-1">Ročný Cash Flow</div>
-                <div className={`text-xl font-bold ${results.annualCashFlow >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                  €{results.annualCashFlow.toLocaleString()}
-                </div>
-              </div>
-              <div className="bg-slate-800/50 rounded-lg p-3">
-                <div className="text-xs text-slate-400 mb-1">Cash-on-Cash</div>
-                <div className="text-xl font-bold">
-                  {results.isInfiniteReturn ? (
-                    <span className="text-emerald-400 flex items-center gap-1">
-                      <Zap className="w-5 h-5" />∞
-                    </span>
-                  ) : (
-                    <span className={results.cashOnCash >= 8 ? "text-emerald-400" : "text-yellow-400"}>
-                      {results.cashOnCash.toFixed(1)}%
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {results.isInfiniteReturn && (
-              <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-emerald-400" />
-                  <span className="text-sm text-emerald-400 font-medium">Nekonečná návratnosť!</span>
-                </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  Nevložili ste žiadnu hotovosť a generujete pasívny príjem. 
-                  Toto je svätý grál BRRRR stratégie.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Equity pozícia */}
-          <div className="bg-slate-800/30 rounded-xl p-5 border border-slate-700">
-            <h4 className="font-semibold text-white mb-4 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-purple-400" />
-              Vaša equity pozícia
-            </h4>
-            
-            <div className="relative h-8 bg-slate-700 rounded-lg overflow-hidden mb-3">
-              <div
-                className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-purple-500 to-purple-400"
+            <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-violet-500 to-violet-400 rounded-full"
                 style={{ width: `${(results.equityPosition / inputs.afterRepairValue) * 100}%` }}
               />
-              <div
-                className="absolute right-0 top-0 bottom-0 bg-gradient-to-r from-slate-600 to-slate-500"
-                style={{ width: `${(results.refinanceAmount / inputs.afterRepairValue) * 100}%` }}
-              />
             </div>
-            
-            <div className="flex justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded bg-purple-500" />
-                <span className="text-slate-400">Vaše equity: </span>
-                <span className="font-medium text-purple-400">
-                  €{results.equityPosition.toLocaleString()} ({((results.equityPosition / inputs.afterRepairValue) * 100).toFixed(0)}%)
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded bg-slate-500" />
-                <span className="text-slate-400">Dlh</span>
-              </div>
+            <div className="mt-3 flex items-center justify-between text-sm">
+              <span className="text-violet-400 font-medium">€{results.equityPosition.toLocaleString()}</span>
+              <span className="text-slate-600">ARV: €{inputs.afterRepairValue.toLocaleString()}</span>
             </div>
           </div>
 
-          {/* Zhrnutie */}
-          <div className="bg-gradient-to-r from-purple-500/10 to-emerald-500/10 rounded-xl p-5 border border-purple-500/20">
-            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
-              <Repeat className="w-5 h-5 text-purple-400" />
-              5. Repeat - Čo môžete urobiť ďalej
-            </h4>
-            
-            <ul className="space-y-2 text-sm text-slate-300">
-              {results.cashRecovered > 0 && (
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
-                  <span>
-                    Máte <strong className="text-emerald-400">€{results.cashRecovered.toLocaleString()}</strong> na ďalší deal.
-                  </span>
-                </li>
-              )}
-              {results.annualCashFlow > 0 && (
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
-                  <span>
-                    Generujete <strong className="text-emerald-400">€{results.annualCashFlow.toLocaleString()}</strong> ročne pasívne.
-                  </span>
-                </li>
-              )}
-              <li className="flex items-start gap-2">
-                <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-                <span>
-                  Hodnota nehnuteľnosti: <strong className="text-blue-400">€{inputs.afterRepairValue.toLocaleString()}</strong>
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <TrendingUp className="w-4 h-4 text-purple-400 mt-0.5 shrink-0" />
-                <span>
-                  Celková návratnosť (ROI): <strong className="text-purple-400">{results.roi}%</strong>
-                </span>
-              </li>
-            </ul>
+          {/* Summary Grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <SummaryTile
+              label="Cash-on-Cash"
+              value={results.isInfiniteReturn ? "∞" : `${results.cashOnCash.toFixed(1)}%`}
+              good={results.cashOnCash >= 8 || results.isInfiniteReturn}
+            />
+            <SummaryTile
+              label="ROI"
+              value={`${results.roi}%`}
+              good={results.roi > 0}
+            />
+            <SummaryTile
+              label="Hotovosť v deale"
+              value={`€${Math.max(0, results.cashLeftInDeal).toLocaleString()}`}
+              good={results.cashLeftInDeal <= 0}
+            />
+            <SummaryTile
+              label="ARV"
+              value={`€${(inputs.afterRepairValue / 1000).toFixed(0)}k`}
+            />
           </div>
+
+          {/* Success Message */}
+          {isSuccess && (
+            <div className="p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/20">
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="w-4 h-4 text-emerald-400" />
+                <span className="text-sm font-medium text-emerald-400">Nekonečná návratnosť</span>
+              </div>
+              <p className="text-xs text-slate-500">
+                Vybrali ste všetku investovanú hotovosť a máte nehnuteľnosť generujúcu pasívny príjem. 
+                Použite €{results.cashRecovered.toLocaleString()} na ďalší deal.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-// ============================================
-// HELPER KOMPONENTY
-// ============================================
-
-function SliderInput({
+// Compact Slider
+function CompactSlider({
   label,
+  sublabel,
   value,
   min,
   max,
   step,
-  unit,
+  format,
   decimals = 0,
-  hint,
+  color,
   onChange,
 }: {
   label: string;
+  sublabel?: string;
   value: number;
   min: number;
   max: number;
   step: number;
-  unit: string;
+  format: string;
   decimals?: number;
-  hint?: string;
+  color: string;
   onChange: (value: number) => void;
 }) {
   const percentage = ((value - min) / (max - min)) * 100;
+  const colorClass = {
+    blue: "from-blue-500/80 to-blue-400/80",
+    orange: "from-orange-500/80 to-orange-400/80",
+    green: "from-green-500/80 to-green-400/80",
+    violet: "from-violet-500/80 to-violet-400/80",
+  }[color] || "from-slate-500/80 to-slate-400/80";
+
+  const formatValue = () => {
+    const num = decimals > 0 ? value.toFixed(decimals) : value.toLocaleString();
+    return format === "€" ? `€${num}` : `${num}${format}`;
+  };
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm text-slate-300">{label}</span>
-        <span className="text-lg font-bold text-white tabular-nums">
-          {decimals > 0 ? value.toFixed(decimals) : value.toLocaleString()}{unit}
-        </span>
+        <div>
+          <span className="text-sm text-slate-400">{label}</span>
+          {sublabel && <span className="text-xs text-slate-600 ml-2">{sublabel}</span>}
+        </div>
+        <span className="text-sm font-medium text-white tabular-nums">{formatValue()}</span>
       </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
-        style={{
-          background: `linear-gradient(to right, #a855f7 0%, #a855f7 ${percentage}%, #334155 ${percentage}%, #334155 100%)`,
-        }}
-      />
-      {hint && <p className="text-xs text-slate-500">{hint}</p>}
+      <div className="relative h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+        <div 
+          className={`absolute inset-y-0 left-0 bg-gradient-to-r ${colorClass} rounded-full`}
+          style={{ width: `${percentage}%` }}
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="absolute inset-0 w-full opacity-0 cursor-pointer"
+        />
+      </div>
     </div>
   );
 }
 
-function MetricCard({
-  label,
-  value,
-  sublabel,
+// Mini Metric
+function MiniMetric({ 
+  label, 
+  value, 
+  sublabel, 
   highlight,
-}: {
-  label: string;
-  value: string;
-  sublabel: string;
+  icon 
+}: { 
+  label: string; 
+  value: string; 
+  sublabel?: string; 
   highlight?: boolean;
+  icon?: React.ReactNode;
 }) {
   return (
-    <div className={`p-4 rounded-xl ${highlight ? "bg-emerald-500/10 border border-emerald-500/30" : "bg-slate-800/50"}`}>
-      <div className="text-xs text-slate-400 mb-1">{label}</div>
-      <div className={`text-xl font-bold ${highlight ? "text-emerald-400" : "text-white"}`}>
+    <div className="p-3 rounded-lg bg-slate-800/30 border border-slate-800/50">
+      <div className="text-[10px] text-slate-600 uppercase tracking-wider">{label}</div>
+      <div className={`text-lg font-medium flex items-center gap-1 ${highlight ? "text-emerald-400" : "text-slate-300"}`}>
+        {icon}
         {value}
       </div>
-      <div className="text-xs text-slate-500 mt-1">{sublabel}</div>
+      {sublabel && <div className="text-[10px] text-slate-600">{sublabel}</div>}
     </div>
   );
 }
 
-function FlowRow({
-  label,
-  value,
-  isPositive,
-  highlight,
-}: {
-  label: string;
-  value: number;
-  isPositive?: boolean;
-  highlight?: boolean;
-}) {
-  const valuePositive = value >= 0;
-  
+// Flow Line
+function FlowLine({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
+  const isPositive = value >= 0;
   return (
-    <div className={`flex justify-between items-center ${highlight ? "font-semibold" : ""}`}>
-      <span className={highlight ? "text-white" : "text-slate-400"}>{label}</span>
-      <span className={`font-medium ${
-        highlight
-          ? valuePositive ? "text-emerald-400" : "text-red-400"
-          : valuePositive ? "text-emerald-400/70" : "text-red-400/70"
+    <div className="flex justify-between items-center">
+      <span className={`text-sm ${highlight ? "text-white font-medium" : "text-slate-500"}`}>{label}</span>
+      <span className={`text-sm font-medium tabular-nums ${
+        highlight 
+          ? isPositive ? "text-emerald-400" : "text-red-400"
+          : isPositive ? "text-slate-400" : "text-red-400/70"
       }`}>
-        {valuePositive ? "+" : ""}€{Math.abs(value).toLocaleString()}
+        {isPositive ? "+" : ""}€{Math.abs(value).toLocaleString()}
       </span>
+    </div>
+  );
+}
+
+// Summary Tile
+function SummaryTile({ label, value, good }: { label: string; value: string; good?: boolean }) {
+  return (
+    <div className="p-3 rounded-lg bg-slate-800/20 border border-slate-800/30">
+      <div className="text-[10px] text-slate-600 uppercase tracking-wider">{label}</div>
+      <div className={`text-lg font-medium ${
+        good === undefined ? "text-slate-300" : good ? "text-emerald-400" : "text-slate-400"
+      }`}>
+        {value}
+      </div>
     </div>
   );
 }
