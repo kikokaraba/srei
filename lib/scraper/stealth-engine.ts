@@ -63,8 +63,8 @@ const DEFAULT_CONFIG: StealthConfig = {
   maxRetries: 5,
   baseBackoff: 2000,
   maxBackoff: 60000, // 1 minúta max
-  maxPagesPerCategory: 3, // Len prvé 3 strany
-  maxRequestsPerSession: 50,
+  maxPagesPerCategory: 20, // 20 strán = ~600 inzerátov na kategóriu
+  maxRequestsPerSession: 200,
 };
 
 // ============================================================================
