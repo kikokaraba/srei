@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { 
   Calculator, 
   Receipt, 
@@ -14,13 +15,20 @@ import {
   Shield,
   Repeat,
   Info,
+  Banknote,
 } from "lucide-react";
 import { ScenarioSimulator } from "@/components/dashboard/ScenarioSimulator";
 import { TaxAssistant } from "@/components/dashboard/TaxAssistant";
 import { BRRRRCalculator } from "@/components/calculators/BRRRRCalculator";
 import PremiumGate from "@/components/ui/PremiumGate";
 
-type CalculatorType = "investment" | "tax" | "brrrr" | null;
+// Dynamic import for MortgageCalculator to avoid SSR issues
+const MortgageCalculator = dynamic(
+  () => import("@/components/tools/MortgageCalculator"),
+  { ssr: false }
+);
+
+type CalculatorType = "investment" | "tax" | "brrrr" | "mortgage" | null;
 
 export default function CalculatorsPage() {
   const [openCalculator, setOpenCalculator] = useState<CalculatorType>(null);
@@ -83,6 +91,25 @@ export default function CalculatorsPage() {
         "Equity pozícia",
       ],
     },
+    {
+      id: "mortgage" as const,
+      name: "Hypokalkulačka",
+      subtitle: "Výpočet hypotéky a splátok",
+      description: "Vypočítajte mesačné splátky hypotéky, celkové náklady na úver a porovnajte ponuky slovenských bánk. Vrátane amortizačného plánu.",
+      icon: Banknote,
+      accentColor: "amber",
+      stats: [
+        { label: "Úrok 2026", value: "3.5-5%" },
+        { label: "LTV max", value: "80-90%" },
+        { label: "Splatnosť", value: "5-30 rokov" },
+      ],
+      capabilities: [
+        "Porovnanie bánk",
+        "Mesačná splátka",
+        "Amortizačný plán",
+        "Potrebný príjem",
+      ],
+    },
   ];
 
   const getAccentClasses = (color: string) => {
@@ -110,6 +137,14 @@ export default function CalculatorsPage() {
         borderHover: "hover:border-violet-500/40",
         text: "text-violet-400",
         glow: "shadow-violet-500/20",
+      },
+      amber: {
+        bg: "bg-amber-500",
+        bgLight: "bg-amber-500/10",
+        border: "border-amber-500/20",
+        borderHover: "hover:border-amber-500/40",
+        text: "text-amber-400",
+        glow: "shadow-amber-500/20",
       },
     };
     return classes[color as keyof typeof classes] || classes.emerald;
@@ -244,14 +279,18 @@ export default function CalculatorsPage() {
                 {/* Expanded Calculator Content */}
                 {isOpen && (
                   <div className="relative p-6">
-                    <PremiumGate 
-                      feature={calc.id === "tax" ? "advancedTax" : "scenarioSimulator"} 
-                      minHeight="400px"
-                    >
-                      {calc.id === "investment" && <ScenarioSimulator />}
-                      {calc.id === "tax" && <TaxAssistant />}
-                      {calc.id === "brrrr" && <BRRRRCalculator />}
-                    </PremiumGate>
+                    {calc.id === "mortgage" ? (
+                      <MortgageCalculator />
+                    ) : (
+                      <PremiumGate 
+                        feature={calc.id === "tax" ? "advancedTax" : "scenarioSimulator"} 
+                        minHeight="400px"
+                      >
+                        {calc.id === "investment" && <ScenarioSimulator />}
+                        {calc.id === "tax" && <TaxAssistant />}
+                        {calc.id === "brrrr" && <BRRRRCalculator />}
+                      </PremiumGate>
+                    )}
                   </div>
                 )}
               </div>
@@ -268,7 +307,7 @@ export default function CalculatorsPage() {
             <span className="text-sm text-slate-500">Rýchla referencia</span>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <QuickRefCard
               icon={BarChart3}
               title="Výnosový benchmark"
@@ -294,6 +333,15 @@ export default function CalculatorsPage() {
                 { label: "Cash späť", value: "100%+", good: true },
                 { label: "Refinanc. LTV", value: "75%", good: null },
                 { label: "Cash flow", value: "Pozitívny", good: true },
+              ]}
+            />
+            <QuickRefCard
+              icon={Banknote}
+              title="Hypotéka 2026"
+              items={[
+                { label: "Úrok", value: "3.5-5%", good: null },
+                { label: "Max LTV", value: "80-90%", good: null },
+                { label: "DSTI limit", value: "40-50%", good: null },
               ]}
             />
           </div>
