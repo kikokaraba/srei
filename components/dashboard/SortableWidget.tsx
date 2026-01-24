@@ -14,6 +14,8 @@ import { RecentProperties } from "./RecentProperties";
 import { EconomicIndicators } from "./EconomicIndicators";
 import HotDeals from "./HotDeals";
 import PropertyMatches from "./PropertyMatches";
+import PremiumGate from "@/components/ui/PremiumGate";
+import { FeatureKey } from "@/lib/access-control";
 
 const WIDGET_COMPONENTS = {
   "hot-deals": HotDeals,
@@ -28,6 +30,13 @@ const WIDGET_COMPONENTS = {
   "market-overview": MarketOverview,
   "recent-properties": RecentProperties,
 } as const;
+
+// Mapovanie widgetov na premium features
+const PREMIUM_WIDGETS: Partial<Record<keyof typeof WIDGET_COMPONENTS, FeatureKey>> = {
+  "scenario-simulator": "scenarioSimulator",
+  "urban-development": "urbanDevelopment",
+  "property-matches": "aiMatching",
+};
 
 type WidgetId = keyof typeof WIDGET_COMPONENTS;
 
@@ -65,6 +74,26 @@ export function SortableWidget({
   };
 
   const Component = WIDGET_COMPONENTS[id];
+  const premiumFeature = PREMIUM_WIDGETS[id];
+
+  // Render widget content, wrapped in PremiumGate if needed
+  const renderContent = () => {
+    const widgetContent = <Component />;
+    
+    if (premiumFeature) {
+      return (
+        <PremiumGate 
+          feature={premiumFeature} 
+          minHeight="300px"
+          fallback={widgetContent}
+        >
+          {widgetContent}
+        </PremiumGate>
+      );
+    }
+    
+    return widgetContent;
+  };
 
   return (
     <div
@@ -94,7 +123,7 @@ export function SortableWidget({
         </div>
       )}
       <div className={isEditMode ? "ml-12" : ""}>
-        <Component />
+        {renderContent()}
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Calculator, Receipt, TrendingUp, Sparkles, PiggyBank } from "lucide-react";
 import { ScenarioSimulator } from "@/components/dashboard/ScenarioSimulator";
 import { TaxAssistant } from "@/components/dashboard/TaxAssistant";
+import PremiumGate from "@/components/ui/PremiumGate";
 
 type CalculatorType = "investment" | "tax";
 
@@ -82,8 +83,16 @@ export default function CalculatorsPage() {
 
       {/* Active Calculator */}
       <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
-        {activeCalculator === "investment" && <ScenarioSimulator />}
-        {activeCalculator === "tax" && <TaxAssistant />}
+        {activeCalculator === "investment" && (
+          <PremiumGate feature="scenarioSimulator" minHeight="400px">
+            <ScenarioSimulator />
+          </PremiumGate>
+        )}
+        {activeCalculator === "tax" && (
+          <PremiumGate feature="advancedTax" minHeight="400px">
+            <TaxAssistant />
+          </PremiumGate>
+        )}
       </div>
 
       {/* Footer Tips */}

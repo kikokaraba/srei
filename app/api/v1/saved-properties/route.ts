@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getLimit } from "@/lib/access-control";
+import { UserRole } from "@/generated/prisma/client";
 
 // GET - Získanie uložených nehnuteľností používateľa
 export async function GET() {
@@ -65,6 +67,40 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { success: false, error: "Property ID is required" },
         { status: 400 }
+      );
+    }
+
+    // Kontrola limitu pre FREE používateľov
+    const userRole = session.user.role as UserRole;
+    const maxSaved = getLimit(userRole, "maxSavedProperties");
+    
+    // Spočítaj aktuálny počet uložených
+    const currentCount = await prisma.savedProperty.count({
+      where: { userId: session.user.id },
+    });
+    
+    // Skontroluj či už existuje (update vs create)
+    const existingSaved = await prisma.savedProperty.findUnique({
+      where: {
+        userId_propertyId: {
+          userId: session.user.id,
+          propertyId,
+        },
+      },
+    });
+    
+    // Ak vytvára novú a je na limite
+    if (!existingSaved && currentCount >= maxSaved) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: "Dosiahli ste limit uložených nehnuteľností",
+          limitReached: true,
+          currentCount,
+          maxAllowed: maxSaved,
+          upgradeRequired: userRole === "FREE_USER",
+        },
+        { status: 403 }
       );
     }
 

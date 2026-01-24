@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getLimit } from "@/lib/access-control";
+import { UserRole } from "@/generated/prisma/client";
 
 // GET - Načítať portfólio používateľa
 export async function GET() {
@@ -106,6 +108,32 @@ export async function POST(request: Request) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Kontrola limitu pre FREE používateľov
+    const userRole = session.user.role as UserRole;
+    const maxPortfolio = getLimit(userRole, "maxPortfolioItems");
+    
+    // Spočítaj aktuálny počet položiek v portfóliu
+    const currentCount = await prisma.portfolioProperty.count({
+      where: { 
+        userId: session.user.id,
+        status: { not: "SOLD" }, // Len aktívne
+      },
+    });
+    
+    if (currentCount >= maxPortfolio) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: "Dosiahli ste limit položiek v portfóliu",
+          limitReached: true,
+          currentCount,
+          maxAllowed: maxPortfolio,
+          upgradeRequired: userRole === "FREE_USER",
+        },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();

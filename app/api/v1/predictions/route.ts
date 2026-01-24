@@ -11,12 +11,28 @@ import {
   assessRisk,
 } from "@/lib/predictions/investment-score";
 import type { PriceDataPoint } from "@/lib/predictions/types";
+import { canAccess } from "@/lib/access-control";
+import { UserRole } from "@/generated/prisma/client";
 
 export async function GET(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Kontrola prístupu k AI predikciam
+    const userRole = session.user.role as UserRole;
+    if (!canAccess(userRole, "aiPredictions")) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: "AI predikcie sú dostupné len pre Premium používateľov",
+          premiumRequired: true,
+          feature: "aiPredictions",
+        },
+        { status: 403 }
+      );
     }
 
     const { searchParams } = new URL(request.url);

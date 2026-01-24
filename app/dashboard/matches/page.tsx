@@ -14,6 +14,7 @@ import {
   Building,
   RefreshCw,
 } from "lucide-react";
+import PremiumGate from "@/components/ui/PremiumGate";
 
 // Source badge colors and labels
 const SOURCE_COLORS: Record<string, string> = {
@@ -103,7 +104,7 @@ async function fetchMatchDetail(id: string): Promise<MatchDetail> {
   return data.data;
 }
 
-export default function MatchesPage() {
+function MatchesContent() {
   const queryClient = useQueryClient();
   const [minScore, setMinScore] = useState(60);
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
@@ -418,5 +419,13 @@ export default function MatchesPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function MatchesPage() {
+  return (
+    <PremiumGate feature="aiMatching" minHeight="500px">
+      <MatchesContent />
+    </PremiumGate>
   );
 }
