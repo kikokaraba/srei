@@ -430,7 +430,8 @@ model UserPreferences {
   trackedStreets        String   @db.Text // JSON array of street names
   
   // Typ investície
-  investmentType        String?  // "future-potential", "high-yield", "stable-growth", "flip", "rental"
+  investmentType        String?  // Legacy: "future-potential", "high-yield", "stable-growth", "flip", "rental"
+  investmentTypes       String   @default("[]") @db.Text // JSON array of investment types
   minYield              Float?   // Minimálny požadovaný výnos
   maxYield              Float?   // Maximálny výnos
   minPrice              Float?   // Minimálna cena

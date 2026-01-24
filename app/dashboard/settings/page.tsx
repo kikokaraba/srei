@@ -56,7 +56,7 @@ export default function SettingsPage() {
     trackedRegions: [] as string[],
     trackedDistricts: [] as string[],
     trackedCities: [] as string[],
-    investmentType: null as string | null,
+    investmentTypes: [] as string[],
     minYield: null as number | null,
     maxPrice: null as number | null,
     notifyMarketGaps: true,
@@ -80,11 +80,19 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (preferences) {
+      // Handle both old single investmentType and new investmentTypes array
+      let investmentTypes: string[] = [];
+      if (preferences.investmentTypes) {
+        investmentTypes = safeJsonParse(preferences.investmentTypes, []) as string[];
+      } else if (preferences.investmentType) {
+        investmentTypes = [preferences.investmentType];
+      }
+      
       setFormData({
         trackedRegions: safeJsonParse(preferences.trackedRegions, []) as string[],
         trackedDistricts: safeJsonParse(preferences.trackedDistricts, []) as string[],
         trackedCities: safeJsonParse(preferences.trackedCities, []) as string[],
-        investmentType: preferences.investmentType || null,
+        investmentTypes,
         minYield: preferences.minYield || null,
         maxPrice: preferences.maxPrice || null,
         notifyMarketGaps: preferences.notifyMarketGaps ?? true,
@@ -100,7 +108,7 @@ export default function SettingsPage() {
       trackedRegions: formData.trackedRegions,
       trackedDistricts: formData.trackedDistricts,
       trackedCities: formData.trackedCities,
-      investmentType: formData.investmentType,
+      investmentTypes: formData.investmentTypes,
       minYield: formData.minYield,
       maxPrice: formData.maxPrice,
       notifyMarketGaps: formData.notifyMarketGaps,
@@ -219,27 +227,47 @@ export default function SettingsPage() {
               <h2 className="text-xl font-bold text-white">Typ investície</h2>
             </div>
 
+            <p className="text-xs text-slate-500 mb-3">Môžete vybrať viac možností</p>
             <div className="space-y-2">
-              {INVESTMENT_TYPES.map((type) => (
-                <button
-                  key={type.id}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, investmentType: type.id })}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
-                    formData.investmentType === type.id
-                      ? "bg-amber-500/20 border border-amber-500/50"
-                      : "bg-slate-800/30 border border-slate-700/50 hover:bg-slate-800/50"
-                  }`}
-                >
-                  <span className="text-xl">{type.icon}</span>
-                  <span className={formData.investmentType === type.id ? "text-white font-medium" : "text-slate-300"}>
-                    {type.label}
-                  </span>
-                  {formData.investmentType === type.id && (
-                    <Check className="w-4 h-4 text-amber-400 ml-auto" />
-                  )}
-                </button>
-              ))}
+              {INVESTMENT_TYPES.map((type) => {
+                const isSelected = formData.investmentTypes.includes(type.id);
+                return (
+                  <button
+                    key={type.id}
+                    type="button"
+                    onClick={() => {
+                      if (isSelected) {
+                        setFormData({ 
+                          ...formData, 
+                          investmentTypes: formData.investmentTypes.filter(t => t !== type.id) 
+                        });
+                      } else {
+                        setFormData({ 
+                          ...formData, 
+                          investmentTypes: [...formData.investmentTypes, type.id] 
+                        });
+                      }
+                    }}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
+                      isSelected
+                        ? "bg-amber-500/20 border border-amber-500/50"
+                        : "bg-slate-800/30 border border-slate-700/50 hover:bg-slate-800/50"
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                      isSelected
+                        ? "bg-amber-500 border-amber-500"
+                        : "border-slate-600 hover:border-slate-500"
+                    }`}>
+                      {isSelected && <Check className="w-3 h-3 text-white" />}
+                    </div>
+                    <span className="text-xl">{type.icon}</span>
+                    <span className={isSelected ? "text-white font-medium" : "text-slate-300"}>
+                      {type.label}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             <div className="grid grid-cols-2 gap-3 mt-4">

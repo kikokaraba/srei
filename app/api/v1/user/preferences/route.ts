@@ -77,6 +77,7 @@ export async function POST(request: Request) {
       trackedDistricts,
       trackedStreets,
       investmentType,
+      investmentTypes,
       minYield,
       maxYield,
       minPrice,
@@ -149,6 +150,9 @@ export async function POST(request: Request) {
       updateData.trackedStreets = trackedStreets ? JSON.stringify(trackedStreets) : JSON.stringify([]);
     }
     if (investmentType !== undefined) updateData.investmentType = investmentType || null;
+    if (investmentTypes !== undefined) {
+      updateData.investmentTypes = investmentTypes ? (Array.isArray(investmentTypes) ? JSON.stringify(investmentTypes) : investmentTypes) : JSON.stringify([]);
+    }
     if (minYield !== undefined) updateData.minYield = minYield || null;
     if (maxYield !== undefined) updateData.maxYield = maxYield || null;
     if (minPrice !== undefined) updateData.minPrice = minPrice || null;
@@ -217,6 +221,7 @@ export async function POST(request: Request) {
       trackedDistricts: trackedDistricts !== undefined ? (trackedDistricts ? JSON.stringify(trackedDistricts) : JSON.stringify([])) : JSON.stringify([]),
       trackedStreets: trackedStreets !== undefined ? (trackedStreets ? JSON.stringify(trackedStreets) : JSON.stringify([])) : JSON.stringify([]),
       investmentType: investmentType !== undefined ? (investmentType || null) : null,
+      investmentTypes: investmentTypes !== undefined ? (investmentTypes ? (Array.isArray(investmentTypes) ? JSON.stringify(investmentTypes) : investmentTypes) : JSON.stringify([])) : JSON.stringify([]),
       minYield: minYield !== undefined ? (minYield || null) : null,
       maxYield: maxYield !== undefined ? (maxYield || null) : null,
       minPrice: minPrice !== undefined ? (minPrice || null) : null,
