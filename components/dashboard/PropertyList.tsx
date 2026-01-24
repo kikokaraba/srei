@@ -112,6 +112,50 @@ const defaultFilters: Filters = {
   sortOrder: "desc",
 };
 
+// Calculate investment score (0-100) based on multiple factors
+function calculateInvestorScore(property: Property): number {
+  let score = 50; // Base score
+  
+  // Yield factor (max +30)
+  if (property.investmentMetrics) {
+    const yieldBonus = Math.min(property.investmentMetrics.gross_yield * 5, 30);
+    score += yieldBonus;
+  }
+  
+  // Price per m2 factor - lower is better for investment (max +15)
+  if (property.price_per_m2 < 1500) score += 15;
+  else if (property.price_per_m2 < 2000) score += 10;
+  else if (property.price_per_m2 < 2500) score += 5;
+  else if (property.price_per_m2 > 3500) score -= 5;
+  
+  // Hot deal bonus (+10)
+  if (property.is_distressed) score += 10;
+  
+  // Days on market - longer might mean motivated seller (max +5)
+  if (property.days_on_market > 60) score += 5;
+  else if (property.days_on_market > 30) score += 3;
+  
+  // Condition bonus
+  if (property.condition === "REKONSTRUKCIA") score += 3;
+  if (property.condition === "NOVOSTAVBA") score += 5;
+  
+  return Math.min(Math.max(score, 0), 100);
+}
+
+function getScoreColor(score: number): string {
+  if (score >= 80) return "text-emerald-400 bg-emerald-500/20 border-emerald-500/30";
+  if (score >= 65) return "text-gold-400 bg-gold-500/20 border-gold-500/30";
+  if (score >= 50) return "text-blue-400 bg-blue-500/20 border-blue-500/30";
+  return "text-slate-400 bg-slate-500/20 border-slate-500/30";
+}
+
+function getScoreLabel(score: number): string {
+  if (score >= 80) return "Výborná";
+  if (score >= 65) return "Dobrá";
+  if (score >= 50) return "Priemerná";
+  return "Nízka";
+}
+
 export function PropertyList() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -578,12 +622,26 @@ export function PropertyList() {
                     </div>
                   )}
 
-                  {/* Distressed badge */}
-                  {property.is_distressed && (
-                    <div className="inline-block px-2 py-1 bg-amber-500/20 text-amber-400 text-xs rounded-full">
-                      Výhodná ponuka
-                    </div>
-                  )}
+                  {/* Investment Score + Distressed badge */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {/* Investment Score */}
+                    {(() => {
+                      const score = calculateInvestorScore(property);
+                      return (
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold ${getScoreColor(score)}`}>
+                          <TrendingUp className="w-3 h-3" />
+                          <span>{score}</span>
+                          <span className="opacity-70">/ 100</span>
+                        </div>
+                      );
+                    })()}
+                    
+                    {property.is_distressed && (
+                      <div className="inline-block px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full font-medium">
+                        🔥 Hot Deal
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -608,9 +666,18 @@ export function PropertyList() {
                       <h3 className="font-semibold text-slate-100 truncate">
                         {property.title}
                       </h3>
+                      {/* Investment Score Badge */}
+                      {(() => {
+                        const score = calculateInvestorScore(property);
+                        return (
+                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${getScoreColor(score)}`}>
+                            {score}/100
+                          </span>
+                        );
+                      })()}
                       {property.is_distressed && (
-                        <span className="px-2 py-0.5 bg-amber-500/20 text-amber-400 text-xs rounded-full">
-                          Výhodná
+                        <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded-full">
+                          🔥 Hot
                         </span>
                       )}
                     </div>
