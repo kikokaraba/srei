@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" },
       take: 20,
       include: {
-        market_gap: true,
+        marketGaps: true,
       },
     });
     
@@ -166,8 +166,8 @@ export async function GET(request: NextRequest) {
         price: deal.price,
         pricePerM2: deal.price_per_m2,
         areaM2: deal.area_m2,
-        gapPercentage: deal.market_gap?.gap_percentage,
-        potentialProfit: deal.market_gap?.potential_profit,
+        gapPercentage: deal.marketGaps?.[0]?.gap_percentage,
+        potentialProfit: deal.marketGaps?.[0]?.potential_profit,
         sourceUrl: deal.source_url,
         createdAt: deal.createdAt.toISOString(),
       })),
