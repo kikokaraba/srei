@@ -72,6 +72,7 @@ export async function POST(request: Request) {
     }
     const {
       primaryCity,
+      trackedRegions,
       trackedCities,
       trackedDistricts,
       trackedStreets,
@@ -134,6 +135,9 @@ export async function POST(request: Request) {
     
     if (primaryCity !== undefined) {
       updateData.primaryCity = primaryCityEnum;
+    }
+    if (trackedRegions !== undefined) {
+      updateData.trackedRegions = trackedRegions ? JSON.stringify(trackedRegions) : JSON.stringify([]);
     }
     if (trackedCities !== undefined) {
       updateData.trackedCities = trackedCities ? JSON.stringify(trackedCities) : JSON.stringify([]);
@@ -208,6 +212,7 @@ export async function POST(request: Request) {
     const createData: Prisma.UserPreferencesUncheckedCreateInput = {
       userId: session.user.id,
       primaryCity: primaryCityEnum !== undefined ? primaryCityEnum : null,
+      trackedRegions: trackedRegions !== undefined ? (trackedRegions ? JSON.stringify(trackedRegions) : JSON.stringify([])) : JSON.stringify([]),
       trackedCities: trackedCities !== undefined ? (trackedCities ? JSON.stringify(trackedCities) : JSON.stringify([])) : JSON.stringify([]),
       trackedDistricts: trackedDistricts !== undefined ? (trackedDistricts ? JSON.stringify(trackedDistricts) : JSON.stringify([])) : JSON.stringify([]),
       trackedStreets: trackedStreets !== undefined ? (trackedStreets ? JSON.stringify(trackedStreets) : JSON.stringify([])) : JSON.stringify([]),

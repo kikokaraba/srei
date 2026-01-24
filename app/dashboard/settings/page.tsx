@@ -2,11 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { MapPin, TrendingUp, Bell, Save, Settings as SettingsIcon, Check, Sparkles } from "lucide-react";
+import { TrendingUp, Bell, Save, Settings as SettingsIcon, Check, Sparkles, Map } from "lucide-react";
 import { AdvancedFilters } from "@/components/dashboard/AdvancedFilters";
-import { CITY_OPTIONS } from "@/lib/constants";
-
-const SLOVAK_CITIES = CITY_OPTIONS;
+import { LocationPicker } from "@/components/ui/LocationPicker";
 
 const INVESTMENT_TYPES = [
   { id: "future-potential", label: "Investície s budúcim potenciálom", icon: "🚀" },
@@ -55,7 +53,8 @@ export default function SettingsPage() {
   });
 
   const [formData, setFormData] = useState({
-    primaryCity: null as string | null,
+    trackedRegions: [] as string[],
+    trackedDistricts: [] as string[],
     trackedCities: [] as string[],
     investmentType: null as string | null,
     minYield: null as number | null,
@@ -71,7 +70,8 @@ export default function SettingsPage() {
   useEffect(() => {
     if (preferences) {
       setFormData({
-        primaryCity: preferences.primaryCity || null,
+        trackedRegions: preferences.trackedRegions ? JSON.parse(preferences.trackedRegions) : [],
+        trackedDistricts: preferences.trackedDistricts ? JSON.parse(preferences.trackedDistricts) : [],
         trackedCities: preferences.trackedCities ? JSON.parse(preferences.trackedCities) : [],
         investmentType: preferences.investmentType || null,
         minYield: preferences.minYield || null,
@@ -85,7 +85,19 @@ export default function SettingsPage() {
   }, [preferences]);
 
   const handleSave = useCallback(() => {
-    saveMutation.mutate({ ...formData, onboardingCompleted: true }, {
+    saveMutation.mutate({ 
+      trackedRegions: formData.trackedRegions,
+      trackedDistricts: formData.trackedDistricts,
+      trackedCities: formData.trackedCities,
+      investmentType: formData.investmentType,
+      minYield: formData.minYield,
+      maxPrice: formData.maxPrice,
+      notifyMarketGaps: formData.notifyMarketGaps,
+      notifyPriceDrops: formData.notifyPriceDrops,
+      notifyNewProperties: formData.notifyNewProperties,
+      notifyUrbanDevelopment: formData.notifyUrbanDevelopment,
+      onboardingCompleted: true,
+    }, {
       onSuccess: () => {
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
@@ -156,66 +168,33 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Lokalita */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/20 p-6">
-          <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-10 bg-blue-500" />
-          
-          <div className="relative">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                <MapPin className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-xl font-bold text-white">Lokalita</h2>
+      {/* Lokalita - Full width */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/20 p-6">
+        <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-10 bg-blue-500" />
+        
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+              <Map className="w-5 h-5 text-white" />
             </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Hlavné mesto záujmu
-                </label>
-                <select
-                  value={formData.primaryCity || ""}
-                  onChange={(e) => setFormData({ ...formData, primaryCity: e.target.value || null })}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white 
-                             focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-                >
-                  <option value="">Vyberte mesto</option>
-                  {SLOVAK_CITIES.map((city) => (
-                    <option key={city.value} value={city.value}>{city.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Sledované mestá
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {SLOVAK_CITIES.map((city) => (
-                    <button
-                      key={city.value}
-                      type="button"
-                      onClick={() => {
-                        const cities = formData.trackedCities.includes(city.value)
-                          ? formData.trackedCities.filter((c) => c !== city.value)
-                          : [...formData.trackedCities, city.value];
-                        setFormData({ ...formData, trackedCities: cities });
-                      }}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                        formData.trackedCities.includes(city.value)
-                          ? "bg-blue-500 text-white"
-                          : "bg-slate-800/50 text-slate-400 hover:bg-slate-700/50 border border-slate-700/50"
-                      }`}
-                    >
-                      {city.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">Sledované lokality</h2>
+              <p className="text-sm text-slate-400">Vyberte kraje, okresy alebo konkrétne mestá</p>
             </div>
           </div>
+
+          <LocationPicker
+            selectedRegions={formData.trackedRegions}
+            selectedDistricts={formData.trackedDistricts}
+            selectedCities={formData.trackedCities}
+            onRegionsChange={(regions) => setFormData({ ...formData, trackedRegions: regions })}
+            onDistrictsChange={(districts) => setFormData({ ...formData, trackedDistricts: districts })}
+            onCitiesChange={(cities) => setFormData({ ...formData, trackedCities: cities })}
+          />
         </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6">
 
         {/* Typ investície */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/20 p-6">
