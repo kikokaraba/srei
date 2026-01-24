@@ -18,6 +18,7 @@ export async function GET() {
 
     // Všetky dostupné widgety
     const allWidgets = [
+      "scraper-control",
       "hot-deals",
       "system-health",
       "economic-indicators",
@@ -33,6 +34,7 @@ export async function GET() {
 
     // Default layout pre nových používateľov
     const defaultWidgets = [
+      "scraper-control",
       "hot-deals",
       "economic-indicators",
       "analytics-cards",
