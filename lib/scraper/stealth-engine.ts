@@ -1307,7 +1307,7 @@ export async function runStealthScrape(
   // Log do databázy
   await prisma.dataFetchLog.create({
     data: {
-      source: "STEALTH_MULTI",
+      source: `STEALTH_${allowedSources.join("_")}`,
       status: blockedSources.size === allowedSources.length 
         ? "blocked" 
         : totalStats.errors > 0 || blockedSources.size > 0 
@@ -1315,14 +1315,9 @@ export async function runStealthScrape(
           : "success",
       recordsCount: totalStats.newListings + totalStats.updatedListings,
       error: blockedSources.size > 0 
-        ? `Blocked on: ${Array.from(blockedSources).join(", ")}` 
+        ? `Blocked: ${Array.from(blockedSources).join(", ")} | Cities: ${targetCities.join(", ")}` 
         : null,
       duration_ms: totalStats.duration,
-      metadata: {
-        sources: allowedSources,
-        cities: targetCities,
-        blockedSources: Array.from(blockedSources),
-      },
     },
   });
   
