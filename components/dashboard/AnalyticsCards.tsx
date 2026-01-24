@@ -4,7 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { TrendingUp, Building2, MapPin, Percent, ArrowUp, ArrowDown, Sparkles } from "lucide-react";
 
 interface AnalyticsData {
-  city: string;
+  region: string;
+  regionName: string;
   avg_price_m2: number;
   avg_rent_m2: number;
   yield_benchmark: number;
@@ -43,7 +44,7 @@ export function AnalyticsCards() {
   }
 
   const analytics: AnalyticsData[] = data?.data || [];
-  const bratislava = analytics.find((a) => a.city === "BRATISLAVA" || a.city === "Bratislava");
+  const bratislava = analytics.find((a) => a.region === "BA");
   const bestYield = analytics.reduce((best, current) => 
     current.yield_benchmark > (best?.yield_benchmark || 0) ? current : best
   , analytics[0]);
@@ -56,7 +57,7 @@ export function AnalyticsCards() {
 
   const cards = [
     {
-      title: "Priem. výnos",
+      title: "Priem. výnos SK",
       value: `${avgYield.toFixed(1)}%`,
       change: 0.3,
       gradient: "from-emerald-500 to-teal-500",
@@ -73,7 +74,7 @@ export function AnalyticsCards() {
       icon: Building2,
     },
     {
-      title: "BA cena/m²",
+      title: "BA kraj cena/m²",
       value: `€${(bratislava?.avg_price_m2 || 0).toLocaleString()}`,
       gradient: "from-blue-500 to-cyan-500",
       bgGlow: "bg-blue-500",
@@ -81,7 +82,7 @@ export function AnalyticsCards() {
     },
     {
       title: "Top výnos",
-      value: bestYield?.city?.replace("BANSKA_BYSTRICA", "B.B.") || "N/A",
+      value: bestYield?.region || "N/A",
       subtitle: `${bestYield?.yield_benchmark?.toFixed(1) || 0}%`,
       gradient: "from-amber-500 to-orange-500",
       bgGlow: "bg-amber-500",

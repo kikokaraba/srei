@@ -25,6 +25,39 @@ export const CITY_OPTIONS = Object.entries(CITY_LABELS).map(([value, label]) => 
 }));
 
 // ==========================================
+// KRAJE
+// ==========================================
+
+export const REGION_LABELS: Record<string, string> = {
+  BA: "Bratislavský",
+  TT: "Trnavský",
+  TN: "Trenčiansky",
+  NR: "Nitriansky",
+  ZA: "Žilinský",
+  BB: "Banskobystrický",
+  PO: "Prešovský",
+  KE: "Košický",
+} as const;
+
+// Mapovanie miest na kódy krajov
+export const CITY_TO_REGION: Record<string, string> = {
+  BRATISLAVA: "BA",
+  KOSICE: "KE",
+  PRESOV: "PO",
+  ZILINA: "ZA",
+  BANSKA_BYSTRICA: "BB",
+  TRNAVA: "TT",
+  TRENCIN: "TN",
+  NITRA: "NR",
+} as const;
+
+// Pre selecty a dropdowny
+export const REGION_OPTIONS = Object.entries(REGION_LABELS).map(([value, label]) => ({
+  value,
+  label: `${label} kraj`,
+}));
+
+// ==========================================
 // STAV NEHNUTEĽNOSTI
 // ==========================================
 
@@ -174,4 +207,26 @@ export function getConditionLabel(condition: string): string {
  */
 export function getRoleLabel(role: string): string {
   return ROLE_LABELS[role] || role;
+}
+
+/**
+ * Získa label pre kraj
+ */
+export function getRegionLabel(region: string): string {
+  return REGION_LABELS[region] || region;
+}
+
+/**
+ * Získa kód kraja pre mesto
+ */
+export function getCityRegion(city: string): string {
+  return CITY_TO_REGION[city] || city;
+}
+
+/**
+ * Získa label kraja pre mesto
+ */
+export function getCityRegionLabel(city: string): string {
+  const regionCode = CITY_TO_REGION[city];
+  return regionCode ? REGION_LABELS[regionCode] : city;
 }

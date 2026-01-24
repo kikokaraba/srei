@@ -20,9 +20,15 @@ export {
   INVESTMENT_TYPE_LABELS,
   INVESTMENT_TYPE_OPTIONS,
   INFRASTRUCTURE_TYPE_LABELS,
+  REGION_LABELS,
+  REGION_OPTIONS,
+  CITY_TO_REGION,
   getCityLabel,
   getConditionLabel,
   getRoleLabel,
+  getRegionLabel,
+  getCityRegion,
+  getCityRegionLabel,
 } from "./labels";
 
 // Mestá s metrikami a koordinátami
