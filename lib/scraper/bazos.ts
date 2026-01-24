@@ -1,6 +1,6 @@
 // Bazoš Scraper - Scraper pre reality.bazos.sk
 
-import type { SlovakCity } from "@/generated/prisma";
+import type { SlovakCity } from "@/generated/prisma/client";
 import type { RawListingData, ParsedListingData, ScrapeError, ScraperConfig } from "./types";
 import { parseDescription, parsePrice, parseArea } from "./parser";
 

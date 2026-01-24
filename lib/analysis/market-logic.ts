@@ -1,7 +1,7 @@
 // Market Logic - Detekcia Market Gaps a Liquidity analýza
 
 import { prisma } from "@/lib/prisma";
-import type { SlovakCity } from "@/generated/prisma";
+import type { SlovakCity } from "@/generated/prisma/client";
 import type { MarketGapResult, LiquidityMetrics, ParsedListingData } from "@/lib/scraper/types";
 
 /**

@@ -3,7 +3,7 @@
 
 import * as cheerio from "cheerio";
 import { prisma } from "@/lib/prisma";
-import type { SlovakCity } from "@/generated/prisma";
+import type { SlovakCity } from "@/generated/prisma/client";
 import { parseDescription } from "./parser";
 
 // ============================================================================
