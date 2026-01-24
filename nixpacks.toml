@@ -2,10 +2,10 @@
 # Toto zabezpečí, že Railway správne detekuje Next.js aplikáciu
 
 [phases.setup]
-nixPkgs = ["nodejs-18_x", "nodePackages.npm"]
+nixPkgs = ["nodejs-20_x", "nodePackages.npm"]
 
 [phases.install]
-cmds = ["npm ci"]
+cmds = ["npm install"]
 
 [phases.build]
 cmds = ["npm run build"]

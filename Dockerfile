@@ -1,7 +1,7 @@
 # Dockerfile pre Next.js na Railway
 # Toto zabezpečí, že Railway správne spustí Next.js aplikáciu
 
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
