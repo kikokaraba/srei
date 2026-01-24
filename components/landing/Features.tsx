@@ -62,55 +62,72 @@ const features = [
 
 export function Features() {
   return (
-    <section className="py-24 bg-slate-900">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bold text-slate-100 mb-4">
-            Všetko, čo potrebujete pre{" "}
-            <span className="text-emerald-400">úspešné investovanie</span>
+    <section className="py-24 sm:py-32 bg-slate-950 relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 bg-grid-slate-800/[0.08] bg-[size:48px_48px]" />
+      <div className="absolute top-1/4 -left-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-gold-500/10 rounded-full blur-3xl" />
+      
+      <div className="container mx-auto px-4 sm:px-6 relative z-10">
+        <div className="text-center mb-16 sm:mb-20">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-emerald-500/20 text-emerald-400 text-sm font-medium mb-6">
+            <Target className="w-4 h-4" />
+            <span>Profesionálne nástroje</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white mb-6">
+            Všetko pre{" "}
+            <span className="bg-gradient-to-r from-emerald-400 to-gold-400 bg-clip-text text-transparent">úspešné investovanie</span>
           </h2>
-          <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto">
             Kombinácia AI technológie, real-time dát a pokročilých analytických nástrojov,
             ktoré vám dajú konkurenčnú výhodu na trhu
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             const colorClasses = {
-              emerald:
-                "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-              gold: "bg-gold-500/10 border-gold-500/20 text-gold-400",
-              slate: "bg-slate-800 border-slate-700 text-slate-400",
+              emerald: {
+                icon: "text-emerald-400",
+                iconBg: "bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border-emerald-500/20",
+                stat: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+                glow: "hover:glow-emerald-soft hover:border-emerald-500/30",
+              },
+              gold: {
+                icon: "text-gold-400",
+                iconBg: "bg-gradient-to-br from-gold-500/20 to-gold-500/5 border-gold-500/20",
+                stat: "text-gold-400 bg-gold-500/10 border-gold-500/20",
+                glow: "hover:glow-gold-soft hover:border-gold-500/30",
+              },
+              slate: {
+                icon: "text-slate-400",
+                iconBg: "bg-slate-800/80 border-slate-700",
+                stat: "text-slate-400 bg-slate-800 border-slate-700",
+                glow: "hover:border-slate-600",
+              },
             };
-            const statColorClasses = {
-              emerald: "text-emerald-400 bg-emerald-500/10",
-              gold: "text-gold-400 bg-gold-500/10",
-              slate: "text-slate-400 bg-slate-800",
-            };
+            const colors = colorClasses[feature.color as keyof typeof colorClasses];
 
             return (
               <div
                 key={index}
-                className="group p-6 rounded-xl bg-slate-800/50 border border-slate-700/50 hover:border-emerald-500/30 transition-all duration-200 hover:scale-105"
+                className={`group glass-card rounded-2xl p-6 sm:p-8 transition-all duration-300 ${colors.glow} shine-effect`}
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div
-                    className={`w-12 h-12 rounded-lg ${colorClasses[feature.color as keyof typeof colorClasses]} border p-3 group-hover:scale-110 transition-transform`}
-                  >
-                    <Icon className="w-6 h-6" />
+                <div className="flex items-start justify-between mb-5">
+                  <div className={`w-14 h-14 rounded-xl ${colors.iconBg} border flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                    <Icon className={`w-7 h-7 ${colors.icon}`} />
                   </div>
                   {feature.stat && (
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${statColorClasses[feature.color as keyof typeof statColorClasses]}`}>
+                    <span className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${colors.stat}`}>
                       {feature.stat}
                     </span>
                   )}
                 </div>
-                <h3 className="text-xl font-bold text-slate-100 mb-2">
+                <h3 className="text-xl font-bold text-white mb-3">
                   {feature.title}
                 </h3>
-                <p className="text-slate-300 leading-relaxed">
+                <p className="text-slate-400 leading-relaxed">
                   {feature.description}
                 </p>
               </div>

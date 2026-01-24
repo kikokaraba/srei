@@ -38,6 +38,113 @@ body {
   .safe-area-inset-top {
     padding-top: env(safe-area-inset-top);
   }
+  
+  /* Glassmorphism effects */
+  .glass {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+  }
+  
+  .glass-card {
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  
+  .glass-light {
+    background: rgba(30, 41, 59, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+  }
+  
+  /* Glow effects */
+  .glow-emerald {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3),
+                0 0 40px rgba(16, 185, 129, 0.1);
+  }
+  
+  .glow-gold {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3),
+                0 0 40px rgba(251, 191, 36, 0.1);
+  }
+  
+  .glow-emerald-soft {
+    box-shadow: 0 0 60px rgba(16, 185, 129, 0.15);
+  }
+  
+  .glow-gold-soft {
+    box-shadow: 0 0 60px rgba(251, 191, 36, 0.1);
+  }
+  
+  /* Text glow */
+  .text-glow-emerald {
+    text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+  }
+  
+  .text-glow-gold {
+    text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+  }
+  
+  /* Premium gradient backgrounds */
+  .bg-premium-dark {
+    background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e1b4b 100%);
+  }
+  
+  .bg-premium-card {
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+  }
+  
+  /* Animated gradient border */
+  .gradient-border {
+    position: relative;
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border-radius: 1rem;
+  }
+  
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, #10b981, #fbbf24, #10b981);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  
+  /* Shine effect on hover */
+  .shine-effect {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .shine-effect::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.03) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(30deg);
+    transition: transform 0.5s;
+  }
+  
+  .shine-effect:hover::after {
+    transform: rotate(30deg) translateX(100%);
+  }
 }
 
 /* Custom scrollbar for dark theme */

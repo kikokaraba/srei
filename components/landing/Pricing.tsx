@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Check, Zap, Crown, Building2, ArrowRight, Sparkles } from "lucide-react";
+import { Check, Zap, Crown, Building2, ArrowRight, Sparkles, TrendingUp } from "lucide-react";
 
 const plans = [
   {
@@ -102,33 +102,36 @@ export function Pricing() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
           {plans.map((plan) => {
             const Icon = plan.icon;
             const colorClasses = {
               slate: {
-                border: "border-slate-700",
-                bg: "bg-slate-800/50",
+                card: "glass-card",
+                border: "border-slate-700/50 hover:border-slate-600",
                 icon: "text-slate-400",
-                iconBg: "bg-slate-800",
+                iconBg: "bg-slate-800/80",
                 button: "bg-slate-700 hover:bg-slate-600 text-white",
-                popular: "",
+                glow: "",
+                priceColor: "text-white",
               },
               emerald: {
-                border: "border-emerald-500/50",
-                bg: "bg-slate-900/80",
+                card: "glass-card",
+                border: "border-emerald-500/30 hover:border-emerald-500/50",
                 icon: "text-emerald-400",
                 iconBg: "bg-emerald-500/10",
-                button: "bg-emerald-500 hover:bg-emerald-600 text-white",
-                popular: "ring-2 ring-emerald-500/50 ring-offset-2 ring-offset-slate-900",
+                button: "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white glow-emerald",
+                glow: "glow-emerald-soft",
+                priceColor: "text-emerald-400",
               },
               gold: {
-                border: "border-gold-500/50",
-                bg: "bg-slate-900/80",
+                card: "glass-card",
+                border: "border-gold-500/30 hover:border-gold-500/50",
                 icon: "text-gold-400",
                 iconBg: "bg-gold-500/10",
-                button: "bg-gold-500 hover:bg-gold-600 text-white",
-                popular: "",
+                button: "bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-400 hover:to-gold-500 text-slate-900 font-bold",
+                glow: "hover:glow-gold-soft",
+                priceColor: "text-gold-400",
               },
             };
 
@@ -137,34 +140,36 @@ export function Pricing() {
             return (
               <div
                 key={plan.name}
-                className={`relative rounded-2xl border ${colors.border} ${colors.bg} p-8 transition-all duration-300 hover:scale-105 hover:shadow-2xl ${plan.popular ? colors.popular : ""}`}
+                className={`relative ${colors.card} rounded-2xl border ${colors.border} p-6 lg:p-8 transition-all duration-300 hover:scale-[1.02] ${plan.popular ? colors.glow : ""} shine-effect`}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="px-4 py-1 bg-emerald-500 text-white text-xs font-bold rounded-full">
+                    <span className="px-5 py-1.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-bold rounded-full shadow-lg shadow-emerald-500/30 flex items-center gap-2">
+                      <Sparkles className="w-3 h-3" />
                       NAJOBĽÚBENEJŠIE
                     </span>
                   </div>
                 )}
 
                 <div className="mb-6">
-                  <div className={`w-14 h-14 rounded-xl ${colors.iconBg} ${colors.icon} border ${colors.border} flex items-center justify-center mb-4`}>
+                  <div className={`w-14 h-14 rounded-xl ${colors.iconBg} ${colors.icon} border border-current/20 flex items-center justify-center mb-4`}>
                     <Icon className="w-7 h-7" />
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-100 mb-2">{plan.name}</h3>
-                  <p className="text-slate-300 text-sm mb-4">{plan.description}</p>
+                  <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
+                  <p className="text-slate-400 text-sm mb-4">{plan.description}</p>
                   
                   <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-5xl font-bold text-slate-100">
+                    <span className={`text-5xl font-bold ${colors.priceColor}`}>
                       €{plan.price}
                     </span>
                     {plan.price !== "0" && (
-                      <span className="text-slate-400 text-lg">/{plan.period}</span>
+                      <span className="text-slate-500 text-lg">/{plan.period}</span>
                     )}
                   </div>
                   
                   {plan.savings && (
-                    <p className="text-sm text-emerald-400 font-medium mb-4">
+                    <p className="text-sm text-emerald-400 font-medium mb-4 flex items-center gap-1">
+                      <TrendingUp className="w-3 h-3" />
                       {plan.savings}
                     </p>
                   )}
@@ -173,15 +178,17 @@ export function Pricing() {
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-start gap-3">
-                      <Check className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-slate-200 text-sm">{feature}</span>
+                      <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="w-3 h-3 text-emerald-400" />
+                      </div>
+                      <span className="text-slate-300 text-sm">{feature}</span>
                     </li>
                   ))}
                 </ul>
 
                 <Link
                   href={plan.ctaLink}
-                  className={`block w-full text-center px-6 py-4 rounded-lg font-semibold transition-all duration-200 ${colors.button} shadow-lg hover:shadow-xl`}
+                  className={`block w-full text-center px-6 py-4 rounded-xl font-semibold transition-all duration-300 ${colors.button} shadow-lg hover:shadow-xl hover:scale-[1.02]`}
                 >
                   {plan.cta}
                 </Link>
