@@ -20,6 +20,7 @@ export async function GET() {
     const allWidgets = [
       "hot-deals",
       "property-matches",
+      "price-history",
       "economic-indicators",
       "analytics-cards",
       "market-overview",
@@ -34,13 +35,13 @@ export async function GET() {
     // Default layout pre nových používateľov
     const defaultWidgets = [
       "hot-deals",
+      "price-history",
       "property-matches",
       "economic-indicators",
       "analytics-cards",
       "market-overview",
       "market-gaps",
       "liquidity-tracker",
-      "scenario-simulator",
     ];
 
     let currentWidgets = defaultWidgets;

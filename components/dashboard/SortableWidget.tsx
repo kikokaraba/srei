@@ -14,6 +14,7 @@ import { RecentProperties } from "./RecentProperties";
 import { EconomicIndicators } from "./EconomicIndicators";
 import HotDeals from "./HotDeals";
 import PropertyMatches from "./PropertyMatches";
+import { PriceHistory } from "./PriceHistory";
 import PremiumGate from "@/components/ui/PremiumGate";
 import { FeatureKey } from "@/lib/access-control";
 
@@ -29,6 +30,7 @@ const WIDGET_COMPONENTS = {
   "tax-assistant": TaxAssistant,
   "market-overview": MarketOverview,
   "recent-properties": RecentProperties,
+  "price-history": PriceHistory,
 } as const;
 
 // Mapovanie widgetov na premium features

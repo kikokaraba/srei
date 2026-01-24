@@ -75,6 +75,12 @@ const WIDGET_REGISTRY = {
     component: "UrbanDevelopment",
     description: "Plánovaná infraštruktúra",
   },
+  "price-history": {
+    id: "price-history",
+    title: "Vývoj cien",
+    component: "PriceHistory",
+    description: "Historický vývoj cien nehnuteľností (2005-2025)",
+  },
   "tax-assistant": {
     id: "tax-assistant",
     title: "Daňový asistent",
