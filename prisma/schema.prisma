@@ -10,8 +10,8 @@ datasource db {
   provider = "postgresql"
 }
 
-// Extensions for PostGIS
-// Run: CREATE EXTENSION IF NOT EXISTS postgis; in your PostgreSQL database
+// Coordinates are stored as latitude/longitude (Float) instead of PostGIS
+// This works with all PostgreSQL versions without requiring PostGIS extension
 
 enum UserRole {
   ADMIN
@@ -107,7 +107,8 @@ model Property {
   district          String            // mestska cast / okres
   street            String?           // Názov ulice pre Market Gaps analýzu
   address           String
-  coordinates       Unsupported("geometry(Point,4326)")? // PostGIS Point
+  latitude          Float?  // Latitude (súradnica)
+  longitude         Float?  // Longitude (súradnica)
   price             Float
   area_m2           Float
   price_per_m2      Float
@@ -215,7 +216,8 @@ model UrbanDevelopment {
   type            InfrastructureType
   city            SlovakCity
   district        String
-  coordinates     Unsupported("geometry(Point,4326)")? // PostGIS Point
+  latitude        Float?  // Latitude (súradnica)
+  longitude       Float?  // Longitude (súradnica)
   planned_start   DateTime?         // Plánovaný začiatok výstavby
   planned_completion DateTime?      // Plánované dokončenie
   status          String            // "planned", "in_progress", "completed"
