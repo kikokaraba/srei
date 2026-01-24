@@ -60,6 +60,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   properties    Property[]
+  savedProperties SavedProperty[]
   dashboardLayout DashboardLayout?
   preferences   UserPreferences?
 }
@@ -130,6 +131,11 @@ model Property {
   marketGaps        MarketGap[]
   propertyImpacts   PropertyImpact[]
   taxInfo           TaxInfo?
+  savedBy           SavedProperty[]
+  snapshots         PropertySnapshot[]
+  fingerprint       PropertyFingerprint?
+  primaryMatches    PropertyMatch[] @relation("PrimaryProperty")
+  matchedBy         PropertyMatch[] @relation("MatchedProperty")
 }
 
 model MarketAnalytics {
@@ -270,6 +276,90 @@ model DashboardLayout {
   hiddenWidgets String @db.Text // JSON array of hidden widget IDs
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Uložené/sledované nehnuteľnosti používateľom
+model SavedProperty {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  notes       String?  @db.Text  // Poznámky používateľa
+  isFavorite  Boolean  @default(false)  // Obľúbená
+  alertOnChange Boolean @default(true)  // Upozorniť na zmeny
+  savedAt     DateTime @default(now())
+  
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
+}
+
+// Snímka nehnuteľnosti v čase - pre sledovanie zmien
+model PropertySnapshot {
+  id          String   @id @default(cuid())
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  // Kópia dát v čase snímky
+  title       String
+  description String?  @db.Text
+  price       Float
+  price_per_m2 Float
+  photos      String   @db.Text  // JSON array of photo URLs
+  source_url  String?  @db.Text
+  
+  // Zmeny oproti predchádzajúcej snímke
+  priceChange     Float?   // Zmena ceny v €
+  priceChangePercent Float? // Zmena ceny v %
+  photosChanged   Boolean  @default(false)  // Zmenili sa fotky?
+  descriptionChanged Boolean @default(false)  // Zmenil sa popis?
+  
+  snapshotAt  DateTime @default(now())
+  
+  @@index([propertyId, snapshotAt])
+}
+
+// Fingerprint nehnuteľnosti pre matching duplicít
+model PropertyFingerprint {
+  id          String   @id @default(cuid())
+  propertyId  String   @unique
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  // Normalizované hodnoty pre matching
+  addressNormalized String   // Normalizovaná adresa (lowercase, bez diakritiky)
+  cityDistrict      String   // "BRATISLAVA-Staré Mesto"
+  areaRange         String   // "50-60" (zaokrúhlené na desiatky)
+  roomsRange        String?  // "2" alebo "2-3"
+  
+  // Hash pre rýchle porovnanie
+  fingerprintHash   String   // MD5 hash z normalizovaných hodnôt
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([fingerprintHash])
+  @@index([cityDistrict, areaRange])
+}
+
+// Prepojenie duplicitných/rovnakých nehnuteľností
+model PropertyMatch {
+  id              String   @id @default(cuid())
+  primaryPropertyId   String
+  primaryProperty     Property @relation("PrimaryProperty", fields: [primaryPropertyId], references: [id], onDelete: Cascade)
+  matchedPropertyId   String
+  matchedProperty     Property @relation("MatchedProperty", fields: [matchedPropertyId], references: [id], onDelete: Cascade)
+  
+  matchScore      Float    // Skóre zhody (0-100)
+  matchReason     String   @db.Text  // JSON: prečo sa zhodujú
+  isConfirmed     Boolean  @default(false)  // Potvrdené používateľom
+  confirmedBy     String?  // userId kto potvrdil
+  
+  createdAt       DateTime @default(now())
+  
+  @@unique([primaryPropertyId, matchedPropertyId])
+  @@index([primaryPropertyId])
+  @@index([matchedPropertyId])
 }
 
 // User preferences - onboarding a filtre

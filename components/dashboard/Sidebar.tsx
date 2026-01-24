@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   TrendingUp,
+  Bookmark,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -17,6 +18,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Heatmapa", href: "/dashboard/heatmap", icon: Map },
   { name: "Nehnuteľnosti", href: "/dashboard/properties", icon: Filter },
+  { name: "Sledované", href: "/dashboard/saved", icon: Bookmark },
   { name: "Analytika", href: "/dashboard/analytics", icon: BarChart3 },
   { name: "Porovnanie", href: "/dashboard/comparison", icon: TrendingUp },
   { name: "Nastavenia", href: "/dashboard/settings", icon: Settings },
