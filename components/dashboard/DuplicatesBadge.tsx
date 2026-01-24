@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Layers, ExternalLink, TrendingDown, TrendingUp } from "lucide-react";
 
 interface DuplicateSource {
@@ -34,7 +34,7 @@ interface DuplicatesBadgeProps {
   compact?: boolean;
 }
 
-export function DuplicatesBadge({ propertyId, currentPrice, compact = false }: DuplicatesBadgeProps) {
+export const DuplicatesBadge = memo(function DuplicatesBadge({ propertyId, currentPrice, compact = false }: DuplicatesBadgeProps) {
   const [data, setData] = useState<DuplicatesData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -219,4 +219,4 @@ export function DuplicatesBadge({ propertyId, currentPrice, compact = false }: D
       </div>
     </div>
   );
-}
+});

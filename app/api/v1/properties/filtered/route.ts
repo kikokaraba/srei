@@ -198,6 +198,10 @@ export async function GET(request: Request) {
         totalPages: Math.ceil(totalCount / limit),
         hasMore: page * limit < totalCount,
       },
+    }, {
+      headers: {
+        'Cache-Control': 'private, s-maxage=60, stale-while-revalidate=120',
+      },
     });
   } catch (error) {
     console.error("Error fetching filtered properties:", error);

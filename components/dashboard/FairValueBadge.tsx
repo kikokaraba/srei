@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { TrendingUp, TrendingDown, Minus, Sparkles, Loader2 } from "lucide-react";
 
 interface FairValueData {
@@ -59,7 +59,7 @@ const STATUS_CONFIG = {
   },
 };
 
-export function FairValueBadge({ propertyId, compact = false }: FairValueBadgeProps) {
+export const FairValueBadge = memo(function FairValueBadge({ propertyId, compact = false }: FairValueBadgeProps) {
   const [data, setData] = useState<FairValueData | null>(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
@@ -160,4 +160,4 @@ export function FairValueBadge({ propertyId, compact = false }: FairValueBadgePr
       )}
     </div>
   );
-}
+});

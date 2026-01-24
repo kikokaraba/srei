@@ -20,8 +20,7 @@ import {
   History,
   Layers,
 } from "lucide-react";
-import { DuplicatesBadge } from "./DuplicatesBadge";
-import { FairValueBadge } from "./FairValueBadge";
+// DuplicatesBadge and FairValueBadge moved to property detail for cleaner UI
 
 // Slovenské kraje
 const REGIONS = [
@@ -726,7 +725,7 @@ export function PropertyList() {
                     </div>
                   )}
 
-                  {/* Investment Score + Distressed badge + Duplicates */}
+                  {/* Simplified badges - only show Investment Score + Hot Deal */}
                   <div className="flex items-center gap-2 flex-wrap">
                     {/* Investment Score */}
                     {(() => {
@@ -734,8 +733,7 @@ export function PropertyList() {
                       return (
                         <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold ${getScoreColor(score)}`}>
                           <TrendingUp className="w-3 h-3" />
-                          <span>{score}</span>
-                          <span className="opacity-70">/ 100</span>
+                          <span>{score}/100</span>
                         </div>
                       );
                     })()}
@@ -745,16 +743,6 @@ export function PropertyList() {
                         🔥 Hot Deal
                       </div>
                     )}
-
-                    {/* Duplicates Badge */}
-                    <DuplicatesBadge 
-                      propertyId={property.id} 
-                      currentPrice={property.price} 
-                      compact 
-                    />
-
-                    {/* AI Fair Value Badge */}
-                    <FairValueBadge propertyId={property.id} compact />
                   </div>
                 </div>
               </div>
@@ -811,14 +799,6 @@ export function PropertyList() {
                           🔥 Hot
                         </span>
                       )}
-                      {/* Duplicates Badge */}
-                      <DuplicatesBadge 
-                        propertyId={property.id} 
-                        currentPrice={property.price} 
-                        compact 
-                      />
-                      {/* AI Fair Value Badge */}
-                      <FairValueBadge propertyId={property.id} compact />
                     </div>
                     <div className="flex items-center gap-4 text-sm text-slate-400">
                       <div className="flex items-center gap-1">

@@ -176,6 +176,10 @@ model Property {
   
   @@index([source, external_id])
   @@index([source, city])
+  @@index([city, listing_type, price])
+  @@index([city, area_m2, condition])
+  @@index([is_distressed, createdAt])
+  @@index([listing_type, createdAt])
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   userId            String?
