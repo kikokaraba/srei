@@ -77,6 +77,7 @@ export async function POST(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
+      console.log("Dashboard layout POST: No session");
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
         { status: 401 }
@@ -85,6 +86,8 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const { widgets, hiddenWidgets } = body;
+
+    console.log("Dashboard layout POST:", { userId: session.user.id, widgets, hiddenWidgets });
 
     if (!Array.isArray(widgets)) {
       return NextResponse.json(
@@ -106,6 +109,8 @@ export async function POST(request: Request) {
       },
     });
 
+    console.log("Dashboard layout saved successfully for user:", session.user.id);
+
     return NextResponse.json({
       success: true,
       data: {
@@ -115,8 +120,9 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Error saving dashboard layout:", error);
+    const errorMessage = error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      { success: false, error: errorMessage },
       { status: 500 }
     );
   }
