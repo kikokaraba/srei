@@ -2,16 +2,16 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/cron/scrape-all",
-      "schedule": "0 3 * * *"
+      "path": "/api/cron/scraper-stealth?sources=BAZOS,NEHNUTELNOSTI,REALITY",
+      "schedule": "0 6 * * *"
     },
     {
-      "path": "/api/cron/scrape-all",
-      "schedule": "0 11 * * *"
+      "path": "/api/cron/scraper-stealth?sources=BAZOS,NEHNUTELNOSTI,REALITY",
+      "schedule": "0 14 * * *"
     },
     {
-      "path": "/api/cron/scrape-all",
-      "schedule": "0 19 * * *"
+      "path": "/api/cron/scraper-stealth?sources=BAZOS,NEHNUTELNOSTI,REALITY",
+      "schedule": "0 22 * * *"
     },
     {
       "path": "/api/cron/deduplicate",

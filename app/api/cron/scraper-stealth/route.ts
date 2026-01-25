@@ -1,7 +1,7 @@
 // Cron Job: /api/cron/scraper-stealth
 // Automatický Multi-Source Stealth Scraper
 // Podporuje: Bazoš, Nehnutelnosti.sk, Reality.sk
-// Spúšťa sa o 3:00 a 14:00
+// Spúšťa sa o 6:00, 14:00 a 22:00 (UTC)
 
 import { NextRequest, NextResponse } from "next/server";
 import { runStealthScrape, runSourceScrape } from "@/lib/scraper/stealth-engine";
