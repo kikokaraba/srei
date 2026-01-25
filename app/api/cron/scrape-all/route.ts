@@ -19,10 +19,11 @@ import { notifyHotDeal, notifyUnnotifiedMarketGaps } from "@/lib/telegram/notifi
 // Scraper teraz scrapuje CELÉ SLOVENSKO - všetky mestá a obce
 // Nie je potrebné špecifikovať mestá - portály vracajú všetky inzeráty
 
-// Konfigurácia scrapingu - BAZOS (najjednoduchší na scrape)
+// Konfigurácia scrapingu - BAZOS (celé Slovensko)
 const SCRAPE_CONFIG = {
-  // Koľko stránok na kategóriu (20 stránok = ~400-600 inzerátov per kategória)
-  maxPagesPerCategory: 20,
+  // Koľko stránok na kategóriu (50 stránok × 20 inzerátov = ~1000 per kategória)
+  // 5 kategórií × 1000 = ~5000 nehnuteľností
+  maxPagesPerCategory: 50,
   
   // Bazoš - najjednoduchší portál na scrapovanie
   portals: ["BAZOS"] as const,

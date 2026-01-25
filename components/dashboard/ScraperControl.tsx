@@ -111,7 +111,7 @@ export default function ScraperControl() {
           ))}
         </div>
         <p className="text-xs text-slate-500 mt-3">
-          Kategórie: Byty predaj, Domy predaj, Byty prenájom, Domy prenájom (~500+ nehnuteľností)
+          Kategórie: Byty, Domy, Pozemky (predaj + prenájom) - celé Slovensko (~5000 nehnuteľností)
         </p>
       </div>
 
