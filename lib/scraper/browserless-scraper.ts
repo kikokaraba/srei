@@ -76,18 +76,12 @@ const NEHNUTELNOSTI_CONFIG: PortalConfig = {
     nextPage: "a[rel='next'], button:has-text('Ďalšia'), [aria-label='next']",
   },
   categories: [
-    // Predaj
+    // Hlavné kategórie - Predaj
     { path: "/byty/predaj/", listingType: "PREDAJ", name: "Byty predaj" },
     { path: "/domy/predaj/", listingType: "PREDAJ", name: "Domy predaj" },
-    { path: "/pozemky/predaj/", listingType: "PREDAJ", name: "Pozemky predaj" },
-    { path: "/chaty-chalupy/predaj/", listingType: "PREDAJ", name: "Chaty a chalupy predaj" },
-    { path: "/komercne-priestory/predaj/", listingType: "PREDAJ", name: "Komerčné priestory predaj" },
-    { path: "/garaze/predaj/", listingType: "PREDAJ", name: "Garáže predaj" },
-    // Prenájom
+    // Hlavné kategórie - Prenájom
     { path: "/byty/prenajom/", listingType: "PRENAJOM", name: "Byty prenájom" },
     { path: "/domy/prenajom/", listingType: "PRENAJOM", name: "Domy prenájom" },
-    { path: "/komercne-priestory/prenajom/", listingType: "PRENAJOM", name: "Komerčné priestory prenájom" },
-    { path: "/garaze/prenajom/", listingType: "PRENAJOM", name: "Garáže prenájom" },
   ],
 };
 
@@ -105,18 +99,12 @@ const REALITY_CONFIG: PortalConfig = {
     nextPage: ".pagination__next, a[rel='next'], .next-page",
   },
   categories: [
-    // Predaj
+    // Hlavné kategórie - Predaj
     { path: "/byty/predaj/", listingType: "PREDAJ", name: "Byty predaj" },
     { path: "/domy/predaj/", listingType: "PREDAJ", name: "Domy predaj" },
-    { path: "/pozemky/predaj/", listingType: "PREDAJ", name: "Pozemky predaj" },
-    { path: "/chaty-chalupy/predaj/", listingType: "PREDAJ", name: "Chaty a chalupy predaj" },
-    { path: "/komercne-nehnutelnosti/predaj/", listingType: "PREDAJ", name: "Komerčné nehnuteľnosti predaj" },
-    { path: "/garaze-parkovanie/predaj/", listingType: "PREDAJ", name: "Garáže predaj" },
-    // Prenájom
+    // Hlavné kategórie - Prenájom
     { path: "/byty/prenajom/", listingType: "PRENAJOM", name: "Byty prenájom" },
     { path: "/domy/prenajom/", listingType: "PRENAJOM", name: "Domy prenájom" },
-    { path: "/komercne-nehnutelnosti/prenajom/", listingType: "PRENAJOM", name: "Komerčné nehnuteľnosti prenájom" },
-    { path: "/garaze-parkovanie/prenajom/", listingType: "PRENAJOM", name: "Garáže prenájom" },
   ],
 };
 
@@ -134,18 +122,12 @@ const TOPREALITY_CONFIG: PortalConfig = {
     nextPage: ".pagination-next, a[rel='next'], .next, button:has-text('Ďalšia')",
   },
   categories: [
-    // Predaj
+    // Hlavné kategórie - Predaj
     { path: "/vyhladavanie/predaj/byty/", listingType: "PREDAJ", name: "Byty predaj" },
     { path: "/vyhladavanie/predaj/domy/", listingType: "PREDAJ", name: "Domy predaj" },
-    { path: "/vyhladavanie/predaj/pozemky/", listingType: "PREDAJ", name: "Pozemky predaj" },
-    { path: "/vyhladavanie/predaj/chaty-chalupy/", listingType: "PREDAJ", name: "Chaty a chalupy predaj" },
-    { path: "/vyhladavanie/predaj/komercne-nehnutelnosti/", listingType: "PREDAJ", name: "Komerčné nehnuteľnosti predaj" },
-    { path: "/vyhladavanie/predaj/garaze/", listingType: "PREDAJ", name: "Garáže predaj" },
-    // Prenájom
+    // Hlavné kategórie - Prenájom
     { path: "/vyhladavanie/prenajom/byty/", listingType: "PRENAJOM", name: "Byty prenájom" },
     { path: "/vyhladavanie/prenajom/domy/", listingType: "PRENAJOM", name: "Domy prenájom" },
-    { path: "/vyhladavanie/prenajom/komercne-nehnutelnosti/", listingType: "PRENAJOM", name: "Komerčné nehnuteľnosti prenájom" },
-    { path: "/vyhladavanie/prenajom/garaze/", listingType: "PRENAJOM", name: "Garáže prenájom" },
   ],
 };
 
@@ -436,8 +418,8 @@ async function scrapeBazosListPage(
 ): Promise<ScrapedProperty[]> {
   const properties: ScrapedProperty[] = [];
   
-  await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
-  await page.waitForTimeout(800);
+  await page.waitForLoadState("domcontentloaded", { timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(500);
   
   // Bazoš má inzeráty ako h2 s linkami
   const listings = await page.$$("h2:has(a[href*='/inzerat/'])");
@@ -559,8 +541,8 @@ async function scrapeListPage(
   const properties: ScrapedProperty[] = [];
   
   // Wait for content to load
-  await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
-  await page.waitForTimeout(1000); // Extra wait for JS rendering
+  await page.waitForLoadState("domcontentloaded", { timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(600); // Short wait for JS rendering
   
   // Find all listing items
   const items = await page.$$(config.selectors.listingItem);
@@ -705,12 +687,19 @@ export async function scrapePortal(
       locale: "sk-SK",
     });
     
-    // Block unnecessary resources
-    await context.route("**/*.{png,jpg,jpeg,gif,webp,svg,woff,woff2}", route => route.abort());
+    // Block unnecessary resources - aggressive for speed
+    await context.route("**/*.{png,jpg,jpeg,gif,webp,svg,woff,woff2,ico,mp4,webm}", route => route.abort());
     await context.route("**/analytics**", route => route.abort());
     await context.route("**/tracking**", route => route.abort());
     await context.route("**/facebook**", route => route.abort());
     await context.route("**/google-analytics**", route => route.abort());
+    await context.route("**/gtm.js**", route => route.abort());
+    await context.route("**/gtag**", route => route.abort());
+    await context.route("**/doubleclick**", route => route.abort());
+    await context.route("**/adsense**", route => route.abort());
+    await context.route("**/adsbygoogle**", route => route.abort());
+    await context.route("**/hotjar**", route => route.abort());
+    await context.route("**/clarity**", route => route.abort());
     
     const page = await context.newPage();
     
@@ -736,7 +725,7 @@ export async function scrapePortal(
         try {
           await page.goto(url, { 
             waitUntil: "domcontentloaded",
-            timeout: 30000 
+            timeout: 15000 
           });
           
           const properties = await scrapeListPage(page, config, category.listingType);
@@ -756,8 +745,8 @@ export async function scrapePortal(
           
           pageNum++;
           
-          // Rate limiting - kratšie delays pre rýchlosť
-          const delay = config.source === "BAZOS" ? 1500 : 1000;
+          // Rate limiting - minimálne delays pre rýchlosť
+          const delay = config.source === "BAZOS" ? 800 : 500;
           await page.waitForTimeout(delay);
           
         } catch (error) {
