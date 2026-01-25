@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-// SlovakCity enum removed - now using string for city field
+import { REGIONS, DISTRICTS } from "@/lib/constants/slovakia-locations";
 
 export async function GET(request: Request) {
   try {
@@ -18,6 +18,44 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const propertyId = searchParams.get("propertyId");
     const city = searchParams.get("city");
+    const regionsParam = searchParams.get("regions");
+    const districtsParam = searchParams.get("districts");
+    const citiesParam = searchParams.get("cities");
+    
+    // Build city filter from regions, districts, and cities
+    const allCities: string[] = [];
+    
+    if (regionsParam) {
+      const regionIds = regionsParam.split(",").filter(Boolean);
+      for (const regionId of regionIds) {
+        const region = REGIONS[regionId];
+        if (region) {
+          for (const districtId of region.districts) {
+            const district = DISTRICTS[districtId];
+            if (district?.cities) {
+              allCities.push(...district.cities);
+            }
+          }
+        }
+      }
+    }
+    
+    if (districtsParam) {
+      const districtIds = districtsParam.split(",").filter(Boolean);
+      for (const districtId of districtIds) {
+        const district = DISTRICTS[districtId];
+        if (district?.cities) {
+          allCities.push(...district.cities);
+        }
+      }
+    }
+    
+    if (citiesParam) {
+      allCities.push(...citiesParam.split(",").filter(Boolean));
+    }
+    
+    // Remove duplicates
+    const uniqueCities = [...new Set(allCities)];
 
     if (propertyId) {
       // Získame liquidity dáta pre konkrétnu nehnuteľnosť
@@ -75,11 +113,14 @@ export async function GET(request: Request) {
       });
     }
 
-    if (city) {
-      // Získame všetky nehnuteľnosti v meste s liquidity dátami
+    // Use specific city param OR filtered cities from regions/districts
+    const citiesToFilter = city ? [city] : uniqueCities;
+    
+    if (citiesToFilter.length > 0) {
+      // Získame všetky nehnuteľnosti v mestách s liquidity dátami
       const properties = await prisma.property.findMany({
         where: {
-          city: city as string,
+          city: { in: citiesToFilter },
         },
         include: {
           priceHistory: {
@@ -137,13 +178,21 @@ export async function GET(request: Request) {
       });
     }
 
-    // Ak nie je zadaný propertyId ani city, vrátime všetky nehnuteľnosti s vysokým days_on_market
-    const longListedProperties = await prisma.property.findMany({
-      where: {
-        days_on_market: {
-          gte: 60, // Viac ako 60 dní v ponuke
-        },
+    // Ak nie je zadaný propertyId ani city, vrátime nehnuteľnosti s vysokým days_on_market
+    // Filtrujeme podľa regiónov/okresov/miest ak sú zadané
+    const whereClause: Record<string, unknown> = {
+      days_on_market: {
+        gte: 60, // Viac ako 60 dní v ponuke
       },
+    };
+    
+    // Add city filter if specified
+    if (uniqueCities.length > 0) {
+      whereClause.city = { in: uniqueCities };
+    }
+    
+    const longListedProperties = await prisma.property.findMany({
+      where: whereClause,
       include: {
         priceHistory: {
           orderBy: { recorded_at: "desc" },

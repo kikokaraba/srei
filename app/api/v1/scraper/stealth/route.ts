@@ -123,6 +123,48 @@ export async function GET(request: NextRequest) {
     }
     
     const { prisma } = await import("@/lib/prisma");
+    const { REGIONS, DISTRICTS } = await import("@/lib/constants/slovakia-locations");
+    
+    // Parse query params for filtering
+    const { searchParams } = new URL(request.url);
+    const regionsParam = searchParams.get("regions");
+    const districtsParam = searchParams.get("districts");
+    const citiesParam = searchParams.get("cities");
+    
+    // Build city filter from regions, districts, and cities
+    const allCities: string[] = [];
+    
+    if (regionsParam) {
+      const regionIds = regionsParam.split(",").filter(Boolean);
+      for (const regionId of regionIds) {
+        const region = REGIONS[regionId];
+        if (region) {
+          for (const districtId of region.districts) {
+            const district = DISTRICTS[districtId];
+            if (district?.cities) {
+              allCities.push(...district.cities);
+            }
+          }
+        }
+      }
+    }
+    
+    if (districtsParam) {
+      const districtIds = districtsParam.split(",").filter(Boolean);
+      for (const districtId of districtIds) {
+        const district = DISTRICTS[districtId];
+        if (district?.cities) {
+          allCities.push(...district.cities);
+        }
+      }
+    }
+    
+    if (citiesParam) {
+      allCities.push(...citiesParam.split(",").filter(Boolean));
+    }
+    
+    // Remove duplicates
+    const uniqueCities = [...new Set(allCities)];
     
     // Posledný scrape log
     const lastScrape = await prisma.dataFetchLog.findFirst({
@@ -130,12 +172,20 @@ export async function GET(request: NextRequest) {
       orderBy: { fetchedAt: "desc" },
     });
     
+    // Build where clause
+    const whereClause: Record<string, unknown> = {
+      is_distressed: true,
+      createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, // Posledných 7 dní
+    };
+    
+    // Add city filter if specified
+    if (uniqueCities.length > 0) {
+      whereClause.city = { in: uniqueCities };
+    }
+    
     // Hot Deals (is_distressed = true)
     const hotDeals = await prisma.property.findMany({
-      where: {
-        is_distressed: true,
-        createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, // Posledných 7 dní
-      },
+      where: whereClause,
       orderBy: { createdAt: "desc" },
       take: 20,
       include: {
@@ -144,10 +194,15 @@ export async function GET(request: NextRequest) {
     });
     
     // Štatistiky
+    const statsWhere: Record<string, unknown> = {
+      createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, // Posledných 24 hodín
+    };
+    if (uniqueCities.length > 0) {
+      statsWhere.city = { in: uniqueCities };
+    }
+    
     const stats = await prisma.property.aggregate({
-      where: {
-        createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, // Posledných 24 hodín
-      },
+      where: statsWhere,
       _count: { id: true },
     });
     

@@ -1,11 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
+import { REGIONS, DISTRICTS } from "@/lib/constants/slovakia-locations";
 
 const GAP_THRESHOLD = 15; // 15% pod priemerom = podhodnotená
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Skontrolujeme session - ak nie je, vrátime prázdne dáta namiesto 401
     const session = await auth();
@@ -34,6 +35,47 @@ export async function GET() {
       });
     }
 
+    // Parse query params for filtering
+    const { searchParams } = new URL(request.url);
+    const regionsParam = searchParams.get("regions");
+    const districtsParam = searchParams.get("districts");
+    const citiesParam = searchParams.get("cities");
+    
+    // Build city filter from regions, districts, and cities
+    const allCities: string[] = [];
+    
+    if (regionsParam) {
+      const regionIds = regionsParam.split(",").filter(Boolean);
+      for (const regionId of regionIds) {
+        const region = REGIONS[regionId];
+        if (region) {
+          for (const districtId of region.districts) {
+            const district = DISTRICTS[districtId];
+            if (district?.cities) {
+              allCities.push(...district.cities);
+            }
+          }
+        }
+      }
+    }
+    
+    if (districtsParam) {
+      const districtIds = districtsParam.split(",").filter(Boolean);
+      for (const districtId of districtIds) {
+        const district = DISTRICTS[districtId];
+        if (district?.cities) {
+          allCities.push(...district.cities);
+        }
+      }
+    }
+    
+    if (citiesParam) {
+      allCities.push(...citiesParam.split(",").filter(Boolean));
+    }
+    
+    // Remove duplicates
+    const uniqueCities = [...new Set(allCities)];
+
     // Najprv aktualizujeme StreetAnalytics pre všetky ulice
     try {
       await updateStreetAnalytics();
@@ -46,11 +88,18 @@ export async function GET() {
     // Použijeme try-catch pre prípad, že modely ešte neexistujú
     let properties = [];
     try {
+      const whereClause: Record<string, unknown> = {
+        street: { not: null },
+        marketGaps: { none: {} }, // Ešte nemá detekovaný gap
+      };
+      
+      // Add city filter if specified
+      if (uniqueCities.length > 0) {
+        whereClause.city = { in: uniqueCities };
+      }
+      
       properties = await prisma.property.findMany({
-        where: {
-          street: { not: null },
-          marketGaps: { none: {} }, // Ešte nemá detekovaný gap
-        },
+        where: whereClause,
         include: {
           investmentMetrics: true,
         },

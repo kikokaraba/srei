@@ -115,9 +115,10 @@ export function RecentProperties() {
         limit: "3",
       });
       
-      if (preferences?.trackedRegions?.length) params.set("regions", preferences.trackedRegions.join(","));
-      if (preferences?.trackedDistricts?.length) params.set("districts", preferences.trackedDistricts.join(","));
-      if (preferences?.trackedCities?.length) params.set("cities", preferences.trackedCities.join(","));
+      // Použi usePreferences=true aby API aplikovalo všetky uložené preferencie
+      if (hasLocationPreferences) {
+        params.set("usePreferences", "true");
+      }
       
       const response = await fetch(`/api/v1/properties/filtered?${params}`);
       
