@@ -10,7 +10,6 @@ import {
   getUrbanImpactPrediction,
   getUrbanImpactOverview,
 } from "@/lib/predictions/urban-impact";
- from "@/generated/prisma/client";
 
 /**
  * GET /api/v1/investor/urban-impact

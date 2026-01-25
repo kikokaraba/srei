@@ -13,7 +13,6 @@ import {
   calculateNegotiationPower,
   getPriceStory,
 } from "@/lib/analysis/investor-metrics";
- from "@/generated/prisma/client";
 
 /**
  * GET /api/v1/investor/metrics

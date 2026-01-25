@@ -12,7 +12,6 @@ import {
   getRealtimeCityStats,
   getDataComparison,
 } from "@/lib/data-sources/realtime-stats";
- from "@/generated/prisma/client";
 
 /**
  * GET /api/v1/market/realtime

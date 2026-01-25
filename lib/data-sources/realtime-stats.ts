@@ -6,7 +6,6 @@
  */
 
 import { prisma } from "@/lib/prisma";
- from "@/generated/prisma/client";
 
 // Mapovanie miest na kraje
 const CITY_TO_REGION: Record<string, string> = {

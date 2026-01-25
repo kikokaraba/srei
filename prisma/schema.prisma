@@ -230,7 +230,7 @@ model Property {
 
 model MarketAnalytics {
   id              String   @id @default(cuid())
-  city            SlovakCity
+  city            String
   avg_price_m2    Float
   avg_rent_m2     Float
   yield_benchmark Float    // Average yield percentage
@@ -267,7 +267,7 @@ model PriceHistory {
 // Analýza priemerných cien v uliciach (pre Market Gaps)
 model StreetAnalytics {
   id              String   @id @default(cuid())
-  city            SlovakCity
+  city            String
   district        String
   street          String
   avg_price_m2    Float
@@ -299,7 +299,7 @@ model UrbanDevelopment {
   id              String            @id @default(cuid())
   name            String            // Názov projektu (napr. "Stanica metra Nové Mesto")
   type            InfrastructureType
-  city            SlovakCity
+  city            String
   district        String
   latitude        Float?  // Latitude (súradnica)
   longitude       Float?  // Longitude (súradnica)
@@ -551,7 +551,7 @@ model PortfolioProperty {
   // Základné info
   name            String   // Vlastný názov (napr. "Byt Petržalka")
   address         String
-  city            SlovakCity
+  city            String
   district        String?
   
   // Nehnuteľnosť
@@ -709,7 +709,7 @@ model EconomicIndicator {
 // Demografické dáta miest
 model CityDemographics {
   id              String     @id @default(cuid())
-  city            SlovakCity
+  city            String
   year            Int
   population      Int
   populationChange Float     // % zmena
@@ -726,7 +726,7 @@ model CityDemographics {
 // Trhové dáta pre mestá - agregované
 model CityMarketData {
   id                String     @id @default(cuid())
-  city              SlovakCity
+  city              String
   date              DateTime   // Dátum aktualizácie
   
   // Ceny
@@ -814,7 +814,7 @@ enum ListingStatus {
 model DailyMarketStats {
   id              String   @id @default(cuid())
   date            DateTime @db.Date
-  city            SlovakCity
+  city            String
   listingType     ListingType
   
   // Počty
@@ -853,7 +853,7 @@ model MonthlyMarketStats {
   id              String   @id @default(cuid())
   year            Int
   month           Int
-  city            SlovakCity
+  city            String
   listingType     ListingType
   
   // Agregované dáta

@@ -11,7 +11,6 @@ import {
   findAllDuplicateGroups,
   getDuplicateStats,
 } from "@/lib/deduplication/master-record";
- from "@/generated/prisma/client";
 
 /**
  * GET /api/v1/investor/duplicates
