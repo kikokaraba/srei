@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma, PropertyCondition, EnergyCertificate, ListingType, PropertySource } from "@/generated/prisma/client";
+import { REGIONS, DISTRICTS } from "@/lib/constants/slovakia-locations";
 
 export async function GET(request: Request) {
   try {
@@ -74,7 +75,7 @@ export async function GET(request: Request) {
       }
     }
 
-    // Mesto - prioritne z query, potom z preferencií
+    // Mesto - prioritne z query, potom z preferencií (regióny + okresy + mestá)
     const citiesInput = citiesParam || cityParam;
     if (citiesInput) {
       // Podporuje viac miest oddelených čiarkou
@@ -82,10 +83,55 @@ export async function GET(request: Request) {
       if (cities.length > 0) {
         where.city = { in: cities };
       }
-    } else if (preferences?.trackedCities) {
-      const cities = JSON.parse(preferences.trackedCities);
-      if (cities.length > 0) {
-        where.city = { in: cities };
+    } else if (preferences) {
+      // Rozšír regióny a okresy na mestá
+      const allCities: string[] = [];
+      
+      // Pridaj mestá z regiónov
+      if (preferences.trackedRegions) {
+        try {
+          const regionIds = JSON.parse(preferences.trackedRegions) as string[];
+          for (const regionId of regionIds) {
+            const region = REGIONS[regionId];
+            if (region) {
+              // Získaj všetky mestá v regióne cez okresy
+              for (const districtId of region.districts) {
+                const district = DISTRICTS[districtId];
+                if (district?.cities) {
+                  allCities.push(...district.cities);
+                }
+              }
+            }
+          }
+        } catch { /* ignore parse errors */ }
+      }
+      
+      // Pridaj mestá z okresov
+      if (preferences.trackedDistricts) {
+        try {
+          const districtIds = JSON.parse(preferences.trackedDistricts) as string[];
+          for (const districtId of districtIds) {
+            const district = DISTRICTS[districtId];
+            if (district?.cities) {
+              allCities.push(...district.cities);
+            }
+          }
+        } catch { /* ignore parse errors */ }
+      }
+      
+      // Pridaj priamo sledované mestá
+      if (preferences.trackedCities) {
+        try {
+          const cities = JSON.parse(preferences.trackedCities) as string[];
+          allCities.push(...cities);
+        } catch { /* ignore parse errors */ }
+      }
+      
+      // Ak sú nejaké mestá, filtruj podľa nich
+      if (allCities.length > 0) {
+        // Odstráň duplicity
+        const uniqueCities = [...new Set(allCities)];
+        where.city = { in: uniqueCities };
       }
     }
 
