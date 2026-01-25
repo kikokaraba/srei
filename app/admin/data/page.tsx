@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { 
   Database, 
   RefreshCw, 
@@ -15,14 +15,6 @@ import {
 import SystemHealth from "@/components/dashboard/SystemHealth";
 import ScraperControl from "@/components/dashboard/ScraperControl";
 
-interface DataStatus {
-  source: string;
-  lastFetch: string | null;
-  recordsCount: number;
-  status: "ok" | "stale" | "error";
-  nextUpdate: string;
-}
-
 interface NBSDataEntry {
   region: string;
   apartment: number;
@@ -31,7 +23,6 @@ interface NBSDataEntry {
 }
 
 export default function DataManagementPage() {
-  const queryClient = useQueryClient();
   const [nbsData, setNbsData] = useState<NBSDataEntry[]>([
     { region: "Bratislavský kraj", apartment: 4150, house: 2850, changeQoQ: 2.2 },
     { region: "Trnavský kraj", apartment: 2750, house: 1980, changeQoQ: 1.9 },
@@ -45,25 +36,15 @@ export default function DataManagementPage() {
   const [selectedQuarter, setSelectedQuarter] = useState("Q3");
   const [selectedYear, setSelectedYear] = useState("2025");
   
-  // Fetch data status
-  const { data: dataStatus, isLoading } = useQuery({
-    queryKey: ["data-status"],
-    queryFn: async () => {
-      const res = await fetch("/api/v1/admin/data-status");
-      if (!res.ok) throw new Error("Failed to fetch");
-      return res.json();
-    },
-    retry: false,
-  });
+  // Data status - disabled for now (endpoint doesn't exist)
+  const dataStatus = null;
+  const isLoading = false;
   
   // Check for new NBS data
   const checkNBSMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch("/api/cron/check-nbs");
       return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["data-status"] });
     },
   });
   
@@ -72,9 +53,6 @@ export default function DataManagementPage() {
     mutationFn: async () => {
       const res = await fetch("/api/cron/sync-data?type=all");
       return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["data-status"] });
     },
   });
   
