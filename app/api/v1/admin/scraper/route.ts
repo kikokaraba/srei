@@ -73,9 +73,22 @@ const SCRAPER_SOURCES = {
   TOPREALITY: {
     name: "TopReality.sk",
     url: "https://www.topreality.sk",
-    enabled: false,
-    description: "Ďalší realitný portál (v príprave)",
-    categories: [],
+    enabled: true,
+    description: "Tretí najväčší realitný portál - všetky nehnuteľnosti",
+    categories: [
+      // Predaj
+      { path: "/vyhladavanie/predaj/byty/", type: "PREDAJ" as ListingType, name: "Byty predaj" },
+      { path: "/vyhladavanie/predaj/domy/", type: "PREDAJ" as ListingType, name: "Domy predaj" },
+      { path: "/vyhladavanie/predaj/pozemky/", type: "PREDAJ" as ListingType, name: "Pozemky predaj" },
+      { path: "/vyhladavanie/predaj/chaty-chalupy/", type: "PREDAJ" as ListingType, name: "Chaty a chalupy predaj" },
+      { path: "/vyhladavanie/predaj/komercne-nehnutelnosti/", type: "PREDAJ" as ListingType, name: "Komerčné nehnuteľnosti predaj" },
+      { path: "/vyhladavanie/predaj/garaze/", type: "PREDAJ" as ListingType, name: "Garáže predaj" },
+      // Prenájom
+      { path: "/vyhladavanie/prenajom/byty/", type: "PRENAJOM" as ListingType, name: "Byty prenájom" },
+      { path: "/vyhladavanie/prenajom/domy/", type: "PRENAJOM" as ListingType, name: "Domy prenájom" },
+      { path: "/vyhladavanie/prenajom/komercne-nehnutelnosti/", type: "PRENAJOM" as ListingType, name: "Komerčné nehnuteľnosti prenájom" },
+      { path: "/vyhladavanie/prenajom/garaze/", type: "PRENAJOM" as ListingType, name: "Garáže prenájom" },
+    ],
   },
 };
 
@@ -122,10 +135,10 @@ export async function GET(request: NextRequest) {
     // Get last scrape logs for each source
     const lastScrapes = await prisma.dataFetchLog.findMany({
       where: {
-        source: { in: ["BAZOS", "NEHNUTELNOSTI", "REALITY", "STEALTH_BAZOS"] },
+        source: { in: ["BAZOS", "NEHNUTELNOSTI", "REALITY", "TOPREALITY", "STEALTH_BAZOS", "CRON_NEHNUTELNOSTI", "CRON_REALITY", "CRON_TOPREALITY"] },
       },
       orderBy: { fetchedAt: "desc" },
-      take: 20,
+      take: 30,
     });
 
     // Group by source
@@ -325,8 +338,8 @@ async function runSourceScrape(
     errors: 0,
   };
 
-  // Pre NEHNUTELNOSTI a REALITY použijeme Browserless
-  if (sourceId === "NEHNUTELNOSTI" || sourceId === "REALITY") {
+  // Pre NEHNUTELNOSTI, REALITY a TOPREALITY použijeme Browserless
+  if (sourceId === "NEHNUTELNOSTI" || sourceId === "REALITY" || sourceId === "TOPREALITY") {
     try {
       const { scrapePortal } = await import("@/lib/scraper/browserless-scraper");
       
@@ -353,7 +366,7 @@ async function runSourceScrape(
       const city = options.cities[0] ? cityMap[options.cities[0]] : undefined;
       
       console.log(`🌐 Using Browserless for ${sourceId}...`);
-      const result = await scrapePortal(sourceId as "NEHNUTELNOSTI" | "REALITY", {
+      const result = await scrapePortal(sourceId as "NEHNUTELNOSTI" | "REALITY" | "TOPREALITY", {
         city,
         listingType,
         maxPages: options.maxPages,
