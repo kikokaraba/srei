@@ -43,13 +43,29 @@ export default function ScraperControl() {
   // Run full scrape - all portals, all categories
   const runMutation = useMutation({
     mutationFn: async (): Promise<ScrapeResult> => {
-      const res = await fetch("/api/cron/scrape-all", {
-        method: "GET",
-      });
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      // Use AbortController for timeout (5 minutes max)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000);
+      
+      try {
+        const res = await fetch("/api/cron/scrape-all", {
+          method: "GET",
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        
+        if (!res.ok) {
+          const errorText = await res.text().catch(() => res.statusText);
+          throw new Error(`HTTP ${res.status}: ${errorText.substring(0, 200)}`);
+        }
+        return res.json();
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof Error && error.name === "AbortError") {
+          throw new Error("Scraping trvá príliš dlho (>5 min). Skontroluj logy na Verceli.");
+        }
+        throw error;
       }
-      return res.json();
     },
     onSuccess: () => {
       setLastRun(new Date());
