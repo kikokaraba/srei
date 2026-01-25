@@ -20,44 +20,14 @@ import { SortableWidget } from "./SortableWidget";
 import { Settings, X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
+// Widgety ktoré poskytujú unikátnu hodnotu
+// (Investor badges, duplicity, urban impact sú teraz automatické v PropertyList)
 const WIDGET_REGISTRY = {
-  // ===== INVESTOR PRIORITY WIDGETS =====
-  "investor-insights": {
-    id: "investor-insights",
-    title: "Investor Insights",
-    component: "InvestorInsights",
-    description: "Price Momentum, Trust Score, Negotiation Power",
-  },
-  "duplicates-finder": {
-    id: "duplicates-finder",
-    title: "Duplicity",
-    component: "DuplicatesFinder",
-    description: "Rovnaký byt, 6 realitiek - nájdi najlepšiu cenu",
-  },
-  "urban-impact": {
-    id: "urban-impact",
-    title: "Urban Impact",
-    component: "UrbanImpactMap",
-    description: "Kde budú ceny rásť o 2 roky",
-  },
-  // ===== CORE WIDGETS =====
   "hot-deals": {
     id: "hot-deals",
     title: "Hot Deals",
     component: "HotDeals",
     description: "Nehnuteľnosti 15%+ pod trhovou cenou",
-  },
-  "property-matches": {
-    id: "property-matches",
-    title: "Porovnanie cien",
-    component: "PropertyMatches",
-    description: "Rovnaké nehnuteľnosti na rôznych portáloch",
-  },
-  "economic-indicators": {
-    id: "economic-indicators",
-    title: "Ekonomické ukazovatele",
-    component: "EconomicIndicators",
-    description: "HDP, inflácia, hypotéky z NBS",
   },
   "analytics-cards": {
     id: "analytics-cards",
@@ -71,11 +41,11 @@ const WIDGET_REGISTRY = {
     component: "MarketOverview",
     description: "Live dáta z NBS a ŠÚ SR",
   },
-  "market-gaps": {
-    id: "market-gaps",
-    title: "Index skrytého potenciálu",
-    component: "MarketGaps",
-    description: "Detekcia podhodnotených nehnuteľností",
+  "economic-indicators": {
+    id: "economic-indicators",
+    title: "Ekonomické ukazovatele",
+    component: "EconomicIndicators",
+    description: "HDP, inflácia, hypotéky z NBS",
   },
   "liquidity-tracker": {
     id: "liquidity-tracker",
@@ -88,12 +58,6 @@ const WIDGET_REGISTRY = {
     title: "Scenario Simulator",
     component: "ScenarioSimulator",
     description: "What-if analýza investícií",
-  },
-  "urban-development": {
-    id: "urban-development",
-    title: "Urban Development",
-    component: "UrbanDevelopment",
-    description: "Plánovaná infraštruktúra",
   },
   "price-history": {
     id: "price-history",
