@@ -242,7 +242,7 @@ export function LocationPicker({
             <div key={region.id} className="rounded-xl overflow-hidden">
               {/* Region header */}
               <div 
-                className={`flex items-center gap-2 p-3 transition-all ${
+                className={`flex items-center gap-2 p-3 transition-all cursor-pointer ${
                   isSelected 
                     ? "bg-emerald-500/20 border border-emerald-500/30" 
                     : isPartial
@@ -253,8 +253,12 @@ export function LocationPicker({
                 {/* Expand button - samostatné */}
                 <button
                   type="button"
-                  onClick={() => toggleRegionExpand(region.id)}
-                  className="p-1 hover:bg-slate-700/50 rounded"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleRegionExpand(region.id);
+                  }}
+                  className="p-1 hover:bg-slate-700/50 rounded z-10"
                 >
                   {isExpanded ? (
                     <ChevronDown className="w-4 h-4 text-slate-400" />
@@ -263,11 +267,22 @@ export function LocationPicker({
                   )}
                 </button>
                 
-                {/* Selection button - zvyšok riadku */}
-                <button
-                  type="button"
-                  onClick={() => toggleRegion(region.id)}
-                  className="flex items-center gap-2 flex-1 text-left cursor-pointer"
+                {/* Selection area - kliknuteľný celý riadok */}
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleRegion(region.id);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      toggleRegion(region.id);
+                    }
+                  }}
+                  className="flex items-center gap-2 flex-1 cursor-pointer"
                 >
                   <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all shrink-0 ${
                     isSelected 
@@ -282,7 +297,7 @@ export function LocationPicker({
                   
                   <Map className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span className="flex-1 font-medium text-white">{region.name}</span>
-                </button>
+                </div>
                 
                 <span className="text-xs text-slate-500 shrink-0">{districts.length} okresov</span>
               </div>
@@ -299,19 +314,23 @@ export function LocationPicker({
                       <div key={district.id}>
                         {/* District header */}
                         <div
-                          className={`flex items-center gap-2 p-2 rounded-lg transition-all ${
+                          className={`flex items-center gap-2 p-2 rounded-lg transition-all cursor-pointer ${
                             isDistSelected
                               ? "bg-blue-500/10 border border-blue-500/20"
                               : hasCitySelected
                               ? "bg-blue-500/5 border border-blue-500/10"
                               : "bg-slate-800/20 border border-transparent hover:bg-slate-800/40"
-                          } ${isSelected ? "opacity-50" : ""}`}
+                          } ${isSelected ? "opacity-50 pointer-events-none" : ""}`}
                         >
                           {/* Expand button */}
                           <button
                             type="button"
-                            onClick={() => toggleDistrictExpand(district.id)}
-                            className="p-0.5 hover:bg-slate-700/50 rounded"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleDistrictExpand(district.id);
+                            }}
+                            className="p-0.5 hover:bg-slate-700/50 rounded z-10"
                           >
                             {isDistExpanded ? (
                               <ChevronDown className="w-3 h-3 text-slate-400" />
@@ -320,12 +339,22 @@ export function LocationPicker({
                             )}
                           </button>
                           
-                          {/* Selection button */}
-                          <button
-                            type="button"
-                            onClick={() => !isSelected && toggleDistrict(district)}
-                            disabled={isSelected}
-                            className="flex items-center gap-2 flex-1 text-left cursor-pointer disabled:cursor-not-allowed"
+                          {/* Selection area */}
+                          <div
+                            role="button"
+                            tabIndex={isSelected ? -1 : 0}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (!isSelected) toggleDistrict(district);
+                            }}
+                            onKeyDown={(e) => {
+                              if (!isSelected && (e.key === "Enter" || e.key === " ")) {
+                                e.preventDefault();
+                                toggleDistrict(district);
+                              }
+                            }}
+                            className="flex items-center gap-2 flex-1 cursor-pointer"
                           >
                             <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all shrink-0 ${
                               isDistSelected
@@ -340,7 +369,7 @@ export function LocationPicker({
                             
                             <MapPin className="w-3 h-3 text-blue-400 shrink-0" />
                             <span className="flex-1 text-sm text-slate-300">{district.name}</span>
-                          </button>
+                          </div>
                           
                           <span className="text-xs text-slate-600 shrink-0">{district.cities.length}</span>
                         </div>
