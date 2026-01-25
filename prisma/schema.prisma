@@ -19,16 +19,8 @@ enum UserRole {
   FREE_USER
 }
 
-enum SlovakCity {
-  BRATISLAVA
-  KOSICE
-  PRESOV
-  ZILINA
-  BANSKA_BYSTRICA
-  TRNAVA
-  TRENCIN
-  NITRA
-}
+// SlovakCity enum removed - now using String for city field
+// This allows storing any city/village name from Slovakia (2900+ locations)
 
 enum PropertyCondition {
   POVODNY        // Original
@@ -195,7 +187,7 @@ model Property {
   source            PropertySource    @default(BAZOS) // Zdroj inzerátu
   title             String
   description       String?          @db.Text
-  city              SlovakCity
+  city              String            // Mesto/obec (napr. "Bratislava", "Poprad", "Tvrdošín")
   district          String            // mestska cast / okres
   street            String?           // Názov ulice pre Market Gaps analýzu
   address           String
@@ -463,7 +455,7 @@ model UserPreferences {
   onboardingCompleted   Boolean  @default(false)
   
   // Lokalita
-  primaryCity           SlovakCity? // Hlavné mesto záujmu (legacy - pre spätnú kompatibilitu)
+  primaryCity           String? // Hlavné mesto záujmu (legacy - pre spätnú kompatibilitu)
   trackedRegions        String   @default("[]") @db.Text // JSON array of region IDs (BA, KE, etc.)
   trackedCities         String   @default("[]") @db.Text // JSON array of city names
   trackedDistricts      String   @default("[]") @db.Text // JSON array of district IDs
@@ -778,7 +770,7 @@ model PropertyLifecycle {
   // Identifikácia pôvodného inzerátu
   externalId      String   // external_id z Property
   source          PropertySource
-  city            SlovakCity
+  city            String            // Mesto/obec
   district        String?
   
   // Údaje o inzeráte

@@ -1,7 +1,7 @@
 // Market Logic - Detekcia Market Gaps a Liquidity analýza
 
 import { prisma } from "@/lib/prisma";
-import type { SlovakCity } from "@/generated/prisma/client";
+ from "@/generated/prisma/client";
 import type { MarketGapResult, LiquidityMetrics, ParsedListingData } from "@/lib/scraper/types";
 
 /**
@@ -31,7 +31,7 @@ const MARKET_GAP_CONFIG = {
  * Získa priemerné ceny pre lokalitu
  */
 async function getLocationPrices(
-  city: SlovakCity,
+  city: string,
   district: string,
   street?: string
 ): Promise<{
@@ -231,7 +231,7 @@ export async function updateLiquidity(
  * Vypočíta Liquidity metriky pre lokalitu
  */
 export async function calculateLiquidityMetrics(
-  city: SlovakCity,
+  city: string,
   district?: string
 ): Promise<LiquidityMetrics> {
   const where = district
@@ -283,7 +283,7 @@ export async function calculateLiquidityMetrics(
  * Aktualizuje StreetAnalytics s novými dátami
  */
 export async function updateStreetAnalytics(
-  city: SlovakCity,
+  city: string,
   district: string,
   street: string,
   pricePerM2: number

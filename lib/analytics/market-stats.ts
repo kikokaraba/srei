@@ -4,7 +4,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import type { SlovakCity, ListingType, PropertySource, PropertyCondition } from "@/generated/prisma/client";
+import type { ListingType, PropertySource, PropertyCondition } from "@/generated/prisma/client";
 
 /**
  * Create daily market statistics for all cities
@@ -13,7 +13,7 @@ export async function createDailyStats() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
-  const cities: SlovakCity[] = [
+  const cities: string[] = [
     "BRATISLAVA", "KOSICE", "PRESOV", "ZILINA",
     "BANSKA_BYSTRICA", "TRNAVA", "TRENCIN", "NITRA"
   ];
@@ -317,7 +317,7 @@ export async function createMonthlyStats() {
   const startOfMonth = new Date(year, month - 1, 1);
   const endOfMonth = new Date(year, month, 0);
   
-  const cities: SlovakCity[] = [
+  const cities: string[] = [
     "BRATISLAVA", "KOSICE", "PRESOV", "ZILINA",
     "BANSKA_BYSTRICA", "TRNAVA", "TRENCIN", "NITRA"
   ];
@@ -413,7 +413,7 @@ export async function createMonthlyStats() {
 /**
  * Get market trends for a city
  */
-export async function getMarketTrends(city: SlovakCity, listingType: ListingType = "PREDAJ") {
+export async function getMarketTrends(city: listingType: ListingType = "PREDAJ") {
   // Get last 30 days of stats
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -455,7 +455,7 @@ export async function getMarketTrends(city: SlovakCity, listingType: ListingType
 /**
  * Get removed listings statistics
  */
-export async function getRemovedListingsStats(city?: SlovakCity) {
+export async function getRemovedListingsStats(city?: string) {
   const where = city ? { city } : {};
   
   // Average days on market by city

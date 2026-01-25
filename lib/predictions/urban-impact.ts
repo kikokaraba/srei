@@ -6,7 +6,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import type { SlovakCity, InfrastructureType } from "@/generated/prisma/client";
+import type { InfrastructureType } from "@/generated/prisma/client";
 
 // ============================================
 // TYPES
@@ -16,7 +16,7 @@ export interface UrbanProject {
   id: string;
   name: string;
   type: InfrastructureType;
-  city: SlovakCity;
+  city: string;
   district?: string;
   status: "planned" | "in_progress" | "completed";
   completionDate?: Date;
@@ -26,7 +26,7 @@ export interface UrbanProject {
 }
 
 export interface UrbanImpactPrediction {
-  city: SlovakCity;
+  city: string;
   district?: string;
   totalImpact: number; // Celkový očakávaný vplyv na ceny (%)
   timeframe: string; // "6 mesiacov", "1 rok", etc.
@@ -188,7 +188,7 @@ function monthsUntilCompletion(project: UrbanProject): number {
  * Získa Urban Impact prediction pre lokáciu
  */
 export async function getUrbanImpactPrediction(
-  city: SlovakCity,
+  city: string,
   district?: string
 ): Promise<UrbanImpactPrediction> {
   // Nájdi relevantné projekty pre mesto
@@ -280,7 +280,7 @@ export async function getUrbanImpactPrediction(
  */
 export async function getUrbanImpactOverview(): Promise<{
   hotspots: Array<{
-    city: SlovakCity;
+    city: string;
     district?: string;
     impact: number;
     signal: string;
@@ -288,7 +288,7 @@ export async function getUrbanImpactOverview(): Promise<{
   }>;
   upcomingProjects: UrbanProject[];
 }> {
-  const cities: SlovakCity[] = [
+  const cities: string[] = [
     "BRATISLAVA", "KOSICE", "PRESOV", "ZILINA",
     "BANSKA_BYSTRICA", "TRNAVA", "TRENCIN", "NITRA"
   ];

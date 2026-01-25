@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { SlovakCity, ListingType } from "@/generated/prisma/client";
+import type { ListingType } from "@/generated/prisma/client";
 
 async function validateApiKey(apiKey: string): Promise<boolean> {
   if (!apiKey) return false;
@@ -32,7 +32,7 @@ async function validateApiKey(apiKey: string): Promise<boolean> {
  * GET /api/v1/public/market-stats
  * 
  * Query parametre:
- * - city: SlovakCity
+ * - city: string
  * - listingType: PREDAJ | PRENAJOM
  * - days: number (default 30)
  */
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     }
     
     const { searchParams } = new URL(request.url);
-    const city = searchParams.get("city") as SlovakCity | null;
+    const city = searchParams.get("city") as string | null;
     const listingType = (searchParams.get("listingType") as ListingType) || "PREDAJ";
     const days = parseInt(searchParams.get("days") || "30");
     

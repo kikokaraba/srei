@@ -11,7 +11,7 @@
 import { prisma } from "@/lib/prisma";
 import { aiBrain } from "../core";
 import type { AIInsight, MarketPulseData, AgentType } from "../types";
-import { SlovakCity } from "@/generated/prisma/client";
+// SlovakCity enum removed - now using string for city field
 
 const AGENT_TYPE: AgentType = "market-pulse";
 
@@ -102,7 +102,7 @@ async function analyzePriceTrends(): Promise<AIInsight[]> {
   }
 
   // Group by city
-  const cityStats = new Map<SlovakCity, typeof recentStats>();
+  const cityStats = new Map<typeof recentStats>();
   for (const stat of recentStats) {
     const existing = cityStats.get(stat.city) || [];
     existing.push(stat);
@@ -198,7 +198,7 @@ async function analyzeHotDeals(): Promise<AIInsight[]> {
   }
 
   // Group by city and find deals
-  const cityGroups = new Map<SlovakCity, typeof properties>();
+  const cityGroups = new Map<typeof properties>();
   for (const prop of properties) {
     const existing = cityGroups.get(prop.city) || [];
     existing.push(prop);
@@ -334,7 +334,7 @@ async function generatePredictions(): Promise<AIInsight[]> {
   }
 
   // Group by city
-  const cityTrends = new Map<SlovakCity, typeof monthlyStats>();
+  const cityTrends = new Map<typeof monthlyStats>();
   for (const stat of monthlyStats) {
     const existing = cityTrends.get(stat.city) || [];
     existing.push(stat);

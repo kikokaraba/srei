@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { SlovakCity, ListingType, PropertySource } from "@/generated/prisma/client";
+import type { ListingType, PropertySource } from "@/generated/prisma/client";
 
 // Rate limiting - jednoduchá implementácia
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -85,7 +85,7 @@ async function validateApiKey(apiKey: string): Promise<{ valid: boolean; userId?
  * GET /api/v1/public/properties
  * 
  * Query parametre:
- * - city: SlovakCity (BRATISLAVA, KOSICE, ...)
+ * - city: string (BRATISLAVA, KOSICE, ...)
  * - listingType: PREDAJ | PRENAJOM
  * - source: NEHNUTELNOSTI | REALITY | BAZOS
  * - minPrice: number
@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
     // Parse query parametre
     const { searchParams } = new URL(request.url);
     
-    const city = searchParams.get("city") as SlovakCity | null;
+    const city = searchParams.get("city") as string | null;
     const listingType = searchParams.get("listingType") as ListingType | null;
     const source = searchParams.get("source") as PropertySource | null;
     const minPrice = searchParams.get("minPrice") ? parseFloat(searchParams.get("minPrice")!) : undefined;

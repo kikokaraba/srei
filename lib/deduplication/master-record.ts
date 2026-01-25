@@ -6,7 +6,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import type { Property, PropertySource, SlovakCity } from "@/generated/prisma/client";
+import type { Property, PropertySource} from "@/generated/prisma/client";
 
 // ============================================
 // TYPES
@@ -21,7 +21,7 @@ export interface MasterRecord {
   listings: DuplicateListing[];
   property: {
     title: string;
-    city: SlovakCity;
+    city: string;
     district: string | null;
     area: number;
     rooms: number | null;
@@ -191,7 +191,7 @@ export async function createMasterRecord(propertyId: string): Promise<MasterReco
  * Nájde všetky duplicitné skupiny v databáze
  */
 export async function findAllDuplicateGroups(
-  city?: SlovakCity,
+  city?: string,
   limit: number = 50
 ): Promise<DuplicateGroup[]> {
   const where: Record<string, unknown> = {};
@@ -240,12 +240,12 @@ export async function findAllDuplicateGroups(
 /**
  * Štatistiky duplicít
  */
-export async function getDuplicateStats(city?: SlovakCity): Promise<{
+export async function getDuplicateStats(city?: string): Promise<{
   totalDuplicateGroups: number;
   totalDuplicateListings: number;
   potentialSavings: number;
   topSavings: Array<{
-    city: SlovakCity;
+    city: string;
     savings: number;
     count: number;
   }>;
@@ -254,7 +254,7 @@ export async function getDuplicateStats(city?: SlovakCity): Promise<{
 
   let totalDuplicateListings = 0;
   let potentialSavings = 0;
-  const savingsByCity = new Map<SlovakCity, { savings: number; count: number }>();
+  const savingsByCity = new Map<{ savings: number; count: number }>();
 
   for (const group of groups) {
     totalDuplicateListings += group.count;

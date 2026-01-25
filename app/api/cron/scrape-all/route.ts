@@ -15,19 +15,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { scrapePortal, type ScrapedProperty } from "@/lib/scraper/browserless-scraper";
 import { notifyHotDeal, notifyUnnotifiedMarketGaps } from "@/lib/telegram/notifications";
-import type { SlovakCity, ListingType } from "@/generated/prisma/client";
+import type { ListingType } from "@/generated/prisma/client";
 
-// Všetky mestá na Slovensku
-const ALL_CITIES: SlovakCity[] = [
-  "BRATISLAVA",
-  "KOSICE", 
-  "PRESOV",
-  "ZILINA",
-  "BANSKA_BYSTRICA",
-  "TRNAVA",
-  "TRENCIN",
-  "NITRA",
-];
+// Scraper teraz scrapuje CELÉ SLOVENSKO - všetky mestá a obce
+// Nie je potrebné špecifikovať mestá - portály vracajú všetky inzeráty
 
 // Konfigurácia scrapingu
 const SCRAPE_CONFIG = {

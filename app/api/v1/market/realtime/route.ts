@@ -12,13 +12,13 @@ import {
   getRealtimeCityStats,
   getDataComparison,
 } from "@/lib/data-sources/realtime-stats";
-import type { SlovakCity } from "@/generated/prisma/client";
+ from "@/generated/prisma/client";
 
 /**
  * GET /api/v1/market/realtime
  * 
  * Query params:
- * - city: SlovakCity (pre konkrétne mesto)
+ * - city: string (pre konkrétne mesto)
  * - compare: boolean (porovnanie s NBS)
  */
 export async function GET(request: NextRequest) {
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const city = searchParams.get("city") as SlovakCity | null;
+    const city = searchParams.get("city") as string | null;
     const compare = searchParams.get("compare") === "true";
 
     // Porovnanie s NBS

@@ -11,11 +11,11 @@ import {
   normalizeText,
   removeDiacritics,
 } from "../base-scraper";
-import type { SlovakCity, ListingType } from "@/generated/prisma/client";
+import type { ListingType } from "@/generated/prisma/client";
 import { parseDescription } from "../parser";
 
-// Mapovanie lokalít na SlovakCity enum
-const CITY_MAP: Record<string, SlovakCity> = {
+// Mapovanie lokalít na štandardizované názvy miest
+const CITY_MAP: Record<string, string> = {
   "bratislava": "BRATISLAVA",
   "košice": "KOSICE",
   "kosice": "KOSICE",
@@ -136,7 +136,7 @@ export class NehnutelnostiScraper extends BaseScraper {
     return 0;
   }
 
-  parseCity(text: string): { city: SlovakCity; district: string } | null {
+  parseCity(text: string): { city: string; district: string } | null {
     const normalized = normalizeText(text);
     
     for (const [key, city] of Object.entries(CITY_MAP)) {

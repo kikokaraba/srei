@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Prisma, SlovakCity, PropertyCondition, EnergyCertificate, ListingType, PropertySource } from "@/generated/prisma/client";
+import { Prisma, PropertyCondition, EnergyCertificate, ListingType, PropertySource } from "@/generated/prisma/client";
 
 export async function GET(request: Request) {
   try {
@@ -78,7 +78,7 @@ export async function GET(request: Request) {
     const citiesInput = citiesParam || cityParam;
     if (citiesInput) {
       // Podporuje viac miest oddelených čiarkou
-      const cities = citiesInput.split(",").filter(Boolean) as SlovakCity[];
+      const cities = citiesInput.split(",").filter(Boolean) as string[];
       if (cities.length > 0) {
         where.city = { in: cities };
       }

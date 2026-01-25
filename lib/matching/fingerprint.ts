@@ -5,7 +5,7 @@
 
 import { createHash } from "crypto";
 import { prisma } from "@/lib/prisma";
-import type { Property, PropertyFingerprint, SlovakCity } from "@/generated/prisma/client";
+import type { Property, PropertyFingerprint} from "@/generated/prisma/client";
 
 // ============================================================================
 // NORMALIZAČNÉ FUNKCIE
@@ -118,7 +118,7 @@ export function getDescriptionHash(description: string | null | undefined): stri
 /**
  * Vytvorí city-district kombináciu
  */
-export function getCityDistrict(city: SlovakCity, district: string): string {
+export function getCityDistrict(city: district: string): string {
   const normalizedDistrict = removeDiacritics(district).toLowerCase().replace(/\s+/g, "-");
   return `${city}-${normalizedDistrict}`;
 }
@@ -144,7 +144,7 @@ export interface FingerprintData {
  */
 export function createFingerprint(property: {
   address: string;
-  city: SlovakCity;
+  city: string;
   district: string;
   area_m2: number;
   rooms?: number | null;

@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getAIValuation, type PropertyInput } from "@/lib/ai/valuation";
-import type { SlovakCity, PropertyCondition } from "@/generated/prisma/client";
+import type { PropertyCondition } from "@/generated/prisma/client";
 
 // Validácia vstupu
 function validateInput(body: unknown): PropertyInput | { error: string } {
@@ -45,7 +45,7 @@ function validateInput(body: unknown): PropertyInput | { error: string } {
   }
 
   return {
-    city: data.city as SlovakCity,
+    city: data.city as string,
     district: typeof data.district === "string" ? data.district : undefined,
     area_m2: data.area_m2,
     rooms: typeof data.rooms === "number" ? data.rooms : undefined,

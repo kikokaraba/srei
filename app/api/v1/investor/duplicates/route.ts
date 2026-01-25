@@ -11,14 +11,14 @@ import {
   findAllDuplicateGroups,
   getDuplicateStats,
 } from "@/lib/deduplication/master-record";
-import type { SlovakCity } from "@/generated/prisma/client";
+ from "@/generated/prisma/client";
 
 /**
  * GET /api/v1/investor/duplicates
  * 
  * Query params:
  * - propertyId: string (pre master record jednej property)
- * - city: SlovakCity (pre zoznam duplicít v meste)
+ * - city: string (pre zoznam duplicít v meste)
  * - stats: boolean (pre štatistiky)
  */
 export async function GET(request: NextRequest) {
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const propertyId = searchParams.get("propertyId");
-    const city = searchParams.get("city") as SlovakCity | null;
+    const city = searchParams.get("city") as string | null;
     const showStats = searchParams.get("stats") === "true";
 
     // Štatistiky duplicít

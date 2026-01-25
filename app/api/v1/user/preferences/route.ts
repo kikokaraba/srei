@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
-import { SlovakCity } from "@/generated/prisma/client";
+// SlovakCity enum removed - now using string for city field
 
 export async function GET() {
   try {
@@ -127,15 +127,11 @@ export async function POST(request: Request) {
     } = body;
 
     // Build update data object with proper types
-    // Convert primaryCity string to SlovakCity enum if provided
-    const primaryCityEnum = primaryCity && Object.values(SlovakCity).includes(primaryCity as SlovakCity) 
-      ? (primaryCity as SlovakCity) 
-      : (primaryCity === null ? null : undefined);
-
+    // primaryCity is now a string field - no enum validation needed
     const updateData: Prisma.UserPreferencesUncheckedUpdateInput = {};
     
     if (primaryCity !== undefined) {
-      updateData.primaryCity = primaryCityEnum;
+      updateData.primaryCity = primaryCity || null;
     }
     if (trackedRegions !== undefined) {
       updateData.trackedRegions = trackedRegions ? JSON.stringify(trackedRegions) : JSON.stringify([]);

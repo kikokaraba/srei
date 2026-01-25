@@ -10,13 +10,13 @@ import {
   getUrbanImpactPrediction,
   getUrbanImpactOverview,
 } from "@/lib/predictions/urban-impact";
-import type { SlovakCity } from "@/generated/prisma/client";
+ from "@/generated/prisma/client";
 
 /**
  * GET /api/v1/investor/urban-impact
  * 
  * Query params:
- * - city: SlovakCity (pre prediction konkrétneho mesta)
+ * - city: string (pre prediction konkrétneho mesta)
  * - district: string
  * - overview: boolean (pre prehľad všetkých miest)
  */
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const city = searchParams.get("city") as SlovakCity | null;
+    const city = searchParams.get("city") as string | null;
     const district = searchParams.get("district");
     const showOverview = searchParams.get("overview") === "true";
 

@@ -13,14 +13,14 @@ import {
   calculateNegotiationPower,
   getPriceStory,
 } from "@/lib/analysis/investor-metrics";
-import type { SlovakCity } from "@/generated/prisma/client";
+ from "@/generated/prisma/client";
 
 /**
  * GET /api/v1/investor/metrics
  * 
  * Query params:
  * - type: "momentum" | "trust" | "negotiation" | "story"
- * - city: SlovakCity (pre momentum)
+ * - city: string (pre momentum)
  * - district: string (pre momentum)
  * - propertyId: string (pre trust, negotiation, story)
  */
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type");
-    const city = searchParams.get("city") as SlovakCity | null;
+    const city = searchParams.get("city") as string | null;
     const district = searchParams.get("district");
     const propertyId = searchParams.get("propertyId");
 
@@ -306,9 +306,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { cities } = body as { cities?: SlovakCity[] };
+    const { cities } = body as { cities?: string[] };
 
-    const targetCities: SlovakCity[] = cities || [
+    const targetCities: string[] = cities || [
       "BRATISLAVA", "KOSICE", "PRESOV", "ZILINA",
       "BANSKA_BYSTRICA", "TRNAVA", "TRENCIN", "NITRA"
     ];

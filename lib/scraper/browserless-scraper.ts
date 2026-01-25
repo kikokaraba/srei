@@ -6,7 +6,7 @@
  */
 
 import type { Browser, Page } from "playwright-core";
-import type { SlovakCity, ListingType, PropertySource } from "@/generated/prisma/client";
+import type { ListingType, PropertySource } from "@/generated/prisma/client";
 
 // ============================================
 // Types
@@ -20,8 +20,8 @@ export interface ScrapedProperty {
   price: number;
   pricePerM2: number;
   areaM2: number;
-  city: SlovakCity;
-  district: string;
+  city: string;      // Názov mesta/obce
+  district: string;  // Okres alebo mestská časť
   rooms?: number;
   listingType: ListingType;
   sourceUrl: string;
@@ -156,55 +156,174 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
 // City Mapping
 // ============================================
 
-const CITY_MAP: Record<string, SlovakCity> = {
-  "bratislava": "BRATISLAVA",
-  "košice": "KOSICE",
-  "kosice": "KOSICE",
-  "prešov": "PRESOV",
-  "presov": "PRESOV",
-  "žilina": "ZILINA",
-  "zilina": "ZILINA",
-  "banská bystrica": "BANSKA_BYSTRICA",
-  "banska bystrica": "BANSKA_BYSTRICA",
-  "trnava": "TRNAVA",
-  "trenčín": "TRENCIN",
-  "trencin": "TRENCIN",
-  "nitra": "NITRA",
-  // Bratislava districts
-  "petržalka": "BRATISLAVA",
-  "ružinov": "BRATISLAVA",
-  "staré mesto": "BRATISLAVA",
-  "nové mesto": "BRATISLAVA",
-  "karlova ves": "BRATISLAVA",
-  "dúbravka": "BRATISLAVA",
-  "rača": "BRATISLAVA",
-  "vajnory": "BRATISLAVA",
-  // Košice districts  
-  "košice-juh": "KOSICE",
-  "košice-západ": "KOSICE",
-  "košice-sever": "KOSICE",
+// Mapovanie lokalít na štandardizované názvy miest
+// Obsahuje všetky slovenské mestá a významné obce
+const CITY_MAP: Record<string, string> = {
+  // Krajské mestá
+  "bratislava": "Bratislava",
+  "košice": "Košice", "kosice": "Košice",
+  "prešov": "Prešov", "presov": "Prešov",
+  "žilina": "Žilina", "zilina": "Žilina",
+  "banská bystrica": "Banská Bystrica", "banska bystrica": "Banská Bystrica",
+  "trnava": "Trnava",
+  "trenčín": "Trenčín", "trencin": "Trenčín",
+  "nitra": "Nitra",
+  
+  // Okresné mestá a významné mestá (abecedne)
+  "bánovce nad bebravou": "Bánovce nad Bebravou",
+  "bardejov": "Bardejov",
+  "brezno": "Brezno",
+  "bytča": "Bytča",
+  "čadca": "Čadca", "cadca": "Čadca",
+  "detva": "Detva",
+  "dolný kubín": "Dolný Kubín", "dolny kubin": "Dolný Kubín",
+  "dubnica nad váhom": "Dubnica nad Váhom",
+  "dunajská streda": "Dunajská Streda",
+  "fiľakovo": "Fiľakovo",
+  "galanta": "Galanta",
+  "gelnica": "Gelnica",
+  "hlohovec": "Hlohovec",
+  "hnúšťa": "Hnúšťa",
+  "humenné": "Humenné", "humenne": "Humenné",
+  "ilava": "Ilava",
+  "kežmarok": "Kežmarok", "kezmarok": "Kežmarok",
+  "komárno": "Komárno", "komarno": "Komárno",
+  "krupina": "Krupina",
+  "kysucké nové mesto": "Kysucké Nové Mesto",
+  "leopoldov": "Leopoldov",
+  "levice": "Levice",
+  "levoča": "Levoča", "levoca": "Levoča",
+  "liptovský mikuláš": "Liptovský Mikuláš", "liptovsky mikulas": "Liptovský Mikuláš",
+  "lučenec": "Lučenec", "lucenec": "Lučenec",
+  "malacky": "Malacky",
+  "martin": "Martin",
+  "medzilaborce": "Medzilaborce",
+  "michalovce": "Michalovce",
+  "modra": "Modra",
+  "myjava": "Myjava",
+  "námestovo": "Námestovo", "namestovo": "Námestovo",
+  "nitra": "Nitra",
+  "nová baňa": "Nová Baňa",
+  "nová dubnica": "Nová Dubnica",
+  "nové mesto nad váhom": "Nové Mesto nad Váhom",
+  "nové zámky": "Nové Zámky", "nove zamky": "Nové Zámky",
+  "partizánske": "Partizánske", "partizanske": "Partizánske",
+  "pezinok": "Pezinok",
+  "piešťany": "Piešťany", "piestany": "Piešťany",
+  "poltár": "Poltár",
+  "poprad": "Poprad",
+  "považská bystrica": "Považská Bystrica",
+  "prievidza": "Prievidza",
+  "púchov": "Púchov", "puchov": "Púchov",
+  "revúca": "Revúca",
+  "rimavská sobota": "Rimavská Sobota",
+  "rožňava": "Rožňava", "roznava": "Rožňava",
+  "ružomberok": "Ružomberok", "ruzomberok": "Ružomberok",
+  "sabinov": "Sabinov",
+  "senec": "Senec",
+  "senica": "Senica",
+  "skalica": "Skalica",
+  "snina": "Snina",
+  "sobrance": "Sobrance",
+  "spišská nová ves": "Spišská Nová Ves",
+  "stará ľubovňa": "Stará Ľubovňa",
+  "stropkov": "Stropkov",
+  "stupava": "Stupava",
+  "svidník": "Svidník", "svidnik": "Svidník",
+  "svit": "Svit",
+  "šahy": "Šahy",
+  "šaľa": "Šaľa", "sala": "Šaľa",
+  "šamorín": "Šamorín",
+  "šaštín-stráže": "Šaštín-Stráže",
+  "štúrovo": "Štúrovo", "sturovo": "Štúrovo",
+  "šurany": "Šurany",
+  "topoľčany": "Topoľčany", "topolcany": "Topoľčany",
+  "trebišov": "Trebišov", "trebisov": "Trebišov",
+  "trenčianske teplice": "Trenčianske Teplice",
+  "trstená": "Trstená",
+  "turčianske teplice": "Turčianske Teplice",
+  "turzovka": "Turzovka",
+  "tvrdošín": "Tvrdošín", "tvrdosin": "Tvrdošín",
+  "veľké kapušany": "Veľké Kapušany",
+  "veľký krtíš": "Veľký Krtíš",
+  "veľký meder": "Veľký Meder",
+  "vranov nad topľou": "Vranov nad Topľou",
+  "vráble": "Vráble",
+  "vrútky": "Vrútky",
+  "vysoké tatry": "Vysoké Tatry",
+  "žarnovica": "Žarnovica",
+  "žiar nad hronom": "Žiar nad Hronom",
+  "zlaté moravce": "Zlaté Moravce",
+  "zvolen": "Zvolen",
+  
+  // Bratislava mestské časti
+  "petržalka": "Bratislava",
+  "ružinov": "Bratislava",
+  "staré mesto": "Bratislava",
+  "nové mesto": "Bratislava",
+  "karlova ves": "Bratislava",
+  "dúbravka": "Bratislava",
+  "rača": "Bratislava",
+  "vajnory": "Bratislava",
+  "devín": "Bratislava",
+  "lamač": "Bratislava",
+  "vrakuňa": "Bratislava",
+  "podunajské biskupice": "Bratislava",
+  
+  // Košice mestské časti  
+  "košice-juh": "Košice",
+  "košice-západ": "Košice",
+  "košice-sever": "Košice",
+  "košice-staré mesto": "Košice",
+  "dargovských hrdinov": "Košice",
+  "ťahanovce": "Košice",
+  "šaca": "Košice",
 };
 
+// Pre URL building - slug verzie miest
 const CITY_SLUGS: Record<string, string> = {
-  BRATISLAVA: "bratislava",
-  KOSICE: "kosice",
-  PRESOV: "presov",
-  ZILINA: "zilina",
-  BANSKA_BYSTRICA: "banska-bystrica",
-  TRNAVA: "trnava",
-  TRENCIN: "trencin",
-  NITRA: "nitra",
+  "Bratislava": "bratislava",
+  "Košice": "kosice",
+  "Prešov": "presov",
+  "Žilina": "zilina",
+  "Banská Bystrica": "banska-bystrica",
+  "Trnava": "trnava",
+  "Trenčín": "trencin",
+  "Nitra": "nitra",
+  "Poprad": "poprad",
+  "Martin": "martin",
+  "Zvolen": "zvolen",
+  "Prievidza": "prievidza",
+  "Nové Zámky": "nove-zamky",
+  "Michalovce": "michalovce",
+  "Piešťany": "piestany",
+  "Levice": "levice",
+  "Topoľčany": "topolcany",
+  "Liptovský Mikuláš": "liptovsky-mikulas",
+  "Ružomberok": "ruzomberok",
+  "Dubnica nad Váhom": "dubnica-nad-vahom",
+  "Čadca": "cadca",
+  "Humenné": "humenne",
+  "Bardejov": "bardejov",
+  "Trebišov": "trebisov",
+  "Lučenec": "lucenec",
+  "Senec": "senec",
+  "Pezinok": "pezinok",
+  "Malacky": "malacky",
+  "Dunajská Streda": "dunajska-streda",
+  "Komárno": "komarno",
 };
 
 // ============================================
 // Helper Functions
 // ============================================
 
-function parseCity(text: string): { city: SlovakCity; district: string } | null {
+function parseCity(text: string): { city: string; district: string } | null {
   const normalized = text.toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
   
+  // Najprv skúsime nájsť v mape
   for (const [key, city] of Object.entries(CITY_MAP)) {
     const normalizedKey = key.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     if (normalized.includes(normalizedKey)) {
@@ -212,6 +331,17 @@ function parseCity(text: string): { city: SlovakCity; district: string } | null 
       const district = parts.length > 1 ? parts[1].trim() : parts[0].trim();
       return { city, district: district || "Centrum" };
     }
+  }
+  
+  // Ak nie je v mape, extrahuj prvú časť ako mesto
+  // (pre menšie obce ktoré nie sú v mape)
+  const parts = text.split(/[,\-•–]/);
+  if (parts.length > 0 && parts[0].trim().length > 2) {
+    const extractedCity = parts[0].trim();
+    const district = parts.length > 1 ? parts[1].trim() : "";
+    // Capitalize first letter
+    const formattedCity = extractedCity.charAt(0).toUpperCase() + extractedCity.slice(1).toLowerCase();
+    return { city: formattedCity, district: district || "Centrum" };
   }
   
   return null;
@@ -352,7 +482,7 @@ async function scrapeListPage(
 export async function scrapePortal(
   portalKey: "NEHNUTELNOSTI" | "REALITY" | "TOPREALITY",
   options: {
-    city?: SlovakCity;
+    city?: string;        // Názov mesta (nepovinné - ak nie je, scrapuje všetko)
     listingType?: ListingType;
     maxPages?: number;
     categoryPath?: string;

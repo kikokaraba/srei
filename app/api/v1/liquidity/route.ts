@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { SlovakCity } from "@/generated/prisma/client";
+// SlovakCity enum removed - now using string for city field
 
 export async function GET(request: Request) {
   try {
@@ -79,7 +79,7 @@ export async function GET(request: Request) {
       // Získame všetky nehnuteľnosti v meste s liquidity dátami
       const properties = await prisma.property.findMany({
         where: {
-          city: city as SlovakCity,
+          city: city as string,
         },
         include: {
           priceHistory: {

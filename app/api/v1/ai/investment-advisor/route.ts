@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import type { SlovakCity } from "@/generated/prisma/client";
+ from "@/generated/prisma/client";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       where: {
         price: { gte: minPrice, lte: maxPrice },
         listing_type: "PREDAJ",
-        ...(criteria.preferredCities?.length ? { city: { in: criteria.preferredCities as SlovakCity[] } } : {}),
+        ...(criteria.preferredCities?.length ? { city: { in: criteria.preferredCities as string[] } } : {}),
       },
       include: {
         investmentMetrics: true,

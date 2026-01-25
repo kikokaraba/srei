@@ -9,7 +9,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import type { SlovakCity, Property } from "@/generated/prisma/client";
+import type { Property } from "@/generated/prisma/client";
 
 // ============================================
 // PRICE MOMENTUM
@@ -17,7 +17,7 @@ import type { SlovakCity, Property } from "@/generated/prisma/client";
 // ============================================
 
 export interface PriceMomentum {
-  city: SlovakCity;
+  city: string;  // Mesto/obec
   district?: string;
   trend: "rising" | "stable" | "falling";
   changePercent7d: number;  // Zmena za 7 dní
@@ -29,7 +29,7 @@ export interface PriceMomentum {
 }
 
 export async function calculatePriceMomentum(
-  city: SlovakCity,
+  city: string,
   district?: string
 ): Promise<PriceMomentum> {
   const now = new Date();

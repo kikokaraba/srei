@@ -1,6 +1,6 @@
 // Scraper Types - Typové definície pre realitný scraper
 
-import type { SlovakCity, PropertyCondition, EnergyCertificate } from "@/generated/prisma/client";
+import type { PropertyCondition, EnergyCertificate } from "@/generated/prisma/client";
 
 /**
  * Surové dáta z inzerátu pred spracovaním
@@ -33,7 +33,7 @@ export interface ParsedListingData {
   pricePerM2: number;
   
   // Lokácia
-  city: SlovakCity;
+  city: string;      // Mesto/obec
   district: string;
   street?: string;
   address: string;
@@ -119,7 +119,7 @@ export interface MarketGapResult {
  * Liquidity metriky
  */
 export interface LiquidityMetrics {
-  city: SlovakCity;
+  city: string;      // Mesto/obec
   district: string;
   avgDaysOnMarket: number;
   medianDaysOnMarket: number;

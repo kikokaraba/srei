@@ -4,7 +4,7 @@
  */
 
 import * as cheerio from "cheerio";
-import type { SlovakCity, PropertySource, ListingType } from "@/generated/prisma/client";
+import type { PropertySource, ListingType } from "@/generated/prisma/client";
 
 // ============================================================================
 // TYPY A ROZHRANIA
@@ -36,7 +36,7 @@ export interface ParsedListing {
   price: number;
   pricePerM2: number;
   areaM2: number;
-  city: SlovakCity;
+  city: string;
   district: string;
   street?: string;
   rooms?: number;
@@ -220,9 +220,9 @@ export abstract class BaseScraper {
   abstract parseArea(text: string): number;
 
   /**
-   * Mapuje lokalitu na SlovakCity enum
+   * Mapuje lokalitu na štandardizovaný názov mesta
    */
-  abstract parseCity(text: string): { city: SlovakCity; district: string } | null;
+  abstract parseCity(text: string): { city: string; district: string } | null;
 
   /**
    * Zostav URL pre kategóriu a mesto
@@ -415,4 +415,4 @@ export abstract class BaseScraper {
 }
 
 // Export types
-export type { PropertySource, SlovakCity, ListingType };
+export type { PropertySource, ListingType };

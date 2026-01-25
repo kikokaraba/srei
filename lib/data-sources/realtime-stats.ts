@@ -6,7 +6,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import type { SlovakCity } from "@/generated/prisma/client";
+ from "@/generated/prisma/client";
 
 // Mapovanie miest na kraje
 const CITY_TO_REGION: Record<string, string> = {
@@ -20,14 +20,14 @@ const CITY_TO_REGION: Record<string, string> = {
   NITRA: "Nitriansky kraj",
 };
 
-const ALL_CITIES: SlovakCity[] = [
+const ALL_CITIES: string[] = [
   "BRATISLAVA", "KOSICE", "PRESOV", "ZILINA",
   "BANSKA_BYSTRICA", "TRNAVA", "TRENCIN", "NITRA"
 ];
 
 export interface RealtimeRegionStats {
   region: string;
-  city: SlovakCity;
+  city: string;
   avgPricePerM2: number;
   medianPricePerM2: number;
   avgPrice: number;
@@ -181,7 +181,7 @@ export async function getRealtimeMarketStats(): Promise<RealtimeMarketOverview> 
 /**
  * Získa real-time štatistiky pre konkrétne mesto
  */
-export async function getRealtimeCityStats(city: SlovakCity): Promise<RealtimeRegionStats | null> {
+export async function getRealtimeCityStats(city: string): Promise<RealtimeRegionStats | null> {
   const stats = await getRealtimeMarketStats();
   return stats.regions.find(r => r.city === city) || null;
 }

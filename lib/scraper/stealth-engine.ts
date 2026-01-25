@@ -3,7 +3,7 @@
 
 import * as cheerio from "cheerio";
 import { prisma } from "@/lib/prisma";
-import type { SlovakCity } from "@/generated/prisma/client";
+ from "@/generated/prisma/client";
 import { parseDescription } from "./parser";
 import { createPropertyFingerprint } from "@/lib/deduplication/fingerprint";
 
@@ -258,7 +258,7 @@ interface ParsedListing {
   price: number;
   pricePerM2: number;
   areaM2: number;
-  city: SlovakCity;
+  city: string;
   district: string;
   condition: "NOVOSTAVBA" | "REKONSTRUKCIA" | "POVODNY";
   listingType: "PREDAJ" | "PRENAJOM";
@@ -284,11 +284,11 @@ const PATTERNS = {
 };
 
 /**
- * Mapovanie lokalít na SlovakCity enum
+ * Mapovanie lokalít na štandardizované názvy miest
  * DÔLEŽITÉ: Špecifickejšie patterny (napr. "košice-staré mesto") musia byť PRED
  * všeobecnejšími (napr. "staré mesto"), inak sa matchnú nesprávne!
  */
-const CITY_MAP: Record<string, SlovakCity> = {
+const CITY_MAP: Record<string, string> = {
   // === KOŠICE - mestské časti (MUSIA byť pred "staré mesto" atď.) ===
   "košice-staré mesto": "KOSICE",
   "kosice-stare mesto": "KOSICE",
@@ -461,11 +461,11 @@ function extractArea(text: string): number {
  * Extrahuje mesto z lokácie
  * Používa longest-match stratégiu - preferuje dlhšie (špecifickejšie) patterny
  */
-function extractCity(location: string): { city: SlovakCity; district: string } {
+function extractCity(location: string): { city: string; district: string } {
   const normalized = location.toLowerCase().trim();
   
   // Nájdi všetky matchnuté patterny a vyber najdlhší
-  let bestMatch: { pattern: string; city: SlovakCity } | null = null;
+  let bestMatch: { pattern: string; city: string } | null = null;
   
   for (const [pattern, city] of Object.entries(CITY_MAP)) {
     if (normalized.includes(pattern)) {
@@ -668,7 +668,7 @@ interface SyncResult {
 /**
  * Získa priemernú cenu pre lokalitu
  */
-async function getAveragePrice(city: SlovakCity, district: string): Promise<number | null> {
+async function getAveragePrice(city: district: string): Promise<number | null> {
   // Najprv skús StreetAnalytics
   const streetAvg = await prisma.streetAnalytics.findFirst({
     where: {

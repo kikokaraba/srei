@@ -12,7 +12,7 @@ import {
   scrapePortal,
   type ScrapedProperty 
 } from "@/lib/scraper/browserless-scraper";
-import type { SlovakCity, ListingType } from "@/generated/prisma/client";
+import type { ListingType } from "@/generated/prisma/client";
 
 /**
  * GET - Test Browserless connection
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       saveToDb = true,
     } = body as {
       portal?: "NEHNUTELNOSTI" | "REALITY";
-      city?: SlovakCity;
+      city?: string;
       listingType?: ListingType;
       maxPages?: number;
       saveToDb?: boolean;

@@ -1,6 +1,6 @@
 // Bazoš Scraper - Scraper pre reality.bazos.sk
 
-import type { SlovakCity } from "@/generated/prisma/client";
+ from "@/generated/prisma/client";
 import type { RawListingData, ParsedListingData, ScrapeError, ScraperConfig } from "./types";
 import { parseDescription, parsePrice, parseArea } from "./parser";
 
@@ -17,9 +17,9 @@ export const BAZOS_CONFIG: ScraperConfig = {
 };
 
 /**
- * Mapovanie Bazoš regiónov na SlovakCity enum
+ * Mapovanie Bazoš regiónov na štandardizované názvy miest
  */
-const BAZOS_CITY_MAP: Record<string, SlovakCity> = {
+const BAZOS_CITY_MAP: Record<string, string> = {
   "bratislava": "BRATISLAVA",
   "kosice": "KOSICE",
   "presov": "PRESOV",
@@ -42,7 +42,7 @@ const BAZOS_CITY_MAP: Record<string, SlovakCity> = {
  * Parsuje lokáciu z Bazoš formátu
  */
 export function parseLocation(locationRaw: string): {
-  city: SlovakCity;
+  city: string;
   district: string;
   street?: string;
 } {

@@ -6,7 +6,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
-import type { SlovakCity, PropertyCondition } from "@/generated/prisma/client";
+import type { PropertyCondition } from "@/generated/prisma/client";
 
 // Inicializácia Claude
 const anthropic = new Anthropic({
@@ -14,7 +14,7 @@ const anthropic = new Anthropic({
 });
 
 export interface PropertyInput {
-  city: SlovakCity;
+  city: string;
   district?: string;
   area_m2: number;
   rooms?: number;

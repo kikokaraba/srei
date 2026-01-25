@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import type { PropertySource, SlovakCity, ListingType } from "@/generated/prisma/client";
+import type { PropertySource, ListingType } from "@/generated/prisma/client";
 
 // Scraper sources configuration
 const SCRAPER_SOURCES = {
@@ -351,19 +351,8 @@ async function runSourceScrape(
         listingType = "PRENAJOM";
       }
       
-      // Map city name to enum
-      const cityMap: Record<string, SlovakCity> = {
-        "Bratislava": "BRATISLAVA",
-        "Košice": "KOSICE",
-        "Prešov": "PRESOV",
-        "Žilina": "ZILINA",
-        "Banská Bystrica": "BANSKA_BYSTRICA",
-        "Trnava": "TRNAVA",
-        "Trenčín": "TRENCIN",
-        "Nitra": "NITRA",
-      };
-      
-      const city = options.cities[0] ? cityMap[options.cities[0]] : undefined;
+      // City je teraz string - pošleme priamo
+      const city = options.cities[0] || undefined;
       
       console.log(`🌐 Using Browserless for ${sourceId}...`);
       const result = await scrapePortal(sourceId as "NEHNUTELNOSTI" | "REALITY" | "TOPREALITY", {

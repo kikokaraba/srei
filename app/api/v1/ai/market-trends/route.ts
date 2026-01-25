@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import type { SlovakCity } from "@/generated/prisma/client";
+ from "@/generated/prisma/client";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  const city = (request.nextUrl.searchParams.get("city") || "BRATISLAVA") as SlovakCity;
+  const city = (request.nextUrl.searchParams.get("city") || "BRATISLAVA") as string;
 
   try {
     // Get current market data
