@@ -19,42 +19,6 @@ interface Property {
   } | null;
 }
 
-// Fallback data ak databáza nemá dáta
-const fallbackProperties: Property[] = [
-  {
-    id: "1",
-    title: "2-izbový byt v Starom Meste",
-    city: "BRATISLAVA",
-    district: "Staré Mesto",
-    price: 185000,
-    area_m2: 58,
-    price_per_m2: 3190,
-    rooms: 2,
-    investmentMetrics: { gross_yield: 4.8 },
-  },
-  {
-    id: "2",
-    title: "3-izbový byt blízko centra",
-    city: "KOSICE",
-    district: "Košice I",
-    price: 125000,
-    area_m2: 72,
-    price_per_m2: 1736,
-    rooms: 3,
-    investmentMetrics: { gross_yield: 5.5 },
-  },
-  {
-    id: "3",
-    title: "1-izbové štúdio, zrekonštruované",
-    city: "NITRA",
-    district: "Nitra",
-    price: 68000,
-    area_m2: 35,
-    price_per_m2: 1943,
-    rooms: 1,
-    investmentMetrics: { gross_yield: 6.2 },
-  },
-];
 
 export function RecentProperties() {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -124,24 +88,18 @@ export function RecentProperties() {
       
       if (!response.ok) {
         if (response.status === 401) {
-          // Používateľ nie je prihlásený - použijeme fallback
-          setProperties(fallbackProperties);
+          // Používateľ nie je prihlásený
+          setProperties([]);
           return;
         }
         throw new Error("Failed to fetch properties");
       }
       
       const data = await response.json();
-      
-      if (data.data && data.data.length > 0) {
-        setProperties(data.data);
-      } else {
-        // Ak nemáme dáta, použijeme fallback
-        setProperties(fallbackProperties);
-      }
+      setProperties(data.data || []);
     } catch (error) {
       console.error("Error fetching properties:", error);
-      setProperties(fallbackProperties);
+      setProperties([]);
     } finally {
       setLoading(false);
     }
@@ -175,6 +133,18 @@ export function RecentProperties() {
       </div>
 
       <div className="space-y-4">
+        {properties.length === 0 ? (
+          <div className="text-center py-8">
+            <Home className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+            <p className="text-slate-400 mb-2">Zatiaľ žiadne nehnuteľnosti</p>
+            <p className="text-slate-500 text-sm">
+              Nastavte si lokality v{" "}
+              <Link href="/dashboard/settings" className="text-emerald-400 hover:underline">
+                nastaveniach
+              </Link>
+            </p>
+          </div>
+        ) : null}
         {properties.map((property) => {
           const isSaved = savedIds.has(property.id);
           const isSaving = savingId === property.id;

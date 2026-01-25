@@ -39,17 +39,8 @@ type GeoJSONFeatureCollection = {
   }>;
 };
 
-// Mock dáta pre kraje
-const REGION_DATA: Record<string, { avgPrice: number; avgYield: number; trend: "up" | "down" }> = {
-  "Bratislavský kraj": { avgPrice: 3800, avgYield: 3.8, trend: "up" },
-  "Trnavský kraj": { avgPrice: 2100, avgYield: 4.9, trend: "up" },
-  "Nitriansky kraj": { avgPrice: 1650, avgYield: 5.7, trend: "down" },
-  "Trenčiansky kraj": { avgPrice: 1900, avgYield: 5.2, trend: "up" },
-  "Žilinský kraj": { avgPrice: 1950, avgYield: 5.1, trend: "up" },
-  "Banskobystrický kraj": { avgPrice: 1750, avgYield: 5.4, trend: "up" },
-  "Prešovský kraj": { avgPrice: 1650, avgYield: 5.5, trend: "up" },
-  "Košický kraj": { avgPrice: 1850, avgYield: 5.3, trend: "down" },
-};
+// Dáta pre kraje - zatiaľ prázdne, budú sa načítavať z API
+const REGION_DATA: Record<string, { avgPrice: number; avgYield: number; trend: "up" | "down" }> = {};
 
 // Presné súradnice stredov krajov
 const REGION_COORDINATES: Array<{ 
@@ -134,25 +125,37 @@ function createCustomMarkerIcon(code: string, yieldValue: number, L: any): any {
 
 // React komponent pre popup obsah
 function PopupContent({ regionName, data }: { regionName: string; data: { avgPrice: number; avgYield: number; trend: "up" | "down" } }) {
+  const hasData = data.avgPrice > 0 || data.avgYield > 0;
+  
   return (
     <div className="bg-slate-900 text-slate-100 p-4 rounded-lg border border-slate-800 min-w-[200px]">
       <h3 className="font-bold text-lg mb-3 text-emerald-400">{regionName}</h3>
-      <div className="mb-2">
-        <span className="text-slate-400 text-sm">Priemerný výnos: </span>
-        <span className="text-emerald-400 font-semibold text-base">{data.avgYield}%</span>
-      </div>
-      <div>
-        <span className="text-slate-400 text-sm">Cena: </span>
-        <span className="text-slate-100 font-semibold text-base" suppressHydrationWarning>
-          {data.avgPrice.toLocaleString("sk-SK")} €/m²
-        </span>
-      </div>
+      {hasData ? (
+        <>
+          <div className="mb-2">
+            <span className="text-slate-400 text-sm">Priemerný výnos: </span>
+            <span className="text-emerald-400 font-semibold text-base">{data.avgYield}%</span>
+          </div>
+          <div>
+            <span className="text-slate-400 text-sm">Cena: </span>
+            <span className="text-slate-100 font-semibold text-base" suppressHydrationWarning>
+              {data.avgPrice.toLocaleString("sk-SK")} €/m²
+            </span>
+          </div>
+        </>
+      ) : (
+        <div className="text-slate-400 text-sm">
+          Prihláste sa pre detailné štatistiky
+        </div>
+      )}
     </div>
   );
 }
 
 // Funkcia pre vytvorenie popup obsahu (HTML string pre Leaflet GeoJSON)
 function createPopupHTML(regionName: string, data: { avgPrice: number; avgYield: number; trend: "up" | "down" }): string {
+  const hasData = data.avgPrice > 0 || data.avgYield > 0;
+  
   return `
     <div style="
       background: #0f172a;
@@ -169,14 +172,20 @@ function createPopupHTML(regionName: string, data: { avgPrice: number; avgYield:
         margin: 0 0 12px 0;
         color: #10b981;
       ">${regionName}</h3>
-      <div style="margin-bottom: 8px;">
-        <span style="color: #94a3b8; font-size: 14px;">Priemerný výnos: </span>
-        <span style="color: #10b981; font-weight: 600; font-size: 16px;">${data.avgYield}%</span>
-      </div>
-      <div>
-        <span style="color: #94a3b8; font-size: 14px;">Cena: </span>
-        <span style="color: #f1f5f9; font-weight: 600; font-size: 16px;">${Math.round(data.avgPrice).toLocaleString("sk-SK")} €/m²</span>
-      </div>
+      ${hasData ? `
+        <div style="margin-bottom: 8px;">
+          <span style="color: #94a3b8; font-size: 14px;">Priemerný výnos: </span>
+          <span style="color: #10b981; font-weight: 600; font-size: 16px;">${data.avgYield}%</span>
+        </div>
+        <div>
+          <span style="color: #94a3b8; font-size: 14px;">Cena: </span>
+          <span style="color: #f1f5f9; font-weight: 600; font-size: 16px;">${Math.round(data.avgPrice).toLocaleString("sk-SK")} €/m²</span>
+        </div>
+      ` : `
+        <div style="color: #94a3b8; font-size: 14px;">
+          Prihláste sa pre detailné štatistiky
+        </div>
+      `}
     </div>
   `;
 }
@@ -350,7 +359,27 @@ export function HeroMap() {
               {/* Custom DivIcon markery pre kraje */}
               {leafletModule && REGION_COORDINATES.map((region) => {
                 const data = REGION_DATA[region.region] || { avgPrice: 0, avgYield: 0, trend: "up" };
-                const icon = createCustomMarkerIcon(region.code, data.avgYield, leafletModule);
+                // Ak nemáme dáta, zobrazíme len kód kraja bez výnosu
+                const icon = data.avgYield > 0 
+                  ? createCustomMarkerIcon(region.code, data.avgYield, leafletModule)
+                  : leafletModule.divIcon({
+                      iconSize: [40, 30],
+                      iconAnchor: [20, 30],
+                      popupAnchor: [0, -30],
+                      className: "custom-marker",
+                      html: `
+                        <div style="
+                          background: #0f172a;
+                          border: 1px solid #334155;
+                          border-radius: 4px;
+                          padding: 4px 8px;
+                          color: #f1f5f9;
+                          font-size: 11px;
+                          font-weight: 600;
+                          font-family: system-ui, -apple-system, sans-serif;
+                        ">${region.code}</div>
+                      `,
+                    });
                 
                 return (
                   <Marker

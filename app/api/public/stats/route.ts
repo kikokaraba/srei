@@ -34,26 +34,24 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       stats: {
-        totalProperties: Math.max(totalProperties, 2847), // Minimum for display
-        hotDeals: Math.max(hotDeals, 127),
-        totalUsers: Math.max(totalUsers, 500),
+        totalProperties,
+        hotDeals,
+        totalUsers,
         avgYield: avgYield.toFixed(1),
-        managedCapital: "1.2M+", // Estimated
       },
       live: totalProperties > 0,
       updatedAt: new Date().toISOString(),
     });
   } catch (error) {
-    // Return default stats if database fails
+    // Return empty stats if database fails
     console.error("Public stats error:", error);
     return NextResponse.json({
       success: true,
       stats: {
-        totalProperties: 2847,
-        hotDeals: 127,
-        totalUsers: 500,
-        avgYield: "5.2",
-        managedCapital: "1.2M+",
+        totalProperties: 0,
+        hotDeals: 0,
+        totalUsers: 0,
+        avgYield: "0",
       },
       live: false,
       updatedAt: new Date().toISOString(),

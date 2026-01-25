@@ -26,159 +26,137 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
-// Slovak cities with real market data (2026 Q1)
-const CITIES = [
+// Koordináty slovenských miest (statické)
+const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
+  "Bratislava": { lat: 48.1486, lng: 17.1077 },
+  "Košice": { lat: 48.7164, lng: 21.2611 },
+  "Prešov": { lat: 48.9986, lng: 21.2391 },
+  "Žilina": { lat: 49.2231, lng: 18.7394 },
+  "Banská Bystrica": { lat: 48.7364, lng: 19.1458 },
+  "Trnava": { lat: 48.3774, lng: 17.5883 },
+  "Trenčín": { lat: 48.8945, lng: 18.0444 },
+  "Nitra": { lat: 48.3061, lng: 18.0833 },
+  "Poprad": { lat: 49.0512, lng: 20.2943 },
+  "Martin": { lat: 49.0636, lng: 18.9214 },
+  "Piešťany": { lat: 48.7947, lng: 17.8382 },
+  "Zvolen": { lat: 48.5744, lng: 19.1236 },
+};
+
+// Typ pre mesto s dátami
+interface CityData {
+  name: string;
+  lat: number;
+  lng: number;
+  properties: number;
+  avgPrice: number;
+  hotDeals: number;
+}
+
+// Placeholder - bude nahradené reálnymi dátami
+const CITIES: CityData[] = [
   { 
     name: "Bratislava", 
     lat: 48.1486, 
     lng: 17.1077, 
-    properties: 2847,
-    avgPrice: 3650,
-    priceChange: 2.8,
-    avgRent: 920,
-    yieldPercent: 4.0,
-    hotDeals: 47,
-    investorScore: 72,
+    properties: 0,
+    avgPrice: 0,
+    hotDeals: 0,
   },
   { 
     name: "Košice", 
     lat: 48.7164, 
     lng: 21.2611, 
-    properties: 1234,
-    avgPrice: 2180,
-    priceChange: 4.1,
-    avgRent: 580,
-    yieldPercent: 5.6,
-    hotDeals: 38,
-    investorScore: 85,
+    properties: 0,
+    avgPrice: 0,
+    hotDeals: 0,
   },
   { 
     name: "Prešov", 
     lat: 48.9986, 
     lng: 21.2391, 
-    properties: 567,
-    avgPrice: 1720,
-    priceChange: 3.2,
-    avgRent: 450,
-    yieldPercent: 5.4,
-    hotDeals: 22,
-    investorScore: 78,
+    properties: 0,
+    avgPrice: 0,
+    hotDeals: 0,
   },
   { 
     name: "Žilina", 
     lat: 49.2231, 
     lng: 18.7394, 
-    properties: 789,
-    avgPrice: 2150,
-    priceChange: 1.8,
-    avgRent: 580,
-    yieldPercent: 5.1,
-    hotDeals: 28,
-    investorScore: 76,
+    properties: 0,
+    avgPrice: 0,
+    hotDeals: 0,
   },
   { 
     name: "Banská Bystrica", 
     lat: 48.7364, 
     lng: 19.1458, 
-    properties: 456,
-    avgPrice: 1850,
-    priceChange: 2.5,
-    avgRent: 490,
-    yieldPercent: 5.3,
-    hotDeals: 18,
-    investorScore: 79,
+    properties: 0,
+    avgPrice: 0,
+    hotDeals: 0,
   },
   { 
     name: "Trnava", 
     lat: 48.3774, 
     lng: 17.5883, 
-    properties: 623,
-    avgPrice: 2340,
-    priceChange: 3.7,
-    avgRent: 620,
-    yieldPercent: 4.8,
-    hotDeals: 24,
-    investorScore: 74,
+    properties: 0,
+    avgPrice: 0,
+    hotDeals: 0,
   },
   { 
     name: "Trenčín", 
     lat: 48.8945, 
     lng: 18.0444, 
-    properties: 345,
-    avgPrice: 1920,
-    priceChange: 1.2,
-    avgRent: 520,
-    yieldPercent: 5.2,
-    hotDeals: 14,
-    investorScore: 77,
+    properties: 0,
+    avgPrice: 0,
+    hotDeals: 0,
   },
   { 
     name: "Nitra", 
     lat: 48.3061, 
     lng: 18.0833, 
-    properties: 512,
-    avgPrice: 1780,
-    priceChange: 2.9,
-    avgRent: 480,
-    yieldPercent: 5.5,
-    hotDeals: 21,
-    investorScore: 81,
+    properties: 0,
+    avgPrice: 0,
+    hotDeals: 0,
   },
   { 
     name: "Poprad", 
     lat: 49.0512, 
     lng: 20.2943, 
-    properties: 234,
-    avgPrice: 2280,
-    priceChange: 5.2,
-    avgRent: 540,
-    yieldPercent: 4.9,
-    hotDeals: 12,
-    investorScore: 73,
+    properties: 0,
+    avgPrice: 0,
+    hotDeals: 0,
   },
   { 
     name: "Martin", 
     lat: 49.0636, 
     lng: 18.9214, 
-    properties: 278,
-    avgPrice: 1650,
-    priceChange: 2.1,
-    avgRent: 420,
-    yieldPercent: 5.7,
-    hotDeals: 11,
-    investorScore: 82,
+    properties: 0,
+    avgPrice: 0,
+    hotDeals: 0,
   },
   { 
     name: "Piešťany", 
     lat: 48.7947, 
     lng: 17.8382, 
-    properties: 189,
-    avgPrice: 2450,
-    priceChange: 1.5,
-    avgRent: 580,
-    yieldPercent: 4.6,
-    hotDeals: 8,
-    investorScore: 70,
+    properties: 0,
+    avgPrice: 0,
+    hotDeals: 0,
   },
   { 
     name: "Zvolen", 
     lat: 48.5744, 
     lng: 19.1236, 
-    properties: 198,
-    avgPrice: 1580,
-    priceChange: 3.4,
-    avgRent: 400,
-    yieldPercent: 5.8,
-    hotDeals: 9,
-    investorScore: 84,
+    properties: 0,
+    avgPrice: 0,
+    hotDeals: 0,
   },
 ];
 
 // Calculate bubble size based on property count
-const getBubbleRadius = (properties: number) => {
+const getBubbleRadius = (properties: number, maxProps: number) => {
   const min = 15;
   const max = 45;
-  const maxProps = Math.max(...CITIES.map(c => c.properties));
+  if (maxProps === 0) return min;
   return min + (properties / maxProps) * (max - min);
 };
 
@@ -215,10 +193,11 @@ interface Property {
 }
 
 export default function InteractiveMap() {
-  const [selectedCity, setSelectedCity] = useState<typeof CITIES[0] | null>(null);
+  const [selectedCity, setSelectedCity] = useState<CityData | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([48.7, 19.5]);
   const [mapZoom, setMapZoom] = useState(7);
   const [hoveredCity, setHoveredCity] = useState<string | null>(null);
+  const [cityStats, setCityStats] = useState<CityData[]>(CITIES);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(false);
   const [dbConnected, setDbConnected] = useState<boolean | null>(null);
@@ -250,8 +229,42 @@ export default function InteractiveMap() {
     checkDb();
   }, []);
 
+  // Calculate city stats from loaded properties
+  useEffect(() => {
+    if (properties.length === 0) return;
+    
+    // Group properties by city
+    const cityData: Record<string, { count: number; totalPrice: number; hotDeals: number }> = {};
+    
+    for (const prop of properties) {
+      const cityName = prop.city;
+      if (!cityData[cityName]) {
+        cityData[cityName] = { count: 0, totalPrice: 0, hotDeals: 0 };
+      }
+      cityData[cityName].count++;
+      cityData[cityName].totalPrice += prop.price_per_m2;
+      if (prop.is_distressed) {
+        cityData[cityName].hotDeals++;
+      }
+    }
+    
+    // Update city stats
+    setCityStats(prev => prev.map(city => {
+      const data = cityData[city.name];
+      if (data) {
+        return {
+          ...city,
+          properties: data.count,
+          avgPrice: Math.round(data.totalPrice / data.count),
+          hotDeals: data.hotDeals,
+        };
+      }
+      return city;
+    }));
+  }, [properties]);
+
   // Handle city click
-  const handleCityClick = (city: typeof CITIES[0]) => {
+  const handleCityClick = (city: CityData) => {
     setSelectedCity(city);
     setMapCenter([city.lat, city.lng]);
     setMapZoom(12);
@@ -264,12 +277,17 @@ export default function InteractiveMap() {
     setMapZoom(7);
   };
 
-  // Calculate totals
+  // Calculate totals from real data
   const totals = useMemo(() => ({
-    properties: CITIES.reduce((sum, c) => sum + c.properties, 0),
-    hotDeals: CITIES.reduce((sum, c) => sum + c.hotDeals, 0),
-    avgPrice: Math.round(CITIES.reduce((sum, c) => sum + c.avgPrice, 0) / CITIES.length),
-  }), []);
+    properties: cityStats.reduce((sum, c) => sum + c.properties, 0),
+    hotDeals: cityStats.reduce((sum, c) => sum + c.hotDeals, 0),
+    avgPrice: cityStats.filter(c => c.avgPrice > 0).length > 0 
+      ? Math.round(cityStats.filter(c => c.avgPrice > 0).reduce((sum, c) => sum + c.avgPrice, 0) / cityStats.filter(c => c.avgPrice > 0).length)
+      : 0,
+  }), [cityStats]);
+  
+  // Max properties for bubble sizing
+  const maxProps = useMemo(() => Math.max(...cityStats.map(c => c.properties), 1), [cityStats]);
 
   return (
     <div className="h-full w-full flex flex-col lg:flex-row bg-slate-950">
@@ -489,11 +507,11 @@ export default function InteractiveMap() {
           />
 
           {/* City bubbles */}
-          {!selectedCity && CITIES.map((city) => (
+          {!selectedCity && cityStats.filter(c => c.properties > 0).map((city) => (
             <CircleMarker
               key={city.name}
               center={[city.lat, city.lng]}
-              radius={getBubbleRadius(city.properties)}
+              radius={getBubbleRadius(city.properties, maxProps)}
               pathOptions={{
                 color: getPriceColor(city.avgPrice),
                 fillColor: getPriceColor(city.avgPrice),
@@ -518,16 +536,15 @@ export default function InteractiveMap() {
                       <span className="text-slate-600">Ponúk:</span>
                       <span className="font-semibold">{city.properties}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Výnos:</span>
-                      <span className="font-semibold text-emerald-600">{city.yieldPercent}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Trend:</span>
-                      <span className={`font-semibold ${city.priceChange >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-                        {city.priceChange >= 0 ? "+" : ""}{city.priceChange}%
-                      </span>
-                    </div>
+                    {city.hotDeals > 0 && (
+                      <div className="flex justify-between text-red-600">
+                        <span className="flex items-center gap-1">
+                          <Flame className="w-3 h-3" />
+                          Hot Deals:
+                        </span>
+                        <span className="font-semibold">{city.hotDeals}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Popup>

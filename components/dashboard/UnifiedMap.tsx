@@ -73,16 +73,16 @@ interface MapFilters {
   hotDealsOnly: boolean;
 }
 
-// Slovak cities data
+// Slovak cities data - initial values, will be updated from API
 const CITIES_DATA: CityData[] = [
-  { name: "Bratislava", slug: "BRATISLAVA", lat: 48.1486, lng: 17.1077, avgPrice: 3200, avgYield: 4.2, properties: 0, hotDeals: 0, trend: 2.5 },
-  { name: "Košice", slug: "KOSICE", lat: 48.7164, lng: 21.2611, avgPrice: 1850, avgYield: 5.8, properties: 0, hotDeals: 0, trend: 3.1 },
-  { name: "Prešov", slug: "PRESOV", lat: 48.9986, lng: 21.2391, avgPrice: 1650, avgYield: 5.5, properties: 0, hotDeals: 0, trend: 1.8 },
-  { name: "Žilina", slug: "ZILINA", lat: 49.2231, lng: 18.7394, avgPrice: 1950, avgYield: 5.1, properties: 0, hotDeals: 0, trend: 2.2 },
-  { name: "Banská Bystrica", slug: "BANSKA_BYSTRICA", lat: 48.7364, lng: 19.1458, avgPrice: 1750, avgYield: 5.4, properties: 0, hotDeals: 0, trend: 1.5 },
-  { name: "Trnava", slug: "TRNAVA", lat: 48.3774, lng: 17.5883, avgPrice: 2100, avgYield: 4.9, properties: 0, hotDeals: 0, trend: 2.8 },
-  { name: "Trenčín", slug: "TRENCIN", lat: 48.8945, lng: 18.0444, avgPrice: 1900, avgYield: 5.2, properties: 0, hotDeals: 0, trend: 1.2 },
-  { name: "Nitra", slug: "NITRA", lat: 48.3061, lng: 18.0833, avgPrice: 1650, avgYield: 5.7, properties: 0, hotDeals: 0, trend: 2.0 },
+  { name: "Bratislava", slug: "BRATISLAVA", lat: 48.1486, lng: 17.1077, avgPrice: 0, avgYield: 0, properties: 0, hotDeals: 0, trend: 0 },
+  { name: "Košice", slug: "KOSICE", lat: 48.7164, lng: 21.2611, avgPrice: 0, avgYield: 0, properties: 0, hotDeals: 0, trend: 0 },
+  { name: "Prešov", slug: "PRESOV", lat: 48.9986, lng: 21.2391, avgPrice: 0, avgYield: 0, properties: 0, hotDeals: 0, trend: 0 },
+  { name: "Žilina", slug: "ZILINA", lat: 49.2231, lng: 18.7394, avgPrice: 0, avgYield: 0, properties: 0, hotDeals: 0, trend: 0 },
+  { name: "Banská Bystrica", slug: "BANSKA_BYSTRICA", lat: 48.7364, lng: 19.1458, avgPrice: 0, avgYield: 0, properties: 0, hotDeals: 0, trend: 0 },
+  { name: "Trnava", slug: "TRNAVA", lat: 48.3774, lng: 17.5883, avgPrice: 0, avgYield: 0, properties: 0, hotDeals: 0, trend: 0 },
+  { name: "Trenčín", slug: "TRENCIN", lat: 48.8945, lng: 18.0444, avgPrice: 0, avgYield: 0, properties: 0, hotDeals: 0, trend: 0 },
+  { name: "Nitra", slug: "NITRA", lat: 48.3061, lng: 18.0833, avgPrice: 0, avgYield: 0, properties: 0, hotDeals: 0, trend: 0 },
 ];
 
 // Auto-switch zoom threshold
