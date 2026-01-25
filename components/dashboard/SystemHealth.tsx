@@ -96,33 +96,11 @@ export default function SystemHealth() {
     refetchInterval: 60 * 1000, // Refresh každú minútu
   });
   
-  // Mock data pre demo
-  const mockData: SystemHealthData = {
-    scrapers: [
-      {
-        source: "Bazoš Stealth",
-        lastRun: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        status: "success",
-        recordsCount: 127,
-        duration: "45s",
-      },
-      {
-        source: "NBS Data",
-        lastRun: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        status: "success",
-        recordsCount: 8,
-        duration: "2s",
-      },
-    ],
-    database: {
-      connected: true,
-      totalProperties: 1247,
-      totalHotDeals: 23,
-    },
+  const displayData = data || {
+    scrapers: [],
+    database: { connected: false, totalProperties: 0, totalHotDeals: 0 },
     lastUpdate: new Date().toISOString(),
   };
-  
-  const displayData = data || mockData;
   
   return (
     <div className="glass-card p-6">
