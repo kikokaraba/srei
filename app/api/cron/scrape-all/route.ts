@@ -21,16 +21,17 @@ import { notifyHotDeal, notifyUnnotifiedMarketGaps } from "@/lib/telegram/notifi
 
 // Konfigurácia scrapingu - Vercel má limit 300s
 const SCRAPE_CONFIG = {
-  // Koľko stránok na kategóriu (10 stránok × 20 inzerátov = ~200 per kategória)
-  // 7 kategórií × 200 = ~1400 nehnuteľností za jedno spustenie
-  // Pri 3x denne = ~4000 nových/aktualizovaných
-  maxPagesPerCategory: 10,
+  // Znížené na 5 stránok - 600 properties trvalo príliš dlho
+  // 5 stránok × 20 inzerátov = ~100 per kategória
+  // 7 kategórií × 100 = ~700 nehnuteľností za jedno spustenie
+  // Pri 6x denne = ~4000 nových/aktualizovaných
+  maxPagesPerCategory: 5,
   
   // Portály
   portals: ["BAZOS", "NEHNUTELNOSTI"] as const,
   
-  // Delay medzi requestami (ms) - znížený pre rýchlosť
-  delayBetweenRequests: 300,
+  // Delay medzi requestami (ms)
+  delayBetweenRequests: 200,
 };
 
 interface ScrapeStats {
