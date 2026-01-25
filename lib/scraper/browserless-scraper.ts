@@ -1,8 +1,11 @@
 /**
  * Browserless.io Scraper
  * 
- * Univerzálny scraper pre JS-rendered stránky
- * Podporuje: Nehnutelnosti.sk, Reality.sk
+ * Univerzálny scraper pre JS-rendered stránky pomocou Browserless.io
+ * Podporuje: Bazoš, Nehnutelnosti.sk, Reality.sk, TopReality.sk
+ * 
+ * Konfigurácia:
+ * - BROWSER_WS_ENDPOINT=wss://production-sfo.browserless.io?token=YOUR_TOKEN
  */
 
 import type { Browser, Page } from "playwright-core";
@@ -629,8 +632,44 @@ async function scrapeListPage(
   return properties;
 }
 
+/**
+ * Vytvorí URL pre danú kategóriu a portál
+ */
+function buildCategoryUrl(
+  config: PortalConfig,
+  categoryPath: string,
+  pageNum: number,
+  city?: string
+): string {
+  let url = `${config.baseUrl}${categoryPath}`;
+  
+  // Bazoš má iný formát URL
+  if (config.source === "BAZOS") {
+    // Bazoš nepodporuje filtrovanie podľa mesta v URL, ale môžeme pridať offset
+    if (pageNum > 1) {
+      const offset = (pageNum - 1) * 20; // 20 inzerátov na stránku
+      url += `${offset}/`;
+    }
+    return url;
+  }
+  
+  // Ostatné portály - pridaj mesto a stránkovanie
+  if (city) {
+    const citySlug = CITY_SLUGS[city];
+    if (citySlug) {
+      url += `${citySlug}/`;
+    }
+  }
+  
+  if (pageNum > 1) {
+    url += url.includes("?") ? `&page=${pageNum}` : `?page=${pageNum}`;
+  }
+  
+  return url;
+}
+
 export async function scrapePortal(
-  portalKey: "NEHNUTELNOSTI" | "REALITY" | "TOPREALITY",
+  portalKey: "BAZOS" | "NEHNUTELNOSTI" | "REALITY" | "TOPREALITY",
   options: {
     city?: string;        // Názov mesta (nepovinné - ak nie je, scrapuje všetko)
     listingType?: ListingType;
@@ -640,12 +679,21 @@ export async function scrapePortal(
 ): Promise<ScrapeResult> {
   const startTime = Date.now();
   const config = PORTAL_CONFIGS[portalKey];
+  
+  if (!config) {
+    return {
+      properties: [],
+      pagesScraped: 0,
+      errors: [`Unknown portal: ${portalKey}`],
+      duration: 0,
+    };
+  }
+  
   const errors: string[] = [];
   const allProperties: ScrapedProperty[] = [];
   let pagesScraped = 0;
   
-  const maxPages = options.maxPages || 10; // Default 10 stránok na kategóriu
-  const citySlug = options.city ? CITY_SLUGS[options.city] : "";
+  const maxPages = options.maxPages || 10;
   
   let browser: Browser | null = null;
   
@@ -681,11 +729,7 @@ export async function scrapePortal(
       
       while (hasNextPage && pageNum <= maxPages) {
         // Build URL
-        let url = `${config.baseUrl}${category.path}`;
-        if (citySlug) url += `${citySlug}/`;
-        if (pageNum > 1) {
-          url += url.includes("?") ? `&page=${pageNum}` : `?page=${pageNum}`;
-        }
+        const url = buildCategoryUrl(config, category.path, pageNum, options.city);
         
         console.log(`  📄 Page ${pageNum}: ${url}`);
         
@@ -701,14 +745,20 @@ export async function scrapePortal(
           allProperties.push(...properties);
           pagesScraped++;
           
-          // Check for next page
-          const nextButton = await page.$(config.selectors.nextPage);
-          hasNextPage = !!nextButton && pageNum < maxPages;
+          // Check for next page - rôzna logika pre Bazoš
+          if (config.source === "BAZOS") {
+            // Bazoš - pokračuj ak sme našli aspoň 10 inzerátov
+            hasNextPage = properties.length >= 10 && pageNum < maxPages;
+          } else {
+            const nextButton = await page.$(config.selectors.nextPage);
+            hasNextPage = !!nextButton && pageNum < maxPages;
+          }
           
           pageNum++;
           
-          // Rate limiting
-          await page.waitForTimeout(2000);
+          // Rate limiting - dlhšie pre Bazoš
+          const delay = config.source === "BAZOS" ? 3000 : 2000;
+          await page.waitForTimeout(delay);
           
         } catch (error) {
           const errorMsg = `Error on page ${pageNum}: ${error instanceof Error ? error.message : "Unknown"}`;
@@ -734,7 +784,7 @@ export async function scrapePortal(
   
   const duration = Date.now() - startTime;
   
-  console.log(`\n📊 Scraping complete:`);
+  console.log(`\n📊 ${config.name} Scraping complete:`);
   console.log(`  - Properties: ${allProperties.length}`);
   console.log(`  - Pages: ${pagesScraped}`);
   console.log(`  - Duration: ${(duration / 1000).toFixed(1)}s`);
