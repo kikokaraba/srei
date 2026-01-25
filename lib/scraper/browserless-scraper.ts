@@ -117,9 +117,39 @@ const REALITY_CONFIG: PortalConfig = {
   ],
 };
 
+const TOPREALITY_CONFIG: PortalConfig = {
+  name: "TopReality.sk",
+  baseUrl: "https://www.topreality.sk",
+  source: "TOPREALITY",
+  selectors: {
+    listingItem: ".property-item, .estate-item, article.listing, .list-item, [data-id]",
+    title: ".property-title, h2 a, .title, .estate-title",
+    price: ".property-price, .price, .estate-price, :has-text('€')",
+    area: ".property-area, .area, .estate-area, :has-text('m²')",
+    location: ".property-location, .location, .address, .estate-location",
+    link: "a[href*='/detail/'], a[href*='/inzerat/'], a[href*='/nehnutelnost/'], h2 a",
+    nextPage: ".pagination-next, a[rel='next'], .next, button:has-text('Ďalšia')",
+  },
+  categories: [
+    // Predaj
+    { path: "/vyhladavanie/predaj/byty/", listingType: "PREDAJ", name: "Byty predaj" },
+    { path: "/vyhladavanie/predaj/domy/", listingType: "PREDAJ", name: "Domy predaj" },
+    { path: "/vyhladavanie/predaj/pozemky/", listingType: "PREDAJ", name: "Pozemky predaj" },
+    { path: "/vyhladavanie/predaj/chaty-chalupy/", listingType: "PREDAJ", name: "Chaty a chalupy predaj" },
+    { path: "/vyhladavanie/predaj/komercne-nehnutelnosti/", listingType: "PREDAJ", name: "Komerčné nehnuteľnosti predaj" },
+    { path: "/vyhladavanie/predaj/garaze/", listingType: "PREDAJ", name: "Garáže predaj" },
+    // Prenájom
+    { path: "/vyhladavanie/prenajom/byty/", listingType: "PRENAJOM", name: "Byty prenájom" },
+    { path: "/vyhladavanie/prenajom/domy/", listingType: "PRENAJOM", name: "Domy prenájom" },
+    { path: "/vyhladavanie/prenajom/komercne-nehnutelnosti/", listingType: "PRENAJOM", name: "Komerčné nehnuteľnosti prenájom" },
+    { path: "/vyhladavanie/prenajom/garaze/", listingType: "PRENAJOM", name: "Garáže prenájom" },
+  ],
+};
+
 export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
   NEHNUTELNOSTI: NEHNUTELNOSTI_CONFIG,
   REALITY: REALITY_CONFIG,
+  TOPREALITY: TOPREALITY_CONFIG,
 };
 
 // ============================================
@@ -320,7 +350,7 @@ async function scrapeListPage(
 }
 
 export async function scrapePortal(
-  portalKey: "NEHNUTELNOSTI" | "REALITY",
+  portalKey: "NEHNUTELNOSTI" | "REALITY" | "TOPREALITY",
   options: {
     city?: SlovakCity;
     listingType?: ListingType;

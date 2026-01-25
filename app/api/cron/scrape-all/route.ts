@@ -34,8 +34,8 @@ const SCRAPE_CONFIG = {
   // Koľko stránok na kategóriu (viac = viac nehnuteľností)
   maxPagesPerCategory: 10,
   
-  // Portály na scrapovanie
-  portals: ["NEHNUTELNOSTI", "REALITY"] as const,
+  // Portály na scrapovanie (všetky 3 hlavné SK portály)
+  portals: ["NEHNUTELNOSTI", "REALITY", "TOPREALITY"] as const,
   
   // Delay medzi requestami (ms) - ochrana pred blokovaním
   delayBetweenRequests: 3000,
