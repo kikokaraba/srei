@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { TrendingUp, Bell, Save, Settings as SettingsIcon, Check, Sparkles, Map } from "lucide-react";
 import { AdvancedFilters } from "@/components/dashboard/AdvancedFilters";
-import { LocationPicker } from "@/components/ui/LocationPicker";
+import { LocationPickerV2 } from "@/components/ui/LocationPickerV2";
 import { TelegramSettings } from "@/components/dashboard/TelegramSettings";
+import type { NormalizedSelection } from "@/lib/location-utils";
 
 const INVESTMENT_TYPES = [
   { id: "future-potential", label: "Investície s budúcim potenciálom", icon: "🚀" },
@@ -203,13 +204,16 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <LocationPicker
+          <LocationPickerV2
             selectedRegions={formData.trackedRegions}
             selectedDistricts={formData.trackedDistricts}
             selectedCities={formData.trackedCities}
-            onRegionsChange={(regions) => setFormData({ ...formData, trackedRegions: regions })}
-            onDistrictsChange={(districts) => setFormData({ ...formData, trackedDistricts: districts })}
-            onCitiesChange={(cities) => setFormData({ ...formData, trackedCities: cities })}
+            onChange={(selection: NormalizedSelection) => setFormData({ 
+              ...formData, 
+              trackedRegions: selection.regions,
+              trackedDistricts: selection.districts,
+              trackedCities: selection.cities,
+            })}
           />
         </div>
       </div>
