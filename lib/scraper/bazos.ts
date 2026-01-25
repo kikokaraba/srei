@@ -1,7 +1,7 @@
 // Bazoš Scraper - Scraper pre reality.bazos.sk
 
 import type { RawListingData, ParsedListingData, ScrapeError, ScraperConfig } from "./types";
-import { parseDescription, parsePrice, parseArea } from "./parser";
+import { parseDescription } from "./parser";
 import { scrapeListingPageCheerio, scrapeListingDetailCheerio } from "./cheerio-scraper";
 
 /**
@@ -127,39 +127,13 @@ export async function scrapeListingPage(pageUrl: string): Promise<{
 
 /**
  * Scrapuje detail jedného inzerátu
+ * Používa Cheerio pre parsing HTML
  */
 export async function scrapeListingDetail(url: string): Promise<{
-  data: RawListingData | null;
+  data: Partial<RawListingData> | null;
   errors: ScrapeError[];
 }> {
-  const errors: ScrapeError[] = [];
-  
-  try {
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": BAZOS_CONFIG.userAgent,
-        "Accept": "text/html,application/xhtml+xml",
-      },
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    
-    const html = await response.text();
-    
-    // V produkcii by tu bol reálny parsing
-    // Pre demo vrátime null
-    return { data: null, errors };
-    
-  } catch (error) {
-    errors.push({
-      type: "NETWORK_ERROR",
-      message: error instanceof Error ? error.message : "Unknown error",
-      url,
-    });
-    return { data: null, errors };
-  }
+  return scrapeListingDetailCheerio(url);
 }
 
 /**
