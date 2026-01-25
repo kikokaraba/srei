@@ -136,7 +136,21 @@ function parseCity(text: string): { city: string; district: string } {
     }
   }
   
-  return { city: "Slovensko", district: text.split(",")[0]?.trim() || "Neznáme" };
+  // Ak nenájdeme mesto, skúsime extrahovať prvé slovo ktoré vyzerá ako mesto
+  const words = text.split(/[\s,]+/).filter(w => w.length > 2);
+  for (const word of words) {
+    const normalizedWord = word.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    // Preskočiť čísla a bežné slová
+    if (/^\d/.test(word)) continue;
+    if (["predaj", "byt", "dom", "izb", "izbovy", "nova", "stara", "pri", "nad", "pod"].includes(normalizedWord)) continue;
+    
+    // Ak slovo začína veľkým písmenom, môže to byť mesto
+    if (word[0] === word[0].toUpperCase() && word.length > 3) {
+      return { city: word, district: word };
+    }
+  }
+  
+  return { city: "Iné", district: "Neznáme" };
 }
 
 /**

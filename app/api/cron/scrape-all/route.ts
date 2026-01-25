@@ -102,14 +102,22 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
           .substring(0, 100) + "-" + prop.externalId.slice(-8);
 
         // Skontroluj či je to potenciálny hot deal
-        const avgInCity = await prisma.property.aggregate({
-          where: { city: prop.city, area_m2: { gte: prop.areaM2 - 20, lte: prop.areaM2 + 20 } },
-          _avg: { price_per_m2: true },
-        });
-        
-        const isHotDeal = avgInCity._avg.price_per_m2 
-          ? prop.pricePerM2 < avgInCity._avg.price_per_m2 * 0.85
-          : false;
+        // Preskočiť ak mesto nie je známe
+        let isHotDeal = false;
+        if (prop.city && prop.city !== "Slovensko" && prop.city !== "Neznáme") {
+          try {
+            const avgInCity = await prisma.property.aggregate({
+              where: { city: prop.city, area_m2: { gte: prop.areaM2 - 20, lte: prop.areaM2 + 20 } },
+              _avg: { price_per_m2: true },
+            });
+            
+            isHotDeal = avgInCity._avg.price_per_m2 
+              ? prop.pricePerM2 < avgInCity._avg.price_per_m2 * 0.85
+              : false;
+          } catch (e) {
+            // Ignore aggregate errors
+          }
+        }
 
         const newProperty = await prisma.property.create({
           data: {
