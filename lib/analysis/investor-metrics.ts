@@ -190,7 +190,7 @@ export async function calculateTrustScore(property: Property): Promise<TrustScor
   // 3. Kontrola histórie cien (častý pokles = stres predajcu)
   const priceHistory = await prisma.priceHistory.findMany({
     where: { propertyId: property.id },
-    orderBy: { recordedAt: "desc" },
+    orderBy: { recorded_at: "desc" },
     take: 10,
   });
 
@@ -282,7 +282,7 @@ export async function calculateNegotiationPower(
   // 1. História cien
   const priceHistory = await prisma.priceHistory.findMany({
     where: { propertyId: property.id },
-    orderBy: { recordedAt: "asc" },
+    orderBy: { recorded_at: "asc" },
   });
 
   if (priceHistory.length >= 2) {
@@ -396,7 +396,7 @@ export async function getPriceStory(propertyId: string): Promise<PriceStory | nu
 
   const history = await prisma.priceHistory.findMany({
     where: { propertyId },
-    orderBy: { recordedAt: "asc" },
+    orderBy: { recorded_at: "asc" },
   });
 
   if (history.length === 0) {
@@ -444,7 +444,7 @@ export async function getPriceStory(propertyId: string): Promise<PriceStory | nu
     }
 
     story.push({
-      date: h.recordedAt.toISOString().split("T")[0],
+      date: h.recorded_at.toISOString().split("T")[0],
       price: h.price,
       change: Math.round(change * 10) / 10,
       event,
