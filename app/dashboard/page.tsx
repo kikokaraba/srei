@@ -1,6 +1,7 @@
 "use client";
 
 import { CustomizableDashboard } from "@/components/dashboard/CustomizableDashboard";
+import { UrbanImpactAlert } from "@/components/dashboard/UrbanImpactAlert";
 import { LayoutGrid, Sparkles, Zap, TrendingUp } from "lucide-react";
 import { useSession } from "next-auth/react";
 
@@ -53,6 +54,9 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Urban Impact Alert - infraštruktúrne príležitosti */}
+      <UrbanImpactAlert />
 
       <CustomizableDashboard />
     </div>

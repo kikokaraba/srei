@@ -14,6 +14,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { scrapePortal, type ScrapedProperty } from "@/lib/scraper/browserless-scraper";
+import { notifyHotDeal, notifyUnnotifiedMarketGaps } from "@/lib/telegram/notifications";
 import type { SlovakCity, ListingType } from "@/generated/prisma/client";
 
 // Všetky mestá na Slovensku
@@ -51,11 +52,16 @@ interface ScrapeStats {
 }
 
 /**
- * Uloží nehnuteľnosti do databázy
+ * Uloží nehnuteľnosti do databázy a detekuje hot deals
  */
-async function saveProperties(properties: ScrapedProperty[]): Promise<{ new: number; updated: number }> {
+async function saveProperties(properties: ScrapedProperty[]): Promise<{ 
+  new: number; 
+  updated: number;
+  hotDeals: string[]; // property IDs to notify
+}> {
   let newCount = 0;
   let updatedCount = 0;
+  const hotDeals: string[] = [];
 
   for (const prop of properties) {
     try {
@@ -98,7 +104,18 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{ new: num
           .replace(/[^a-z0-9]+/g, "-")
           .substring(0, 100) + "-" + prop.externalId.slice(-8);
 
-        await prisma.property.create({
+        // Skontroluj či je to potenciálny hot deal
+        // Porovnaj s priemernou cenou v meste
+        const avgInCity = await prisma.property.aggregate({
+          where: { city: prop.city, area_m2: { gte: prop.areaM2 - 20, lte: prop.areaM2 + 20 } },
+          _avg: { price_per_m2: true },
+        });
+        
+        const isHotDeal = avgInCity._avg.price_per_m2 
+          ? prop.pricePerM2 < avgInCity._avg.price_per_m2 * 0.85 // 15% pod priemerom
+          : false;
+
+        const newProperty = await prisma.property.create({
           data: {
             external_id: prop.externalId,
             source: prop.source,
@@ -116,8 +133,13 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{ new: num
             condition: "POVODNY",
             energy_certificate: "NONE",
             source_url: prop.sourceUrl,
+            is_distressed: isHotDeal,
           },
         });
+        
+        if (isHotDeal) {
+          hotDeals.push(newProperty.id);
+        }
         
         newCount++;
       }
@@ -126,7 +148,7 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{ new: num
     }
   }
 
-  return { new: newCount, updated: updatedCount };
+  return { new: newCount, updated: updatedCount, hotDeals };
 }
 
 /**
@@ -153,6 +175,7 @@ export async function GET(request: NextRequest) {
   let totalNew = 0;
   let totalUpdated = 0;
   let totalFound = 0;
+  const allHotDeals: string[] = []; // Zbieraj hot deals pre notifikácie
 
   // Pre každý portál
   for (const portal of SCRAPE_CONFIG.portals) {
@@ -186,6 +209,9 @@ export async function GET(request: NextRequest) {
       totalNew += saveResult.new;
       totalUpdated += saveResult.updated;
       totalFound += result.properties.length;
+      
+      // Zbieraj hot deals
+      allHotDeals.push(...saveResult.hotDeals);
 
       console.log(`  💾 Saved: ${saveResult.new} new, ${saveResult.updated} updated`);
       console.log(`  ⏱️ Duration: ${Math.round(stats.duration / 1000)}s`);
@@ -236,8 +262,34 @@ export async function GET(request: NextRequest) {
   console.log(`  Total found: ${totalFound}`);
   console.log(`  New properties: ${totalNew}`);
   console.log(`  Updated: ${totalUpdated}`);
+  console.log(`  Hot deals found: ${allHotDeals.length}`);
   console.log(`  Duration: ${Math.round(totalDuration / 1000)}s`);
   console.log("=".repeat(60) + "\n");
+
+  // === TELEGRAM NOTIFIKÁCIE ===
+  let notificationsSent = 0;
+  
+  // Pošli notifikácie pre hot deals (max 10)
+  console.log("📱 Sending Telegram notifications...");
+  for (const propertyId of allHotDeals.slice(0, 10)) {
+    try {
+      const count = await notifyHotDeal(propertyId);
+      notificationsSent += count;
+    } catch (error) {
+      console.warn(`Failed to send notification for ${propertyId}:`, error);
+    }
+  }
+  
+  // Notifikuj aj o neoznámených market gaps
+  try {
+    const gapResult = await notifyUnnotifiedMarketGaps();
+    notificationsSent += gapResult.notified;
+    console.log(`  📢 Notified ${gapResult.notified} market gaps`);
+  } catch (error) {
+    console.warn("Failed to notify market gaps:", error);
+  }
+  
+  console.log(`  ✅ Sent ${notificationsSent} Telegram notifications\n`);
 
   // Spočítaj celkový počet nehnuteľností v databáze
   const totalInDb = await prisma.property.count();
@@ -248,7 +300,9 @@ export async function GET(request: NextRequest) {
       totalFound,
       totalNew,
       totalUpdated,
+      hotDealsFound: allHotDeals.length,
       totalInDatabase: totalInDb,
+      notificationsSent,
       duration: `${Math.round(totalDuration / 1000)}s`,
     },
     details: allStats.map(s => ({
