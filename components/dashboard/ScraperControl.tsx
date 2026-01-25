@@ -111,7 +111,7 @@ export default function ScraperControl() {
           ))}
         </div>
         <p className="text-xs text-slate-500 mt-3">
-          Portály: Bazos.sk + Nehnutelnosti.sk | Byty, Domy, Pozemky - celé Slovensko (~10 000 nehnuteľností)
+          Portály: Bazos + Nehnutelnosti.sk | ~1500 nehnuteľností za jedno spustenie (3x denne = ~4500)
         </p>
       </div>
 

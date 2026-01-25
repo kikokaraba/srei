@@ -178,9 +178,9 @@ export async function scrapeBazos(options: {
       
       console.log(`  📄 Page ${page + 1}: ${url}`);
       
-      // Delay medzi requestami
+      // Delay medzi requestami - kratší pre Vercel limit
       if (page > 0) {
-        await new Promise(r => setTimeout(r, 2000 + Math.random() * 1000));
+        await new Promise(r => setTimeout(r, 1000 + Math.random() * 500));
       }
       
       const html = await fetchPage(url);
@@ -353,9 +353,9 @@ export async function scrapeNehnutelnosti(options: {
       
       console.log(`  📄 Page ${page}: ${url}`);
       
-      // Delay medzi requestami
+      // Delay medzi requestami - kratší pre Vercel limit
       if (page > 1) {
-        await new Promise(r => setTimeout(r, 2000 + Math.random() * 1000));
+        await new Promise(r => setTimeout(r, 1000 + Math.random() * 500));
       }
       
       const html = await fetchPage(url);
