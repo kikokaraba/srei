@@ -22,14 +22,14 @@ import type { ListingType } from "@/generated/prisma/client";
 
 // Konfigurácia scrapingu
 const SCRAPE_CONFIG = {
-  // Koľko stránok na kategóriu (viac = viac nehnuteľností)
-  maxPagesPerCategory: 10,
+  // Koľko stránok na kategóriu (3 stránky = ~60-90 inzerátov, rýchle)
+  maxPagesPerCategory: 3,
   
   // Portály na scrapovanie (všetky 4 hlavné SK portály vrátane Bazoš)
   portals: ["BAZOS", "NEHNUTELNOSTI", "REALITY", "TOPREALITY"] as const,
   
   // Delay medzi requestami (ms) - ochrana pred blokovaním
-  delayBetweenRequests: 3000,
+  delayBetweenRequests: 1500,
 };
 
 interface ScrapeStats {

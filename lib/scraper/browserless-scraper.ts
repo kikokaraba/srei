@@ -436,8 +436,8 @@ async function scrapeBazosListPage(
 ): Promise<ScrapedProperty[]> {
   const properties: ScrapedProperty[] = [];
   
-  await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
-  await page.waitForTimeout(1500);
+  await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+  await page.waitForTimeout(800);
   
   // Bazoš má inzeráty ako h2 s linkami
   const listings = await page.$$("h2:has(a[href*='/inzerat/'])");
@@ -559,8 +559,8 @@ async function scrapeListPage(
   const properties: ScrapedProperty[] = [];
   
   // Wait for content to load
-  await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
-  await page.waitForTimeout(2000); // Extra wait for JS rendering
+  await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+  await page.waitForTimeout(1000); // Extra wait for JS rendering
   
   // Find all listing items
   const items = await page.$$(config.selectors.listingItem);
@@ -756,8 +756,8 @@ export async function scrapePortal(
           
           pageNum++;
           
-          // Rate limiting - dlhšie pre Bazoš
-          const delay = config.source === "BAZOS" ? 3000 : 2000;
+          // Rate limiting - kratšie delays pre rýchlosť
+          const delay = config.source === "BAZOS" ? 1500 : 1000;
           await page.waitForTimeout(delay);
           
         } catch (error) {
