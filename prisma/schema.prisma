@@ -111,6 +111,46 @@ model User {
   dashboardLayout DashboardLayout?
   preferences   UserPreferences?
   portfolioProperties PortfolioProperty[]
+  apiKeys       ApiKey[]
+  subscription  Subscription?
+}
+
+// API kľúče pre verejné API (Pro/Enterprise)
+model ApiKey {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String    // Názov kľúča (napr. "Production", "Development")
+  key         String    @unique // Samotný API kľúč (hash)
+  prefix      String    // Prvých 8 znakov pre identifikáciu (sria_xxxx)
+  isActive    Boolean   @default(true)
+  lastUsedAt  DateTime?
+  expiresAt   DateTime? // Voliteľná expirácia
+  permissions String    @default("read") // "read", "read,write"
+  rateLimit   Int       @default(100) // Requesty za hodinu
+  createdAt   DateTime  @default(now())
+  
+  @@index([key])
+  @@index([userId])
+}
+
+// Predplatné používateľa
+model Subscription {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan          String    // "FREE", "PREMIUM", "ENTERPRISE"
+  status        String    // "ACTIVE", "CANCELLED", "PAST_DUE", "TRIALING"
+  stripeCustomerId    String?
+  stripeSubscriptionId String?
+  currentPeriodStart  DateTime?
+  currentPeriodEnd    DateTime?
+  cancelAtPeriodEnd   Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
 }
 
 model Account {
