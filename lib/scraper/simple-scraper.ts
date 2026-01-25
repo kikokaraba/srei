@@ -152,13 +152,12 @@ export async function scrapeBazos(options: {
   const properties: ScrapedProperty[] = [];
   let pagesScraped = 0;
   
-  // Kategórie na scrapovanie - CELÉ SLOVENSKO
+  // Kategórie na scrapovanie - CELÉ SLOVENSKO (iba PREDAJ)
   const categories = [
-    { path: "/predam/byt/", listingType: "PREDAJ" as ListingType, name: "Byty predaj" },
-    { path: "/predam/dom/", listingType: "PREDAJ" as ListingType, name: "Domy predaj" },
-    { path: "/prenajmu/byt/", listingType: "PRENAJOM" as ListingType, name: "Byty prenájom" },
-    { path: "/prenajmu/dom/", listingType: "PRENAJOM" as ListingType, name: "Domy prenájom" },
-    { path: "/predam/pozemok/", listingType: "PREDAJ" as ListingType, name: "Pozemky predaj" },
+    { path: "/predam/byt/", listingType: "PREDAJ" as ListingType, name: "Byty" },
+    { path: "/predam/dom/", listingType: "PREDAJ" as ListingType, name: "Domy" },
+    { path: "/predam/pozemok/", listingType: "PREDAJ" as ListingType, name: "Pozemky" },
+    { path: "/predam/chata/", listingType: "PREDAJ" as ListingType, name: "Chaty a chalupy" },
   ];
   
   // Ak je špecifikovaný typ, filtruj
