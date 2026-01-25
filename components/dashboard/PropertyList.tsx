@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { useUserPreferences } from "@/lib/hooks/useUserPreferences";
 import {
   Search,
   Filter,
@@ -243,6 +244,7 @@ export function PropertyList() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<Filters>(defaultFilters);
+  const [filtersInitialized, setFiltersInitialized] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [page, setPage] = useState(1);
@@ -256,6 +258,33 @@ export function PropertyList() {
   
   // Investor batch metrics
   const [batchMetrics, setBatchMetrics] = useState<Record<string, BatchMetrics>>({});
+  
+  // Load user preferences
+  const { preferences, isLoading: prefsLoading, hasLocationPreferences } = useUserPreferences();
+  
+  // Apply user preferences to filters on first load
+  useEffect(() => {
+    if (prefsLoading || filtersInitialized) return;
+    
+    if (preferences) {
+      const newFilters = { ...defaultFilters };
+      
+      // Apply price range from preferences
+      if (preferences.minPrice) newFilters.minPrice = preferences.minPrice.toString();
+      if (preferences.maxPrice) newFilters.maxPrice = preferences.maxPrice.toString();
+      if (preferences.minYield) newFilters.minYield = preferences.minYield.toString();
+      
+      // Apply region from tracked regions/cities
+      if (preferences.trackedRegions?.length > 0) {
+        // Use first tracked region as default filter
+        newFilters.region = preferences.trackedRegions[0];
+      }
+      
+      setFilters(newFilters);
+    }
+    
+    setFiltersInitialized(true);
+  }, [preferences, prefsLoading, filtersInitialized]);
 
   const ITEMS_PER_PAGE = 12;
 
@@ -273,13 +302,18 @@ export function PropertyList() {
       if (filters.search) params.append("search", filters.search);
       if (filters.listingType) params.append("listingType", filters.listingType);
       if (filters.source) params.append("source", filters.source);
-      // Mapuj región na mestá
+      
+      // Mapuj región na mestá alebo použi user preferences
       if (filters.region) {
         const region = REGIONS.find(r => r.value === filters.region);
         if (region) {
           params.append("cities", region.cities.join(","));
         }
+      } else if (hasLocationPreferences) {
+        // Ak používateľ nemá explicitný filter, použi jeho uložené preferencie
+        params.append("usePreferences", "true");
       }
+      
       if (filters.minPrice) params.append("minPrice", filters.minPrice);
       if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
       if (filters.minArea) params.append("minArea", filters.minArea);
@@ -304,7 +338,7 @@ export function PropertyList() {
     } finally {
       setLoading(false);
     }
-  }, [filters, page]);
+  }, [filters, page, hasLocationPreferences]);
 
   const fetchSavedProperties = useCallback(async () => {
     try {
@@ -340,8 +374,10 @@ export function PropertyList() {
   }, []);
 
   useEffect(() => {
+    // Wait for filters to be initialized from user preferences
+    if (!filtersInitialized) return;
     fetchProperties();
-  }, [fetchProperties]);
+  }, [fetchProperties, filtersInitialized]);
 
   useEffect(() => {
     fetchSavedProperties();
