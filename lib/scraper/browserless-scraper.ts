@@ -202,7 +202,6 @@ const CITY_MAP: Record<string, string> = {
   "modra": "Modra",
   "myjava": "Myjava",
   "námestovo": "Námestovo", "namestovo": "Námestovo",
-  "nitra": "Nitra",
   "nová baňa": "Nová Baňa",
   "nová dubnica": "Nová Dubnica",
   "nové mesto nad váhom": "Nové Mesto nad Váhom",
