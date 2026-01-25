@@ -131,7 +131,7 @@ export async function createMasterRecord(propertyId: string): Promise<MasterReco
       // Získaj poslednú zmenu ceny
       const priceHistory = await prisma.priceHistory.findMany({
         where: { propertyId: p.id },
-        orderBy: { recordedAt: "desc" },
+        orderBy: { recorded_at: "desc" },
         take: 2,
       });
 
