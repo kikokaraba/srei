@@ -205,15 +205,15 @@ model Property {
   is_distressed     Boolean          @default(false)
   days_on_market    Int              @default(0) // Počet dní v ponuke
   first_listed_at   DateTime?        // Kedy bol prvýkrát zverejnený
-  last_seen_at      DateTime         @default(now()) // Kedy bol naposledy videný pri scrapingu
-  status            ListingStatus    @default(ACTIVE) // Stav inzerátu
+  // TODO: Pridať po migrácii:
+  // last_seen_at      DateTime         @default(now()) // Kedy bol naposledy videný pri scrapingu
+  // status            ListingStatus    @default(ACTIVE) // Stav inzerátu
   
   @@index([source, external_id])
   @@index([source, city])
   @@index([city, listing_type, price])
   @@index([city, area_m2, condition])
   @@index([is_distressed, createdAt])
-  @@index([status, last_seen_at])
   @@index([listing_type, createdAt])
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt

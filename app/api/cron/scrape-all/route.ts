@@ -65,16 +65,16 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
       });
 
       if (existing) {
-        // Vždy aktualizuj last_seen_at - nehnuteľnosť je stále aktívna
-        const updateData: Record<string, unknown> = {
-          last_seen_at: new Date(),
-          status: "ACTIVE", // Znovu aktívna ak bola EXPIRED
-        };
-        
-        // Ak sa zmenila cena, aktualizuj aj ju
+        // Aktualizuj ak sa zmenila cena
         if (existing.price !== prop.price) {
-          updateData.price = prop.price;
-          updateData.price_per_m2 = prop.pricePerM2;
+          await prisma.property.update({
+            where: { id: existing.id },
+            data: { 
+              price: prop.price, 
+              price_per_m2: prop.pricePerM2,
+              updatedAt: new Date(),
+            },
+          });
           
           // Zaznamenaj históriu cien
           await prisma.priceHistory.create({
@@ -87,11 +87,7 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
           
           updatedCount++;
         }
-        
-        await prisma.property.update({
-          where: { id: existing.id },
-          data: updateData,
-        });
+        // Inak len preskočiť - nehnuteľnosť už existuje
       } else {
         // NOVÁ nehnuteľnosť - vytvor ju
         const slug = prop.title
@@ -138,8 +134,6 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
             energy_certificate: "NONE",
             source_url: prop.sourceUrl,
             is_distressed: isHotDeal,
-            last_seen_at: new Date(),
-            status: "ACTIVE",
           },
         });
         
