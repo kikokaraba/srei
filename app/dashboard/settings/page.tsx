@@ -82,6 +82,8 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (preferences) {
+      console.log("Loading preferences:", preferences);
+      
       // Handle both old single investmentType and new investmentTypes array
       let investmentTypes: string[] = [];
       if (preferences.investmentTypes) {
@@ -90,10 +92,16 @@ export default function SettingsPage() {
         investmentTypes = [preferences.investmentType];
       }
       
+      const trackedRegions = safeJsonParse(preferences.trackedRegions, []) as string[];
+      const trackedDistricts = safeJsonParse(preferences.trackedDistricts, []) as string[];
+      const trackedCities = safeJsonParse(preferences.trackedCities, []) as string[];
+      
+      console.log("Parsed locations:", { trackedRegions, trackedDistricts, trackedCities });
+      
       setFormData({
-        trackedRegions: safeJsonParse(preferences.trackedRegions, []) as string[],
-        trackedDistricts: safeJsonParse(preferences.trackedDistricts, []) as string[],
-        trackedCities: safeJsonParse(preferences.trackedCities, []) as string[],
+        trackedRegions,
+        trackedDistricts,
+        trackedCities,
         investmentTypes,
         minYield: preferences.minYield || null,
         maxPrice: preferences.maxPrice || null,
@@ -106,7 +114,7 @@ export default function SettingsPage() {
   }, [preferences]);
 
   const handleSave = useCallback(() => {
-    saveMutation.mutate({ 
+    const dataToSave = { 
       trackedRegions: formData.trackedRegions,
       trackedDistricts: formData.trackedDistricts,
       trackedCities: formData.trackedCities,
@@ -118,10 +126,18 @@ export default function SettingsPage() {
       notifyNewProperties: formData.notifyNewProperties,
       notifyUrbanDevelopment: formData.notifyUrbanDevelopment,
       onboardingCompleted: true,
-    }, {
-      onSuccess: () => {
+    };
+    
+    console.log("Saving preferences:", dataToSave);
+    
+    saveMutation.mutate(dataToSave, {
+      onSuccess: (result) => {
+        console.log("Save success:", result);
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
+      },
+      onError: (error) => {
+        console.error("Save error:", error);
       }
     });
   }, [formData, saveMutation]);
