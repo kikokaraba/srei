@@ -146,10 +146,36 @@ const TOPREALITY_CONFIG: PortalConfig = {
   ],
 };
 
+const BAZOS_CONFIG: PortalConfig = {
+  name: "Bazoš Reality",
+  baseUrl: "https://reality.bazos.sk",
+  source: "BAZOS",
+  selectors: {
+    listingItem: "h2:has(a[href*='/inzerat/']), .inzeraty .inzerat, .vypis .inzerat",
+    title: "a[href*='/inzerat/']",
+    price: "b, strong",
+    area: ":has-text('m²'), :has-text('m2')",
+    location: ":has-text('040'), :has-text('811'), :has-text('821'), :has-text('831'), :has-text('841'), :has-text('851')",
+    link: "a[href*='/inzerat/']",
+    nextPage: "a:has-text('Ďalšia'), a:has-text('další')",
+  },
+  categories: [
+    // Predaj
+    { path: "/predam/byt/", listingType: "PREDAJ", name: "Byty predaj" },
+    { path: "/predam/dom/", listingType: "PREDAJ", name: "Domy predaj" },
+    { path: "/predam/pozemok/", listingType: "PREDAJ", name: "Pozemky predaj" },
+    { path: "/predam/chata/", listingType: "PREDAJ", name: "Chaty predaj" },
+    // Prenájom
+    { path: "/prenajmu/byt/", listingType: "PRENAJOM", name: "Byty prenájom" },
+    { path: "/prenajmu/dom/", listingType: "PRENAJOM", name: "Domy prenájom" },
+  ],
+};
+
 export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
   NEHNUTELNOSTI: NEHNUTELNOSTI_CONFIG,
   REALITY: REALITY_CONFIG,
   TOPREALITY: TOPREALITY_CONFIG,
+  BAZOS: BAZOS_CONFIG,
 };
 
 // ============================================
@@ -397,11 +423,136 @@ async function connectToBrowserless(): Promise<Browser> {
 // Scraping Functions
 // ============================================
 
+/**
+ * Špeciálny parser pre Bazoš - má inú štruktúru HTML
+ */
+async function scrapeBazosListPage(
+  page: Page,
+  config: PortalConfig,
+  listingType: ListingType
+): Promise<ScrapedProperty[]> {
+  const properties: ScrapedProperty[] = [];
+  
+  await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
+  await page.waitForTimeout(1500);
+  
+  // Bazoš má inzeráty ako h2 s linkami
+  const listings = await page.$$("h2:has(a[href*='/inzerat/'])");
+  console.log(`Found ${listings.length} Bazoš listings`);
+  
+  for (const listing of listings) {
+    try {
+      // Získaj link a title
+      const linkEl = await listing.$("a[href*='/inzerat/']");
+      if (!linkEl) continue;
+      
+      const href = await linkEl.getAttribute("href");
+      const title = await linkEl.textContent();
+      if (!href || !title?.trim()) continue;
+      
+      // External ID z URL
+      const idMatch = href.match(/inzerat\/(\d+)/);
+      const externalId = idMatch?.[1] || "";
+      if (!externalId) continue;
+      
+      // Získaj okolité elementy pre cenu a lokalitu
+      // Bazoš má cenu v <b> tagu a lokalitu s PSČ v nasledujúcich elementoch
+      const parent = await listing.evaluateHandle(el => el.parentElement);
+      const parentText = await parent.evaluate(el => el?.textContent || "");
+      
+      // Cena - hľadáme vzor "123 456 €" alebo "123456€"
+      const priceMatch = parentText.match(/(\d[\d\s]*)\s*€/);
+      let price = 0;
+      if (priceMatch) {
+        price = parseInt(priceMatch[1].replace(/\s/g, ""), 10);
+      }
+      
+      // Pre prenájom nižšia minimálna cena
+      const minPrice = listingType === "PRENAJOM" ? 100 : 10000;
+      if (price < minPrice) continue;
+      
+      // Plocha z title alebo textu
+      let area = parseArea(title);
+      if (area === 0) area = parseArea(parentText);
+      if (area === 0) area = 50;
+      
+      // Lokalita - hľadáme mesto v title alebo texte
+      let cityResult = parseCity(title);
+      if (!cityResult) {
+        // Skús nájsť PSČ a určiť mesto
+        const pscMatch = parentText.match(/(\d{3}\s?\d{2})/);
+        if (pscMatch) {
+          const psc = pscMatch[1].replace(/\s/g, "");
+          // PSČ mapping pre hlavné mestá
+          if (psc.startsWith("8")) cityResult = { city: "Bratislava", district: "Bratislava" };
+          else if (psc.startsWith("040") || psc.startsWith("041") || psc.startsWith("042") || psc.startsWith("043")) 
+            cityResult = { city: "Košice", district: "Košice" };
+          else if (psc.startsWith("080") || psc.startsWith("081") || psc.startsWith("082")) 
+            cityResult = { city: "Prešov", district: "Prešov" };
+          else if (psc.startsWith("010") || psc.startsWith("011") || psc.startsWith("012")) 
+            cityResult = { city: "Žilina", district: "Žilina" };
+          else if (psc.startsWith("974") || psc.startsWith("975") || psc.startsWith("976")) 
+            cityResult = { city: "Banská Bystrica", district: "Banská Bystrica" };
+          else if (psc.startsWith("917") || psc.startsWith("918") || psc.startsWith("919")) 
+            cityResult = { city: "Trnava", district: "Trnava" };
+          else if (psc.startsWith("949") || psc.startsWith("950") || psc.startsWith("951")) 
+            cityResult = { city: "Nitra", district: "Nitra" };
+          else if (psc.startsWith("911") || psc.startsWith("912") || psc.startsWith("913")) 
+            cityResult = { city: "Trenčín", district: "Trenčín" };
+        }
+      }
+      
+      // Ak stále nemáme mesto, skús z title
+      if (!cityResult) {
+        const titleLower = title.toLowerCase();
+        if (titleLower.includes("bratislava") || titleLower.includes("petržalka") || titleLower.includes("ružinov"))
+          cityResult = { city: "Bratislava", district: "Bratislava" };
+        else if (titleLower.includes("košice"))
+          cityResult = { city: "Košice", district: "Košice" };
+        else if (titleLower.includes("žilina"))
+          cityResult = { city: "Žilina", district: "Žilina" };
+        else if (titleLower.includes("prešov"))
+          cityResult = { city: "Prešov", district: "Prešov" };
+        else
+          cityResult = { city: "Bratislava", district: "Neznámy" }; // Default
+      }
+      
+      const rooms = parseRooms(title);
+      const sourceUrl = href.startsWith("http") ? href : `${config.baseUrl}${href}`;
+      
+      properties.push({
+        externalId,
+        source: "BAZOS",
+        title: title.trim().substring(0, 200),
+        description: "",
+        price,
+        pricePerM2: Math.round(price / area),
+        areaM2: area,
+        city: cityResult.city,
+        district: cityResult.district,
+        rooms,
+        listingType,
+        sourceUrl,
+      });
+      
+    } catch (error) {
+      console.warn("Failed to parse Bazoš listing:", error);
+    }
+  }
+  
+  return properties;
+}
+
 async function scrapeListPage(
   page: Page,
   config: PortalConfig,
   listingType: ListingType
 ): Promise<ScrapedProperty[]> {
+  // Špeciálne spracovanie pre Bazoš
+  if (config.source === "BAZOS") {
+    return scrapeBazosListPage(page, config, listingType);
+  }
+  
   const properties: ScrapedProperty[] = [];
   
   // Wait for content to load
@@ -447,8 +598,8 @@ async function scrapeListPage(
       const rooms = parseRooms(title);
       
       // Build external ID from URL
-      const idMatch = href.match(/\/(\d+)\/?(?:\?|$)|detail\/(\d+)|id[=\/](\d+)/i);
-      const externalId = idMatch?.[1] || idMatch?.[2] || idMatch?.[3] || 
+      const idMatch = href.match(/\/(\d+)\/?(?:\?|$)|detail\/(\d+)|id[=\/](\d+)|inzerat\/(\d+)/i);
+      const externalId = idMatch?.[1] || idMatch?.[2] || idMatch?.[3] || idMatch?.[4] ||
                          href.split("/").filter(Boolean).pop() || 
                          Date.now().toString();
       
