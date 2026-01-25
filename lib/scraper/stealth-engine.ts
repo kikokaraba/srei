@@ -667,7 +667,7 @@ interface SyncResult {
 /**
  * Získa priemernú cenu pre lokalitu
  */
-async function getAveragePrice(city: district: string): Promise<number | null> {
+async function getAveragePrice(city: string, district: string): Promise<number | null> {
   // Najprv skús StreetAnalytics
   const streetAvg = await prisma.streetAnalytics.findFirst({
     where: {

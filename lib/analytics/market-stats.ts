@@ -413,7 +413,7 @@ export async function createMonthlyStats() {
 /**
  * Get market trends for a city
  */
-export async function getMarketTrends(city: listingType: ListingType = "PREDAJ") {
+export async function getMarketTrends(city: string, listingType: ListingType = "PREDAJ") {
   // Get last 30 days of stats
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);

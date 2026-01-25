@@ -118,7 +118,7 @@ export function getDescriptionHash(description: string | null | undefined): stri
 /**
  * Vytvorí city-district kombináciu
  */
-export function getCityDistrict(city: district: string): string {
+export function getCityDistrict(city: string, district: string): string {
   const normalizedDistrict = removeDiacritics(district).toLowerCase().replace(/\s+/g, "-");
   return `${city}-${normalizedDistrict}`;
 }
