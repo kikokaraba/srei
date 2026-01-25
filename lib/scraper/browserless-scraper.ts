@@ -67,19 +67,18 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     name: "Nehnutelnosti.sk",
     baseUrl: "https://www.nehnutelnosti.sk",
     source: "NEHNUTELNOSTI",
-    listingSelector: "article, [data-testid='search-result-card'], .advertisement-item",
+    listingSelector: "article, [data-testid='search-result-card'], .advertisement-item, .MuiBox-root a[href*='/detail/']",
     selectors: {
       title: "h2 a, h3 a, [data-testid='title'] a, .advertisement-item__title a",
-      price: ".advertisement-item__price, [data-testid='price'], .price",
-      area: ".advertisement-item__info, [data-testid='area'], .area",
+      price: ".advertisement-item__price, [data-testid='price'], .price, span:has-text('€')",
+      area: ".advertisement-item__info, [data-testid='area'], .area, span:has-text('m²')",
       location: ".advertisement-item__location, [data-testid='location'], .location",
-      link: "a[href*='/detail/'], a[href*='/inzerat/']",
+      link: "a[href*='/detail/']",
     },
     categories: [
+      // Len predaj - najdôležitejšie kategórie
       { path: "/byty/predaj/", listingType: "PREDAJ", name: "Byty predaj" },
       { path: "/domy/predaj/", listingType: "PREDAJ", name: "Domy predaj" },
-      { path: "/byty/prenajom/", listingType: "PRENAJOM", name: "Byty prenájom" },
-      { path: "/domy/prenajom/", listingType: "PRENAJOM", name: "Domy prenájom" },
     ],
   },
   REALITY: {

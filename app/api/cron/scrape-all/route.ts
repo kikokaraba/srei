@@ -20,16 +20,17 @@ import type { ListingType } from "@/generated/prisma/client";
 // Scraper teraz scrapuje CELÉ SLOVENSKO - všetky mestá a obce
 // Nie je potrebné špecifikovať mestá - portály vracajú všetky inzeráty
 
-// Konfigurácia scrapingu - FAST MODE
+// Konfigurácia scrapingu - OPTIMIZED
 const SCRAPE_CONFIG = {
-  // Koľko stránok na kategóriu (3 stránky = ~60-90 inzerátov, rýchle)
-  maxPagesPerCategory: 3,
+  // Koľko stránok na kategóriu (10 stránok = ~200-300 inzerátov per kategória)
+  // 2 kategórie (byty predaj + domy predaj) = ~500 nehnuteľností
+  maxPagesPerCategory: 10,
   
-  // Portály na scrapovanie (všetky 4 hlavné SK portály vrátane Bazoš)
-  portals: ["BAZOS", "NEHNUTELNOSTI", "REALITY", "TOPREALITY"] as const,
+  // Len nehnutelnosti.sk - najväčší a najspoľahlivejší portál
+  portals: ["NEHNUTELNOSTI"] as const,
   
-  // Delay medzi portálmi (ms) - krátky delay
-  delayBetweenRequests: 500,
+  // Delay medzi requestami (ms)
+  delayBetweenRequests: 300,
 };
 
 interface ScrapeStats {
