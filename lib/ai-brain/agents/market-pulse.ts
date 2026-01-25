@@ -102,7 +102,7 @@ async function analyzePriceTrends(): Promise<AIInsight[]> {
   }
 
   // Group by city
-  const cityStats = new Map<typeof recentStats>();
+  const cityStats = new Map<string, typeof recentStats>();
   for (const stat of recentStats) {
     const existing = cityStats.get(stat.city) || [];
     existing.push(stat);
@@ -198,7 +198,7 @@ async function analyzeHotDeals(): Promise<AIInsight[]> {
   }
 
   // Group by city and find deals
-  const cityGroups = new Map<typeof properties>();
+  const cityGroups = new Map<string, typeof properties>();
   for (const prop of properties) {
     const existing = cityGroups.get(prop.city) || [];
     existing.push(prop);
@@ -334,7 +334,7 @@ async function generatePredictions(): Promise<AIInsight[]> {
   }
 
   // Group by city
-  const cityTrends = new Map<typeof monthlyStats>();
+  const cityTrends = new Map<string, typeof monthlyStats>();
   for (const stat of monthlyStats) {
     const existing = cityTrends.get(stat.city) || [];
     existing.push(stat);
