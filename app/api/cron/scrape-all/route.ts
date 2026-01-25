@@ -13,9 +13,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { scrapePortal, type ScrapedProperty } from "@/lib/scraper/browserless-scraper";
+import { scrapeBazos, type ScrapedProperty } from "@/lib/scraper/simple-scraper";
 import { notifyHotDeal, notifyUnnotifiedMarketGaps } from "@/lib/telegram/notifications";
-import type { ListingType } from "@/generated/prisma/client";
 
 // Scraper teraz scrapuje CELÉ SLOVENSKO - všetky mestá a obce
 // Nie je potrebné špecifikovať mestá - portály vracajú všetky inzeráty
@@ -168,81 +167,76 @@ export async function GET(request: NextRequest) {
   let totalFound = 0;
   const allHotDeals: string[] = []; // Zbieraj hot deals pre notifikácie
 
-  // Pre každý portál
-  for (const portal of SCRAPE_CONFIG.portals) {
-    console.log(`\n📦 Portal: ${portal}`);
-    console.log("-".repeat(40));
+  // Scrape Bazos using simple scraper
+  console.log(`\n📦 Portal: BAZOS (Simple Scraper)`);
+  console.log("-".repeat(40));
 
-    try {
-      const portalStart = Date.now();
-      
-      // Scrapuj všetky kategórie naraz (scrapePortal to robí automaticky)
-      const result = await scrapePortal(portal, {
-        maxPages: SCRAPE_CONFIG.maxPagesPerCategory,
-      });
+  try {
+    const portalStart = Date.now();
+    
+    // Použij simple scraper bez Browserless
+    const result = await scrapeBazos({
+      maxPages: SCRAPE_CONFIG.maxPagesPerCategory,
+    });
 
-      console.log(`  ✅ Found ${result.properties.length} properties`);
-      
-      // Ulož do databázy
-      const saveResult = await saveProperties(result.properties);
-      
-      const stats: ScrapeStats = {
-        portal,
-        city: "ALL",
-        propertiesFound: result.properties.length,
-        newProperties: saveResult.new,
-        updatedProperties: saveResult.updated,
-        errors: result.errors,
-        duration: Date.now() - portalStart,
-      };
+    console.log(`  ✅ Found ${result.properties.length} properties`);
+    
+    // Ulož do databázy
+    const saveResult = await saveProperties(result.properties);
+    
+    const stats: ScrapeStats = {
+      portal: "BAZOS",
+      city: "ALL",
+      propertiesFound: result.properties.length,
+      newProperties: saveResult.new,
+      updatedProperties: saveResult.updated,
+      errors: result.errors,
+      duration: Date.now() - portalStart,
+    };
 
-      allStats.push(stats);
-      totalNew += saveResult.new;
-      totalUpdated += saveResult.updated;
-      totalFound += result.properties.length;
-      
-      // Zbieraj hot deals
-      allHotDeals.push(...saveResult.hotDeals);
+    allStats.push(stats);
+    totalNew += saveResult.new;
+    totalUpdated += saveResult.updated;
+    totalFound += result.properties.length;
+    
+    // Zbieraj hot deals
+    allHotDeals.push(...saveResult.hotDeals);
 
-      console.log(`  💾 Saved: ${saveResult.new} new, ${saveResult.updated} updated`);
-      console.log(`  ⏱️ Duration: ${Math.round(stats.duration / 1000)}s`);
+    console.log(`  💾 Saved: ${saveResult.new} new, ${saveResult.updated} updated`);
+    console.log(`  ⏱️ Duration: ${Math.round(stats.duration / 1000)}s`);
 
-      // Log do databázy
-      await prisma.dataFetchLog.create({
-        data: {
-          source: `CRON_${portal}`,
-          status: result.errors.length === 0 ? "success" : "partial",
-          recordsCount: result.properties.length,
-          duration_ms: stats.duration,
-          error: result.errors.length > 0 ? JSON.stringify(result.errors.slice(0, 5)) : null,
-        },
-      });
+    // Log do databázy
+    await prisma.dataFetchLog.create({
+      data: {
+        source: "CRON_BAZOS",
+        status: result.errors.length === 0 ? "success" : "partial",
+        recordsCount: result.properties.length,
+        duration_ms: stats.duration,
+        error: result.errors.length > 0 ? JSON.stringify(result.errors.slice(0, 5)) : null,
+      },
+    });
 
-      // Delay pred ďalším portálom
-      await new Promise(r => setTimeout(r, SCRAPE_CONFIG.delayBetweenRequests));
+  } catch (error) {
+    console.error(`  ❌ Error scraping BAZOS:`, error);
+    
+    allStats.push({
+      portal: "BAZOS",
+      city: "ALL",
+      propertiesFound: 0,
+      newProperties: 0,
+      updatedProperties: 0,
+      errors: [error instanceof Error ? error.message : "Unknown error"],
+      duration: 0,
+    });
 
-    } catch (error) {
-      console.error(`  ❌ Error scraping ${portal}:`, error);
-      
-      allStats.push({
-        portal,
-        city: "ALL",
-        propertiesFound: 0,
-        newProperties: 0,
-        updatedProperties: 0,
-        errors: [error instanceof Error ? error.message : "Unknown error"],
-        duration: 0,
-      });
-
-      await prisma.dataFetchLog.create({
-        data: {
-          source: `CRON_${portal}`,
-          status: "error",
-          recordsCount: 0,
-          error: error instanceof Error ? error.message : "Unknown error",
-        },
-      });
-    }
+    await prisma.dataFetchLog.create({
+      data: {
+        source: "CRON_BAZOS",
+        status: "error",
+        recordsCount: 0,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+    });
   }
 
   const totalDuration = Date.now() - startTime;
