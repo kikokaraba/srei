@@ -323,6 +323,210 @@ export async function scrapeBazos(options: {
 }
 
 /**
+ * Scrapuje Nehnutelnosti.sk
+ */
+export async function scrapeNehnutelnosti(options: {
+  maxPages?: number;
+} = {}): Promise<ScrapeResult> {
+  const startTime = Date.now();
+  const maxPages = options.maxPages || 5;
+  const errors: string[] = [];
+  const properties: ScrapedProperty[] = [];
+  let pagesScraped = 0;
+  
+  // Kategórie na scrapovanie - CELÉ SLOVENSKO (iba PREDAJ)
+  const categories = [
+    { path: "/predaj/byty/", name: "Byty" },
+    { path: "/predaj/domy/", name: "Domy" },
+    { path: "/predaj/pozemky/", name: "Pozemky" },
+  ];
+  
+  console.log(`\n🚀 Starting Nehnutelnosti.sk Scraper`);
+  console.log(`📂 Categories: ${categories.map(c => c.name).join(", ")}`);
+  console.log(`📄 Max pages per category: ${maxPages}`);
+  
+  for (const category of categories) {
+    console.log(`\n📂 ${category.name}`);
+    
+    for (let page = 1; page <= maxPages; page++) {
+      const url = `https://www.nehnutelnosti.sk${category.path}?page=${page}`;
+      
+      console.log(`  📄 Page ${page}: ${url}`);
+      
+      // Delay medzi requestami
+      if (page > 1) {
+        await new Promise(r => setTimeout(r, 2000 + Math.random() * 1000));
+      }
+      
+      const html = await fetchPage(url);
+      
+      if (!html) {
+        errors.push(`Failed to fetch ${url}`);
+        continue;
+      }
+      
+      pagesScraped++;
+      
+      const $ = cheerio.load(html);
+      
+      // Nehnutelnosti.sk štruktúra:
+      // - Listings sú v kartách s linkom na /detail/
+      // - Každý má title, cenu, lokalitu, výmeru
+      
+      let foundOnPage = 0;
+      
+      // Nájdi všetky linky na detail
+      $("a[href*='/detail/']").each((_, el) => {
+        try {
+          const $link = $(el);
+          const href = $link.attr("href") || "";
+          
+          // Preskočiť duplikáty (každý listing má viac linkov)
+          if (!href.includes("/detail/") || href.includes("?")) return;
+          
+          // Nájdi parent container
+          const $container = $link.closest("[class*='listing'], [class*='card'], article, section").first();
+          if (!$container.length) return;
+          
+          // Extrahuj ID z URL
+          const idMatch = href.match(/detail\/([^/]+)/);
+          const externalId = idMatch?.[1] || "";
+          if (!externalId || externalId.length < 5) return;
+          
+          // Deduplication - check if already added
+          if (properties.some(p => p.externalId === externalId)) return;
+          
+          // Extrahuj text z containera
+          const containerText = $container.text();
+          
+          // Title - nájdi h2 alebo hlavný nadpis
+          let title = $container.find("h2, h3").first().text().trim();
+          if (!title || title.length < 5) {
+            title = $link.text().trim();
+          }
+          if (!title || title.length < 5) return;
+          
+          // Cena - hľadaj pattern s €
+          const priceMatch = containerText.match(/(\d[\d\s,.]*)\s*€/);
+          const price = priceMatch ? parsePrice(priceMatch[0]) : 0;
+          if (price < 10000) return;
+          
+          // Plocha
+          const areaMatch = containerText.match(/(\d+(?:[,\.]\d+)?)\s*m[²2]/);
+          const areaM2 = areaMatch ? parseFloat(areaMatch[1].replace(",", ".")) : 50;
+          
+          // Lokalita - hľadaj okres alebo mesto
+          let city = "Slovensko";
+          let district = "";
+          
+          const locationMatch = containerText.match(/(Bratislava|Košice|Žilina|Prešov|Nitra|Trenčín|Trnava|Banská Bystrica)/i);
+          if (locationMatch) {
+            city = locationMatch[1];
+            district = city;
+          }
+          
+          // Izby
+          const roomsMatch = containerText.match(/(\d)\s*[-\s]?izb/i);
+          const rooms = roomsMatch ? parseInt(roomsMatch[1], 10) : undefined;
+          
+          foundOnPage++;
+          
+          properties.push({
+            externalId,
+            source: "NEHNUTELNOSTI",
+            title: title.substring(0, 200),
+            description: "",
+            price,
+            pricePerM2: Math.round(price / areaM2),
+            areaM2,
+            city,
+            district,
+            rooms,
+            listingType: "PREDAJ",
+            sourceUrl: href.startsWith("http") ? href : `https://www.nehnutelnosti.sk${href}`,
+          });
+          
+        } catch (e) {
+          // Skip individual errors
+        }
+      });
+      
+      console.log(`  📋 Found ${foundOnPage} listings on page`);
+      
+      // Ak málo výsledkov, koniec kategórie
+      if (foundOnPage < 5) {
+        console.log(`  ⏹️ Reached last page or no more listings`);
+        break;
+      }
+    }
+  }
+  
+  const duration = Date.now() - startTime;
+  
+  console.log(`\n📊 Nehnutelnosti.sk Scraping Complete:`);
+  console.log(`  - Properties: ${properties.length}`);
+  console.log(`  - Pages: ${pagesScraped}`);
+  console.log(`  - Errors: ${errors.length}`);
+  console.log(`  - Duration: ${(duration / 1000).toFixed(1)}s`);
+  
+  return {
+    properties,
+    pagesScraped,
+    errors,
+    duration,
+  };
+}
+
+/**
+ * Scrapuje OBA portály
+ */
+export async function scrapeAll(options: {
+  maxPages?: number;
+} = {}): Promise<ScrapeResult> {
+  const startTime = Date.now();
+  const allProperties: ScrapedProperty[] = [];
+  const allErrors: string[] = [];
+  let totalPages = 0;
+  
+  console.log("\n🚀 Starting FULL scrape - Bazos + Nehnutelnosti.sk");
+  
+  // Scrape Bazos
+  try {
+    const bazosResult = await scrapeBazos({ maxPages: options.maxPages });
+    allProperties.push(...bazosResult.properties);
+    allErrors.push(...bazosResult.errors);
+    totalPages += bazosResult.pagesScraped;
+  } catch (e) {
+    allErrors.push(`Bazos error: ${e instanceof Error ? e.message : "Unknown"}`);
+  }
+  
+  // Scrape Nehnutelnosti.sk
+  try {
+    const nehnutelnostiResult = await scrapeNehnutelnosti({ maxPages: options.maxPages });
+    allProperties.push(...nehnutelnostiResult.properties);
+    allErrors.push(...nehnutelnostiResult.errors);
+    totalPages += nehnutelnostiResult.pagesScraped;
+  } catch (e) {
+    allErrors.push(`Nehnutelnosti error: ${e instanceof Error ? e.message : "Unknown"}`);
+  }
+  
+  const duration = Date.now() - startTime;
+  
+  console.log(`\n📊 FULL Scraping Complete:`);
+  console.log(`  - Total Properties: ${allProperties.length}`);
+  console.log(`  - Total Pages: ${totalPages}`);
+  console.log(`  - Errors: ${allErrors.length}`);
+  console.log(`  - Duration: ${(duration / 1000).toFixed(1)}s`);
+  
+  return {
+    properties: allProperties,
+    pagesScraped: totalPages,
+    errors: allErrors,
+    duration,
+  };
+}
+
+/**
  * Test scraper - vráti sample dáta
  */
 export async function testSimpleScraper(): Promise<{

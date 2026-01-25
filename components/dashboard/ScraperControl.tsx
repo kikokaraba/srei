@@ -72,7 +72,7 @@ export default function ScraperControl() {
     },
   });
 
-  const portals = ["BAZOS"];
+  const portals = ["BAZOS", "NEHNUTELNOSTI"];
 
   return (
     <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
@@ -111,7 +111,7 @@ export default function ScraperControl() {
           ))}
         </div>
         <p className="text-xs text-slate-500 mt-3">
-          Kategórie: Byty, Domy, Pozemky, Chaty - iba PREDAJ, celé Slovensko (~4000 nehnuteľností)
+          Portály: Bazos.sk + Nehnutelnosti.sk | Byty, Domy, Pozemky - celé Slovensko (~10 000 nehnuteľností)
         </p>
       </div>
 

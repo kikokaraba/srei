@@ -13,7 +13,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { scrapeBazos, type ScrapedProperty } from "@/lib/scraper/simple-scraper";
+import { scrapeAll, type ScrapedProperty } from "@/lib/scraper/simple-scraper";
 import { notifyHotDeal, notifyUnnotifiedMarketGaps } from "@/lib/telegram/notifications";
 
 // Scraper teraz scrapuje CELÉ SLOVENSKO - všetky mestá a obce
@@ -168,15 +168,15 @@ export async function GET(request: NextRequest) {
   let totalFound = 0;
   const allHotDeals: string[] = []; // Zbieraj hot deals pre notifikácie
 
-  // Scrape Bazos using simple scraper
-  console.log(`\n📦 Portal: BAZOS (Simple Scraper)`);
+  // Scrape ALL portals using simple scraper
+  console.log(`\n📦 Scraping ALL portals (Bazos + Nehnutelnosti.sk)`);
   console.log("-".repeat(40));
 
   try {
     const portalStart = Date.now();
     
-    // Použij simple scraper bez Browserless
-    const result = await scrapeBazos({
+    // Použij scrapeAll - scrapuje Bazos aj Nehnutelnosti.sk
+    const result = await scrapeAll({
       maxPages: SCRAPE_CONFIG.maxPagesPerCategory,
     });
 
@@ -186,7 +186,7 @@ export async function GET(request: NextRequest) {
     const saveResult = await saveProperties(result.properties);
     
     const stats: ScrapeStats = {
-      portal: "BAZOS",
+      portal: "ALL",
       city: "ALL",
       propertiesFound: result.properties.length,
       newProperties: saveResult.new,
@@ -209,7 +209,7 @@ export async function GET(request: NextRequest) {
     // Log do databázy
     await prisma.dataFetchLog.create({
       data: {
-        source: "CRON_BAZOS",
+        source: "CRON_ALL_PORTALS",
         status: result.errors.length === 0 ? "success" : "partial",
         recordsCount: result.properties.length,
         duration_ms: stats.duration,
@@ -218,10 +218,10 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error(`  ❌ Error scraping BAZOS:`, error);
+    console.error(`  ❌ Error scraping:`, error);
     
     allStats.push({
-      portal: "BAZOS",
+      portal: "ALL",
       city: "ALL",
       propertiesFound: 0,
       newProperties: 0,
@@ -232,7 +232,7 @@ export async function GET(request: NextRequest) {
 
     await prisma.dataFetchLog.create({
       data: {
-        source: "CRON_BAZOS",
+        source: "CRON_ALL_PORTALS",
         status: "error",
         recordsCount: 0,
         error: error instanceof Error ? error.message : "Unknown error",
