@@ -50,6 +50,10 @@ interface CityData {
   properties: number;
   avgPrice: number;
   hotDeals: number;
+  priceChange: number;
+  avgRent: number;
+  yieldPercent: number;
+  investorScore: number;
 }
 
 // Placeholder - bude nahradené reálnymi dátami
@@ -61,6 +65,10 @@ const CITIES: CityData[] = [
     properties: 0,
     avgPrice: 0,
     hotDeals: 0,
+    priceChange: 0,
+    avgRent: 0,
+    yieldPercent: 0,
+    investorScore: 0,
   },
   { 
     name: "Košice", 
@@ -69,6 +77,10 @@ const CITIES: CityData[] = [
     properties: 0,
     avgPrice: 0,
     hotDeals: 0,
+    priceChange: 0,
+    avgRent: 0,
+    yieldPercent: 0,
+    investorScore: 0,
   },
   { 
     name: "Prešov", 
@@ -77,6 +89,10 @@ const CITIES: CityData[] = [
     properties: 0,
     avgPrice: 0,
     hotDeals: 0,
+    priceChange: 0,
+    avgRent: 0,
+    yieldPercent: 0,
+    investorScore: 0,
   },
   { 
     name: "Žilina", 
@@ -85,6 +101,10 @@ const CITIES: CityData[] = [
     properties: 0,
     avgPrice: 0,
     hotDeals: 0,
+    priceChange: 0,
+    avgRent: 0,
+    yieldPercent: 0,
+    investorScore: 0,
   },
   { 
     name: "Banská Bystrica", 
@@ -93,6 +113,10 @@ const CITIES: CityData[] = [
     properties: 0,
     avgPrice: 0,
     hotDeals: 0,
+    priceChange: 0,
+    avgRent: 0,
+    yieldPercent: 0,
+    investorScore: 0,
   },
   { 
     name: "Trnava", 
@@ -101,6 +125,10 @@ const CITIES: CityData[] = [
     properties: 0,
     avgPrice: 0,
     hotDeals: 0,
+    priceChange: 0,
+    avgRent: 0,
+    yieldPercent: 0,
+    investorScore: 0,
   },
   { 
     name: "Trenčín", 
@@ -109,6 +137,10 @@ const CITIES: CityData[] = [
     properties: 0,
     avgPrice: 0,
     hotDeals: 0,
+    priceChange: 0,
+    avgRent: 0,
+    yieldPercent: 0,
+    investorScore: 0,
   },
   { 
     name: "Nitra", 
@@ -117,6 +149,10 @@ const CITIES: CityData[] = [
     properties: 0,
     avgPrice: 0,
     hotDeals: 0,
+    priceChange: 0,
+    avgRent: 0,
+    yieldPercent: 0,
+    investorScore: 0,
   },
   { 
     name: "Poprad", 
@@ -125,6 +161,10 @@ const CITIES: CityData[] = [
     properties: 0,
     avgPrice: 0,
     hotDeals: 0,
+    priceChange: 0,
+    avgRent: 0,
+    yieldPercent: 0,
+    investorScore: 0,
   },
   { 
     name: "Martin", 
@@ -133,6 +173,10 @@ const CITIES: CityData[] = [
     properties: 0,
     avgPrice: 0,
     hotDeals: 0,
+    priceChange: 0,
+    avgRent: 0,
+    yieldPercent: 0,
+    investorScore: 0,
   },
   { 
     name: "Piešťany", 
@@ -141,6 +185,10 @@ const CITIES: CityData[] = [
     properties: 0,
     avgPrice: 0,
     hotDeals: 0,
+    priceChange: 0,
+    avgRent: 0,
+    yieldPercent: 0,
+    investorScore: 0,
   },
   { 
     name: "Zvolen", 
@@ -149,6 +197,10 @@ const CITIES: CityData[] = [
     properties: 0,
     avgPrice: 0,
     hotDeals: 0,
+    priceChange: 0,
+    avgRent: 0,
+    yieldPercent: 0,
+    investorScore: 0,
   },
 ];
 

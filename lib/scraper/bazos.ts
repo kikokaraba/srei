@@ -2,6 +2,7 @@
 
 import type { RawListingData, ParsedListingData, ScrapeError, ScraperConfig } from "./types";
 import { parseDescription, parsePrice, parseArea } from "./parser";
+import { scrapeListingPageCheerio, scrapeListingDetailCheerio } from "./cheerio-scraper";
 
 /**
  * Konfigurácia pre Bazoš
@@ -114,60 +115,14 @@ export function extractExternalId(url: string): string {
 
 /**
  * Scrapuje jednu stránku s výpisom inzerátov
- * POZNÁMKA: Toto je mock implementácia - v produkcii by sa použil puppeteer/playwright
+ * Používa Cheerio pre parsing HTML
  */
 export async function scrapeListingPage(pageUrl: string): Promise<{
   listings: RawListingData[];
   nextPageUrl?: string;
   errors: ScrapeError[];
 }> {
-  const errors: ScrapeError[] = [];
-  
-  try {
-    // V produkcii by sme použili puppeteer alebo playwright
-    // Pre teraz simulujeme fetch
-    const response = await fetch(pageUrl, {
-      headers: {
-        "User-Agent": BAZOS_CONFIG.userAgent,
-        "Accept": "text/html,application/xhtml+xml",
-        "Accept-Language": "sk-SK,sk;q=0.9",
-      },
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    
-    const html = await response.text();
-    
-    // Detekcia zmeny štruktúry - hľadáme kľúčové elementy
-    if (!html.includes("inzerat") && !html.includes("nadpis")) {
-      errors.push({
-        type: "STRUCTURE_CHANGE",
-        message: "Bazoš HTML štruktúra sa zmenila - chýbajú očakávané elementy",
-        url: pageUrl,
-      });
-      return { listings: [], errors };
-    }
-    
-    // Tu by bol reálny parsing HTML
-    // Pre demo vrátime prázdny zoznam - v produkcii by sa použil cheerio/jsdom
-    const listings: RawListingData[] = [];
-    
-    // Nájdi odkaz na ďalšiu stránku
-    const nextPageMatch = html.match(/href="([^"]*)"[^>]*>\s*Ďalšia/i);
-    const nextPageUrl = nextPageMatch ? `${BAZOS_CONFIG.baseUrl}${nextPageMatch[1]}` : undefined;
-    
-    return { listings, nextPageUrl, errors };
-    
-  } catch (error) {
-    errors.push({
-      type: "NETWORK_ERROR",
-      message: error instanceof Error ? error.message : "Unknown error",
-      url: pageUrl,
-    });
-    return { listings: [], errors };
-  }
+  return scrapeListingPageCheerio(pageUrl);
 }
 
 /**
