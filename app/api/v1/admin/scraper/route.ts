@@ -325,12 +325,115 @@ async function runSourceScrape(
     errors: 0,
   };
 
-  // Pre každé mesto a kategóriu
+  // Pre NEHNUTELNOSTI a REALITY použijeme Browserless
+  if (sourceId === "NEHNUTELNOSTI" || sourceId === "REALITY") {
+    try {
+      const { scrapePortal } = await import("@/lib/scraper/browserless-scraper");
+      
+      // Determine listing type from categories
+      let listingType: ListingType | undefined;
+      if (options.categories.some(c => c.includes("predaj"))) {
+        listingType = "PREDAJ";
+      } else if (options.categories.some(c => c.includes("prenajom"))) {
+        listingType = "PRENAJOM";
+      }
+      
+      // Map city name to enum
+      const cityMap: Record<string, SlovakCity> = {
+        "Bratislava": "BRATISLAVA",
+        "Košice": "KOSICE",
+        "Prešov": "PRESOV",
+        "Žilina": "ZILINA",
+        "Banská Bystrica": "BANSKA_BYSTRICA",
+        "Trnava": "TRNAVA",
+        "Trenčín": "TRENCIN",
+        "Nitra": "NITRA",
+      };
+      
+      const city = options.cities[0] ? cityMap[options.cities[0]] : undefined;
+      
+      console.log(`🌐 Using Browserless for ${sourceId}...`);
+      const result = await scrapePortal(sourceId as "NEHNUTELNOSTI" | "REALITY", {
+        city,
+        listingType,
+        maxPages: options.maxPages,
+      });
+      
+      stats.pagesScraped = result.pagesScraped;
+      stats.listingsFound = result.properties.length;
+      stats.errors = result.errors.length;
+      
+      // Save to database
+      for (const prop of result.properties) {
+        try {
+          const existing = await prisma.property.findFirst({
+            where: { source: prop.source, external_id: prop.externalId },
+          });
+          
+          if (existing) {
+            if (existing.price !== prop.price) {
+              await prisma.property.update({
+                where: { id: existing.id },
+                data: { price: prop.price, price_per_m2: prop.pricePerM2 },
+              });
+              await prisma.priceHistory.create({
+                data: { propertyId: existing.id, price: prop.price, price_per_m2: prop.pricePerM2 },
+              });
+              stats.updatedListings++;
+            }
+          } else {
+            const slug = prop.title
+              .toLowerCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .replace(/[^a-z0-9]+/g, "-")
+              .substring(0, 100) + "-" + prop.externalId.slice(-8);
+            
+            await prisma.property.create({
+              data: {
+                external_id: prop.externalId,
+                source: prop.source,
+                title: prop.title,
+                slug,
+                description: prop.description,
+                price: prop.price,
+                price_per_m2: prop.pricePerM2,
+                area_m2: prop.areaM2,
+                city: prop.city,
+                district: prop.district,
+                address: `${prop.city}${prop.district ? `, ${prop.district}` : ""}`,
+                rooms: prop.rooms,
+                listing_type: prop.listingType,
+                condition: "POVODNY",
+                energy_certificate: "NONE",
+                source_url: prop.sourceUrl,
+              },
+            });
+            stats.newListings++;
+          }
+        } catch (e) {
+          console.warn(`Failed to save property:`, e);
+        }
+      }
+      
+      return stats;
+    } catch (error) {
+      console.error(`Browserless error for ${sourceId}:`, error);
+      stats.errors = 1;
+      return stats;
+    }
+  }
+
+  // Pre BAZOS použijeme Cheerio (statické HTML)
   for (const city of options.cities) {
     for (const categoryFilter of options.categories) {
-      // Nájdi matching kategóriu
+      // Nájdi matching kategóriu podľa id
       const category = config.categories.find(c => {
-        const catId = `${c.path.includes("byty") ? "byty" : "domy"}-${c.type.toLowerCase()}`;
+        // Parse category id from path
+        const pathParts = c.path.split("/").filter(Boolean);
+        const baseName = pathParts[0] || "";
+        const typeName = c.type.toLowerCase();
+        const catId = `${baseName}-${typeName}`;
         return catId === categoryFilter || categoryFilter === "all";
       });
 

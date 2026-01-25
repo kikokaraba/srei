@@ -60,11 +60,20 @@ const REGIONS = [
 ];
 
 const CATEGORIES = [
-  { id: "byty-predaj", name: "Byty - Predaj" },
-  { id: "domy-predaj", name: "Domy - Predaj" },
-  { id: "byty-prenajom", name: "Byty - Prenájom" },
-  { id: "domy-prenajom", name: "Domy - Prenájom" },
-  { id: "all", name: "Všetky kategórie" },
+  // Predaj
+  { id: "byty-predaj", name: "Byty - Predaj", type: "PREDAJ" },
+  { id: "domy-predaj", name: "Domy - Predaj", type: "PREDAJ" },
+  { id: "pozemky-predaj", name: "Pozemky - Predaj", type: "PREDAJ" },
+  { id: "chaty-predaj", name: "Chaty - Predaj", type: "PREDAJ" },
+  { id: "komercne-predaj", name: "Komerčné - Predaj", type: "PREDAJ" },
+  { id: "garaze-predaj", name: "Garáže - Predaj", type: "PREDAJ" },
+  // Prenájom
+  { id: "byty-prenajom", name: "Byty - Prenájom", type: "PRENAJOM" },
+  { id: "domy-prenajom", name: "Domy - Prenájom", type: "PRENAJOM" },
+  { id: "komercne-prenajom", name: "Komerčné - Prenájom", type: "PRENAJOM" },
+  { id: "garaze-prenajom", name: "Garáže - Prenájom", type: "PRENAJOM" },
+  // All
+  { id: "all", name: "Všetky kategórie", type: "ALL" },
 ];
 
 export default function ScraperControl() {
