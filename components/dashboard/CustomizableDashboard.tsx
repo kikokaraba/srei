@@ -21,6 +21,26 @@ import { Settings, X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const WIDGET_REGISTRY = {
+  // ===== INVESTOR PRIORITY WIDGETS =====
+  "investor-insights": {
+    id: "investor-insights",
+    title: "Investor Insights",
+    component: "InvestorInsights",
+    description: "Price Momentum, Trust Score, Negotiation Power",
+  },
+  "duplicates-finder": {
+    id: "duplicates-finder",
+    title: "Duplicity",
+    component: "DuplicatesFinder",
+    description: "Rovnaký byt, 6 realitiek - nájdi najlepšiu cenu",
+  },
+  "urban-impact": {
+    id: "urban-impact",
+    title: "Urban Impact",
+    component: "UrbanImpactMap",
+    description: "Kde budú ceny rásť o 2 roky",
+  },
+  // ===== CORE WIDGETS =====
   "hot-deals": {
     id: "hot-deals",
     title: "Hot Deals",

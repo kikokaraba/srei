@@ -15,10 +15,19 @@ import { EconomicIndicators } from "./EconomicIndicators";
 import HotDeals from "./HotDeals";
 import PropertyMatches from "./PropertyMatches";
 import { PriceHistory } from "./PriceHistory";
+// Investor widgets
+import { InvestorInsights } from "./InvestorInsights";
+import { DuplicatesFinder } from "./DuplicatesFinder";
+import { UrbanImpactMap } from "./UrbanImpactMap";
 import PremiumGate from "@/components/ui/PremiumGate";
 import { FeatureKey } from "@/lib/access-control";
 
 const WIDGET_COMPONENTS = {
+  // Investor priority
+  "investor-insights": InvestorInsights,
+  "duplicates-finder": DuplicatesFinder,
+  "urban-impact": UrbanImpactMap,
+  // Core widgets
   "hot-deals": HotDeals,
   "property-matches": PropertyMatches,
   "economic-indicators": EconomicIndicators,
@@ -35,6 +44,11 @@ const WIDGET_COMPONENTS = {
 
 // Mapovanie widgetov na premium features
 const PREMIUM_WIDGETS: Partial<Record<keyof typeof WIDGET_COMPONENTS, FeatureKey>> = {
+  // Investor widgets - premium only
+  "investor-insights": "aiPredictions",
+  "duplicates-finder": "aiMatching",
+  "urban-impact": "urbanDevelopment",
+  // Existing
   "scenario-simulator": "scenarioSimulator",
   "urban-development": "urbanDevelopment",
   "property-matches": "aiMatching",
