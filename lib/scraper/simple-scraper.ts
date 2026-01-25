@@ -76,24 +76,63 @@ function parseArea(text: string): number {
 }
 
 function parseCity(text: string): { city: string; district: string } {
-  const normalized = text.toLowerCase();
+  const normalized = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   
   const cityMap: Record<string, string> = {
     "bratislava": "Bratislava",
-    "košice": "Košice", "kosice": "Košice",
-    "prešov": "Prešov", "presov": "Prešov",
-    "žilina": "Žilina", "zilina": "Žilina",
-    "banská bystrica": "Banská Bystrica",
+    "kosice": "Košice",
+    "presov": "Prešov",
+    "zilina": "Žilina",
+    "banska bystrica": "Banská Bystrica",
     "trnava": "Trnava",
-    "trenčín": "Trenčín", "trencin": "Trenčín",
+    "trencin": "Trenčín",
     "nitra": "Nitra",
     "poprad": "Poprad",
     "martin": "Martin",
+    "zvolen": "Zvolen",
+    "prievidza": "Prievidza",
+    "michalovce": "Michalovce",
+    "spisska nova ves": "Spišská Nová Ves",
+    "humenne": "Humenné",
+    "levice": "Levice",
+    "komarno": "Komárno",
+    "nove zamky": "Nové Zámky",
+    "dunajska streda": "Dunajská Streda",
+    "ruzomberok": "Ružomberok",
+    "liptovsky mikulas": "Liptovský Mikuláš",
+    "lucenec": "Lučenec",
+    "piestany": "Piešťany",
+    "terasa": "Košice",
+    "petrzalka": "Bratislava",
+    "ruzinov": "Bratislava",
+    "dubravka": "Bratislava",
+    "tahanovce": "Košice",
   };
   
   for (const [key, city] of Object.entries(cityMap)) {
     if (normalized.includes(key)) {
       return { city, district: text.split(",")[0]?.trim() || city };
+    }
+  }
+  
+  // Skús nájsť PSČ a určiť mesto
+  const pscMatch = text.match(/(\d{3})\s?(\d{2})/);
+  if (pscMatch) {
+    const psc = pscMatch[1];
+    const pscToCity: Record<string, string> = {
+      "811": "Bratislava", "821": "Bratislava", "831": "Bratislava", "841": "Bratislava", "851": "Bratislava",
+      "040": "Košice", "041": "Košice", "042": "Košice", "043": "Košice", "044": "Košice",
+      "080": "Prešov", "081": "Prešov", "082": "Prešov",
+      "010": "Žilina", "011": "Žilina", "012": "Žilina",
+      "974": "Banská Bystrica", "975": "Banská Bystrica",
+      "917": "Trnava", "918": "Trnava",
+      "949": "Nitra", "950": "Nitra",
+      "911": "Trenčín", "912": "Trenčín",
+      "058": "Poprad", "059": "Poprad",
+    };
+    
+    if (pscToCity[psc]) {
+      return { city: pscToCity[psc], district: pscToCity[psc] };
     }
   }
   
@@ -153,16 +192,19 @@ export async function scrapeBazos(options: {
       
       const $ = cheerio.load(html);
       
-      // Bazoš štruktúra: h2.nadpis obsahuje link na inzerát
-      // Cena je v nasledujúcom <b> tagu
-      const listings = $("h2.nadpis, .nadpis");
+      // Bazoš štruktúra 2026:
+      // - Každý inzerát má <h2> s linkom na /inzerat/
+      // - Cena je v <b> alebo <strong> tagu s € symbolom
+      // - Lokalita je text s PSČ
       
-      console.log(`  📋 Found ${listings.length} listing headers`);
+      // Nájdi všetky h2 elementy ktoré obsahujú link na inzerát
+      const h2Elements = $("h2");
+      let foundOnPage = 0;
       
-      listings.each((_, el) => {
+      h2Elements.each((_, el) => {
         try {
-          const $el = $(el);
-          const $link = $el.find("a[href*='/inzerat/']").first();
+          const $h2 = $(el);
+          const $link = $h2.find("a[href*='/inzerat/']");
           
           if (!$link.length) return;
           
@@ -176,36 +218,61 @@ export async function scrapeBazos(options: {
           const externalId = idMatch?.[1] || "";
           if (!externalId) return;
           
-          // Cena - hľadaj v nasledujúcich elementoch
+          // Nájdi cenu - hľadaj najbližší <b> alebo <strong> s € v celom kontexte
+          // Bazoš má cenu ako **245 000 €** čo je <b> alebo <strong>
           let priceText = "";
-          let $current = $el.next();
-          for (let i = 0; i < 5 && $current.length; i++) {
-            const text = $current.text();
-            if (text.includes("€")) {
-              priceText = text;
-              break;
+          
+          // Hľadaj v parent containeroch
+          const $parent = $h2.parent();
+          const $grandparent = $parent.parent();
+          
+          // Skús nájsť cenu v okolí
+          const nearbyText = $grandparent.text() || $parent.text() || "";
+          const priceMatch = nearbyText.match(/(\d[\d\s]*)\s*€/);
+          if (priceMatch) {
+            priceText = priceMatch[0];
+          }
+          
+          // Ak nenájdeme cenu v okolí, hľadaj v nasledujúcich elementoch
+          if (!priceText) {
+            let $current = $h2.next();
+            for (let i = 0; i < 10 && $current.length; i++) {
+              const text = $current.text();
+              const match = text.match(/(\d[\d\s]*)\s*€/);
+              if (match) {
+                priceText = match[0];
+                break;
+              }
+              $current = $current.next();
             }
-            const $bold = $current.find("b, strong").first();
-            if ($bold.length && $bold.text().match(/\d/)) {
-              priceText = $bold.text();
-              break;
-            }
-            $current = $current.next();
           }
           
           const price = parsePrice(priceText);
           if (price < 10000) return; // Filter príliš lacné
           
-          // Plocha z titulu
+          // Plocha z titulu alebo popisu
           let areaM2 = parseArea(title);
+          if (areaM2 === 0) {
+            areaM2 = parseArea(nearbyText);
+          }
           if (areaM2 === 0) areaM2 = 50; // Default
           
-          // Mesto z titulu
-          const { city, district } = parseCity(title);
+          // Mesto z titulu alebo z okolia (hľadaj PSČ pattern)
+          let { city, district } = parseCity(title);
+          if (city === "Slovensko") {
+            // Skús nájsť mesto v okolí
+            const cityResult = parseCity(nearbyText);
+            if (cityResult.city !== "Slovensko") {
+              city = cityResult.city;
+              district = cityResult.district;
+            }
+          }
           
           // Izby
           const roomsMatch = title.match(/(\d)\s*[-\s]?izb/i);
           const rooms = roomsMatch ? parseInt(roomsMatch[1], 10) : undefined;
+          
+          foundOnPage++;
           
           properties.push({
             externalId,
@@ -227,9 +294,11 @@ export async function scrapeBazos(options: {
         }
       });
       
+      console.log(`  📋 Found ${foundOnPage} listings on page`);
+      
       // Ak málo výsledkov, koniec kategórie
-      if (listings.length < 10) {
-        console.log(`  ⏹️ Reached last page`);
+      if (foundOnPage < 5) {
+        console.log(`  ⏹️ Reached last page or no more listings`);
         break;
       }
     }
