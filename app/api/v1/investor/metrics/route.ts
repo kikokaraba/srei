@@ -139,6 +139,19 @@ export async function GET(request: NextRequest) {
           return NextResponse.json({ success: false, error: "Property not found" }, { status: 404 });
         }
 
+        // Nájdi duplicity (podobné properties s rovnakými parametrami)
+        const duplicates = await prisma.property.findMany({
+          where: {
+            id: { not: property.id },
+            city: property.city,
+            area_m2: { gte: property.area_m2 - 5, lte: property.area_m2 + 5 },
+            rooms: property.rooms,
+            price: { gte: property.price * 0.85, lte: property.price * 1.15 },
+          },
+          select: { id: true, price: true, source: true },
+          take: 10,
+        });
+
         const [trustScore, negotiation, story, momentum] = await Promise.all([
           calculateTrustScore(property),
           calculateNegotiationPower(property),
@@ -146,9 +159,27 @@ export async function GET(request: NextRequest) {
           calculatePriceMomentum(property.city, property.district || undefined),
         ]);
 
+        const hasDuplicates = duplicates.length > 0;
+        const bestPrice = hasDuplicates 
+          ? Math.min(property.price, ...duplicates.map(d => d.price))
+          : property.price;
+
         return NextResponse.json({
           success: true,
           data: {
+            // Flat structure for easy badge rendering
+            trustScore: trustScore.score,
+            redFlags: trustScore.redFlags,
+            greenFlags: trustScore.greenFlags,
+            negotiationPower: negotiation.score,
+            suggestedDiscount: negotiation.suggestedDiscount,
+            priceDrops: story?.priceDrops || 0,
+            daysOnMarket: story?.daysOnMarket || 0,
+            hasDuplicates,
+            duplicateCount: duplicates.length + 1,
+            bestPrice,
+            currentPrice: property.price,
+            // Full data for detail view
             property: {
               id: property.id,
               title: property.title,
@@ -157,20 +188,91 @@ export async function GET(request: NextRequest) {
               city: property.city,
               district: property.district,
             },
-            trustScore,
-            negotiation,
+            trustScoreFull: trustScore,
+            negotiationFull: negotiation,
             priceStory: story,
             momentum,
-            // Quick summary for UI
-            investorSummary: {
-              trustLevel: trustScore.level,
-              negotiationScore: negotiation.score,
-              suggestedDiscount: negotiation.suggestedDiscount,
-              marketTrend: momentum.trend,
-              signal: momentum.signal,
-              topRedFlags: trustScore.redFlags.slice(0, 2),
-              topGreenFlags: trustScore.greenFlags.slice(0, 2),
+            duplicates: duplicates.map(d => ({
+              id: d.id,
+              price: d.price,
+              source: d.source,
+            })),
+          },
+        });
+      }
+      
+      case "quick": {
+        // Rýchle metriky pre property kartu (optimalizované)
+        if (!propertyId) {
+          return NextResponse.json({ 
+            success: false, 
+            error: "propertyId required" 
+          }, { status: 400 });
+        }
+
+        const property = await prisma.property.findUnique({
+          where: { id: propertyId },
+          include: {
+            priceHistory: {
+              orderBy: { recorded_at: "desc" },
+              take: 5,
             },
+          },
+        });
+
+        if (!property) {
+          return NextResponse.json({ success: false, error: "Property not found" }, { status: 404 });
+        }
+
+        // Rýchly výpočet bez ťažkých queries
+        const daysOnMarket = Math.floor(
+          (Date.now() - property.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        
+        const priceDrops = property.priceHistory.filter((h, i, arr) => 
+          i > 0 && h.price < arr[i - 1].price
+        ).length;
+
+        // Zjednodušený trust score
+        let trustScore = 70;
+        const redFlags: string[] = [];
+        const greenFlags: string[] = [];
+
+        if (daysOnMarket > 180) {
+          trustScore -= 20;
+          redFlags.push(`${daysOnMarket} dní na trhu`);
+        } else if (daysOnMarket < 7) {
+          greenFlags.push("Čerstvý inzerát");
+        }
+
+        if (priceDrops > 0) {
+          trustScore += 10;
+          greenFlags.push(`${priceDrops}x zníženie ceny`);
+        }
+
+        // Check duplicates count only
+        const duplicateCount = await prisma.property.count({
+          where: {
+            id: { not: property.id },
+            city: property.city,
+            area_m2: { gte: property.area_m2 - 5, lte: property.area_m2 + 5 },
+            rooms: property.rooms,
+          },
+        });
+
+        return NextResponse.json({
+          success: true,
+          data: {
+            trustScore: Math.max(0, Math.min(100, trustScore)),
+            redFlags,
+            greenFlags,
+            negotiationPower: daysOnMarket > 60 ? 70 : daysOnMarket > 30 ? 50 : 30,
+            suggestedDiscount: daysOnMarket > 90 ? 15 : daysOnMarket > 60 ? 10 : 5,
+            priceDrops,
+            daysOnMarket,
+            hasDuplicates: duplicateCount > 0,
+            duplicateCount: duplicateCount + 1,
+            currentPrice: property.price,
           },
         });
       }
