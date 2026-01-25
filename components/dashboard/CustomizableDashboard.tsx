@@ -127,10 +127,16 @@ export function CustomizableDashboard() {
   const [localWidgets, setLocalWidgets] = useState<WidgetId[]>([]);
   const [localHiddenWidgets, setLocalHiddenWidgets] = useState<WidgetId[]>([]);
 
+  // Valid widget IDs (filter out removed widgets from saved layout)
+  const validWidgetIds = Object.keys(WIDGET_REGISTRY) as WidgetId[];
+
   useEffect(() => {
     if (layout) {
-      setLocalWidgets(layout.widgets);
-      setLocalHiddenWidgets(layout.hiddenWidgets);
+      // Filter out any widgets that no longer exist
+      const validWidgets = layout.widgets.filter(id => validWidgetIds.includes(id));
+      const validHidden = layout.hiddenWidgets.filter(id => validWidgetIds.includes(id));
+      setLocalWidgets(validWidgets);
+      setLocalHiddenWidgets(validHidden);
     }
   }, [layout]);
 

@@ -37,13 +37,13 @@ const PREMIUM_WIDGETS: Partial<Record<keyof typeof WIDGET_COMPONENTS, FeatureKey
 type WidgetId = keyof typeof WIDGET_COMPONENTS;
 
 interface SortableWidgetProps {
-  id: WidgetId;
+  id: string; // Can be any string, we validate inside
   widget: {
     id: string;
     title: string;
     component: string;
     description: string;
-  };
+  } | undefined;
   isEditMode: boolean;
   onRemove: () => void;
 }
@@ -69,8 +69,14 @@ export function SortableWidget({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const Component = WIDGET_COMPONENTS[id];
-  const premiumFeature = PREMIUM_WIDGETS[id];
+  const Component = WIDGET_COMPONENTS[id as keyof typeof WIDGET_COMPONENTS];
+  const premiumFeature = PREMIUM_WIDGETS[id as keyof typeof PREMIUM_WIDGETS];
+
+  // Skip if component or widget config doesn't exist (removed widgets)
+  if (!Component || !widget) {
+    console.warn(`Widget "${id}" not found - skipping`);
+    return null;
+  }
 
   // Render widget content, wrapped in PremiumGate if needed
   const renderContent = () => {
