@@ -45,6 +45,10 @@
       "schedule": "0 23 * * *"
     },
     {
+      "path": "/api/cron/cleanup-stale",
+      "schedule": "0 4 * * *"
+    },
+    {
       "path": "/api/cron/telegram-notifications",
       "schedule": "0 8,12,18 * * *"
     }

@@ -65,30 +65,35 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
       });
 
       if (existing) {
-        // Aktualizuj ak sa zmenila cena
+        // Vždy aktualizuj last_seen_at - nehnuteľnosť je stále aktívna
+        const updateData: Record<string, unknown> = {
+          last_seen_at: new Date(),
+          status: "ACTIVE", // Znovu aktívna ak bola EXPIRED
+        };
+        
+        // Ak sa zmenila cena, aktualizuj aj ju
         if (existing.price !== prop.price) {
-          await prisma.property.update({
-            where: { id: existing.id },
-            data: { 
-              price: prop.price, 
-              price_per_m2: prop.pricePerM2,
-              updatedAt: new Date(),
-            },
-          });
+          updateData.price = prop.price;
+          updateData.price_per_m2 = prop.pricePerM2;
           
           // Zaznamenaj históriu cien
           await prisma.priceHistory.create({
             data: { 
-              propertyId: existing.id, 
-              price: prop.price, 
-              price_per_m2: prop.pricePerM2 
+              propertyId: existing.id,
+              price: prop.price,
+              price_per_m2: prop.pricePerM2,
             },
           });
           
           updatedCount++;
         }
+        
+        await prisma.property.update({
+          where: { id: existing.id },
+          data: updateData,
+        });
       } else {
-        // Vytvor novú nehnuteľnosť
+        // NOVÁ nehnuteľnosť - vytvor ju
         const slug = prop.title
           .toLowerCase()
           .normalize("NFD")
@@ -97,14 +102,13 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
           .substring(0, 100) + "-" + prop.externalId.slice(-8);
 
         // Skontroluj či je to potenciálny hot deal
-        // Porovnaj s priemernou cenou v meste
         const avgInCity = await prisma.property.aggregate({
           where: { city: prop.city, area_m2: { gte: prop.areaM2 - 20, lte: prop.areaM2 + 20 } },
           _avg: { price_per_m2: true },
         });
         
         const isHotDeal = avgInCity._avg.price_per_m2 
-          ? prop.pricePerM2 < avgInCity._avg.price_per_m2 * 0.85 // 15% pod priemerom
+          ? prop.pricePerM2 < avgInCity._avg.price_per_m2 * 0.85
           : false;
 
         const newProperty = await prisma.property.create({
@@ -126,6 +130,8 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
             energy_certificate: "NONE",
             source_url: prop.sourceUrl,
             is_distressed: isHotDeal,
+            last_seen_at: new Date(),
+            status: "ACTIVE",
           },
         });
         
