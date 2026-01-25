@@ -254,7 +254,7 @@ export async function getDuplicateStats(city?: string): Promise<{
 
   let totalDuplicateListings = 0;
   let potentialSavings = 0;
-  const savingsByCity = new Map<{ savings: number; count: number }>();
+  const savingsByCity = new Map<string, { savings: number; count: number }>();
 
   for (const group of groups) {
     totalDuplicateListings += group.count;
