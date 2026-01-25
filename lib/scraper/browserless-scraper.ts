@@ -1,13 +1,13 @@
 /**
- * Browserless.io Scraper - REST API Version
+ * Browserless.io BaaS Scraper
  * 
- * Používa Browserless.io /scrape REST API pre rýchle a spoľahlivé scrapovanie
- * Výhody oproti WebSocket:
- * - Rýchlejšie - žiadne manažovanie browser state
- * - Spoľahlivejšie - Browserless rieši všetko
- * - Jednoduchšie - len POST requesty
+ * Používa Browserless.io Browsers as a Service (BaaS) s Playwright
+ * Docs: https://docs.browserless.io/baas/start
  * 
- * Docs: https://docs.browserless.io/rest-apis/scrape
+ * Kľúčové funkcie:
+ * - Stealth mode pre obídenie bot detekcie
+ * - Playwright connectOverCDP pre spoľahlivé pripojenie
+ * - Optimalizované launch options
  */
 
 import type { ListingType, PropertySource } from "@/generated/prisma/client";
@@ -44,6 +44,13 @@ interface PortalConfig {
   baseUrl: string;
   source: PropertySource;
   listingSelector: string;
+  selectors: {
+    title: string;
+    price: string;
+    area: string;
+    location: string;
+    link: string;
+  };
   categories: {
     path: string;
     listingType: ListingType;
@@ -51,28 +58,23 @@ interface PortalConfig {
   }[];
 }
 
-// Browserless Scrape API response
-interface BrowserlessScrapeResponse {
-  data: Array<{
-    selector: string;
-    results: Array<{
-      text: string;
-      html: string;
-      attributes: Array<{ name: string; value: string }>;
-    }>;
-  }>;
-}
-
 // ============================================
 // Portal Configurations
 // ============================================
 
-const PORTAL_CONFIGS: Record<string, PortalConfig> = {
+export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
   NEHNUTELNOSTI: {
     name: "Nehnutelnosti.sk",
     baseUrl: "https://www.nehnutelnosti.sk",
     source: "NEHNUTELNOSTI",
-    listingSelector: "[data-testid='search-result-card'], .MuiCard-root, article",
+    listingSelector: "article, [data-testid='search-result-card'], .advertisement-item",
+    selectors: {
+      title: "h2 a, h3 a, [data-testid='title'] a, .advertisement-item__title a",
+      price: ".advertisement-item__price, [data-testid='price'], .price",
+      area: ".advertisement-item__info, [data-testid='area'], .area",
+      location: ".advertisement-item__location, [data-testid='location'], .location",
+      link: "a[href*='/detail/'], a[href*='/inzerat/']",
+    },
     categories: [
       { path: "/byty/predaj/", listingType: "PREDAJ", name: "Byty predaj" },
       { path: "/domy/predaj/", listingType: "PREDAJ", name: "Domy predaj" },
@@ -84,7 +86,14 @@ const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     name: "Reality.sk",
     baseUrl: "https://www.reality.sk",
     source: "REALITY",
-    listingSelector: ".estate-list__item, article.estate, .property-card",
+    listingSelector: ".estate-list__item, article.estate, .property-item",
+    selectors: {
+      title: ".estate-list__title a, h2 a, .title a",
+      price: ".estate-list__price, .price",
+      area: ".estate-list__area, .area",
+      location: ".estate-list__location, .location",
+      link: "a[href*='/detail/']",
+    },
     categories: [
       { path: "/byty/predaj/", listingType: "PREDAJ", name: "Byty predaj" },
       { path: "/domy/predaj/", listingType: "PREDAJ", name: "Domy predaj" },
@@ -96,7 +105,14 @@ const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     name: "TopReality.sk",
     baseUrl: "https://www.topreality.sk",
     source: "TOPREALITY",
-    listingSelector: ".property-item, .estate-item, article.listing, [data-id]",
+    listingSelector: ".property-item, .estate-item, article, [data-id]",
+    selectors: {
+      title: ".property-title a, h2 a, .title a",
+      price: ".property-price, .price",
+      area: ".property-area, .area",
+      location: ".property-location, .location",
+      link: "a[href*='/detail/'], a[href*='/inzerat/']",
+    },
     categories: [
       { path: "/vyhladavanie/predaj/byty/", listingType: "PREDAJ", name: "Byty predaj" },
       { path: "/vyhladavanie/predaj/domy/", listingType: "PREDAJ", name: "Domy predaj" },
@@ -108,7 +124,14 @@ const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     name: "Bazoš Reality",
     baseUrl: "https://reality.bazos.sk",
     source: "BAZOS",
-    listingSelector: ".inzeraty .inzerat, .vypis .inzerat, table.inzeraty tr",
+    listingSelector: ".inzeraty .inzerat, .vypis .inzerat, .inzeraty tr.inzerat",
+    selectors: {
+      title: "a[href*='/inzerat/']",
+      price: "b, strong, .cena",
+      area: "span:has-text('m²'), span:has-text('m2')",
+      location: ".psc, span:has-text('0'), span:has-text('8'), span:has-text('9')",
+      link: "a[href*='/inzerat/']",
+    },
     categories: [
       { path: "/predam/byt/", listingType: "PREDAJ", name: "Byty predaj" },
       { path: "/predam/dom/", listingType: "PREDAJ", name: "Domy predaj" },
@@ -138,36 +161,26 @@ const CITY_MAP: Record<string, string> = {
   "nové zámky": "Nové Zámky",
   "michalovce": "Michalovce",
   "piešťany": "Piešťany",
-  "levice": "Levice",
-  "liptovský mikuláš": "Liptovský Mikuláš",
-  "ružomberok": "Ružomberok",
-  "humenné": "Humenné",
-  "bardejov": "Bardejov",
   "senec": "Senec",
   "pezinok": "Pezinok",
   "malacky": "Malacky",
-  "dunajská streda": "Dunajská Streda",
-  "komárno": "Komárno",
-  // Bratislava mestské časti
   "petržalka": "Bratislava",
   "ružinov": "Bratislava",
   "staré mesto": "Bratislava",
-  "nové mesto": "Bratislava",
-  "karlova ves": "Bratislava",
   "dúbravka": "Bratislava",
-  "rača": "Bratislava",
+  "karlova ves": "Bratislava",
 };
 
-// PSČ to City mapping for Bazoš
+// PSČ to City mapping
 const PSC_TO_CITY: Record<string, string> = {
   "8": "Bratislava",
   "040": "Košice", "041": "Košice", "042": "Košice", "043": "Košice",
   "080": "Prešov", "081": "Prešov", "082": "Prešov",
   "010": "Žilina", "011": "Žilina", "012": "Žilina",
-  "974": "Banská Bystrica", "975": "Banská Bystrica", "976": "Banská Bystrica",
-  "917": "Trnava", "918": "Trnava", "919": "Trnava",
-  "949": "Nitra", "950": "Nitra", "951": "Nitra",
-  "911": "Trenčín", "912": "Trenčín", "913": "Trenčín",
+  "974": "Banská Bystrica", "975": "Banská Bystrica",
+  "917": "Trnava", "918": "Trnava",
+  "949": "Nitra", "950": "Nitra",
+  "911": "Trenčín", "912": "Trenčín",
 };
 
 // ============================================
@@ -175,9 +188,7 @@ const PSC_TO_CITY: Record<string, string> = {
 // ============================================
 
 function parseCity(text: string): { city: string; district: string } | null {
-  const normalized = text.toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+  const normalized = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   
   for (const [key, city] of Object.entries(CITY_MAP)) {
     const normalizedKey = key.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -188,29 +199,16 @@ function parseCity(text: string): { city: string; district: string } | null {
     }
   }
   
-  // Fallback - extract first part
-  const parts = text.split(/[,\-•–]/);
-  if (parts.length > 0 && parts[0].trim().length > 2) {
-    const extractedCity = parts[0].trim();
-    const district = parts.length > 1 ? parts[1].trim() : "";
-    const formattedCity = extractedCity.charAt(0).toUpperCase() + extractedCity.slice(1).toLowerCase();
-    return { city: formattedCity, district: district || "Centrum" };
-  }
-  
-  return null;
-}
-
-function parseCityFromPSC(text: string): string | null {
+  // PSČ detection
   const pscMatch = text.match(/(\d{3}\s?\d{2})/);
   if (pscMatch) {
     const psc = pscMatch[1].replace(/\s/g, "");
-    // Check 3-digit prefix first
     const prefix3 = psc.substring(0, 3);
-    if (PSC_TO_CITY[prefix3]) return PSC_TO_CITY[prefix3];
-    // Check 1-digit prefix (for Bratislava)
+    if (PSC_TO_CITY[prefix3]) return { city: PSC_TO_CITY[prefix3], district: PSC_TO_CITY[prefix3] };
     const prefix1 = psc.substring(0, 1);
-    if (PSC_TO_CITY[prefix1]) return PSC_TO_CITY[prefix1];
+    if (PSC_TO_CITY[prefix1]) return { city: PSC_TO_CITY[prefix1], district: PSC_TO_CITY[prefix1] };
   }
+  
   return null;
 }
 
@@ -230,227 +228,47 @@ function parseRooms(text: string): number | undefined {
   return match ? parseInt(match[1], 10) : undefined;
 }
 
-function getApiToken(): string {
-  const endpoint = process.env.BROWSER_WS_ENDPOINT || "";
-  const tokenMatch = endpoint.match(/token=([^&]+)/);
-  return tokenMatch?.[1] || "";
-}
-
-function getApiBaseUrl(): string {
-  // Extract base URL from BROWSER_WS_ENDPOINT
-  // wss://production-sfo.browserless.io?token=xxx -> https://production-sfo.browserless.io
-  const endpoint = process.env.BROWSER_WS_ENDPOINT || "";
-  const match = endpoint.match(/wss?:\/\/([^/?]+)/);
-  return match ? `https://${match[1]}` : "https://production-sfo.browserless.io";
-}
-
-// ============================================
-// Browserless REST API Scraper
-// ============================================
-
 /**
- * Scrape a single page using Browserless /scrape REST API
+ * Build Browserless WebSocket URL with stealth mode
+ * Based on: https://docs.browserless.io/baas/launch-options
  */
-async function scrapePageWithRestApi(
-  url: string,
-  config: PortalConfig,
-  listingType: ListingType
-): Promise<ScrapedProperty[]> {
-  const token = getApiToken();
-  const baseUrl = getApiBaseUrl();
+function buildBrowserlessUrl(): string {
+  const endpoint = process.env.BROWSER_WS_ENDPOINT || "";
+  
+  // Extract token
+  const tokenMatch = endpoint.match(/token=([^&]+)/);
+  const token = tokenMatch?.[1] || "";
   
   if (!token) {
-    console.error("❌ BROWSER_WS_ENDPOINT not configured or missing token");
-    return [];
+    throw new Error("BROWSER_WS_ENDPOINT not configured. Set: wss://production-sfo.browserless.io?token=YOUR_TOKEN");
   }
-
-  const apiUrl = `${baseUrl}/scrape?token=${token}`;
   
-  // Build request body based on Browserless docs
-  const requestBody = {
-    url,
-    elements: [
-      { selector: config.listingSelector }
+  // Use stealth route for better anti-detection
+  // Docs: https://docs.browserless.io/baas/bot-detection/stealth
+  const launchOptions = {
+    headless: true,
+    stealth: true,
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-accelerated-2d-canvas",
+      "--disable-gpu",
+      "--window-size=1920,1080",
     ],
-    gotoOptions: {
-      waitUntil: "networkidle2",
-      timeout: 15000
-    },
-    // Block unnecessary resources for speed
-    rejectResourceTypes: ["image", "font", "media", "stylesheet"],
-    // Continue on errors
-    bestAttempt: true,
-    // Short wait after load
-    waitForTimeout: 500
   };
-
-  try {
-    console.log(`  📄 Fetching: ${url}`);
-    
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache"
-      },
-      body: JSON.stringify(requestBody)
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`  ❌ API Error ${response.status}: ${errorText.substring(0, 200)}`);
-      return [];
-    }
-
-    const result = await response.json() as BrowserlessScrapeResponse;
-    
-    // Parse the results
-    const properties: ScrapedProperty[] = [];
-    
-    if (!result.data || result.data.length === 0) {
-      console.log(`  ⚠️ No data returned`);
-      return [];
-    }
-
-    const listings = result.data[0]?.results || [];
-    console.log(`  ✅ Found ${listings.length} raw listings`);
-
-    for (const listing of listings) {
-      try {
-        const html = listing.html || "";
-        const text = listing.text || "";
-        
-        // Skip empty or too short listings
-        if (text.length < 20) continue;
-        
-        // Extract data from HTML/text
-        const property = parseListingData(html, text, config, listingType, url);
-        if (property) {
-          properties.push(property);
-        }
-      } catch (error) {
-        // Skip failed listings
-      }
-    }
-
-    console.log(`  📦 Parsed ${properties.length} valid properties`);
-    return properties;
-
-  } catch (error) {
-    console.error(`  ❌ Fetch error:`, error instanceof Error ? error.message : error);
-    return [];
-  }
-}
-
-/**
- * Parse listing data from HTML and text
- */
-function parseListingData(
-  html: string,
-  text: string,
-  config: PortalConfig,
-  listingType: ListingType,
-  pageUrl: string
-): ScrapedProperty | null {
-  // Extract title - usually first link or heading
-  const titleMatch = html.match(/<a[^>]*>([^<]+)<\/a>/) || 
-                     html.match(/<h[23][^>]*>([^<]+)<\/h[23]>/);
-  const title = titleMatch?.[1]?.trim() || text.split("\n")[0]?.trim() || "";
-  if (!title || title.length < 5) return null;
-
-  // Extract link
-  const linkMatch = html.match(/href="([^"]*(?:detail|inzerat|nehnutelnost)[^"]*)"/i) ||
-                    html.match(/href="(\/[^"]+)"/);
-  const href = linkMatch?.[1] || "";
-  if (!href) return null;
   
-  // Build full URL
-  const sourceUrl = href.startsWith("http") ? href : `${config.baseUrl}${href}`;
+  const queryParams = new URLSearchParams({
+    token,
+    launch: JSON.stringify(launchOptions),
+  });
   
-  // Extract external ID
-  const idMatch = href.match(/\/(\d+)\/?(?:\?|$)|detail\/(\d+)|id[=\/](\d+)|inzerat\/(\d+)/i);
-  const externalId = idMatch?.[1] || idMatch?.[2] || idMatch?.[3] || idMatch?.[4] ||
-                     href.split("/").filter(Boolean).pop() || Date.now().toString();
-
-  // Extract price
-  const priceMatch = text.match(/(\d[\d\s]*)\s*€/);
-  let price = 0;
-  if (priceMatch) {
-    price = parseInt(priceMatch[1].replace(/\s/g, ""), 10);
-  }
-  
-  // Minimum price check
-  const minPrice = listingType === "PRENAJOM" ? 100 : 10000;
-  if (price < minPrice) return null;
-
-  // Extract area
-  let area = parseArea(text);
-  if (area === 0) area = parseArea(html);
-  if (area === 0) area = 50; // Default
-
-  // Extract location
-  let cityResult = parseCity(text);
-  if (!cityResult) {
-    // Try PSC-based detection
-    const cityFromPsc = parseCityFromPSC(text);
-    if (cityFromPsc) {
-      cityResult = { city: cityFromPsc, district: cityFromPsc };
-    }
-  }
-  if (!cityResult) {
-    // Default based on title
-    if (title.toLowerCase().includes("bratislava")) {
-      cityResult = { city: "Bratislava", district: "Bratislava" };
-    } else if (title.toLowerCase().includes("košice")) {
-      cityResult = { city: "Košice", district: "Košice" };
-    } else {
-      cityResult = { city: "Neznáme", district: "Neznáme" };
-    }
-  }
-
-  // Extract rooms
-  const rooms = parseRooms(text) || parseRooms(title);
-
-  return {
-    externalId,
-    source: config.source,
-    title: title.substring(0, 200),
-    description: "",
-    price,
-    pricePerM2: Math.round(price / area),
-    areaM2: area,
-    city: cityResult.city,
-    district: cityResult.district,
-    rooms,
-    listingType,
-    sourceUrl,
-  };
-}
-
-/**
- * Build URL for category page
- */
-function buildCategoryUrl(config: PortalConfig, categoryPath: string, pageNum: number): string {
-  let url = `${config.baseUrl}${categoryPath}`;
-  
-  if (config.source === "BAZOS") {
-    // Bazoš uses offset
-    if (pageNum > 1) {
-      const offset = (pageNum - 1) * 20;
-      url += `${offset}/`;
-    }
-  } else {
-    // Other portals use page parameter
-    if (pageNum > 1) {
-      url += url.includes("?") ? `&page=${pageNum}` : `?page=${pageNum}`;
-    }
-  }
-  
-  return url;
+  // Use /stealth route for best anti-detection
+  return `wss://production-sfo.browserless.io/stealth?${queryParams.toString()}`;
 }
 
 // ============================================
-// Main Scraping Function
+// Main Scraping Function using BaaS
 // ============================================
 
 export async function scrapePortal(
@@ -479,40 +297,170 @@ export async function scrapePortal(
   let pagesScraped = 0;
   const maxPages = options.maxPages || 3;
 
-  console.log(`\n📦 Scraping ${config.name}...`);
+  console.log(`\n📦 Scraping ${config.name} with Browserless BaaS...`);
 
-  // Select categories
-  const categories = options.categoryPath 
-    ? config.categories.filter(c => c.path === options.categoryPath)
-    : options.listingType
-    ? config.categories.filter(c => c.listingType === options.listingType)
-    : config.categories;
-
-  for (const category of categories) {
-    console.log(`\n📂 ${category.name}`);
+  // Dynamic import of playwright-core
+  const { chromium } = await import("playwright-core");
+  
+  let browser;
+  
+  try {
+    // Connect to Browserless using CDP (recommended method)
+    // Docs: https://docs.browserless.io/baas/quick-start
+    const wsUrl = buildBrowserlessUrl();
+    console.log("🔗 Connecting to Browserless...");
     
-    for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
-      try {
-        const url = buildCategoryUrl(config, category.path, pageNum);
-        const properties = await scrapePageWithRestApi(url, config, category.listingType);
-        
-        allProperties.push(...properties);
-        pagesScraped++;
+    browser = await chromium.connectOverCDP(wsUrl, {
+      timeout: 30000,
+    });
+    
+    console.log("✅ Connected to Browserless");
+    
+    const context = await browser.newContext({
+      viewport: { width: 1920, height: 1080 },
+      userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      locale: "sk-SK",
+    });
+    
+    // Block unnecessary resources for speed
+    await context.route("**/*.{png,jpg,jpeg,gif,webp,svg,woff,woff2,ico}", route => route.abort());
+    await context.route("**/analytics**", route => route.abort());
+    await context.route("**/google-analytics**", route => route.abort());
+    await context.route("**/facebook**", route => route.abort());
+    
+    const page = await context.newPage();
+    
+    // Select categories
+    const categories = options.categoryPath 
+      ? config.categories.filter(c => c.path === options.categoryPath)
+      : options.listingType
+      ? config.categories.filter(c => c.listingType === options.listingType)
+      : config.categories;
 
-        // Stop if we got less than 5 results (probably last page)
-        if (properties.length < 5) {
-          console.log(`  ⏹️ Reached last page`);
-          break;
+    for (const category of categories) {
+      console.log(`\n📂 ${category.name}`);
+      
+      for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+        try {
+          // Build URL
+          let url = `${config.baseUrl}${category.path}`;
+          if (portalKey === "BAZOS" && pageNum > 1) {
+            url += `${(pageNum - 1) * 20}/`;
+          } else if (pageNum > 1) {
+            url += url.includes("?") ? `&page=${pageNum}` : `?page=${pageNum}`;
+          }
+          
+          console.log(`  📄 Page ${pageNum}: ${url}`);
+          
+          await page.goto(url, { 
+            waitUntil: "domcontentloaded",
+            timeout: 20000,
+          });
+          
+          // Wait for content
+          await page.waitForTimeout(1000);
+          
+          // Get all listings
+          const listings = await page.$$(config.listingSelector);
+          console.log(`  📋 Found ${listings.length} listings`);
+          
+          for (const listing of listings) {
+            try {
+              // Get link and title
+              const linkEl = await listing.$(config.selectors.link);
+              if (!linkEl) continue;
+              
+              const href = await linkEl.getAttribute("href");
+              const title = await linkEl.textContent();
+              if (!href || !title?.trim()) continue;
+              
+              // Get price
+              const priceEl = await listing.$(config.selectors.price);
+              const priceText = await priceEl?.textContent() || "";
+              const price = parsePrice(priceText);
+              
+              const minPrice = category.listingType === "PRENAJOM" ? 100 : 10000;
+              if (price < minPrice) continue;
+              
+              // Get area
+              let area = 0;
+              const areaEl = await listing.$(config.selectors.area);
+              if (areaEl) {
+                const areaText = await areaEl.textContent() || "";
+                area = parseArea(areaText);
+              }
+              if (area === 0) area = parseArea(title);
+              if (area === 0) area = 50;
+              
+              // Get location
+              let cityResult = parseCity(title);
+              if (!cityResult) {
+                const locEl = await listing.$(config.selectors.location);
+                if (locEl) {
+                  const locText = await locEl.textContent() || "";
+                  cityResult = parseCity(locText);
+                }
+              }
+              if (!cityResult) {
+                cityResult = { city: "Neznáme", district: "Neznáme" };
+              }
+              
+              // Extract ID
+              const idMatch = href.match(/\/(\d+)\/?(?:\?|$)|detail\/(\d+)|inzerat\/(\d+)/i);
+              const externalId = idMatch?.[1] || idMatch?.[2] || idMatch?.[3] || 
+                                 href.split("/").filter(Boolean).pop() || Date.now().toString();
+              
+              // Build URL
+              const sourceUrl = href.startsWith("http") ? href : `${config.baseUrl}${href}`;
+              
+              allProperties.push({
+                externalId,
+                source: config.source,
+                title: title.trim().substring(0, 200),
+                description: "",
+                price,
+                pricePerM2: Math.round(price / area),
+                areaM2: area,
+                city: cityResult.city,
+                district: cityResult.district,
+                rooms: parseRooms(title),
+                listingType: category.listingType,
+                sourceUrl,
+              });
+              
+            } catch (e) {
+              // Skip individual listing errors
+            }
+          }
+          
+          pagesScraped++;
+          
+          // Stop if less than 5 results
+          if (listings.length < 5) {
+            console.log(`  ⏹️ Reached last page`);
+            break;
+          }
+          
+          // Small delay between pages
+          await page.waitForTimeout(500);
+          
+        } catch (error) {
+          const errorMsg = `Error on page ${pageNum}: ${error instanceof Error ? error.message : "Unknown"}`;
+          console.error(`  ❌ ${errorMsg}`);
+          errors.push(errorMsg);
         }
-
-        // Small delay between pages to avoid rate limiting
-        await new Promise(r => setTimeout(r, 300));
-
-      } catch (error) {
-        const errorMsg = `Error on page ${pageNum}: ${error instanceof Error ? error.message : "Unknown"}`;
-        console.error(`  ❌ ${errorMsg}`);
-        errors.push(errorMsg);
       }
+    }
+    
+    await context.close();
+    
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    errors.push(errorMsg);
+    console.error("❌ Scraping error:", errorMsg);
+  } finally {
+    if (browser) {
+      await browser.close();
     }
   }
 
@@ -533,7 +481,7 @@ export async function scrapePortal(
 }
 
 // ============================================
-// Test Function
+// Test Connection
 // ============================================
 
 export async function testBrowserlessConnection(): Promise<{
@@ -541,40 +489,20 @@ export async function testBrowserlessConnection(): Promise<{
   message: string;
   browserVersion?: string;
 }> {
-  const token = getApiToken();
-  const baseUrl = getApiBaseUrl();
-  
-  if (!token) {
-    return {
-      success: false,
-      message: "BROWSER_WS_ENDPOINT not configured or missing token",
-    };
-  }
-
   try {
-    // Test with a simple scrape request
-    const response = await fetch(`${baseUrl}/scrape?token=${token}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        url: "https://example.com",
-        elements: [{ selector: "h1" }],
-        gotoOptions: { timeout: 5000 }
-      })
-    });
-
-    if (response.ok) {
-      return {
-        success: true,
-        message: "Successfully connected to Browserless REST API",
-        browserVersion: "REST API v2",
-      };
-    } else {
-      return {
-        success: false,
-        message: `API returned ${response.status}: ${response.statusText}`,
-      };
-    }
+    const wsUrl = buildBrowserlessUrl();
+    const { chromium } = await import("playwright-core");
+    
+    console.log("Testing Browserless connection...");
+    const browser = await chromium.connectOverCDP(wsUrl, { timeout: 15000 });
+    const version = browser.version();
+    await browser.close();
+    
+    return {
+      success: true,
+      message: "Successfully connected to Browserless BaaS with stealth mode",
+      browserVersion: version,
+    };
   } catch (error) {
     return {
       success: false,
@@ -582,5 +510,3 @@ export async function testBrowserlessConnection(): Promise<{
     };
   }
 }
-
-export { PORTAL_CONFIGS };
