@@ -211,7 +211,7 @@ export async function POST(request: Request) {
     // For create, we need to ensure all required fields are present with correct types
     const createData: Prisma.UserPreferencesUncheckedCreateInput = {
       userId: session.user.id,
-      primaryCity: primaryCityEnum !== undefined ? primaryCityEnum : null,
+      primaryCity: primaryCity !== undefined ? (primaryCity || null) : null,
       trackedRegions: trackedRegions !== undefined ? (trackedRegions ? JSON.stringify(trackedRegions) : JSON.stringify([])) : JSON.stringify([]),
       trackedCities: trackedCities !== undefined ? (trackedCities ? JSON.stringify(trackedCities) : JSON.stringify([])) : JSON.stringify([]),
       trackedDistricts: trackedDistricts !== undefined ? (trackedDistricts ? JSON.stringify(trackedDistricts) : JSON.stringify([])) : JSON.stringify([]),
