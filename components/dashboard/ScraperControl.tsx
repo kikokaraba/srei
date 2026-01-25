@@ -72,7 +72,7 @@ export default function ScraperControl() {
     },
   });
 
-  const portals = ["NEHNUTELNOSTI"];
+  const portals = ["BAZOS"];
 
   return (
     <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
@@ -111,7 +111,7 @@ export default function ScraperControl() {
           ))}
         </div>
         <p className="text-xs text-slate-500 mt-3">
-          Kategórie: Byty predaj, Domy predaj (~500 nehnuteľností)
+          Kategórie: Byty predaj, Domy predaj, Byty prenájom, Domy prenájom (~500+ nehnuteľností)
         </p>
       </div>
 
