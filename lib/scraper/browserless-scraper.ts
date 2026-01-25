@@ -334,7 +334,7 @@ export async function scrapePortal(
   const allProperties: ScrapedProperty[] = [];
   let pagesScraped = 0;
   
-  const maxPages = options.maxPages || 3;
+  const maxPages = options.maxPages || 10; // Default 10 stránok na kategóriu
   const citySlug = options.city ? CITY_SLUGS[options.city] : "";
   
   let browser: Browser | null = null;
