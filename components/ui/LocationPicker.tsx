@@ -240,11 +240,9 @@ export function LocationPicker({
 
           return (
             <div key={region.id} className="rounded-xl overflow-hidden">
-              {/* Region header - celý riadok je klikateľný */}
-              <button
-                type="button"
-                onClick={() => toggleRegion(region.id)}
-                className={`w-full flex items-center gap-2 p-3 transition-all cursor-pointer ${
+              {/* Region header */}
+              <div 
+                className={`flex items-center gap-2 p-3 transition-all ${
                   isSelected 
                     ? "bg-emerald-500/20 border border-emerald-500/30" 
                     : isPartial
@@ -252,35 +250,42 @@ export function LocationPicker({
                     : "bg-slate-800/30 border border-slate-700/50 hover:bg-slate-800/50"
                 } rounded-xl`}
               >
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleRegionExpand(region.id);
-                  }}
-                  className="p-1 hover:bg-slate-700/50 rounded cursor-pointer"
+                {/* Expand button - samostatné */}
+                <button
+                  type="button"
+                  onClick={() => toggleRegionExpand(region.id)}
+                  className="p-1 hover:bg-slate-700/50 rounded"
                 >
                   {isExpanded ? (
                     <ChevronDown className="w-4 h-4 text-slate-400" />
                   ) : (
                     <ChevronRight className="w-4 h-4 text-slate-400" />
                   )}
-                </div>
+                </button>
                 
-                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all shrink-0 ${
-                  isSelected 
-                    ? "bg-emerald-500 border-emerald-500" 
-                    : isPartial
-                    ? "border-emerald-500/50 bg-emerald-500/20"
-                    : "border-slate-600 hover:border-slate-500"
-                }`}>
-                  {isSelected && <Check className="w-3 h-3 text-white" />}
-                  {isPartial && <div className="w-2 h-2 bg-emerald-500 rounded-sm" />}
-                </div>
+                {/* Selection button - zvyšok riadku */}
+                <button
+                  type="button"
+                  onClick={() => toggleRegion(region.id)}
+                  className="flex items-center gap-2 flex-1 text-left cursor-pointer"
+                >
+                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all shrink-0 ${
+                    isSelected 
+                      ? "bg-emerald-500 border-emerald-500" 
+                      : isPartial
+                      ? "border-emerald-500/50 bg-emerald-500/20"
+                      : "border-slate-600 hover:border-slate-500"
+                  }`}>
+                    {isSelected && <Check className="w-3 h-3 text-white" />}
+                    {isPartial && <div className="w-2 h-2 bg-emerald-500 rounded-sm" />}
+                  </div>
+                  
+                  <Map className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span className="flex-1 font-medium text-white">{region.name}</span>
+                </button>
                 
-                <Map className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span className="flex-1 font-medium text-white text-left">{region.name}</span>
                 <span className="text-xs text-slate-500 shrink-0">{districts.length} okresov</span>
-              </button>
+              </div>
 
               {/* Districts */}
               {isExpanded && (
@@ -292,12 +297,9 @@ export function LocationPicker({
 
                     return (
                       <div key={district.id}>
-                        {/* District header - celý riadok je klikateľný */}
-                        <button
-                          type="button"
-                          onClick={() => toggleDistrict(district)}
-                          disabled={isSelected}
-                          className={`w-full flex items-center gap-2 p-2 rounded-lg transition-all cursor-pointer disabled:cursor-not-allowed ${
+                        {/* District header */}
+                        <div
+                          className={`flex items-center gap-2 p-2 rounded-lg transition-all ${
                             isDistSelected
                               ? "bg-blue-500/10 border border-blue-500/20"
                               : hasCitySelected
@@ -305,35 +307,43 @@ export function LocationPicker({
                               : "bg-slate-800/20 border border-transparent hover:bg-slate-800/40"
                           } ${isSelected ? "opacity-50" : ""}`}
                         >
-                          <div
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleDistrictExpand(district.id);
-                            }}
-                            className="p-0.5 hover:bg-slate-700/50 rounded cursor-pointer"
+                          {/* Expand button */}
+                          <button
+                            type="button"
+                            onClick={() => toggleDistrictExpand(district.id)}
+                            className="p-0.5 hover:bg-slate-700/50 rounded"
                           >
                             {isDistExpanded ? (
                               <ChevronDown className="w-3 h-3 text-slate-400" />
                             ) : (
                               <ChevronRight className="w-3 h-3 text-slate-400" />
                             )}
-                          </div>
+                          </button>
                           
-                          <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all shrink-0 ${
-                            isDistSelected
-                              ? "bg-blue-500 border-blue-500"
-                              : hasCitySelected
-                              ? "border-blue-500/50 bg-blue-500/20"
-                              : "border-slate-600 hover:border-slate-500"
-                          }`}>
-                            {isDistSelected && <Check className="w-2.5 h-2.5 text-white" />}
-                            {!isDistSelected && hasCitySelected && <div className="w-1.5 h-1.5 bg-blue-500 rounded-sm" />}
-                          </div>
+                          {/* Selection button */}
+                          <button
+                            type="button"
+                            onClick={() => !isSelected && toggleDistrict(district)}
+                            disabled={isSelected}
+                            className="flex items-center gap-2 flex-1 text-left cursor-pointer disabled:cursor-not-allowed"
+                          >
+                            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all shrink-0 ${
+                              isDistSelected
+                                ? "bg-blue-500 border-blue-500"
+                                : hasCitySelected
+                                ? "border-blue-500/50 bg-blue-500/20"
+                                : "border-slate-600 hover:border-slate-500"
+                            }`}>
+                              {isDistSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                              {!isDistSelected && hasCitySelected && <div className="w-1.5 h-1.5 bg-blue-500 rounded-sm" />}
+                            </div>
+                            
+                            <MapPin className="w-3 h-3 text-blue-400 shrink-0" />
+                            <span className="flex-1 text-sm text-slate-300">{district.name}</span>
+                          </button>
                           
-                          <MapPin className="w-3 h-3 text-blue-400 shrink-0" />
-                          <span className="flex-1 text-sm text-slate-300 text-left">{district.name}</span>
                           <span className="text-xs text-slate-600 shrink-0">{district.cities.length}</span>
-                        </button>
+                        </div>
 
                         {/* Cities */}
                         {isDistExpanded && (
