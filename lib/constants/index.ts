@@ -34,12 +34,18 @@ export {
 // Mestá s metrikami a koordinátami
 export {
   SLOVAK_CITIES,
-  getCityOptions,
-  getCityByEnum,
-  getCityBySlug,
-  getCityName,
-  type CityData,
-  type CityOption,
+  TRACKED_CITIES,
+  normalizeCityName,
+  getCityCoordinates,
+  getCityInfo,
+  getMajorCities,
+  getCitiesByRegion,
+  isValidCity,
+  getClosestCity,
+  CITY_NAME_MAP,
+  CITY_COORDS_MAP,
+  CITY_ALIASES,
+  type CityInfo,
 } from "./cities";
 
 // Regióny
