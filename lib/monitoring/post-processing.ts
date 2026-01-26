@@ -3,11 +3,13 @@
  */
 
 import { prisma } from "@/lib/prisma";
+import { geocodeProperties } from "./geocoding";
 
 interface ProcessingResult {
   daysOnMarketUpdated: number;
   metricsCalculated: number;
   rentEstimated: number;
+  geocoded: number;
   errors: number;
 }
 
@@ -19,6 +21,7 @@ export async function runPostProcessing(): Promise<ProcessingResult> {
     daysOnMarketUpdated: 0,
     metricsCalculated: 0,
     rentEstimated: 0,
+    geocoded: 0,
     errors: 0,
   };
 
@@ -31,6 +34,10 @@ export async function runPostProcessing(): Promise<ProcessingResult> {
     
     // 3. Estimate rent for sale properties
     result.rentEstimated = await estimateRentForSaleProperties();
+
+    // 4. Geocode properties without coordinates (20 per run due to rate limits)
+    const geoResult = await geocodeProperties(20);
+    result.geocoded = geoResult.geocoded;
 
   } catch (error) {
     console.error("Post-processing error:", error);
