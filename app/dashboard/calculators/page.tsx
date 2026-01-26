@@ -4,23 +4,19 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { 
   Calculator, 
-  Receipt, 
   TrendingUp, 
   RefreshCw,
-  X,
-  ChevronRight,
-  BarChart3,
-  Shield,
-  Repeat,
-  Info,
+  Receipt,
   Banknote,
+  ArrowRight,
+  Sparkles,
+  X,
 } from "lucide-react";
 import { ScenarioSimulator } from "@/components/dashboard/ScenarioSimulator";
 import { TaxAssistant } from "@/components/dashboard/TaxAssistant";
 import { BRRRRCalculator } from "@/components/calculators/BRRRRCalculator";
 import PremiumGate from "@/components/ui/PremiumGate";
 
-// Dynamic import for MortgageCalculator to avoid SSR issues
 const MortgageCalculator = dynamic(
   () => import("@/components/tools/MortgageCalculator"),
   { ssr: false }
@@ -33,359 +29,201 @@ export default function CalculatorsPage() {
 
   const calculators = [
     {
-      id: "investment" as const,
-      name: "Výnosová kalkulačka",
-      subtitle: "Yield & Cash Flow",
-      description: "Analyzujte potenciálne výnosy z nehnuteľnosti. Vypočítajte hrubý aj čistý výnos, cash-on-cash return a sledujte 10-ročnú projekciu vašej investície.",
-      icon: TrendingUp,
-      accentColor: "emerald",
-      stats: [
-        { label: "Hrubý výnos", value: "5-7%" },
-        { label: "Cash-on-Cash", value: "8-12%" },
-        { label: "Projekcia", value: "10 rokov" },
-      ],
-      capabilities: [
-        "Investičné skóre 0-100",
-        "Break-even analýza",
-        "Mesačný cash flow",
-        "ROI kalkulácia",
-      ],
+      id: "mortgage" as const,
+      name: "Hypotekárna kalkulačka",
+      description: "Výpočet mesačnej splátky, porovnanie bánk a amortizačný plán",
+      icon: Banknote,
+      gradient: "from-blue-500 to-cyan-500",
+      bgGradient: "from-blue-500/10 to-cyan-500/10",
+      borderColor: "border-blue-500/20 hover:border-blue-500/40",
+      metrics: ["Mesačná splátka", "LTV analýza", "Porovnanie 8 bánk"],
+      popular: true,
     },
     {
-      id: "tax" as const,
-      name: "Daňový asistent",
-      subtitle: "Slovenská legislatíva 2026",
-      description: "Presný výpočet dane z predaja nehnuteľnosti podľa aktuálnej slovenskej legislatívy. 5-ročný test oslobodenia, zdravotné odvody a optimalizácia.",
-      icon: Receipt,
-      accentColor: "blue",
-      stats: [
-        { label: "5-ročný test", value: "Oslobodenie" },
-        { label: "Daň FO", value: "19-25%" },
-        { label: "ZP odvody", value: "15%" },
-      ],
-      capabilities: [
-        "Automatický výpočet oslobodenia",
-        "Dedenie v priamom rade",
-        "Obchodný majetok",
-        "Časová os vlastníctva",
-      ],
+      id: "investment" as const,
+      name: "Výnosová analýza",
+      description: "ROI, cash flow a 10-ročná projekcia investície",
+      icon: TrendingUp,
+      gradient: "from-emerald-500 to-teal-500",
+      bgGradient: "from-emerald-500/10 to-teal-500/10",
+      borderColor: "border-emerald-500/20 hover:border-emerald-500/40",
+      metrics: ["Hrubý/čistý výnos", "Cash-on-Cash", "Break-even"],
+      popular: false,
     },
     {
       id: "brrrr" as const,
       name: "BRRRR Stratégia",
-      subtitle: "Buy, Rehab, Rent, Refinance, Repeat",
-      description: "Pokročilá stratégia na recykláciu kapitálu. Vypočítajte forced equity, refinančnú sumu a zistite, či dokážete vybrať 100% vloženej hotovosti.",
+      description: "Buy, Rehab, Rent, Refinance, Repeat - recyklácia kapitálu",
       icon: RefreshCw,
-      accentColor: "violet",
-      stats: [
-        { label: "Cieľ", value: "100%+ späť" },
-        { label: "LTV", value: "65-80%" },
-        { label: "Cash Flow", value: "Pasívny" },
-      ],
-      capabilities: [
-        "Forced equity výpočet",
-        "Nekonečná návratnosť",
-        "Cash recovery %",
-        "Equity pozícia",
-      ],
+      gradient: "from-violet-500 to-purple-500",
+      bgGradient: "from-violet-500/10 to-purple-500/10",
+      borderColor: "border-violet-500/20 hover:border-violet-500/40",
+      metrics: ["Forced equity", "Cash recovery", "Infinite ROI"],
+      popular: false,
     },
     {
-      id: "mortgage" as const,
-      name: "Hypokalkulačka",
-      subtitle: "Výpočet hypotéky a splátok",
-      description: "Vypočítajte mesačné splátky hypotéky, celkové náklady na úver a porovnajte ponuky slovenských bánk. Vrátane amortizačného plánu.",
-      icon: Banknote,
-      accentColor: "amber",
-      stats: [
-        { label: "Úrok 2026", value: "3.5-5%" },
-        { label: "LTV max", value: "80-90%" },
-        { label: "Splatnosť", value: "5-30 rokov" },
-      ],
-      capabilities: [
-        "Porovnanie bánk",
-        "Mesačná splátka",
-        "Amortizačný plán",
-        "Potrebný príjem",
-      ],
+      id: "tax" as const,
+      name: "Daňový asistent",
+      description: "Daň z predaja, 5-ročný test a zdravotné odvody",
+      icon: Receipt,
+      gradient: "from-amber-500 to-orange-500",
+      bgGradient: "from-amber-500/10 to-orange-500/10",
+      borderColor: "border-amber-500/20 hover:border-amber-500/40",
+      metrics: ["Oslobodenie od dane", "Výpočet ZP", "SK legislatíva 2026"],
+      popular: false,
     },
   ];
 
-  const getAccentClasses = (color: string) => {
-    const classes = {
-      emerald: {
-        bg: "bg-emerald-500",
-        bgLight: "bg-emerald-500/10",
-        border: "border-emerald-500/20",
-        borderHover: "hover:border-emerald-500/40",
-        text: "text-emerald-400",
-        glow: "shadow-emerald-500/20",
-      },
-      blue: {
-        bg: "bg-blue-500",
-        bgLight: "bg-blue-500/10",
-        border: "border-blue-500/20",
-        borderHover: "hover:border-blue-500/40",
-        text: "text-blue-400",
-        glow: "shadow-blue-500/20",
-      },
-      violet: {
-        bg: "bg-violet-500",
-        bgLight: "bg-violet-500/10",
-        border: "border-violet-500/20",
-        borderHover: "hover:border-violet-500/40",
-        text: "text-violet-400",
-        glow: "shadow-violet-500/20",
-      },
-      amber: {
-        bg: "bg-amber-500",
-        bgLight: "bg-amber-500/10",
-        border: "border-amber-500/20",
-        borderHover: "hover:border-amber-500/40",
-        text: "text-amber-400",
-        glow: "shadow-amber-500/20",
-      },
-    };
-    return classes[color as keyof typeof classes] || classes.emerald;
-  };
+  if (openCalculator) {
+    const calc = calculators.find(c => c.id === openCalculator);
+    if (!calc) return null;
+    const Icon = calc.icon;
 
-  const activeCalc = calculators.find(c => c.id === openCalculator);
+    return (
+      <div className="min-h-screen">
+        {/* Calculator Header */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${calc.gradient} flex items-center justify-center shadow-lg`}>
+                <Icon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">{calc.name}</h1>
+                <p className="text-sm text-slate-400">{calc.description}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setOpenCalculator(null)}
+              className="p-3 rounded-xl bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-slate-400 hover:text-white transition-all"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Calculator Content */}
+        <div className="bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-slate-800/50 p-6 md:p-8">
+          {calc.id === "mortgage" ? (
+            <MortgageCalculator />
+          ) : (
+            <PremiumGate 
+              feature={calc.id === "tax" ? "advancedTax" : "scenarioSimulator"} 
+              minHeight="400px"
+            >
+              {calc.id === "investment" && <ScenarioSimulator />}
+              {calc.id === "tax" && <TaxAssistant />}
+              {calc.id === "brrrr" && <BRRRRCalculator />}
+            </PremiumGate>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
-      {/* Minimalist Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 flex items-center justify-center">
-            <Calculator className="w-5 h-5 text-slate-400" />
+      {/* Hero Header */}
+      <div className="mb-10">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 flex items-center justify-center">
+            <Calculator className="w-6 h-6 text-slate-300" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-white">Kalkulačky</h1>
-            <p className="text-sm text-slate-500">Profesionálne investičné nástroje</p>
+            <h1 className="text-2xl font-bold text-white">Investičné kalkulačky</h1>
+            <p className="text-slate-400">Profesionálne nástroje pre slovenských investorov</p>
           </div>
         </div>
       </div>
 
-      {/* Calculator Cards Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      {/* Calculator Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {calculators.map((calc) => {
           const Icon = calc.icon;
-          const accent = getAccentClasses(calc.accentColor);
-          const isOpen = openCalculator === calc.id;
           
           return (
-            <div
+            <button
               key={calc.id}
-              className={`group relative rounded-2xl transition-all duration-300 ${
-                isOpen 
-                  ? "lg:col-span-3" 
-                  : ""
-              }`}
+              onClick={() => setOpenCalculator(calc.id)}
+              className={`group relative text-left p-6 rounded-3xl border bg-gradient-to-br ${calc.bgGradient} ${calc.borderColor} transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-slate-900/50`}
             >
-              {/* Card */}
-              <div 
-                className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ${
-                  isOpen
-                    ? `${accent.border} bg-slate-900/80 backdrop-blur-xl`
-                    : `border-slate-800/50 bg-slate-900/40 backdrop-blur-sm ${accent.borderHover} hover:bg-slate-900/60 cursor-pointer`
-                }`}
-                onClick={() => !isOpen && setOpenCalculator(calc.id)}
-              >
-                {/* Subtle gradient overlay */}
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
-                  isOpen ? "opacity-100" : ""
-                }`}>
-                  <div className={`absolute -top-32 -right-32 w-64 h-64 rounded-full ${accent.bg} opacity-5 blur-3xl`} />
+              {/* Popular Badge */}
+              {calc.popular && (
+                <div className="absolute -top-2 -right-2 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-medium flex items-center gap-1 shadow-lg">
+                  <Sparkles className="w-3 h-3" />
+                  Populárne
                 </div>
+              )}
 
-                {/* Card Header - Always Visible */}
-                <div className={`relative p-6 ${isOpen ? "border-b border-slate-800/50" : ""}`}>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4">
-                      {/* Icon */}
-                      <div className={`w-12 h-12 rounded-xl ${accent.bgLight} flex items-center justify-center transition-transform duration-300 ${
-                        !isOpen ? "group-hover:scale-110" : ""
-                      }`}>
-                        <Icon className={`w-6 h-6 ${accent.text}`} />
-                      </div>
-                      
-                      {/* Title & Description */}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h2 className="text-lg font-semibold text-white">{calc.name}</h2>
-                        </div>
-                        <p className="text-xs text-slate-500 mb-2">{calc.subtitle}</p>
-                        {!isOpen && (
-                          <p className="text-sm text-slate-400 line-clamp-2 pr-4">
-                            {calc.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Action Button */}
-                    {isOpen ? (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenCalculator(null);
-                        }}
-                        className="p-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 transition-colors"
-                      >
-                        <X className="w-4 h-4 text-slate-400" />
-                      </button>
-                    ) : (
-                      <div className={`p-2 rounded-lg ${accent.bgLight} opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0`}>
-                        <ChevronRight className={`w-4 h-4 ${accent.text}`} />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Stats Row - Only when collapsed */}
-                  {!isOpen && (
-                    <div className="mt-5 pt-4 border-t border-slate-800/50">
-                      <div className="flex items-center gap-6">
-                        {calc.stats.map((stat, idx) => (
-                          <div key={idx} className="flex-1">
-                            <div className={`text-sm font-medium ${accent.text}`}>{stat.value}</div>
-                            <div className="text-xs text-slate-500">{stat.label}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Capabilities - Only when collapsed */}
-                  {!isOpen && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {calc.capabilities.slice(0, 3).map((cap, idx) => (
-                        <span 
-                          key={idx}
-                          className="text-xs px-2.5 py-1 rounded-full bg-slate-800/50 text-slate-400 border border-slate-700/30"
-                        >
-                          {cap}
-                        </span>
-                      ))}
-                      {calc.capabilities.length > 3 && (
-                        <span className="text-xs px-2.5 py-1 rounded-full bg-slate-800/50 text-slate-500">
-                          +{calc.capabilities.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  )}
+              {/* Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${calc.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                  <Icon className="w-7 h-7 text-white" />
                 </div>
-
-                {/* Expanded Calculator Content */}
-                {isOpen && (
-                  <div className="relative p-6">
-                    {calc.id === "mortgage" ? (
-                      <MortgageCalculator />
-                    ) : (
-                      <PremiumGate 
-                        feature={calc.id === "tax" ? "advancedTax" : "scenarioSimulator"} 
-                        minHeight="400px"
-                      >
-                        {calc.id === "investment" && <ScenarioSimulator />}
-                        {calc.id === "tax" && <TaxAssistant />}
-                        {calc.id === "brrrr" && <BRRRRCalculator />}
-                      </PremiumGate>
-                    )}
-                  </div>
-                )}
+                <div className="p-2 rounded-xl bg-white/5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                  <ArrowRight className="w-5 h-5 text-white" />
+                </div>
               </div>
-            </div>
+
+              {/* Title & Description */}
+              <h2 className="text-xl font-semibold text-white mb-2 group-hover:text-white/90">
+                {calc.name}
+              </h2>
+              <p className="text-sm text-slate-400 mb-5 line-clamp-2">
+                {calc.description}
+              </p>
+
+              {/* Metrics */}
+              <div className="flex flex-wrap gap-2">
+                {calc.metrics.map((metric, idx) => (
+                  <span 
+                    key={idx}
+                    className="px-3 py-1.5 rounded-full bg-white/5 text-xs text-slate-300 border border-white/10"
+                  >
+                    {metric}
+                  </span>
+                ))}
+              </div>
+
+              {/* Bottom gradient line */}
+              <div className={`absolute bottom-0 left-6 right-6 h-1 rounded-full bg-gradient-to-r ${calc.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+            </button>
           );
         })}
       </div>
 
-      {/* Quick Reference - Only when no calculator is open */}
-      {!openCalculator && (
-        <div className="mt-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Info className="w-4 h-4 text-slate-500" />
-            <span className="text-sm text-slate-500">Rýchla referencia</span>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <QuickRefCard
-              icon={BarChart3}
-              title="Výnosový benchmark"
-              items={[
-                { label: "Hrubý výnos", value: "> 5%", good: true },
-                { label: "Čistý výnos", value: "> 3%", good: true },
-                { label: "Cash-on-Cash", value: "> 8%", good: true },
-              ]}
-            />
-            <QuickRefCard
-              icon={Shield}
-              title="Daňové oslobodenie"
-              items={[
-                { label: "Držba", value: "5+ rokov", good: true },
-                { label: "Úspora", value: "až 34%", good: true },
-                { label: "Dedenie", value: "Priamy rad", good: null },
-              ]}
-            />
-            <QuickRefCard
-              icon={Repeat}
-              title="BRRRR ciele"
-              items={[
-                { label: "Cash späť", value: "100%+", good: true },
-                { label: "Refinanc. LTV", value: "75%", good: null },
-                { label: "Cash flow", value: "Pozitívny", good: true },
-              ]}
-            />
-            <QuickRefCard
-              icon={Banknote}
-              title="Hypotéka 2026"
-              items={[
-                { label: "Úrok", value: "3.5-5%", good: null },
-                { label: "Max LTV", value: "80-90%", good: null },
-                { label: "DSTI limit", value: "40-50%", good: null },
-              ]}
-            />
-          </div>
-        </div>
-      )}
+      {/* Quick Stats */}
+      <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <QuickStat label="Priemerný výnos BA" value="4.2%" trend="+0.3%" />
+        <QuickStat label="Hypotéka 5r fix" value="4.09%" trend="-0.1%" />
+        <QuickStat label="Daň z predaja" value="19%" />
+        <QuickStat label="5-ročný test" value="Oslobodenie" />
+      </div>
 
-      {/* Disclaimer */}
-      <div className="mt-8 py-4 border-t border-slate-800/30">
-        <p className="text-xs text-slate-600 text-center">
-          Kalkulačky poskytujú orientačné výpočty. Pre presné daňové poradenstvo konzultujte odborníka.
-          Výpočty vychádzajú zo zákonov platných pre rok 2026.
+      {/* Footer */}
+      <div className="mt-8 pt-6 border-t border-slate-800/50 text-center">
+        <p className="text-xs text-slate-500">
+          Kalkulačky poskytujú orientačné výpočty podľa slovenskej legislatívy 2026.
+          Pre presné výpočty kontaktujte finančného poradcu.
         </p>
       </div>
     </div>
   );
 }
 
-// Quick Reference Card Component
-function QuickRefCard({ 
-  icon: Icon, 
-  title, 
-  items 
-}: { 
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  items: { label: string; value: string; good: boolean | null }[];
-}) {
+function QuickStat({ label, value, trend }: { label: string; value: string; trend?: string }) {
+  const isPositive = trend?.startsWith("+");
+  
   return (
-    <div className="p-4 rounded-xl bg-slate-900/30 border border-slate-800/30">
-      <div className="flex items-center gap-2 mb-3">
-        <Icon className="w-4 h-4 text-slate-500" />
-        <span className="text-sm font-medium text-slate-400">{title}</span>
-      </div>
-      <div className="space-y-2">
-        {items.map((item, idx) => (
-          <div key={idx} className="flex items-center justify-between">
-            <span className="text-xs text-slate-500">{item.label}</span>
-            <span className={`text-xs font-medium ${
-              item.good === true ? "text-emerald-400" : 
-              item.good === false ? "text-red-400" : 
-              "text-slate-400"
-            }`}>
-              {item.value}
-            </span>
-          </div>
-        ))}
+    <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800/50">
+      <div className="text-xs text-slate-500 mb-1">{label}</div>
+      <div className="flex items-baseline gap-2">
+        <span className="text-lg font-semibold text-white">{value}</span>
+        {trend && (
+          <span className={`text-xs ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
+            {trend}
+          </span>
+        )}
       </div>
     </div>
   );
