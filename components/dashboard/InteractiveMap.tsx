@@ -40,6 +40,11 @@ const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   "Martin": { lat: 49.0636, lng: 18.9214 },
   "Piešťany": { lat: 48.7947, lng: 17.8382 },
   "Zvolen": { lat: 48.5744, lng: 19.1236 },
+  "Senec": { lat: 48.2197, lng: 17.4000 },
+  "Pezinok": { lat: 48.2897, lng: 17.2667 },
+  "Malacky": { lat: 48.4361, lng: 17.0239 },
+  "Dunajská Streda": { lat: 47.9936, lng: 17.6183 },
+  "Liptovský Mikuláš": { lat: 49.0839, lng: 19.6121 },
 };
 
 // Typ pre mesto s dátami
@@ -56,152 +61,30 @@ interface CityData {
   investorScore: number;
 }
 
-// Placeholder - bude nahradené reálnymi dátami
+// Helper to create city data
+const createCity = (name: string, lat: number, lng: number): CityData => ({
+  name, lat, lng, properties: 0, avgPrice: 0, hotDeals: 0, priceChange: 0, avgRent: 0, yieldPercent: 0, investorScore: 0,
+});
+
+// All Slovak cities we track
 const CITIES: CityData[] = [
-  { 
-    name: "Bratislava", 
-    lat: 48.1486, 
-    lng: 17.1077, 
-    properties: 0,
-    avgPrice: 0,
-    hotDeals: 0,
-    priceChange: 0,
-    avgRent: 0,
-    yieldPercent: 0,
-    investorScore: 0,
-  },
-  { 
-    name: "Košice", 
-    lat: 48.7164, 
-    lng: 21.2611, 
-    properties: 0,
-    avgPrice: 0,
-    hotDeals: 0,
-    priceChange: 0,
-    avgRent: 0,
-    yieldPercent: 0,
-    investorScore: 0,
-  },
-  { 
-    name: "Prešov", 
-    lat: 48.9986, 
-    lng: 21.2391, 
-    properties: 0,
-    avgPrice: 0,
-    hotDeals: 0,
-    priceChange: 0,
-    avgRent: 0,
-    yieldPercent: 0,
-    investorScore: 0,
-  },
-  { 
-    name: "Žilina", 
-    lat: 49.2231, 
-    lng: 18.7394, 
-    properties: 0,
-    avgPrice: 0,
-    hotDeals: 0,
-    priceChange: 0,
-    avgRent: 0,
-    yieldPercent: 0,
-    investorScore: 0,
-  },
-  { 
-    name: "Banská Bystrica", 
-    lat: 48.7364, 
-    lng: 19.1458, 
-    properties: 0,
-    avgPrice: 0,
-    hotDeals: 0,
-    priceChange: 0,
-    avgRent: 0,
-    yieldPercent: 0,
-    investorScore: 0,
-  },
-  { 
-    name: "Trnava", 
-    lat: 48.3774, 
-    lng: 17.5883, 
-    properties: 0,
-    avgPrice: 0,
-    hotDeals: 0,
-    priceChange: 0,
-    avgRent: 0,
-    yieldPercent: 0,
-    investorScore: 0,
-  },
-  { 
-    name: "Trenčín", 
-    lat: 48.8945, 
-    lng: 18.0444, 
-    properties: 0,
-    avgPrice: 0,
-    hotDeals: 0,
-    priceChange: 0,
-    avgRent: 0,
-    yieldPercent: 0,
-    investorScore: 0,
-  },
-  { 
-    name: "Nitra", 
-    lat: 48.3061, 
-    lng: 18.0833, 
-    properties: 0,
-    avgPrice: 0,
-    hotDeals: 0,
-    priceChange: 0,
-    avgRent: 0,
-    yieldPercent: 0,
-    investorScore: 0,
-  },
-  { 
-    name: "Poprad", 
-    lat: 49.0512, 
-    lng: 20.2943, 
-    properties: 0,
-    avgPrice: 0,
-    hotDeals: 0,
-    priceChange: 0,
-    avgRent: 0,
-    yieldPercent: 0,
-    investorScore: 0,
-  },
-  { 
-    name: "Martin", 
-    lat: 49.0636, 
-    lng: 18.9214, 
-    properties: 0,
-    avgPrice: 0,
-    hotDeals: 0,
-    priceChange: 0,
-    avgRent: 0,
-    yieldPercent: 0,
-    investorScore: 0,
-  },
-  { 
-    name: "Piešťany", 
-    lat: 48.7947, 
-    lng: 17.8382, 
-    properties: 0,
-    avgPrice: 0,
-    hotDeals: 0,
-    priceChange: 0,
-    avgRent: 0,
-    yieldPercent: 0,
-    investorScore: 0,
-  },
-  { 
-    name: "Zvolen", 
-    lat: 48.5744, 
-    lng: 19.1236, 
-    properties: 0,
-    avgPrice: 0,
-    hotDeals: 0,
-    priceChange: 0,
-    avgRent: 0,
-    yieldPercent: 0,
-    investorScore: 0,
-  },
+  createCity("Bratislava", 48.1486, 17.1077),
+  createCity("Košice", 48.7164, 21.2611),
+  createCity("Prešov", 48.9986, 21.2391),
+  createCity("Žilina", 49.2231, 18.7394),
+  createCity("Banská Bystrica", 48.7364, 19.1458),
+  createCity("Trnava", 48.3774, 17.5883),
+  createCity("Trenčín", 48.8945, 18.0444),
+  createCity("Nitra", 48.3061, 18.0833),
+  createCity("Poprad", 49.0512, 20.2943),
+  createCity("Martin", 49.0636, 18.9214),
+  createCity("Piešťany", 48.7947, 17.8382),
+  createCity("Zvolen", 48.5744, 19.1236),
+  createCity("Senec", 48.2197, 17.4000),
+  createCity("Pezinok", 48.2897, 17.2667),
+  createCity("Malacky", 48.4361, 17.0239),
+  createCity("Dunajská Streda", 47.9936, 17.6183),
+  createCity("Liptovský Mikuláš", 49.0839, 19.6121),
 ];
 
 // Calculate bubble size based on property count
@@ -283,25 +166,65 @@ export default function InteractiveMap() {
     checkDb();
   }, []);
 
+  // Normalize city name for matching
+  const normalizeCityName = (city: string): string => {
+    if (!city) return "";
+    const normalized = city
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+      .trim();
+    
+    // Map variations to standard names
+    const cityMap: Record<string, string> = {
+      "BRATISLAVA": "Bratislava",
+      "KOSICE": "Košice",
+      "PRESOV": "Prešov",
+      "ZILINA": "Žilina",
+      "BANSKA BYSTRICA": "Banská Bystrica",
+      "TRNAVA": "Trnava",
+      "TRENCIN": "Trenčín",
+      "NITRA": "Nitra",
+      "POPRAD": "Poprad",
+      "MARTIN": "Martin",
+      "PIESTANY": "Piešťany",
+      "ZVOLEN": "Zvolen",
+      "SENEC": "Senec",
+      "PEZINOK": "Pezinok",
+      "MALACKY": "Malacky",
+      "DUNAJSKA STREDA": "Dunajská Streda",
+      "LIPTOVSKY MIKULAS": "Liptovský Mikuláš",
+      "BYTCA": "Žilina",
+      "SERED": "Trnava",
+      "SALA": "Nitra",
+      "BREZNO": "Banská Bystrica",
+      "TREBISOV": "Košice",
+    };
+    
+    return cityMap[normalized] || city;
+  };
+
   // Calculate city stats from loaded properties
   useEffect(() => {
     if (properties.length === 0) return;
     
-    // Group properties by city
+    // Group properties by normalized city name
     const cityData: Record<string, { count: number; totalPrice: number; hotDeals: number }> = {};
     
     for (const prop of properties) {
-      const cityName = prop.city;
+      const cityName = normalizeCityName(prop.city);
       if (!cityData[cityName]) {
         cityData[cityName] = { count: 0, totalPrice: 0, hotDeals: 0 };
       }
       cityData[cityName].count++;
       const pricePerM2 = prop.price_per_m2 || (prop.area_m2 > 0 ? Math.round(prop.price / prop.area_m2) : 0);
-        cityData[cityName].totalPrice += pricePerM2;
+      cityData[cityName].totalPrice += pricePerM2;
       if (prop.is_distressed) {
         cityData[cityName].hotDeals++;
       }
     }
+    
+    console.log("City data:", cityData);
     
     // Update city stats
     setCityStats(prev => prev.map(city => {
