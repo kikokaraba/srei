@@ -848,9 +848,11 @@ export function PropertyList() {
                       <p className="text-2xl font-bold text-slate-100">
                         €{property.price.toLocaleString()}
                       </p>
-                      <p className="text-sm text-slate-400">
-                        €{property.price_per_m2.toLocaleString()}/m²
-                      </p>
+                      {property.source !== "Bazos" && (
+                        <p className="text-sm text-slate-400">
+                          €{property.price_per_m2.toLocaleString()}/m²
+                        </p>
+                      )}
                       {/* Price Story - inline */}
                       {(() => {
                         const metrics = batchMetrics[property.id];
@@ -1095,9 +1097,11 @@ export function PropertyList() {
                     <p className="text-xl font-bold text-slate-100">
                       €{property.price.toLocaleString()}
                     </p>
-                    <p className="text-sm text-slate-400">
-                      €{property.price_per_m2.toLocaleString()}/m²
-                    </p>
+                    {property.source !== "Bazos" && (
+                      <p className="text-sm text-slate-400">
+                        €{property.price_per_m2.toLocaleString()}/m²
+                      </p>
+                    )}
                   </div>
 
                   {/* Yield */}
