@@ -16,6 +16,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:init": "bash scripts/init-db.sh",
     "db:auto-seed": "tsx scripts/ensure-admin.ts",
+    "cron:start": "tsx scripts/start-cron.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -43,7 +44,8 @@
     "@dnd-kit/utilities": "^3.2.2",
     "mapbox-gl": "^3.9.0",
     "supercluster": "^8.0.1",
-    "@anthropic-ai/sdk": "^0.32.0"
+    "@anthropic-ai/sdk": "^0.32.0",
+    "tsx": "^4.19.2"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -61,7 +63,6 @@
     "postcss": "^8.4.49",
     "prisma": "^7.3.0",
     "tailwindcss": "^4.1.18",
-    "tsx": "^4.19.2",
     "typescript": "^5.9.3"
   },
   "overrides": {
