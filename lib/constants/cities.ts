@@ -56,6 +56,10 @@ export const SLOVAK_CITIES: CityInfo[] = [
   { name: "Trebišov", nameNormalized: "TREBISOV", lat: 48.6289, lng: 21.7181, region: "Košický", population: 24000 },
   { name: "Rožňava", nameNormalized: "ROZNAVA", lat: 48.6600, lng: 20.5319, region: "Košický", population: 19000 },
   { name: "Snina", nameNormalized: "SNINA", lat: 48.9878, lng: 22.1492, region: "Prešovský", population: 21000 },
+  { name: "Bytča", nameNormalized: "BYTCA", lat: 49.2236, lng: 18.5583, region: "Žilinský", population: 11000 },
+  { name: "Sereď", nameNormalized: "SERED", lat: 48.2847, lng: 17.7328, region: "Trnavský", population: 16000 },
+  { name: "Detva", nameNormalized: "DETVA", lat: 48.5578, lng: 19.4211, region: "Banskobystrický", population: 14000 },
+  { name: "Kráľovičove Kračany", nameNormalized: "KRALOVICOVE KRACANY", lat: 47.9936, lng: 17.5500, region: "Trnavský", population: 1500 },
   { name: "Senica", nameNormalized: "SENICA", lat: 48.6786, lng: 17.3669, region: "Trnavský", population: 20000 },
   { name: "Skalica", nameNormalized: "SKALICA", lat: 48.8453, lng: 17.2269, region: "Trnavský", population: 15000 },
   { name: "Hlohovec", nameNormalized: "HLOHOVEC", lat: 48.4314, lng: 17.8028, region: "Trnavský", population: 22000 },
@@ -207,11 +211,16 @@ const CITY_ALIASES: Record<string, string> = {
   "LEVICE": "Levice",
   "ZVOLEN": "Zvolen",
   "BREZNO": "Brezno",
+  "BYTCA": "Bytča",
+  "SERED": "Sereď",
+  "DETVA": "Detva",
+  "KRALOVICOVE KRACANY": "Kráľovičove Kračany",
   
-  // Garbage/invalid values - map to nearest major city or null
+  // Garbage/invalid values - map to empty (will be ignored)
   "SLOVENSKO": "",
   "PREMIUM": "",
   "NOVA": "",
+  "3": "",
   "3": "",
   "": "",
 };
