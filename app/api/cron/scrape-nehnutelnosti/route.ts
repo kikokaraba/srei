@@ -19,27 +19,29 @@ const CONFIG = {
 async function saveProperties(properties: ScrapedProperty[]): Promise<{ 
   new: number; 
   updated: number;
+  errors: number;
+  duplicates: number;
 }> {
   let newCount = 0;
   let updatedCount = 0;
+  let errorCount = 0;
+  let duplicateCount = 0;
+
+  console.log(`\n💾 Saving ${properties.length} properties...`);
 
   for (const prop of properties) {
     try {
-      // Skontroluj či už existuje
-      const existing = await prisma.property.findFirst({
-        where: {
-          OR: [
-            { external_id: prop.externalId },
-            { source_url: prop.sourceUrl },
-          ],
-        },
+      // Skontroluj či už existuje podľa external_id
+      const existingById = await prisma.property.findFirst({
+        where: { external_id: prop.externalId },
       });
 
-      if (existing) {
+      if (existingById) {
+        duplicateCount++;
         // Aktualizuj ak sa zmenila cena
-        if (existing.price !== prop.price) {
+        if (existingById.price !== prop.price) {
           await prisma.property.update({
-            where: { id: existing.id },
+            where: { id: existingById.id },
             data: {
               price: prop.price,
               price_per_m2: prop.pricePerM2,
@@ -47,10 +49,9 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
             },
           });
           
-          // Zaznamenaj históriu cien
           await prisma.priceHistory.create({
             data: {
-              propertyId: existing.id,
+              propertyId: existingById.id,
               price: prop.price,
               price_per_m2: prop.pricePerM2,
             },
@@ -58,45 +59,93 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
           
           updatedCount++;
         }
-      } else {
-        // Nová nehnuteľnosť
-        const slug = prop.title
-          .toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .replace(/[^a-z0-9]+/g, "-")
-          .substring(0, 100);
-
-        await prisma.property.create({
-          data: {
-            external_id: prop.externalId,
-            source: prop.source,
-            title: prop.title,
-            slug: `${slug}-${Date.now()}`,
-            description: prop.description || "",
-            price: prop.price,
-            price_per_m2: prop.pricePerM2,
-            area_m2: prop.areaM2,
-            city: prop.city,
-            district: prop.district,
-            address: `${prop.city}${prop.district ? `, ${prop.district}` : ""}`,
-            rooms: prop.rooms,
-            listing_type: prop.listingType,
-            condition: "POVODNY",
-            energy_certificate: "NONE",
-            source_url: prop.sourceUrl,
-            is_distressed: false,
-          },
-        });
-        
-        newCount++;
+        continue;
       }
+
+      // Skontroluj podľa source_url
+      const existingByUrl = await prisma.property.findFirst({
+        where: { source_url: prop.sourceUrl },
+      });
+
+      if (existingByUrl) {
+        duplicateCount++;
+        if (existingByUrl.price !== prop.price) {
+          await prisma.property.update({
+            where: { id: existingByUrl.id },
+            data: {
+              price: prop.price,
+              price_per_m2: prop.pricePerM2,
+              updatedAt: new Date(),
+            },
+          });
+          updatedCount++;
+        }
+        continue;
+      }
+
+      // Nová nehnuteľnosť - vytvor unikátny slug
+      const baseSlug = prop.title
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .substring(0, 80);
+      
+      // Pridaj random suffix pre unikátnosť
+      const uniqueSlug = `${baseSlug}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+
+      await prisma.property.create({
+        data: {
+          external_id: prop.externalId,
+          source: prop.source,
+          title: prop.title,
+          slug: uniqueSlug,
+          description: prop.description || "",
+          price: prop.price,
+          price_per_m2: prop.pricePerM2,
+          area_m2: prop.areaM2,
+          city: prop.city,
+          district: prop.district || prop.city,
+          address: `${prop.city}${prop.district ? `, ${prop.district}` : ""}`,
+          rooms: prop.rooms,
+          listing_type: prop.listingType,
+          condition: "POVODNY",
+          energy_certificate: "NONE",
+          source_url: prop.sourceUrl,
+          is_distressed: false,
+        },
+      });
+      
+      newCount++;
+      
+      if (newCount % 10 === 0) {
+        console.log(`  ✓ Created ${newCount} new properties...`);
+      }
+      
     } catch (error) {
-      console.warn(`Failed to save property ${prop.externalId}:`, error);
+      errorCount++;
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      console.error(`❌ Failed to save ${prop.externalId}: ${errorMessage}`);
+      
+      // Log first few errors in detail
+      if (errorCount <= 3) {
+        console.error(`  Property data:`, {
+          externalId: prop.externalId,
+          title: prop.title.substring(0, 50),
+          city: prop.city,
+          price: prop.price,
+        });
+      }
     }
   }
 
-  return { new: newCount, updated: updatedCount };
+  console.log(`\n📊 Save Summary:`);
+  console.log(`  - Duplicates (already in DB): ${duplicateCount}`);
+  console.log(`  - New properties created: ${newCount}`);
+  console.log(`  - Price updates: ${updatedCount}`);
+  console.log(`  - Errors: ${errorCount}`);
+
+  return { new: newCount, updated: updatedCount, errors: errorCount, duplicates: duplicateCount };
 }
 
 export async function GET() {
@@ -147,7 +196,9 @@ export async function GET() {
       found: result.properties.length,
       new: saveResult.new,
       updated: saveResult.updated,
-      errors: result.errors.length,
+      duplicates: saveResult.duplicates,
+      saveErrors: saveResult.errors,
+      scrapeErrors: result.errors.length,
       totalInDatabase: totalInDb,
       duration: duration,
     });

@@ -20,7 +20,10 @@ interface PortalResult {
   found: number;
   new: number;
   updated: number;
-  errors: number;
+  duplicates?: number;
+  saveErrors?: number;
+  scrapeErrors?: number;
+  errors?: number;
   totalInDatabase: number;
   duration: number;
   error?: string;
@@ -250,27 +253,40 @@ function ResultCard({ result, color }: { result: PortalResult; color: "yellow" |
         </span>
       </div>
 
-      <div className="grid grid-cols-4 gap-3 text-center">
+      <div className="grid grid-cols-5 gap-2 text-center">
         <div>
-          <div className="text-xl font-bold text-white">{result.found}</div>
+          <div className="text-lg font-bold text-white">{result.found}</div>
           <div className="text-xs text-slate-400">Nájdených</div>
         </div>
         <div>
-          <div className="text-xl font-bold text-emerald-400">+{result.new}</div>
+          <div className="text-lg font-bold text-emerald-400">+{result.new}</div>
           <div className="text-xs text-slate-400">Nových</div>
         </div>
         <div>
-          <div className="text-xl font-bold text-blue-400">{result.updated}</div>
+          <div className="text-lg font-bold text-slate-500">{result.duplicates || 0}</div>
+          <div className="text-xs text-slate-400">Duplicít</div>
+        </div>
+        <div>
+          <div className="text-lg font-bold text-blue-400">{result.updated}</div>
           <div className="text-xs text-slate-400">Aktualizovaných</div>
         </div>
         <div>
-          <div className="text-xl font-bold text-slate-300 flex items-center justify-center gap-1">
+          <div className="text-lg font-bold text-slate-300 flex items-center justify-center gap-1">
             <Database className="w-4 h-4" />
             {result.totalInDatabase}
           </div>
-          <div className="text-xs text-slate-400">V databáze</div>
+          <div className="text-xs text-slate-400">V DB</div>
         </div>
       </div>
+      
+      {/* Errors */}
+      {((result.saveErrors || 0) > 0 || (result.scrapeErrors || 0) > 0) && (
+        <div className="mt-3 p-2 bg-rose-500/10 border border-rose-500/20 rounded text-xs text-rose-400">
+          {result.saveErrors ? `${result.saveErrors} chýb pri ukladaní` : ""}
+          {result.saveErrors && result.scrapeErrors ? " | " : ""}
+          {result.scrapeErrors ? `${result.scrapeErrors} chýb pri scrapingu` : ""}
+        </div>
+      )}
     </div>
   );
 }
