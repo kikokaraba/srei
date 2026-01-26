@@ -11,7 +11,7 @@ export default function HistoryPage() {
         title="Vývoj trhu"
         description="Historické dáta a trendy cien nehnuteľností"
         icon={TrendingUp}
-        color="purple"
+        color="violet"
         features={[
           { icon: BarChart3, label: "Cenové trendy" },
           { icon: Clock, label: "História predajov" },
