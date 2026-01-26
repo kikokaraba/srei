@@ -848,7 +848,7 @@ export function PropertyList() {
                       <p className="text-2xl font-bold text-slate-100">
                         €{property.price.toLocaleString()}
                       </p>
-                      {property.source !== "Bazos" && (
+                      {property.source !== "BAZOS" && (
                         <p className="text-sm text-slate-400">
                           €{property.price_per_m2.toLocaleString()}/m²
                         </p>
@@ -1097,7 +1097,7 @@ export function PropertyList() {
                     <p className="text-xl font-bold text-slate-100">
                       €{property.price.toLocaleString()}
                     </p>
-                    {property.source !== "Bazos" && (
+                    {property.source !== "BAZOS" && (
                       <p className="text-sm text-slate-400">
                         €{property.price_per_m2.toLocaleString()}/m²
                       </p>
