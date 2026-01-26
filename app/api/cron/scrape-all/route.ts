@@ -21,9 +21,8 @@ import { notifyHotDeal, notifyUnnotifiedMarketGaps } from "@/lib/telegram/notifi
 
 // Konfigurácia scrapingu - Vercel má limit 300s
 const SCRAPE_CONFIG = {
-  // Len 3 stránky na kategóriu = ~60 per kategória
-  // 3 kategórie × 60 = ~180 nehnuteľností za jedno spustenie
-  maxPagesPerCategory: 3,
+  // 5 stránok × ~20 inzerátov = ~100 bytov
+  maxPagesPerCategory: 5,
   
   // Portály - zatiaľ len Nehnutelnosti.sk
   portals: ["NEHNUTELNOSTI"] as const,

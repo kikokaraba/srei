@@ -348,11 +348,9 @@ export async function scrapeNehnutelnosti(options: {
   const properties: ScrapedProperty[] = [];
   let pagesScraped = 0;
   
-  // Kategórie na scrapovanie - CELÉ SLOVENSKO (iba PREDAJ)
+  // Kategórie na scrapovanie - zatiaľ len BYTY
   const categories = [
     { path: "/predaj/byty/", name: "Byty" },
-    { path: "/predaj/domy/", name: "Domy" },
-    { path: "/predaj/pozemky/", name: "Pozemky" },
   ];
   
   console.log(`\n🚀 Starting Nehnutelnosti.sk Scraper`);
