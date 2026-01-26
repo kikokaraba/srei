@@ -134,7 +134,6 @@ export function Stats() {
                   <AnimatedCounter
                     value={stat.value}
                     suffix={stat.suffix}
-                    prefix={stat.prefix}
                   />
                 </div>
                 <div className="relative text-sm sm:text-base text-white font-medium mb-2">{stat.label}</div>
