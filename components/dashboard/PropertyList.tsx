@@ -130,7 +130,7 @@ interface Property {
   is_distressed: boolean;
   days_on_market: number;
   listing_type: "PREDAJ" | "PRENAJOM";
-  source: "BAZOS" | "NEHNUTELNOSTI" | "REALITY" | "TOPREALITY";
+  source: "BAZOS" | "NEHNUTELNOSTI";
   investmentMetrics: {
     gross_yield: number;
     net_yield: number;
@@ -178,9 +178,7 @@ const LISTING_TYPES = [
 const SOURCES = [
   { value: "", label: "Všetky zdroje" },
   { value: "NEHNUTELNOSTI", label: "Nehnutelnosti.sk" },
-  { value: "REALITY", label: "Reality.sk" },
   { value: "BAZOS", label: "Bazoš" },
-  { value: "TOPREALITY", label: "TopReality" },
 ];
 
 interface Filters {
@@ -266,12 +264,8 @@ function getSourceStyle(source: string): { label: string; bg: string; text: stri
   switch (source) {
     case "NEHNUTELNOSTI":
       return { label: "Nehnutelnosti", bg: "bg-blue-500/20", text: "text-blue-400" };
-    case "REALITY":
-      return { label: "Reality.sk", bg: "bg-purple-500/20", text: "text-purple-400" };
     case "BAZOS":
       return { label: "Bazoš", bg: "bg-orange-500/20", text: "text-orange-400" };
-    case "TOPREALITY":
-      return { label: "TopReality", bg: "bg-green-500/20", text: "text-green-400" };
     default:
       return { label: source, bg: "bg-slate-500/20", text: "text-slate-400" };
   }
