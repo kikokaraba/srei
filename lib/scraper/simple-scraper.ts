@@ -1,6 +1,8 @@
 /**
  * Simple Scraper - Priamy fetch bez Browserless
  * Používa Cheerio na parsovanie HTML
+ * 
+ * Aktualizované pre 2026: Bazoš + Nehnutelnosti.sk
  */
 
 import * as cheerio from "cheerio";
@@ -28,11 +30,12 @@ export interface ScrapeResult {
   duration: number;
 }
 
-// User agents pre rotáciu
+// User agents pre rotáciu - aktuálne 2026
 const USER_AGENTS = [
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_3_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3.1 Safari/605.1.15",
 ];
 
 function getRandomUA(): string {
@@ -41,94 +44,196 @@ function getRandomUA(): string {
 
 async function fetchPage(url: string): Promise<string | null> {
   try {
+    console.log(`  🌐 Fetching: ${url}`);
+    
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    
     const response = await fetch(url, {
       headers: {
         "User-Agent": getRandomUA(),
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "sk-SK,sk;q=0.9,cs;q=0.8,en;q=0.7",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "sk-SK,sk;q=0.9,cs;q=0.8,en-US;q=0.7,en;q=0.6",
         "Accept-Encoding": "gzip, deflate, br",
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache",
+        "DNT": "1",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Cache-Control": "max-age=0",
       },
+      signal: controller.signal,
     });
     
+    clearTimeout(timeout);
+    
     if (!response.ok) {
-      console.error(`HTTP ${response.status} for ${url}`);
+      console.error(`  ❌ HTTP ${response.status} for ${url}`);
       return null;
     }
     
-    return await response.text();
+    const html = await response.text();
+    console.log(`  ✓ Received ${html.length} bytes`);
+    return html;
   } catch (error) {
-    console.error(`Fetch error for ${url}:`, error);
+    console.error(`  ❌ Fetch error for ${url}:`, error instanceof Error ? error.message : "Unknown");
     return null;
   }
 }
 
 function parsePrice(text: string): number {
-  const cleaned = text.replace(/\s+/g, "").replace(/[^\d]/g, "");
+  // Odstrániť všetky nečíselné znaky okrem číslic a medzier
+  const cleaned = text.replace(/[^\d\s]/g, "").replace(/\s+/g, "");
   const price = parseInt(cleaned, 10);
-  return (price > 0 && price < 100000000) ? price : 0;
+  return (price > 1000 && price < 100000000) ? price : 0;
 }
 
 function parseArea(text: string): number {
+  // Hľadaj pattern: číslo + m² alebo m2
   const match = text.match(/(\d+(?:[,\.]\d+)?)\s*m[²2]/i);
-  return match ? parseFloat(match[1].replace(",", ".")) : 0;
+  if (match) {
+    return parseFloat(match[1].replace(",", "."));
+  }
+  // Skús hľadať len číslo v kontexte
+  const numMatch = text.match(/(\d{2,3})\s*(?:m|metrov)/i);
+  return numMatch ? parseFloat(numMatch[1]) : 0;
 }
+
+// Slovenské mestá pre parsing
+const SLOVAK_CITIES: Record<string, string> = {
+  "bratislava": "Bratislava",
+  "kosice": "Košice",
+  "presov": "Prešov",
+  "zilina": "Žilina",
+  "banska bystrica": "Banská Bystrica",
+  "trnava": "Trnava",
+  "trencin": "Trenčín",
+  "nitra": "Nitra",
+  "poprad": "Poprad",
+  "martin": "Martin",
+  "zvolen": "Zvolen",
+  "prievidza": "Prievidza",
+  "michalovce": "Michalovce",
+  "spisska nova ves": "Spišská Nová Ves",
+  "humenne": "Humenné",
+  "levice": "Levice",
+  "komarno": "Komárno",
+  "nove zamky": "Nové Zámky",
+  "dunajska streda": "Dunajská Streda",
+  "ruzomberok": "Ružomberok",
+  "liptovsky mikulas": "Liptovský Mikuláš",
+  "lucenec": "Lučenec",
+  "piestany": "Piešťany",
+  "pezinok": "Pezinok",
+  "senec": "Senec",
+  "malacky": "Malacky",
+  "skalica": "Skalica",
+  "senica": "Senica",
+  "hlohovec": "Hlohovec",
+  "sered": "Sereď",
+  "galanta": "Galanta",
+  "samorin": "Šamorín",
+  "sala": "Šaľa",
+  "sturovo": "Štúrovo",
+  "partizanske": "Partizánske",
+  "nove mesto nad vahom": "Nové Mesto nad Váhom",
+  "dubnica nad vahom": "Dubnica nad Váhom",
+  "povazska bystrica": "Považská Bystrica",
+  "bytca": "Bytča",
+  "cadca": "Čadca",
+  "dolny kubin": "Dolný Kubín",
+  "namestovo": "Námestovo",
+  "kysucke nove mesto": "Kysucké Nové Mesto",
+  "tvrdosin": "Tvrdošín",
+  "brezno": "Brezno",
+  "ziar nad hronom": "Žiar nad Hronom",
+  "zarnovica": "Žarnovica",
+  "kremnica": "Kremnica",
+  "rimavska sobota": "Rimavská Sobota",
+  "roznava": "Rožňava",
+  "revuca": "Revúca",
+  "velky krtis": "Veľký Krtíš",
+  "kezmarok": "Kežmarok",
+  "stara lubovna": "Stará Ľubovňa",
+  "svit": "Svit",
+  "stropkov": "Stropkov",
+  "svidnik": "Svidník",
+  "bardejov": "Bardejov",
+  "vranov nad toplou": "Vranov nad Topľou",
+  "snina": "Snina",
+  "sobrance": "Sobrance",
+  "trebisov": "Trebišov",
+  "secovce": "Sečovce",
+  "kralovsky chlmec": "Kráľovský Chlmec",
+  "medzilaborce": "Medzilaborce",
+  // Bratislavské časti
+  "petrzalka": "Bratislava",
+  "ruzinov": "Bratislava",
+  "dubravka": "Bratislava",
+  "nove mesto": "Bratislava",
+  "stare mesto": "Bratislava",
+  "karlova ves": "Bratislava",
+  "devinska nova ves": "Bratislava",
+  "devin": "Bratislava",
+  "lamac": "Bratislava",
+  "raca": "Bratislava",
+  "vajnory": "Bratislava",
+  "podunajske biskupice": "Bratislava",
+  "vrakuna": "Bratislava",
+  "jarovce": "Bratislava",
+  "rusovce": "Bratislava",
+  "cunovo": "Bratislava",
+  // Košické časti
+  "terasa": "Košice",
+  "tahanovce": "Košice",
+  "saca": "Košice",
+  "sidlisko kvo": "Košice",
+  "stare mesto kosice": "Košice",
+  "juh": "Košice",
+  "sever": "Košice",
+  "zapad": "Košice",
+  "dargovskych hrdinov": "Košice",
+};
 
 function parseCity(text: string): { city: string; district: string } {
   const normalized = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   
-  const cityMap: Record<string, string> = {
-    "bratislava": "Bratislava",
-    "kosice": "Košice",
-    "presov": "Prešov",
-    "zilina": "Žilina",
-    "banska bystrica": "Banská Bystrica",
-    "trnava": "Trnava",
-    "trencin": "Trenčín",
-    "nitra": "Nitra",
-    "poprad": "Poprad",
-    "martin": "Martin",
-    "zvolen": "Zvolen",
-    "prievidza": "Prievidza",
-    "michalovce": "Michalovce",
-    "spisska nova ves": "Spišská Nová Ves",
-    "humenne": "Humenné",
-    "levice": "Levice",
-    "komarno": "Komárno",
-    "nove zamky": "Nové Zámky",
-    "dunajska streda": "Dunajská Streda",
-    "ruzomberok": "Ružomberok",
-    "liptovsky mikulas": "Liptovský Mikuláš",
-    "lucenec": "Lučenec",
-    "piestany": "Piešťany",
-    "terasa": "Košice",
-    "petrzalka": "Bratislava",
-    "ruzinov": "Bratislava",
-    "dubravka": "Bratislava",
-    "tahanovce": "Košice",
-  };
-  
-  for (const [key, city] of Object.entries(cityMap)) {
+  // Hľadaj známe mestá
+  for (const [key, city] of Object.entries(SLOVAK_CITIES)) {
     if (normalized.includes(key)) {
-      return { city, district: text.split(",")[0]?.trim() || city };
+      // Skús extrahovať okres
+      const districtMatch = text.match(/([^,]+)/);
+      return { 
+        city, 
+        district: districtMatch?.[1]?.trim() || city 
+      };
     }
   }
   
-  // Skús nájsť PSČ a určiť mesto
+  // Hľadaj PSČ a určiť mesto
   const pscMatch = text.match(/(\d{3})\s?(\d{2})/);
   if (pscMatch) {
     const psc = pscMatch[1];
     const pscToCity: Record<string, string> = {
-      "811": "Bratislava", "821": "Bratislava", "831": "Bratislava", "841": "Bratislava", "851": "Bratislava",
-      "040": "Košice", "041": "Košice", "042": "Košice", "043": "Košice", "044": "Košice",
+      "811": "Bratislava", "821": "Bratislava", "831": "Bratislava", 
+      "841": "Bratislava", "851": "Bratislava",
+      "040": "Košice", "041": "Košice", "042": "Košice", 
+      "043": "Košice", "044": "Košice",
       "080": "Prešov", "081": "Prešov", "082": "Prešov",
       "010": "Žilina", "011": "Žilina", "012": "Žilina",
       "974": "Banská Bystrica", "975": "Banská Bystrica",
       "917": "Trnava", "918": "Trnava",
-      "949": "Nitra", "950": "Nitra",
+      "949": "Nitra", "950": "Nitra", "951": "Nitra",
       "911": "Trenčín", "912": "Trenčín",
       "058": "Poprad", "059": "Poprad",
+      "036": "Martin",
+      "960": "Zvolen", "961": "Zvolen",
+      "971": "Prievidza", "972": "Prievidza",
+      "071": "Michalovce", "072": "Michalovce",
+      "052": "Spišská Nová Ves", "053": "Spišská Nová Ves",
+      "066": "Humenné", "067": "Humenné",
     };
     
     if (pscToCity[psc]) {
@@ -136,25 +241,24 @@ function parseCity(text: string): { city: string; district: string } {
     }
   }
   
-  // Ak nenájdeme mesto, skúsime extrahovať prvé slovo ktoré vyzerá ako mesto
-  const words = text.split(/[\s,]+/).filter(w => w.length > 2);
+  // Fallback - skús extrahovať prvé slovo s veľkým písmenom
+  const words = text.split(/[\s,;]+/).filter(w => w.length > 2);
   for (const word of words) {
-    const normalizedWord = word.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    // Preskočiť čísla a bežné slová
+    // Preskočiť bežné slová
+    const skip = ["predaj", "prenájom", "byt", "dom", "izb", "izbový", "nova", "nová", "stará", "pri", "nad", "pod", "ulica", "ul"];
+    if (skip.some(s => word.toLowerCase().includes(s))) continue;
     if (/^\d/.test(word)) continue;
-    if (["predaj", "byt", "dom", "izb", "izbovy", "nova", "stara", "pri", "nad", "pod"].includes(normalizedWord)) continue;
     
-    // Ak slovo začína veľkým písmenom, môže to byť mesto
     if (word[0] === word[0].toUpperCase() && word.length > 3) {
       return { city: word, district: word };
     }
   }
   
-  return { city: "Iné", district: "Neznáme" };
+  return { city: "Slovensko", district: "Neznáme" };
 }
 
 /**
- * Scrapuje Bazoš Reality
+ * Scrapuje Bazoš Reality - AKTUALIZOVANÉ 2026
  */
 export async function scrapeBazos(options: {
   maxPages?: number;
@@ -166,20 +270,18 @@ export async function scrapeBazos(options: {
   const properties: ScrapedProperty[] = [];
   let pagesScraped = 0;
   
-  // Kategórie na scrapovanie - CELÉ SLOVENSKO (iba PREDAJ)
+  // Kategórie - PREDAJ
   const categories = [
     { path: "/predam/byt/", listingType: "PREDAJ" as ListingType, name: "Byty" },
     { path: "/predam/dom/", listingType: "PREDAJ" as ListingType, name: "Domy" },
     { path: "/predam/pozemok/", listingType: "PREDAJ" as ListingType, name: "Pozemky" },
-    { path: "/predam/chata/", listingType: "PREDAJ" as ListingType, name: "Chaty a chalupy" },
   ];
   
-  // Ak je špecifikovaný typ, filtruj
   const categoriesToScrape = options.listingType 
     ? categories.filter(c => c.listingType === options.listingType)
     : categories;
   
-  console.log(`\n🚀 Starting Simple Bazos Scraper`);
+  console.log(`\n🚀 Starting Bazos Scraper (2026 selectors)`);
   console.log(`📂 Categories: ${categoriesToScrape.map(c => c.name).join(", ")}`);
   console.log(`📄 Max pages per category: ${maxPages}`);
   
@@ -192,9 +294,9 @@ export async function scrapeBazos(options: {
       
       console.log(`  📄 Page ${page + 1}: ${url}`);
       
-      // Delay medzi requestami - kratší pre Vercel limit
+      // Delay medzi requestami
       if (page > 0) {
-        await new Promise(r => setTimeout(r, 1000 + Math.random() * 500));
+        await new Promise(r => setTimeout(r, 800 + Math.random() * 400));
       }
       
       const html = await fetchPage(url);
@@ -208,90 +310,84 @@ export async function scrapeBazos(options: {
       
       const $ = cheerio.load(html);
       
-      // Bazoš štruktúra 2026:
-      // - Každý inzerát má <h2> s linkom na /inzerat/
-      // - Cena je v <b> alebo <strong> tagu s € symbolom
-      // - Lokalita je text s PSČ
+      // BAZOŠ 2026 SELEKTORY:
+      // Každý inzerát je v elemente s triedou obsahujúcou "inzeraty" alebo v div.inzeraty
+      // Linky sú v formáte: /inzerat/CISLO/nazov.php
+      // Cena je v elemente s € symbolom
       
-      // Nájdi všetky h2 elementy ktoré obsahujú link na inzerát
-      const h2Elements = $("h2");
       let foundOnPage = 0;
       
-      h2Elements.each((_, el) => {
+      // Hľadaj všetky linky na inzeráty
+      const links = $("a[href*='/inzerat/']");
+      const processedIds = new Set<string>();
+      
+      links.each((_, el) => {
         try {
-          const $h2 = $(el);
-          const $link = $h2.find("a[href*='/inzerat/']");
-          
-          if (!$link.length) return;
-          
+          const $link = $(el);
           const href = $link.attr("href") || "";
+          
+          // Extrahuj ID z URL
+          const idMatch = href.match(/\/inzerat\/(\d+)\//);
+          if (!idMatch) return;
+          
+          const externalId = idMatch[1];
+          
+          // Skip duplicity
+          if (processedIds.has(externalId)) return;
+          processedIds.add(externalId);
+          
+          // Titulok
           const title = $link.text().trim();
+          if (!title || title.length < 5 || title.length > 300) return;
           
-          if (!href || !title || title.length < 5) return;
+          // Nájdi parent container
+          const $container = $link.closest("div, article, section").first();
+          const containerText = $container.length ? $container.text() : "";
           
-          // External ID
-          const idMatch = href.match(/inzerat\/(\d+)/);
-          const externalId = idMatch?.[1] || "";
-          if (!externalId) return;
+          // Cena - hľadaj v okolí
+          let price = 0;
+          const pricePatterns = [
+            /(\d[\d\s,.]*)\s*€/g,
+            /(\d[\d\s,.]*)\s*eur/gi,
+          ];
           
-          // Nájdi cenu - hľadaj najbližší <b> alebo <strong> s € v celom kontexte
-          // Bazoš má cenu ako **245 000 €** čo je <b> alebo <strong>
-          let priceText = "";
-          
-          // Hľadaj v parent containeroch
-          const $parent = $h2.parent();
-          const $grandparent = $parent.parent();
-          
-          // Skús nájsť cenu v okolí
-          const nearbyText = $grandparent.text() || $parent.text() || "";
-          const priceMatch = nearbyText.match(/(\d[\d\s]*)\s*€/);
-          if (priceMatch) {
-            priceText = priceMatch[0];
-          }
-          
-          // Ak nenájdeme cenu v okolí, hľadaj v nasledujúcich elementoch
-          if (!priceText) {
-            let $current = $h2.next();
-            for (let i = 0; i < 10 && $current.length; i++) {
-              const text = $current.text();
-              const match = text.match(/(\d[\d\s]*)\s*€/);
-              if (match) {
-                priceText = match[0];
-                break;
+          for (const pattern of pricePatterns) {
+            const matches = containerText.matchAll(pattern);
+            for (const match of matches) {
+              const p = parsePrice(match[1]);
+              if (p > price && p < 50000000) {
+                price = p;
               }
-              $current = $current.next();
             }
           }
           
-          const price = parsePrice(priceText);
           if (price < 10000) return; // Filter príliš lacné
           
-          // Plocha z titulu alebo popisu
+          // Plocha z titulu alebo kontextu
           let areaM2 = parseArea(title);
           if (areaM2 === 0) {
-            areaM2 = parseArea(nearbyText);
+            areaM2 = parseArea(containerText);
           }
-          if (areaM2 === 0) areaM2 = 50; // Default
+          if (areaM2 === 0 || areaM2 < 10) areaM2 = 50; // Default
           
-          // Mesto z titulu alebo z okolia (hľadaj PSČ pattern)
+          // Mesto z kontextu
           let { city, district } = parseCity(title);
           if (city === "Slovensko") {
-            // Skús nájsť mesto v okolí
-            const cityResult = parseCity(nearbyText);
+            const cityResult = parseCity(containerText);
             if (cityResult.city !== "Slovensko") {
               city = cityResult.city;
               district = cityResult.district;
             }
           }
           
-          // Izby
+          // Izby z titulu
           const roomsMatch = title.match(/(\d)\s*[-\s]?izb/i);
           const rooms = roomsMatch ? parseInt(roomsMatch[1], 10) : undefined;
           
           foundOnPage++;
           
           properties.push({
-            externalId,
+            externalId: `bazos_${externalId}`,
             source: "BAZOS",
             title: title.substring(0, 200),
             description: "",
@@ -310,10 +406,10 @@ export async function scrapeBazos(options: {
         }
       });
       
-      console.log(`  📋 Found ${foundOnPage} listings on page`);
+      console.log(`  ✓ Found ${foundOnPage} listings on page`);
       
       // Ak málo výsledkov, koniec kategórie
-      if (foundOnPage < 5) {
+      if (foundOnPage < 3) {
         console.log(`  ⏹️ Reached last page or no more listings`);
         break;
       }
@@ -322,7 +418,7 @@ export async function scrapeBazos(options: {
   
   const duration = Date.now() - startTime;
   
-  console.log(`\n📊 Scraping Complete:`);
+  console.log(`\n📊 Bazos Scraping Complete:`);
   console.log(`  - Properties: ${properties.length}`);
   console.log(`  - Pages: ${pagesScraped}`);
   console.log(`  - Errors: ${errors.length}`);
@@ -337,23 +433,25 @@ export async function scrapeBazos(options: {
 }
 
 /**
- * Scrapuje Nehnutelnosti.sk
+ * Scrapuje Nehnutelnosti.sk - AKTUALIZOVANÉ 2026
+ * Poznámka: Stránka používa Next.js, obsah je čiastočne JS-rendered
  */
 export async function scrapeNehnutelnosti(options: {
   maxPages?: number;
 } = {}): Promise<ScrapeResult> {
   const startTime = Date.now();
-  const maxPages = options.maxPages || 5;
+  const maxPages = options.maxPages || 3;
   const errors: string[] = [];
   const properties: ScrapedProperty[] = [];
   let pagesScraped = 0;
   
-  // Kategórie na scrapovanie - zatiaľ len BYTY
+  // Kategórie
   const categories = [
     { path: "/predaj/byty/", name: "Byty" },
+    { path: "/predaj/domy/", name: "Domy" },
   ];
   
-  console.log(`\n🚀 Starting Nehnutelnosti.sk Scraper`);
+  console.log(`\n🚀 Starting Nehnutelnosti.sk Scraper (2026 selectors)`);
   console.log(`📂 Categories: ${categories.map(c => c.name).join(", ")}`);
   console.log(`📄 Max pages per category: ${maxPages}`);
   
@@ -365,7 +463,6 @@ export async function scrapeNehnutelnosti(options: {
       
       console.log(`  📄 Page ${page}: ${url}`);
       
-      // Delay medzi requestami - kratší pre Vercel limit
       if (page > 1) {
         await new Promise(r => setTimeout(r, 1000 + Math.random() * 500));
       }
@@ -381,60 +478,71 @@ export async function scrapeNehnutelnosti(options: {
       
       const $ = cheerio.load(html);
       
-      // Nehnutelnosti.sk štruktúra:
-      // - Listings sú v kartách s linkom na /detail/
-      // - Každý má title, cenu, lokalitu, výmeru
+      // NEHNUTELNOSTI.SK 2026 SELEKTORY:
+      // Linky sú v formáte: /detail/ID/nazov
+      // Obsah je v kartách s obrázkami
       
       let foundOnPage = 0;
+      const processedIds = new Set<string>();
       
-      // Nájdi všetky linky na detail
+      // Hľadaj všetky linky na detail
       $("a[href*='/detail/']").each((_, el) => {
         try {
           const $link = $(el);
           const href = $link.attr("href") || "";
           
-          // Preskočiť duplikáty (každý listing má viac linkov)
-          if (!href.includes("/detail/") || href.includes("?")) return;
+          // Extrahuj ID z URL (nehnutelnosti používa base64-like ID)
+          const idMatch = href.match(/\/detail\/([^/]+)\//);
+          if (!idMatch) return;
           
-          // Nájdi parent container
-          const $container = $link.closest("[class*='listing'], [class*='card'], article, section").first();
-          if (!$container.length) return;
+          const externalId = idMatch[1];
           
-          // Extrahuj ID z URL
-          const idMatch = href.match(/detail\/([^/]+)/);
-          const externalId = idMatch?.[1] || "";
-          if (!externalId || externalId.length < 5) return;
+          // Skip duplicity a krátke ID
+          if (processedIds.has(externalId) || externalId.length < 5) return;
+          processedIds.add(externalId);
           
-          // Deduplication - check if already added
-          if (properties.some(p => p.externalId === externalId)) return;
+          // Nájdi najväčší parent container
+          let $container = $link.parent();
+          for (let i = 0; i < 5 && $container.length; i++) {
+            if ($container.text().length > 100) break;
+            $container = $container.parent();
+          }
           
-          // Extrahuj text z containera
           const containerText = $container.text();
           
-          // Title - nájdi h2 alebo hlavný nadpis
-          let title = $container.find("h2, h3").first().text().trim();
-          if (!title || title.length < 5) {
+          // Titulok - hľadaj H2/H3 alebo text linku
+          let title = "";
+          const $heading = $container.find("h2, h3").first();
+          if ($heading.length) {
+            title = $heading.text().trim();
+          }
+          if (!title || title.length < 10) {
             title = $link.text().trim();
           }
-          if (!title || title.length < 5) return;
+          if (!title || title.length < 10) return;
           
-          // Cena - hľadaj pattern s €
+          // Odstráň časti titulu ktoré nie sú relevantné
+          title = title.replace(/^PREMIUM\s*/i, "").trim();
+          if (title.length < 10 || title.length > 300) return;
+          
+          // Cena
           const priceMatch = containerText.match(/(\d[\d\s,.]*)\s*€/);
-          const price = priceMatch ? parsePrice(priceMatch[0]) : 0;
+          const price = priceMatch ? parsePrice(priceMatch[1]) : 0;
           if (price < 10000) return;
           
           // Plocha
           const areaMatch = containerText.match(/(\d+(?:[,\.]\d+)?)\s*m[²2]/);
           const areaM2 = areaMatch ? parseFloat(areaMatch[1].replace(",", ".")) : 50;
           
-          // Lokalita - hľadaj okres alebo mesto
-          let city = "Slovensko";
-          let district = "";
-          
-          const locationMatch = containerText.match(/(Bratislava|Košice|Žilina|Prešov|Nitra|Trenčín|Trnava|Banská Bystrica)/i);
-          if (locationMatch) {
-            city = locationMatch[1];
-            district = city;
+          // Lokalita
+          let { city, district } = parseCity(containerText);
+          if (city === "Slovensko") {
+            // Skús z title
+            const cityFromTitle = parseCity(title);
+            if (cityFromTitle.city !== "Slovensko") {
+              city = cityFromTitle.city;
+              district = cityFromTitle.district;
+            }
           }
           
           // Izby
@@ -444,12 +552,12 @@ export async function scrapeNehnutelnosti(options: {
           foundOnPage++;
           
           properties.push({
-            externalId,
+            externalId: `neh_${externalId}`,
             source: "NEHNUTELNOSTI",
             title: title.substring(0, 200),
             description: "",
             price,
-            pricePerM2: Math.round(price / areaM2),
+            pricePerM2: areaM2 > 0 ? Math.round(price / areaM2) : 0,
             areaM2,
             city,
             district,
@@ -463,10 +571,9 @@ export async function scrapeNehnutelnosti(options: {
         }
       });
       
-      console.log(`  📋 Found ${foundOnPage} listings on page`);
+      console.log(`  ✓ Found ${foundOnPage} listings on page`);
       
-      // Ak málo výsledkov, koniec kategórie
-      if (foundOnPage < 5) {
+      if (foundOnPage < 3) {
         console.log(`  ⏹️ Reached last page or no more listings`);
         break;
       }
@@ -490,7 +597,7 @@ export async function scrapeNehnutelnosti(options: {
 }
 
 /**
- * Scrapuje aktívne portály (teraz len Nehnutelnosti.sk)
+ * Scrapuje všetky portály
  */
 export async function scrapeAll(options: {
   maxPages?: number;
@@ -500,28 +607,62 @@ export async function scrapeAll(options: {
   const allErrors: string[] = [];
   let totalPages = 0;
   
-  console.log("\n🚀 Starting scrape - Nehnutelnosti.sk only");
+  console.log("\n🚀 Starting Full Scrape - Bazos + Nehnutelnosti.sk");
   
-  // Scrape Nehnutelnosti.sk
+  // 1. Scrape Bazoš (priorita - funguje spoľahlivejšie)
   try {
-    const nehnutelnostiResult = await scrapeNehnutelnosti({ maxPages: options.maxPages });
-    allProperties.push(...nehnutelnostiResult.properties);
-    allErrors.push(...nehnutelnostiResult.errors);
-    totalPages += nehnutelnostiResult.pagesScraped;
+    console.log("\n--- BAZOS ---");
+    const bazosResult = await scrapeBazos({ maxPages: options.maxPages || 3 });
+    allProperties.push(...bazosResult.properties);
+    allErrors.push(...bazosResult.errors);
+    totalPages += bazosResult.pagesScraped;
+    console.log(`✓ Bazos: ${bazosResult.properties.length} properties`);
   } catch (e) {
-    allErrors.push(`Nehnutelnosti error: ${e instanceof Error ? e.message : "Unknown"}`);
+    const errMsg = `Bazos error: ${e instanceof Error ? e.message : "Unknown"}`;
+    console.error(`❌ ${errMsg}`);
+    allErrors.push(errMsg);
+  }
+  
+  // Pauza medzi portálmi
+  await new Promise(r => setTimeout(r, 2000));
+  
+  // 2. Scrape Nehnutelnosti.sk
+  try {
+    console.log("\n--- NEHNUTELNOSTI.SK ---");
+    const nehResult = await scrapeNehnutelnosti({ maxPages: options.maxPages || 2 });
+    allProperties.push(...nehResult.properties);
+    allErrors.push(...nehResult.errors);
+    totalPages += nehResult.pagesScraped;
+    console.log(`✓ Nehnutelnosti.sk: ${nehResult.properties.length} properties`);
+  } catch (e) {
+    const errMsg = `Nehnutelnosti error: ${e instanceof Error ? e.message : "Unknown"}`;
+    console.error(`❌ ${errMsg}`);
+    allErrors.push(errMsg);
   }
   
   const duration = Date.now() - startTime;
   
-  console.log(`\n📊 Scraping Complete:`);
-  console.log(`  - Total Properties: ${allProperties.length}`);
-  console.log(`  - Total Pages: ${totalPages}`);
+  // Deduplikácia podľa podobnosti (rovnaký titul + mesto + cena)
+  const uniqueProps: ScrapedProperty[] = [];
+  const seen = new Set<string>();
+  
+  for (const prop of allProperties) {
+    const key = `${prop.title.toLowerCase().substring(0, 50)}_${prop.city}_${prop.price}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      uniqueProps.push(prop);
+    }
+  }
+  
+  console.log(`\n📊 Full Scrape Complete:`);
+  console.log(`  - Total Raw: ${allProperties.length}`);
+  console.log(`  - After Dedup: ${uniqueProps.length}`);
+  console.log(`  - Pages: ${totalPages}`);
   console.log(`  - Errors: ${allErrors.length}`);
   console.log(`  - Duration: ${(duration / 1000).toFixed(1)}s`);
   
   return {
-    properties: allProperties,
+    properties: uniqueProps,
     pagesScraped: totalPages,
     errors: allErrors,
     duration,
@@ -529,7 +670,7 @@ export async function scrapeAll(options: {
 }
 
 /**
- * Test scraper - vráti sample dáta
+ * Test scraper
  */
 export async function testSimpleScraper(): Promise<{
   success: boolean;
