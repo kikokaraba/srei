@@ -206,9 +206,14 @@ model Property {
   is_distressed     Boolean          @default(false)
   days_on_market    Int              @default(0) // Počet dní v ponuke
   first_listed_at   DateTime?        // Kedy bol prvýkrát zverejnený
-  // TODO: Pridať po migrácii:
-  // last_seen_at      DateTime         @default(now()) // Kedy bol naposledy videný pri scrapingu
-  // status            ListingStatus    @default(ACTIVE) // Stav inzerátu
+  
+  // Monitoring fields for smart refresh system
+  last_seen_at      DateTime         @default(now()) // Kedy bol naposledy videný pri scrapingu
+  status            ListingStatus    @default(ACTIVE) // Stav inzerátu
+  priority_score    Int              @default(50) // Priorita pre refresh (0-100, vyššia = častejšia kontrola)
+  check_count_today Int              @default(0) // Koľkokrát bol dnes skontrolovaný
+  last_checked_at   DateTime?        // Kedy bol naposledy skontrolovaný batch workerom
+  consecutive_failures Int           @default(0) // Počet po sebe idúcich chýb pri kontrole
   
   @@index([source, external_id])
   @@index([source, city])
@@ -216,6 +221,10 @@ model Property {
   @@index([city, area_m2, condition])
   @@index([is_distressed, createdAt])
   @@index([listing_type, createdAt])
+  @@index([status, priority_score]) // Pre batch refresh - najprv vysoká priorita
+  @@index([status, last_checked_at]) // Pre batch refresh - najstaršie kontroly
+  @@index([status, check_count_today]) // Pre denný limit kontrol
+  @@index([last_seen_at]) // Pre detekciu predaných
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   userId            String?
