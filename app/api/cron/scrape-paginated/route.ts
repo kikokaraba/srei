@@ -9,6 +9,7 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { runPostProcessing } from "@/lib/monitoring/post-processing";
 
 // Konfigurácia
 const CONFIG = {
@@ -190,16 +191,27 @@ export async function GET(request: Request) {
     console.log(`  - Duration: ${duration}ms`);
     console.log(`  - Next: ${nextCategory} page ${nextPage}`);
 
+    // Run post-processing to calculate metrics
+    let postProcessing = null;
+    if (results.newProperties > 0 || results.updatedProperties > 0) {
+      console.log(`\n🔄 Running post-processing...`);
+      postProcessing = await runPostProcessing();
+      console.log(`  - Days on market updated: ${postProcessing.daysOnMarketUpdated}`);
+      console.log(`  - Metrics calculated: ${postProcessing.metricsCalculated}`);
+      console.log(`  - Rent estimated: ${postProcessing.rentEstimated}`);
+    }
+
     return NextResponse.json({
       success: true,
       results,
+      postProcessing,
       progress: {
         category: nextCategory,
         page: nextPage,
         cycleCount,
         isComplete,
       },
-      duration_ms: duration,
+      duration_ms: Date.now() - startTime,
     });
 
   } catch (error) {
