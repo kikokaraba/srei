@@ -5,6 +5,7 @@ import * as cheerio from "cheerio";
 import { prisma } from "@/lib/prisma";
 import { parseDescription } from "./parser";
 import { createPropertyFingerprint } from "@/lib/deduplication/fingerprint";
+import { normalizeCityName, getCityCoordinates } from "@/lib/constants/cities";
 
 // Async wrapper pre fingerprint (nečakáme na dokončenie)
 async function createPropertyFingerprintAsync(propertyId: string): Promise<void> {
@@ -937,6 +938,13 @@ export async function syncProperty(listing: ParsedListing): Promise<SyncResult> 
     }
   }
   
+  // Normalize city name and get coordinates
+  const normalizedCity = normalizeCityName(listing.city) || listing.city;
+  const coords = getCityCoordinates(normalizedCity);
+  
+  // Add small random offset to coordinates to prevent exact overlaps
+  const offset = () => (Math.random() - 0.5) * 0.015; // ~750m variance
+  
   // Vytvor nový záznam
   const property = await prisma.property.create({
     data: {
@@ -945,9 +953,9 @@ export async function syncProperty(listing: ParsedListing): Promise<SyncResult> 
       source: source, // Dynamický zdroj
       title: listing.title,
       description: listing.description,
-      city: listing.city,
+      city: normalizedCity,
       district: listing.district,
-      address: `${listing.district}, ${listing.city}`, // Adresa z lokácie
+      address: `${listing.district}, ${normalizedCity}`, // Adresa z lokácie
       price: listing.price,
       area_m2: listing.areaM2,
       price_per_m2: listing.pricePerM2,
@@ -957,6 +965,9 @@ export async function syncProperty(listing: ParsedListing): Promise<SyncResult> 
       source_url: listing.sourceUrl,
       is_distressed: isHotDeal, // Používame is_distressed ako is_hot_deal
       first_listed_at: new Date(),
+      // Add coordinates if available
+      latitude: coords ? coords.lat + offset() : null,
+      longitude: coords ? coords.lng + offset() : null,
     },
   });
   

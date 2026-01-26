@@ -29,6 +29,7 @@ import {
   Construction,
 } from "lucide-react";
 import { UrbanBadge } from "./UrbanImpactAlert";
+import { normalizeCityName, getCityInfo } from "@/lib/constants/cities";
 
 // Slovenské kraje - mestá zodpovedajú formátu v databáze
 const REGIONS = [
@@ -42,61 +43,7 @@ const REGIONS = [
   { value: "KE", label: "Košický", cities: ["Košice", "Michalovce", "Spišská Nová Ves", "Trebišov", "Rožňava", "Sobrance"] },
 ];
 
-// Mapovanie miest na kraje (case-insensitive lookup)
-const CITY_TO_REGION: Record<string, string> = {
-  // Bratislavský
-  "bratislava": "Bratislavský",
-  "pezinok": "Bratislavský",
-  "senec": "Bratislavský",
-  "malacky": "Bratislavský",
-  // Košický
-  "košice": "Košický",
-  "kosice": "Košický",
-  "michalovce": "Košický",
-  "spišská nová ves": "Košický",
-  "trebišov": "Košický",
-  "rožňava": "Košický",
-  // Prešovský
-  "prešov": "Prešovský",
-  "presov": "Prešovský",
-  "poprad": "Prešovský",
-  "humenné": "Prešovský",
-  "bardejov": "Prešovský",
-  "kežmarok": "Prešovský",
-  "snina": "Prešovský",
-  // Žilinský
-  "žilina": "Žilinský",
-  "zilina": "Žilinský",
-  "martin": "Žilinský",
-  "ružomberok": "Žilinský",
-  "liptovský mikuláš": "Žilinský",
-  "čadca": "Žilinský",
-  // Banskobystrický
-  "banská bystrica": "Banskobystrický",
-  "banska bystrica": "Banskobystrický",
-  "zvolen": "Banskobystrický",
-  "brezno": "Banskobystrický",
-  "lučenec": "Banskobystrický",
-  // Trnavský
-  "trnava": "Trnavský",
-  "piešťany": "Trnavský",
-  "galanta": "Trnavský",
-  "dunajská streda": "Trnavský",
-  "skalica": "Trnavský",
-  "senica": "Trnavský",
-  // Trenčiansky
-  "trenčín": "Trenčiansky",
-  "trencin": "Trenčiansky",
-  "považská bystrica": "Trenčiansky",
-  "prievidza": "Trenčiansky",
-  "partizánske": "Trenčiansky",
-  // Nitriansky
-  "nitra": "Nitriansky",
-  "komárno": "Nitriansky",
-  "nové zámky": "Nitriansky",
-  "levice": "Nitriansky",
-  "šaľa": "Nitriansky",
-};
+// Regions are now handled by lib/constants/cities.ts
 
 const CONDITIONS = [
   { value: "POVODNY", label: "Pôvodný stav" },
@@ -459,9 +406,9 @@ export function PropertyList() {
   }, [filters]);
 
   const getRegionLabel = (city: string) => {
-    // Case-insensitive lookup
-    const normalizedCity = city?.toLowerCase() || "";
-    return CITY_TO_REGION[normalizedCity] || city;
+    const normalized = normalizeCityName(city);
+    const cityInfo = getCityInfo(normalized);
+    return cityInfo?.region || city;
   };
 
   const getConditionLabel = (condition: string) => {

@@ -6,6 +6,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
+import { normalizeCityName, getCityCoordinates } from "@/lib/constants/cities";
 
 interface GeocodingResult {
   latitude: number;
@@ -138,41 +139,13 @@ export async function geocodeProperties(limit: number = 20): Promise<{
 }
 
 /**
- * Get city center coordinates (cached)
+ * Get city center coordinates
+ * Uses centralized city database from lib/constants/cities.ts
  */
-const CITY_CENTERS: Record<string, { lat: number; lng: number }> = {
-  "Bratislava": { lat: 48.1486, lng: 17.1077 },
-  "Košice": { lat: 48.7164, lng: 21.2611 },
-  "Prešov": { lat: 48.9984, lng: 21.2331 },
-  "Žilina": { lat: 49.2231, lng: 18.7394 },
-  "Banská Bystrica": { lat: 48.7395, lng: 19.1530 },
-  "Nitra": { lat: 48.3069, lng: 18.0864 },
-  "Trnava": { lat: 48.3774, lng: 17.5883 },
-  "Trenčín": { lat: 48.8945, lng: 18.0444 },
-  "Martin": { lat: 49.0636, lng: 18.9214 },
-  "Poprad": { lat: 49.0600, lng: 20.2974 },
-  "Prievidza": { lat: 48.7745, lng: 18.6247 },
-  "Zvolen": { lat: 48.5762, lng: 19.1360 },
-  "Považská Bystrica": { lat: 49.1214, lng: 18.4214 },
-  "Michalovce": { lat: 48.7545, lng: 21.9191 },
-  "Nové Zámky": { lat: 47.9858, lng: 18.1619 },
-};
-
 export function getCityCenter(city: string): { lat: number; lng: number } | null {
-  // Try exact match first
-  if (CITY_CENTERS[city]) {
-    return CITY_CENTERS[city];
-  }
-  
-  // Try case-insensitive match
-  const normalizedCity = city.toLowerCase();
-  for (const [name, coords] of Object.entries(CITY_CENTERS)) {
-    if (name.toLowerCase() === normalizedCity) {
-      return coords;
-    }
-  }
-  
-  return null;
+  const normalized = normalizeCityName(city);
+  if (!normalized) return null;
+  return getCityCoordinates(normalized);
 }
 
 /**

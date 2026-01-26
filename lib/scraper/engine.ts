@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import type { PropertyCondition, EnergyCertificate } from "@/generated/prisma/client";
+import { normalizeCityName, getCityCoordinates } from "@/lib/constants/cities";
 import type { 
   ScrapeResult, 
   SyncReport, 
@@ -158,13 +159,20 @@ async function upsertProperty(
     return { propertyId: existing.id, isNew: false };
   }
   
+  // Normalize city name and get coordinates
+  const normalizedCity = normalizeCityName(listing.city) || listing.city;
+  const coords = getCityCoordinates(normalizedCity);
+  
+  // Add small random offset to coordinates to prevent exact overlaps
+  const offset = () => (Math.random() - 0.5) * 0.015; // ~750m variance
+  
   // Vytvor nový
   const property = await prisma.property.create({
     data: {
       slug,
       title: listing.title,
       description: listing.description,
-      city: listing.city,
+      city: normalizedCity,
       district: listing.district,
       street: listing.street,
       address: listing.address,
@@ -177,6 +185,9 @@ async function upsertProperty(
       energy_certificate: listing.energyCertificate,
       source_url: listing.sourceUrl,
       first_listed_at: listing.postedAt || new Date(),
+      // Add coordinates if available
+      latitude: coords ? coords.lat + offset() : null,
+      longitude: coords ? coords.lng + offset() : null,
     },
   });
   
