@@ -178,20 +178,17 @@ export async function GET(request: Request) {
       });
     }
 
-    // Ak nie je zadaný propertyId ani city, vrátime nehnuteľnosti s vysokým days_on_market
-    // Filtrujeme podľa regiónov/okresov/miest ak sú zadané
-    const whereClause: Record<string, unknown> = {
-      days_on_market: {
-        gte: 60, // Viac ako 60 dní v ponuke
-      },
-    };
+    // Ak nie je zadaný propertyId ani city, vrátime nehnuteľnosti s dlhým časom na trhu
+    // Získame všetky nehnuteľnosti a vypočítame days_on_market dynamicky
+    const whereClause: Record<string, unknown> = {};
     
     // Add city filter if specified
     if (uniqueCities.length > 0) {
       whereClause.city = { in: uniqueCities };
     }
     
-    const longListedProperties = await prisma.property.findMany({
+    // Get all properties and calculate days on market dynamically
+    const allProperties = await prisma.property.findMany({
       where: whereClause,
       include: {
         priceHistory: {
@@ -200,47 +197,52 @@ export async function GET(request: Request) {
         },
       },
       orderBy: {
-        days_on_market: "desc",
+        createdAt: "asc", // Oldest first
       },
-      take: 100,
+      take: 500,
     });
 
-    const liquidityData = longListedProperties.map((property) => {
-      const firstListed = property.first_listed_at || property.createdAt;
-      const daysOnMarket = property.days_on_market || Math.floor(
-        (Date.now() - new Date(firstListed).getTime()) / (1000 * 60 * 60 * 24)
-      );
-
-      const latestPriceChange = property.priceHistory[0];
-      let priceChangeInfo = null;
-
-      if (latestPriceChange) {
-        const priceDiff = property.price - latestPriceChange.price;
-        const priceDiffPercent = latestPriceChange.price > 0 
-          ? ((priceDiff / latestPriceChange.price) * 100) 
-          : 0;
-        const daysSinceChange = Math.floor(
-          (Date.now() - new Date(latestPriceChange.recorded_at).getTime()) / (1000 * 60 * 60 * 24)
+    // Calculate days on market for each property and filter those 60+ days
+    const liquidityData = allProperties
+      .map((property) => {
+        const firstListed = property.first_listed_at || property.createdAt;
+        const daysOnMarket = property.days_on_market || Math.floor(
+          (Date.now() - new Date(firstListed).getTime()) / (1000 * 60 * 60 * 24)
         );
 
-        priceChangeInfo = {
-          price_diff: priceDiff,
-          price_diff_percent: priceDiffPercent,
-          days_since_change: daysSinceChange,
-          changed_at: latestPriceChange.recorded_at,
-        };
-      }
+        const latestPriceChange = property.priceHistory[0];
+        let priceChangeInfo = null;
 
-      return {
-        propertyId: property.id,
-        title: property.title,
-        address: property.address,
-        city: property.city,
-        days_on_market: daysOnMarket,
-        current_price: property.price,
-        price_change: priceChangeInfo,
-      };
-    });
+        if (latestPriceChange) {
+          const priceDiff = property.price - latestPriceChange.price;
+          const priceDiffPercent = latestPriceChange.price > 0 
+            ? ((priceDiff / latestPriceChange.price) * 100) 
+            : 0;
+          const daysSinceChange = Math.floor(
+            (Date.now() - new Date(latestPriceChange.recorded_at).getTime()) / (1000 * 60 * 60 * 24)
+          );
+
+          priceChangeInfo = {
+            price_diff: priceDiff,
+            price_diff_percent: priceDiffPercent,
+            days_since_change: daysSinceChange,
+            changed_at: latestPriceChange.recorded_at,
+          };
+        }
+
+        return {
+          propertyId: property.id,
+          title: property.title,
+          address: property.address,
+          city: property.city,
+          days_on_market: daysOnMarket,
+          current_price: property.price,
+          price_change: priceChangeInfo,
+        };
+      })
+      .filter(p => p.days_on_market >= 60)
+      .sort((a, b) => b.days_on_market - a.days_on_market)
+      .slice(0, 100);
 
     return NextResponse.json({
       success: true,
