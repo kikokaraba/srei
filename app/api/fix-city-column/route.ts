@@ -1,6 +1,6 @@
 /**
- * Fix city column - convert from enum to varchar
- * Run this ONCE to fix the SlovakCity enum issue
+ * Fix city columns - convert from enum to varchar
+ * Fixes both Property.city and UserPreferences.primaryCity
  */
 
 import { NextResponse } from "next/server";
@@ -24,53 +24,82 @@ export async function GET(request: Request) {
   const results: string[] = [];
 
   try {
-    // Check current column type
-    const columnCheck = await pool.query(`
+    // ========== FIX Property.city ==========
+    const propertyCityCheck = await pool.query(`
       SELECT column_name, data_type, udt_name 
       FROM information_schema.columns 
       WHERE table_name = 'Property' AND column_name = 'city';
     `);
     
-    results.push(`Current city column: ${JSON.stringify(columnCheck.rows)}`);
+    results.push(`Property.city: ${JSON.stringify(propertyCityCheck.rows)}`);
 
-    // Check if SlovakCity enum exists
-    const enumCheck = await pool.query(`
-      SELECT typname FROM pg_type WHERE typname = 'SlovakCity';
-    `);
-    
-    results.push(`SlovakCity enum exists: ${enumCheck.rows.length > 0}`);
-
-    if (columnCheck.rows.length > 0 && columnCheck.rows[0].udt_name === 'SlovakCity') {
-      results.push("⚠️ City column is using SlovakCity enum - fixing...");
-      
-      // Convert the column from enum to varchar
+    if (propertyCityCheck.rows.length > 0 && propertyCityCheck.rows[0].udt_name === 'SlovakCity') {
       await pool.query(`
         ALTER TABLE "Property" 
         ALTER COLUMN "city" TYPE VARCHAR(255) 
         USING "city"::text;
       `);
-      
-      results.push("✅ City column converted to VARCHAR(255)");
-
-      // Drop the enum type (optional)
-      try {
-        await pool.query(`DROP TYPE IF EXISTS "SlovakCity" CASCADE;`);
-        results.push("✅ SlovakCity enum type dropped");
-      } catch (e) {
-        results.push(`⚠️ Could not drop enum: ${e instanceof Error ? e.message : "unknown"}`);
-      }
+      results.push("✅ Property.city converted to VARCHAR");
     } else {
-      results.push("City column is already VARCHAR or TEXT - no fix needed");
+      results.push("✓ Property.city already OK");
     }
 
-    // Verify the fix
-    const verifyCheck = await pool.query(`
+    // ========== FIX UserPreferences.primaryCity ==========
+    const prefCityCheck = await pool.query(`
       SELECT column_name, data_type, udt_name 
       FROM information_schema.columns 
-      WHERE table_name = 'Property' AND column_name = 'city';
+      WHERE table_name = 'UserPreferences' AND column_name = 'primaryCity';
     `);
     
-    results.push(`After fix - city column: ${JSON.stringify(verifyCheck.rows)}`);
+    results.push(`UserPreferences.primaryCity: ${JSON.stringify(prefCityCheck.rows)}`);
+
+    if (prefCityCheck.rows.length > 0 && prefCityCheck.rows[0].udt_name === 'SlovakCity') {
+      await pool.query(`
+        ALTER TABLE "UserPreferences" 
+        ALTER COLUMN "primaryCity" TYPE VARCHAR(255) 
+        USING "primaryCity"::text;
+      `);
+      results.push("✅ UserPreferences.primaryCity converted to VARCHAR");
+    } else {
+      results.push("✓ UserPreferences.primaryCity already OK");
+    }
+
+    // ========== CHECK OTHER TABLES ==========
+    const allSlovakCityColumns = await pool.query(`
+      SELECT table_name, column_name, udt_name
+      FROM information_schema.columns 
+      WHERE udt_name = 'SlovakCity';
+    `);
+    
+    results.push(`Other SlovakCity columns: ${JSON.stringify(allSlovakCityColumns.rows)}`);
+
+    // Fix any remaining columns
+    for (const row of allSlovakCityColumns.rows) {
+      try {
+        await pool.query(`
+          ALTER TABLE "${row.table_name}" 
+          ALTER COLUMN "${row.column_name}" TYPE VARCHAR(255) 
+          USING "${row.column_name}"::text;
+        `);
+        results.push(`✅ Fixed ${row.table_name}.${row.column_name}`);
+      } catch (e) {
+        results.push(`⚠️ Could not fix ${row.table_name}.${row.column_name}: ${e instanceof Error ? e.message : "unknown"}`);
+      }
+    }
+
+    // ========== DROP ENUM TYPE ==========
+    try {
+      await pool.query(`DROP TYPE IF EXISTS "SlovakCity" CASCADE;`);
+      results.push("✅ SlovakCity enum type dropped");
+    } catch (e) {
+      results.push(`⚠️ Could not drop enum: ${e instanceof Error ? e.message : "unknown"}`);
+    }
+
+    // ========== VERIFY ==========
+    const finalCheck = await pool.query(`
+      SELECT typname FROM pg_type WHERE typname = 'SlovakCity';
+    `);
+    results.push(`SlovakCity enum still exists: ${finalCheck.rows.length > 0}`);
 
     await pool.end();
 
