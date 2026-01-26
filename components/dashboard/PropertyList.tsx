@@ -129,7 +129,7 @@ interface Property {
   source_url: string | null;
   is_distressed: boolean;
   days_on_market: number;
-  listing_type: "PREDAJ" | "PRENAJOM";
+  listing_type: "PREDAJ";
   source: "BAZOS" | "NEHNUTELNOSTI";
   investmentMetrics: {
     gross_yield: number;
@@ -167,12 +167,7 @@ interface BatchMetrics {
   };
 }
 
-// Typy inzerátov
-const LISTING_TYPES = [
-  { value: "", label: "Všetky typy" },
-  { value: "PREDAJ", label: "🏠 Predaj" },
-  { value: "PRENAJOM", label: "🔑 Prenájom" },
-];
+// Rental data is collected in background for yield calculations but not shown in UI
 
 // Zdroje inzerátov
 const SOURCES = [
@@ -201,7 +196,7 @@ interface Filters {
 const defaultFilters: Filters = {
   search: "",
   region: "",
-  listingType: "",
+  listingType: "PREDAJ",
   source: "",
   minPrice: "",
   maxPrice: "",
@@ -271,11 +266,9 @@ function getSourceStyle(source: string): { label: string; bg: string; text: stri
   }
 }
 
-// Štýly pre typ inzerátu
-function getListingTypeStyle(type: string): { label: string; bg: string; text: string } {
-  return type === "PRENAJOM"
-    ? { label: "Prenájom", bg: "bg-amber-500/20", text: "text-amber-400" }
-    : { label: "Predaj", bg: "bg-emerald-500/20", text: "text-emerald-400" };
+// Štýly pre typ inzerátu (only PREDAJ shown in UI, PRENAJOM collected in background for yield calculations)
+function getListingTypeStyle(_type: string): { label: string; bg: string; text: string } {
+  return { label: "Predaj", bg: "bg-emerald-500/20", text: "text-emerald-400" };
 }
 
 export function PropertyList() {
@@ -566,37 +559,22 @@ export function PropertyList() {
           </div>
         </div>
 
-        {/* Quick Type Tabs */}
+        {/* Source Filter */}
         <div className="mt-4 flex items-center gap-2">
-          {LISTING_TYPES.map((type) => (
+          <span className="text-sm text-slate-400">Zdroj:</span>
+          {SOURCES.map((src) => (
             <button
-              key={type.value}
-              onClick={() => handleFilterChange("listingType", type.value)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                filters.listingType === type.value
-                  ? "bg-emerald-600 text-white"
-                  : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+              key={src.value}
+              onClick={() => handleFilterChange("source", filters.source === src.value ? "" : src.value)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                filters.source === src.value
+                  ? "bg-indigo-600 text-white"
+                  : "bg-slate-800 text-slate-400 hover:bg-slate-700"
               }`}
             >
-              {type.label}
+              {src.label}
             </button>
           ))}
-          
-          <div className="ml-auto flex items-center gap-2">
-            {SOURCES.slice(1).map((src) => (
-              <button
-                key={src.value}
-                onClick={() => handleFilterChange("source", filters.source === src.value ? "" : src.value)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  filters.source === src.value
-                    ? "bg-indigo-600 text-white"
-                    : "bg-slate-800 text-slate-400 hover:bg-slate-700"
-                }`}
-              >
-                {src.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Expanded Filters */}
@@ -606,7 +584,7 @@ export function PropertyList() {
               {/* Price Range */}
               <div>
                 <label className="block text-sm text-slate-400 mb-1">
-                  {filters.listingType === "PRENAJOM" ? "Min. nájom (€/mes)" : "Min. cena (€)"}
+                  Min. cena (€)
                 </label>
                 <input
                   type="number"

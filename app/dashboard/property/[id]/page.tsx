@@ -78,6 +78,22 @@ interface MarketComparison {
   position: string; // "cheap", "average", "expensive"
 }
 
+interface EstimatedRent {
+  estimatedRent: number;
+  medianRent?: number;
+  rentRange: { min: number; max: number };
+  basedOnCount: number;
+  confidence: "high" | "medium" | "low";
+  grossYield: number;
+  similarProperties: {
+    id: string;
+    price: number;
+    area_m2: number;
+    rooms: number | null;
+    district: string;
+  }[];
+}
+
 export default function PropertyDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -86,6 +102,7 @@ export default function PropertyDetailPage() {
   const [isSaved, setIsSaved] = useState(false);
   const [duplicates, setDuplicates] = useState<DuplicateInfo | null>(null);
   const [marketComparison, setMarketComparison] = useState<MarketComparison | null>(null);
+  const [estimatedRent, setEstimatedRent] = useState<EstimatedRent | null>(null);
 
   useEffect(() => {
     const fetchProperty = async () => {
@@ -98,6 +115,7 @@ export default function PropertyDetailPage() {
           // Fetch additional data
           fetchDuplicates(data.data);
           fetchMarketComparison(data.data);
+          fetchEstimatedRent(data.data);
         }
       } catch (error) {
         console.error("Error fetching property:", error);
@@ -115,6 +133,18 @@ export default function PropertyDetailPage() {
         }
       } catch (error) {
         console.error("Error fetching duplicates:", error);
+      }
+    };
+
+    const fetchEstimatedRent = async (prop: Property) => {
+      try {
+        const response = await fetch(`/api/v1/properties/${prop.id}/estimated-rent`);
+        if (response.ok) {
+          const data = await response.json();
+          setEstimatedRent(data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching estimated rent:", error);
       }
     };
 
@@ -343,6 +373,42 @@ export default function PropertyDetailPage() {
                   }`}>
                     {marketComparison.propertyVsAvg > 0 ? "+" : ""}{marketComparison.propertyVsAvg.toFixed(0)}%
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Estimated Rent from similar rentals */}
+            {estimatedRent && (
+              <div className="bg-violet-500/10 border border-violet-500/30 rounded-lg p-4 mt-4">
+                <h3 className="font-medium text-violet-400 mb-3 flex items-center gap-2">
+                  <Banknote className="w-5 h-5" />
+                  Odhadovaný nájom (z podobných bytov)
+                </h3>
+                <div className="grid grid-cols-2 gap-4 mb-3">
+                  <div>
+                    <p className="text-2xl font-bold text-white">€{estimatedRent.estimatedRent}/mes</p>
+                    <p className="text-xs text-slate-400">
+                      Rozpätie: €{estimatedRent.rentRange.min} – €{estimatedRent.rentRange.max}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-emerald-400">{estimatedRent.grossYield.toFixed(1)}%</p>
+                    <p className="text-xs text-slate-400">Potenciálny hrubý výnos</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-400">
+                    Na základe {estimatedRent.basedOnCount} podobných prenájmov
+                  </span>
+                  <span className={`px-2 py-0.5 rounded ${
+                    estimatedRent.confidence === "high" 
+                      ? "bg-emerald-500/20 text-emerald-400" 
+                      : estimatedRent.confidence === "medium"
+                      ? "bg-amber-500/20 text-amber-400"
+                      : "bg-slate-600 text-slate-400"
+                  }`}>
+                    {estimatedRent.confidence === "high" ? "Vysoká" : estimatedRent.confidence === "medium" ? "Stredná" : "Nízka"} spoľahlivosť
+                  </span>
                 </div>
               </div>
             )}
