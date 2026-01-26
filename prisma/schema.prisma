@@ -776,6 +776,34 @@ model DataFetchLog {
   @@index([source, fetchedAt])
 }
 
+// Progres scrapingu - sleduje kde scraper skončil
+model ScrapeProgress {
+  id              String   @id @default(cuid())
+  source          String   @unique // "NEHNUTELNOSTI", "BAZOS", etc.
+  
+  // Pozícia
+  currentPage     Int      @default(1)
+  totalPages      Int      @default(775) // Odhadovaný počet stránok
+  category        String   @default("byty-predaj") // Aktuálna kategória
+  
+  // Štatistiky
+  totalScraped    Int      @default(0)
+  totalNew        Int      @default(0)
+  totalUpdated    Int      @default(0)
+  totalErrors     Int      @default(0)
+  
+  // Stav
+  isComplete      Boolean  @default(false) // Či prešiel všetky stránky
+  lastRunAt       DateTime @default(now())
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  
+  // Pre cycling - po dokončení začína odznova
+  cycleCount      Int      @default(0) // Koľkokrát prešiel všetko
+  
+  @@index([source, isComplete])
+}
+
 // Životný cyklus inzerátu - sledovanie vymazaných/ukončených inzerátov
 model PropertyLifecycle {
   id              String   @id @default(cuid())

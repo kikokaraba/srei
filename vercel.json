@@ -13,6 +13,9 @@
     "app/api/cron/batch-refresh/route.ts": {
       "maxDuration": 300
     },
+    "app/api/cron/scrape-paginated/route.ts": {
+      "maxDuration": 300
+    },
     "app/api/v1/scraper/stealth/route.ts": {
       "maxDuration": 300
     },
@@ -22,12 +25,12 @@
   },
   "crons": [
     {
-      "path": "/api/cron/scrape-nehnutelnosti",
-      "schedule": "0 6,14,22 * * *"
+      "path": "/api/cron/scrape-paginated",
+      "schedule": "*/10 * * * *"
     },
     {
       "path": "/api/cron/batch-refresh",
-      "schedule": "*/10 * * * *"
+      "schedule": "*/15 * * * *"
     },
     {
       "path": "/api/cron/deduplicate",
