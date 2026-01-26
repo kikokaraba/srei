@@ -3,28 +3,46 @@
 import { useState, useEffect } from "react";
 import { Radio } from "lucide-react";
 
-const liveUpdates = [
-  "Nový byt v Bratislave: €2,450/m² (+3.2%)",
-  "Košice: Priemerný výnos stúpol na 5.8%",
-  "Nitra: 12 nových príležitostí detekovaných",
-  "Trnava: Index potenciálu +15% tento týždeň",
+const defaultUpdates = [
+  "Monitorujeme nehnuteľnosti z Nehnutelnosti.sk",
+  "Automatická aktualizácia každých 10 minút",
+  "Sledujeme byty a domy z celého Slovenska",
+  "Výpočet investičných metrík v reálnom čase",
 ];
 
 export function LiveDataIndicator() {
   const [currentUpdate, setCurrentUpdate] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
+  const [updates, setUpdates] = useState(defaultUpdates);
+
+  useEffect(() => {
+    // Fetch real stats
+    fetch("/api/public/stats")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.stats.totalProperties > 0) {
+          setUpdates([
+            `${data.stats.totalProperties.toLocaleString()} nehnuteľností v databáze`,
+            data.stats.hotDeals > 0 ? `${data.stats.hotDeals} výhodných ponúk detekovaných` : "Vyhľadávame výhodné ponuky",
+            `Priemerný výnos: ${data.stats.avgYield}% ročne`,
+            "Aktualizácia každých 10 minút",
+          ]);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setIsVisible(false);
       setTimeout(() => {
-        setCurrentUpdate((prev) => (prev + 1) % liveUpdates.length);
+        setCurrentUpdate((prev) => (prev + 1) % updates.length);
         setIsVisible(true);
       }, 300);
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [updates.length]);
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 hidden md:block">
@@ -42,7 +60,7 @@ export function LiveDataIndicator() {
             isVisible ? "opacity-100" : "opacity-0"
           }`}
         >
-          {liveUpdates[currentUpdate]}
+          {updates[currentUpdate]}
         </p>
       </div>
     </div>

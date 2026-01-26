@@ -13,11 +13,11 @@ interface LiveStats {
 }
 
 const defaultStats: LiveStats = {
-  totalProperties: 2847,
-  hotDeals: 127,
-  totalUsers: 500,
-  avgYield: "5.2",
-  managedCapital: "1.2M+",
+  totalProperties: 0,
+  hotDeals: 0,
+  totalUsers: 0,
+  avgYield: "0",
+  managedCapital: "—",
 };
 
 function useLiveStats() {
@@ -53,35 +53,34 @@ export function Stats() {
   
   const displayStats = [
     {
-      value: stats.totalUsers.toString(),
-      suffix: "+",
-      label: "Aktívnych investorov",
-      change: "+127 tento mesiac",
-      trend: "up",
-      color: "emerald",
-    },
-    {
-      value: stats.totalProperties.toString(),
-      suffix: "+",
-      label: "Sledovaných nehnuteľností",
-      change: `${stats.hotDeals} hot deals`,
+      value: stats.totalProperties > 0 ? stats.totalProperties.toString() : "—",
+      suffix: stats.totalProperties > 0 ? "" : "",
+      label: "Nehnuteľností v databáze",
+      change: stats.hotDeals > 0 ? `${stats.hotDeals} výhodných ponúk` : "Načítavam...",
       trend: "up",
       color: "gold",
     },
     {
-      value: stats.avgYield,
-      suffix: "%",
-      label: "Priemerný výnos",
-      change: "+0.4% vs. trh",
+      value: stats.totalUsers > 0 ? stats.totalUsers.toString() : "—",
+      suffix: stats.totalUsers > 0 ? "+" : "",
+      label: "Registrovaných používateľov",
+      change: isLive ? "Aktívna komunita" : "Načítavam...",
       trend: "up",
       color: "emerald",
     },
     {
-      value: "1.2",
-      suffix: "M+",
-      prefix: "€",
-      label: "Spravovaný kapitál",
-      change: "+28% rast",
+      value: parseFloat(stats.avgYield) > 0 ? stats.avgYield : "4.5",
+      suffix: "%",
+      label: "Priemerný výnos",
+      change: "Hrubý ročný výnos",
+      trend: "up",
+      color: "emerald",
+    },
+    {
+      value: "8",
+      suffix: "",
+      label: "Slovenských krajov",
+      change: "Celoplošné pokrytie",
       trend: "up",
       color: "gold",
     },

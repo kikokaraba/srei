@@ -1,10 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { memo } from "react";
+import { memo, useState, useEffect } from "react";
 import { ArrowRight, TrendingUp, BarChart3, Shield, Sparkles } from "lucide-react";
 
 function LandingHeroComponent() {
+  const [stats, setStats] = useState({ totalProperties: 0, totalUsers: 0 });
+  
+  useEffect(() => {
+    fetch("/api/public/stats")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setStats({
+            totalProperties: data.stats.totalProperties || 0,
+            totalUsers: data.stats.totalUsers || 0,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <section className="relative overflow-hidden bg-premium-dark pt-16 min-h-[90vh] flex items-center">
       {/* Animated background effects */}
@@ -42,7 +58,15 @@ function LandingHeroComponent() {
           </p>
           
           <p className="text-base sm:text-lg text-slate-400 mb-10 sm:mb-14 max-w-2xl mx-auto">
-            Pripojte sa k <span className="text-white font-semibold">500+ investorom</span> na slovenskom trhu.
+            {stats.totalProperties > 0 ? (
+              <>
+                Sledujeme <span className="text-white font-semibold">{stats.totalProperties.toLocaleString()} nehnuteľností</span> na slovenskom trhu.
+              </>
+            ) : (
+              <>
+                Pripojte sa k investorom na slovenskom trhu.
+              </>
+            )}
           </p>
 
           {/* CTA Buttons */}
