@@ -30,28 +30,72 @@ import {
 } from "lucide-react";
 import { UrbanBadge } from "./UrbanImpactAlert";
 
-// Slovenské kraje
+// Slovenské kraje - mestá zodpovedajú formátu v databáze
 const REGIONS = [
-  { value: "BA", label: "Bratislavský", cities: ["BRATISLAVA"] },
-  { value: "TT", label: "Trnavský", cities: ["TRNAVA"] },
-  { value: "TN", label: "Trenčiansky", cities: ["TRENCIN"] },
-  { value: "NR", label: "Nitriansky", cities: ["NITRA"] },
-  { value: "ZA", label: "Žilinský", cities: ["ZILINA"] },
-  { value: "BB", label: "Banskobystrický", cities: ["BANSKA_BYSTRICA"] },
-  { value: "PO", label: "Prešovský", cities: ["PRESOV"] },
-  { value: "KE", label: "Košický", cities: ["KOSICE"] },
+  { value: "BA", label: "Bratislavský", cities: ["Bratislava", "Pezinok", "Senec", "Malacky"] },
+  { value: "TT", label: "Trnavský", cities: ["Trnava", "Piešťany", "Hlohovec", "Galanta", "Dunajská Streda", "Skalica", "Senica"] },
+  { value: "TN", label: "Trenčiansky", cities: ["Trenčín", "Považská Bystrica", "Prievidza", "Partizánske", "Nové Mesto nad Váhom", "Dubnica nad Váhom"] },
+  { value: "NR", label: "Nitriansky", cities: ["Nitra", "Komárno", "Nové Zámky", "Levice", "Šaľa", "Štúrovo"] },
+  { value: "ZA", label: "Žilinský", cities: ["Žilina", "Martin", "Ružomberok", "Liptovský Mikuláš", "Čadca", "Dolný Kubín", "Námestovo"] },
+  { value: "BB", label: "Banskobystrický", cities: ["Banská Bystrica", "Zvolen", "Brezno", "Lučenec", "Rimavská Sobota", "Žiar nad Hronom", "Veľký Krtíš"] },
+  { value: "PO", label: "Prešovský", cities: ["Prešov", "Poprad", "Humenné", "Bardejov", "Vranov nad Topľou", "Svidník", "Stará Ľubovňa", "Kežmarok", "Snina"] },
+  { value: "KE", label: "Košický", cities: ["Košice", "Michalovce", "Spišská Nová Ves", "Trebišov", "Rožňava", "Sobrance"] },
 ];
 
-// Mapovanie miest na kraje
+// Mapovanie miest na kraje (case-insensitive lookup)
 const CITY_TO_REGION: Record<string, string> = {
-  BRATISLAVA: "Bratislavský",
-  KOSICE: "Košický",
-  PRESOV: "Prešovský",
-  ZILINA: "Žilinský",
-  BANSKA_BYSTRICA: "Banskobystrický",
-  TRNAVA: "Trnavský",
-  TRENCIN: "Trenčiansky",
-  NITRA: "Nitriansky",
+  // Bratislavský
+  "bratislava": "Bratislavský",
+  "pezinok": "Bratislavský",
+  "senec": "Bratislavský",
+  "malacky": "Bratislavský",
+  // Košický
+  "košice": "Košický",
+  "kosice": "Košický",
+  "michalovce": "Košický",
+  "spišská nová ves": "Košický",
+  "trebišov": "Košický",
+  "rožňava": "Košický",
+  // Prešovský
+  "prešov": "Prešovský",
+  "presov": "Prešovský",
+  "poprad": "Prešovský",
+  "humenné": "Prešovský",
+  "bardejov": "Prešovský",
+  "kežmarok": "Prešovský",
+  "snina": "Prešovský",
+  // Žilinský
+  "žilina": "Žilinský",
+  "zilina": "Žilinský",
+  "martin": "Žilinský",
+  "ružomberok": "Žilinský",
+  "liptovský mikuláš": "Žilinský",
+  "čadca": "Žilinský",
+  // Banskobystrický
+  "banská bystrica": "Banskobystrický",
+  "banska bystrica": "Banskobystrický",
+  "zvolen": "Banskobystrický",
+  "brezno": "Banskobystrický",
+  "lučenec": "Banskobystrický",
+  // Trnavský
+  "trnava": "Trnavský",
+  "piešťany": "Trnavský",
+  "galanta": "Trnavský",
+  "dunajská streda": "Trnavský",
+  "skalica": "Trnavský",
+  "senica": "Trnavský",
+  // Trenčiansky
+  "trenčín": "Trenčiansky",
+  "trencin": "Trenčiansky",
+  "považská bystrica": "Trenčiansky",
+  "prievidza": "Trenčiansky",
+  "partizánske": "Trenčiansky",
+  // Nitriansky
+  "nitra": "Nitriansky",
+  "komárno": "Nitriansky",
+  "nové zámky": "Nitriansky",
+  "levice": "Nitriansky",
+  "šaľa": "Nitriansky",
 };
 
 const CONDITIONS = [
@@ -434,7 +478,9 @@ export function PropertyList() {
   ).length;
 
   const getRegionLabel = (city: string) => {
-    return CITY_TO_REGION[city] || city;
+    // Case-insensitive lookup
+    const normalizedCity = city?.toLowerCase() || "";
+    return CITY_TO_REGION[normalizedCity] || city;
   };
 
   const getConditionLabel = (condition: string) => {
