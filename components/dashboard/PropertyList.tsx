@@ -347,16 +347,14 @@ export function PropertyList() {
       if (filters.listingType) params.append("listingType", filters.listingType);
       if (filters.source) params.append("source", filters.source);
       
-      // Mapuj región na mestá alebo použi user preferences
+      // Mapuj región na mestá - "Všetky kraje" znamená žiadny filter
       if (filters.region) {
         const region = REGIONS.find(r => r.value === filters.region);
         if (region) {
           params.append("cities", region.cities.join(","));
         }
-      } else if (hasLocationPreferences) {
-        // Ak používateľ nemá explicitný filter, použi jeho uložené preferencie
-        params.append("usePreferences", "true");
       }
+      // Keď je region prázdny, nepoužívame žiadny mestský filter - zobrazia sa všetky nehnuteľnosti
       
       if (filters.minPrice) params.append("minPrice", filters.minPrice);
       if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
@@ -382,7 +380,7 @@ export function PropertyList() {
     } finally {
       setLoading(false);
     }
-  }, [filters, page, hasLocationPreferences]);
+  }, [filters, page]);
 
   const fetchSavedProperties = useCallback(async () => {
     try {
