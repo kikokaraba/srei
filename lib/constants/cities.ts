@@ -3,6 +3,8 @@
  * All city-related logic should use these constants and functions
  */
 
+import { getDistrictInfo, getDistrictCoordinates, SLOVAK_DISTRICTS } from "./districts";
+
 // All tracked Slovak cities with their coordinates
 export interface CityInfo {
   name: string;
@@ -285,15 +287,27 @@ export function getCityCoordinates(city: string): { lat: number; lng: number } |
   const normalized = normalizeCityName(city);
   if (!normalized) return null;
   
+  // Try exact match in cities
   const coords = CITY_COORDS_MAP[normalized];
   if (coords) return coords;
   
-  // Fallback: try to find similar city
+  // Fallback 1: try to find similar city
   for (const cityInfo of SLOVAK_CITIES) {
     if (cityInfo.name.toLowerCase().includes(normalized.toLowerCase()) ||
         normalized.toLowerCase().includes(cityInfo.name.toLowerCase())) {
       return { lat: cityInfo.lat, lng: cityInfo.lng };
     }
+  }
+  
+  // Fallback 2: try district lookup (for villages in known districts)
+  const districtCoords = getDistrictCoordinates(city);
+  if (districtCoords) return districtCoords;
+  
+  // Fallback 3: try to extract district from "okres X" pattern
+  const okresMatch = city.match(/okres\s+(.+)/i);
+  if (okresMatch) {
+    const distCoords = getDistrictCoordinates(okresMatch[1]);
+    if (distCoords) return distCoords;
   }
   
   return null;
@@ -306,7 +320,24 @@ export function getCityInfo(city: string): CityInfo | null {
   const normalized = normalizeCityName(city);
   if (!normalized) return null;
   
-  return SLOVAK_CITIES.find(c => c.name === normalized) || null;
+  // Try exact match
+  const exactMatch = SLOVAK_CITIES.find(c => c.name === normalized);
+  if (exactMatch) return exactMatch;
+  
+  // Fallback: try district and create pseudo-city info
+  const districtInfo = getDistrictInfo(city);
+  if (districtInfo) {
+    return {
+      name: districtInfo.mainCity,
+      nameNormalized: districtInfo.nameNormalized,
+      lat: districtInfo.lat,
+      lng: districtInfo.lng,
+      region: districtInfo.region,
+      population: undefined,
+    };
+  }
+  
+  return null;
 }
 
 /**

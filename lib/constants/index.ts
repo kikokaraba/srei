@@ -50,3 +50,11 @@ export {
 
 // Regióny
 export { SLOVAK_REGIONS, type RegionData } from "./regions";
+
+// Okresy (districts)
+export { 
+  SLOVAK_DISTRICTS, 
+  getDistrictInfo, 
+  getDistrictCoordinates,
+  type DistrictInfo,
+} from "./districts";
