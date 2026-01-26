@@ -515,16 +515,22 @@ export default function PropertyDetailPage() {
                 className="flex items-center gap-3 w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
               >
                 <ExternalLink className="w-5 h-5" />
-                Kontaktovať predajcu
+                Otvoriť inzerát
               </a>
-              <button className="flex items-center gap-3 w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors">
+              <Link 
+                href="/dashboard/calculators"
+                className="flex items-center gap-3 w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
+              >
                 <Calculator className="w-5 h-5" />
                 Hypotekárna kalkulačka
-              </button>
-              <button className="flex items-center gap-3 w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors">
+              </Link>
+              <Link 
+                href="/dashboard/calculators"
+                className="flex items-center gap-3 w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
+              >
                 <PiggyBank className="w-5 h-5" />
-                ROI kalkulačka
-              </button>
+                Výnosová kalkulačka
+              </Link>
             </div>
           </div>
 
