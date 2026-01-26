@@ -232,9 +232,9 @@ async function scrapePage(url: string, listingType: string): Promise<ScrapedProp
   const properties: ScrapedProperty[] = [];
 
   // Nehnutelnosti.sk uses React/MUI - parse with regex patterns
-  // Find all detail links: /detail/[id]/[slug]
-  const detailLinkPattern = /href="(\/detail\/([^\/]+)\/([^"]+))"/g;
-  const pricePattern = /MuiTypography-h5[^>]*>([^<]*\d[\d\s]*€)/g;
+  // Find all detail links - both absolute and relative
+  const detailLinkPattern = /href="((?:https:\/\/www\.nehnutelnosti\.sk)?\/detail\/([^\/]+)\/([^"]+))"/g;
+  const pricePattern = /data-test-id="text">(\d[\d\s]*€)/g;
   const areaPattern = /(\d+)\s*m²/g;
 
   // Extract all detail URLs
@@ -313,6 +313,11 @@ async function scrapePage(url: string, listingType: string): Promise<ScrapedProp
       .replace(/\b\w/g, c => c.toUpperCase())
       .substring(0, 100);
 
+    // Build full URL (handle both absolute and relative)
+    const fullUrl = link.url.startsWith("http") 
+      ? link.url 
+      : `${CONFIG.baseUrl}${link.url}`;
+
     properties.push({
       externalId: `neh-${link.id}`,
       title,
@@ -322,7 +327,7 @@ async function scrapePage(url: string, listingType: string): Promise<ScrapedProp
       city,
       district,
       rooms,
-      sourceUrl: `${CONFIG.baseUrl}${link.url}`,
+      sourceUrl: fullUrl,
       listingType,
       description: "",
     });

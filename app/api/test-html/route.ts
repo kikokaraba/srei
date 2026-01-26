@@ -23,8 +23,8 @@ export async function GET() {
     const html = await response.text();
     
     // Test the exact regex patterns from paginated scraper
-    const detailLinkPattern = /href="(\/detail\/([^\/]+)\/([^"]+))"/g;
-    const pricePattern = /MuiTypography-h5[^>]*>([^<]*\d[\d\s]*€)/g;
+    const detailLinkPattern = /href="((?:https:\/\/www\.nehnutelnosti\.sk)?\/detail\/([^\/]+)\/([^"]+))"/g;
+    const pricePattern = /data-test-id="text">(\d[\d\s]*€)/g;
     const areaPattern = /(\d+)\s*m²/g;
 
     // Extract detail links
