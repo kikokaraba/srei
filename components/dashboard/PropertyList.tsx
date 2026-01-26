@@ -130,7 +130,7 @@ interface Property {
   is_distressed: boolean;
   days_on_market: number;
   listing_type: "PREDAJ";
-  source: "BAZOS" | "NEHNUTELNOSTI";
+  source: "NEHNUTELNOSTI";
   investmentMetrics: {
     gross_yield: number;
     net_yield: number;
@@ -173,7 +173,6 @@ interface BatchMetrics {
 const SOURCES = [
   { value: "", label: "Všetky zdroje" },
   { value: "NEHNUTELNOSTI", label: "Nehnutelnosti.sk" },
-  { value: "BAZOS", label: "Bazoš" },
 ];
 
 interface Filters {
@@ -258,9 +257,7 @@ function getScoreLabel(score: number): string {
 function getSourceStyle(source: string): { label: string; bg: string; text: string } {
   switch (source) {
     case "NEHNUTELNOSTI":
-      return { label: "Nehnutelnosti", bg: "bg-blue-500/20", text: "text-blue-400" };
-    case "BAZOS":
-      return { label: "Bazoš", bg: "bg-orange-500/20", text: "text-orange-400" };
+      return { label: "Nehnutelnosti.sk", bg: "bg-blue-500/20", text: "text-blue-400" };
     default:
       return { label: source, bg: "bg-slate-500/20", text: "text-slate-400" };
   }
@@ -820,11 +817,9 @@ export function PropertyList() {
                       <p className="text-2xl font-bold text-slate-100">
                         €{property.price.toLocaleString()}
                       </p>
-                      {property.source !== "BAZOS" && (
-                        <p className="text-sm text-slate-400">
-                          €{property.price_per_m2.toLocaleString()}/m²
-                        </p>
-                      )}
+                      <p className="text-sm text-slate-400">
+                        €{property.price_per_m2.toLocaleString()}/m²
+                      </p>
                       {/* Price Story - inline */}
                       {(() => {
                         const metrics = batchMetrics[property.id];
@@ -1069,11 +1064,9 @@ export function PropertyList() {
                     <p className="text-xl font-bold text-slate-100">
                       €{property.price.toLocaleString()}
                     </p>
-                    {property.source !== "BAZOS" && (
-                      <p className="text-sm text-slate-400">
-                        €{property.price_per_m2.toLocaleString()}/m²
-                      </p>
-                    )}
+                    <p className="text-sm text-slate-400">
+                      €{property.price_per_m2.toLocaleString()}/m²
+                    </p>
                   </div>
 
                   {/* Yield */}
