@@ -233,15 +233,16 @@ interface Property {
   id: string;
   title: string;
   price: number;
-  price_per_m2: number;
   area_m2: number;
   city: string;
   latitude: number;
   longitude: number;
-  listing_type: string;
-  is_distressed: boolean;
-  source_url: string | null;
   rooms: number | null;
+  // Computed fields
+  price_per_m2?: number;
+  listing_type?: string;
+  is_distressed?: boolean;
+  source_url?: string | null;
 }
 
 export default function InteractiveMap() {
@@ -266,12 +267,13 @@ export default function InteractiveMap() {
         
         if (data.ok) {
           // Try to load properties
-          const propsRes = await fetch("/api/v1/properties/map?limit=500", {
+          const propsRes = await fetch("/api/v1/properties/map", {
             signal: AbortSignal.timeout(10000)
           });
           const propsData = await propsRes.json();
-          if (propsData.properties) {
-            setProperties(propsData.properties.filter((p: Property) => p.latitude && p.longitude));
+          if (propsData.data && Array.isArray(propsData.data)) {
+            setProperties(propsData.data.filter((p: Property) => p.latitude && p.longitude));
+            console.log(`Map loaded ${propsData.data.length} properties`);
           }
         }
       } catch {
@@ -294,7 +296,8 @@ export default function InteractiveMap() {
         cityData[cityName] = { count: 0, totalPrice: 0, hotDeals: 0 };
       }
       cityData[cityName].count++;
-      cityData[cityName].totalPrice += prop.price_per_m2;
+      const pricePerM2 = prop.price_per_m2 || (prop.area_m2 > 0 ? Math.round(prop.price / prop.area_m2) : 0);
+        cityData[cityName].totalPrice += pricePerM2;
       if (prop.is_distressed) {
         cityData[cityName].hotDeals++;
       }
@@ -636,7 +639,7 @@ export default function InteractiveMap() {
                       </div>
                       <div className="flex justify-between">
                         <span>Cena/m²:</span>
-                        <span className="font-semibold">€{property.price_per_m2}</span>
+                        <span className="font-semibold">€{property.price_per_m2 || (property.area_m2 > 0 ? Math.round(property.price / property.area_m2) : 0)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Plocha:</span>
