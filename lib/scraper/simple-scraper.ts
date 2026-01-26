@@ -492,7 +492,7 @@ export async function scrapeNehnutelnosti(options: {
 }
 
 /**
- * Scrapuje OBA portály
+ * Scrapuje aktívne portály (teraz len Nehnutelnosti.sk)
  */
 export async function scrapeAll(options: {
   maxPages?: number;
@@ -502,17 +502,7 @@ export async function scrapeAll(options: {
   const allErrors: string[] = [];
   let totalPages = 0;
   
-  console.log("\n🚀 Starting FULL scrape - Bazos + Nehnutelnosti.sk");
-  
-  // Scrape Bazos
-  try {
-    const bazosResult = await scrapeBazos({ maxPages: options.maxPages });
-    allProperties.push(...bazosResult.properties);
-    allErrors.push(...bazosResult.errors);
-    totalPages += bazosResult.pagesScraped;
-  } catch (e) {
-    allErrors.push(`Bazos error: ${e instanceof Error ? e.message : "Unknown"}`);
-  }
+  console.log("\n🚀 Starting scrape - Nehnutelnosti.sk only");
   
   // Scrape Nehnutelnosti.sk
   try {
@@ -526,7 +516,7 @@ export async function scrapeAll(options: {
   
   const duration = Date.now() - startTime;
   
-  console.log(`\n📊 FULL Scraping Complete:`);
+  console.log(`\n📊 Scraping Complete:`);
   console.log(`  - Total Properties: ${allProperties.length}`);
   console.log(`  - Total Pages: ${totalPages}`);
   console.log(`  - Errors: ${allErrors.length}`);

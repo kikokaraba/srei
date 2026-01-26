@@ -72,7 +72,7 @@ export default function ScraperControl() {
     },
   });
 
-  const portals = ["BAZOS", "NEHNUTELNOSTI"];
+  const portals = ["NEHNUTELNOSTI"];
 
   return (
     <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
@@ -111,7 +111,7 @@ export default function ScraperControl() {
           ))}
         </div>
         <p className="text-xs text-slate-500 mt-3">
-          Portály: Bazos + Nehnutelnosti.sk | ~1500 nehnuteľností za jedno spustenie (3x denne = ~4500)
+          Portál: Nehnutelnosti.sk | ~100 nehnuteľností za jedno spustenie
         </p>
       </div>
 
