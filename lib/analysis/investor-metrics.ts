@@ -9,7 +9,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import type { Property } from "@/generated/prisma/client";
+import type { Property } from "@/generated/prisma";
 
 // ============================================
 // PRICE MOMENTUM

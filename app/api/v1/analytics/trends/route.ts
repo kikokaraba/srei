@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getMarketTrends, getRemovedListingsStats } from "@/lib/analytics/market-stats";
-import type { ListingType } from "@/generated/prisma/client";
+import type { ListingType } from "@/generated/prisma";
 
 export async function GET(request: NextRequest) {
   const session = await auth();

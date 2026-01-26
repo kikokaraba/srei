@@ -3,7 +3,7 @@
  * Používa LLM pre inteligentné porovnanie nehnuteľností
  */
 
-import type { Property } from "@/generated/prisma/client";
+import type { Property } from "@/generated/prisma";
 import { normalizeAddress, normalizeTitle, removeDiacritics } from "./fingerprint";
 
 // ============================================================================

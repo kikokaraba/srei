@@ -5,7 +5,7 @@
 
 import { createHash } from "crypto";
 import { prisma } from "@/lib/prisma";
-import type { Property, PropertyFingerprint} from "@/generated/prisma/client";
+import type { Property, PropertyFingerprint} from "@/generated/prisma";
 
 // ============================================================================
 // NORMALIZAČNÉ FUNKCIE

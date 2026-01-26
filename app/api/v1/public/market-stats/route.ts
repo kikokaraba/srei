@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { ListingType } from "@/generated/prisma/client";
+import type { ListingType } from "@/generated/prisma";
 
 async function validateApiKey(apiKey: string): Promise<boolean> {
   if (!apiKey) return false;

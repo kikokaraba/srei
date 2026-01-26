@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { ListingType, PropertySource } from "@/generated/prisma/client";
+import type { ListingType, PropertySource } from "@/generated/prisma";
 
 // Rate limiting - jednoduchá implementácia
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();

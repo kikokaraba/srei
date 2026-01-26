@@ -1,6 +1,6 @@
 // Intelligent Parser - Extrakcia štruktúrovaných dát z popisu inzerátu
 
-import type { PropertyCondition, EnergyCertificate } from "@/generated/prisma/client";
+import type { PropertyCondition, EnergyCertificate } from "@/generated/prisma";
 
 /**
  * Regex patterny pre extrakciu informácií z popisu

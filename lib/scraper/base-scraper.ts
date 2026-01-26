@@ -4,7 +4,7 @@
  */
 
 import * as cheerio from "cheerio";
-import type { PropertySource, ListingType } from "@/generated/prisma/client";
+import type { PropertySource, ListingType } from "@/generated/prisma";
 
 // ============================================================================
 // TYPY A ROZHRANIA

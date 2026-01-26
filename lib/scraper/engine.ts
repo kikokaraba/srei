@@ -1,7 +1,7 @@
 // Data Intelligence Engine - Hlavný orchestrátor scrapingu a analýzy
 
 import { prisma } from "@/lib/prisma";
-import type { PropertyCondition, EnergyCertificate } from "@/generated/prisma/client";
+import type { PropertyCondition, EnergyCertificate } from "@/generated/prisma";
 import type { 
   ScrapeResult, 
   SyncReport, 

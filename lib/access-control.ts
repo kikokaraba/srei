@@ -6,7 +6,7 @@
  * PREMIUM_INVESTOR a ADMIN majú neobmedzený prístup.
  */
 
-import { UserRole } from "@/generated/prisma/client";
+import { UserRole } from "@/generated/prisma";
 
 // Typy pre feature flags
 export type FeatureKey = 
