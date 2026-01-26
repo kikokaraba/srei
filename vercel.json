@@ -4,6 +4,12 @@
     "app/api/cron/scrape-all/route.ts": {
       "maxDuration": 300
     },
+    "app/api/cron/scrape-bazos/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/cron/scrape-nehnutelnosti/route.ts": {
+      "maxDuration": 300
+    },
     "app/api/v1/scraper/stealth/route.ts": {
       "maxDuration": 300
     },
@@ -13,8 +19,12 @@
   },
   "crons": [
     {
-      "path": "/api/cron/scrape-all",
-      "schedule": "0 4,8,12,16,20,23 * * *"
+      "path": "/api/cron/scrape-bazos",
+      "schedule": "0 6,10,14,18,22 * * *"
+    },
+    {
+      "path": "/api/cron/scrape-nehnutelnosti",
+      "schedule": "5 6,10,14,18,22 * * *"
     },
     {
       "path": "/api/cron/deduplicate",

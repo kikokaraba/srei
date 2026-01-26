@@ -14,41 +14,29 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-interface ScrapeStats {
-  portal: string;
-  propertiesFound: number;
-  newProperties: number;
-  updatedProperties: number;
-  errors: string[];
-  duration: string;
-}
-
-interface ScrapeResult {
+interface PortalResult {
   success: boolean;
-  summary: {
-    totalFound: number;
-    totalNew: number;
-    totalUpdated: number;
-    hotDealsFound: number;
-    totalInDatabase: number;
-    notificationsSent: number;
-    duration: string;
-  };
-  details: ScrapeStats[];
+  portal: string;
+  found: number;
+  new: number;
+  updated: number;
+  errors: number;
+  totalInDatabase: number;
+  duration: number;
+  error?: string;
 }
 
 export default function ScraperControl() {
-  const [lastRun, setLastRun] = useState<Date | null>(null);
+  const [lastRun, setLastRun] = useState<{ portal: string; time: Date } | null>(null);
 
-  // Run full scrape - all portals, all categories
-  const runMutation = useMutation({
-    mutationFn: async (): Promise<ScrapeResult> => {
-      // Use AbortController for timeout (5 minutes max)
+  // Mutation pre Bazoš
+  const bazosMutation = useMutation({
+    mutationFn: async (): Promise<PortalResult> => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000);
       
       try {
-        const res = await fetch("/api/cron/scrape-all", {
+        const res = await fetch("/api/cron/scrape-bazos", {
           method: "GET",
           signal: controller.signal,
         });
@@ -62,17 +50,62 @@ export default function ScraperControl() {
       } catch (error) {
         clearTimeout(timeoutId);
         if (error instanceof Error && error.name === "AbortError") {
-          throw new Error("Scraping trvá príliš dlho (>5 min). Skontroluj logy na Verceli.");
+          throw new Error("Scraping trvá príliš dlho (>5 min)");
         }
         throw error;
       }
     },
     onSuccess: () => {
-      setLastRun(new Date());
+      setLastRun({ portal: "Bazoš", time: new Date() });
     },
   });
 
-  const portals = ["BAZOS", "NEHNUTELNOSTI"];
+  // Mutation pre Nehnutelnosti.sk
+  const nehnutelnostiMutation = useMutation({
+    mutationFn: async (): Promise<PortalResult> => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000);
+      
+      try {
+        const res = await fetch("/api/cron/scrape-nehnutelnosti", {
+          method: "GET",
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        
+        if (!res.ok) {
+          const errorText = await res.text().catch(() => res.statusText);
+          throw new Error(`HTTP ${res.status}: ${errorText.substring(0, 200)}`);
+        }
+        return res.json();
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof Error && error.name === "AbortError") {
+          throw new Error("Scraping trvá príliš dlho (>5 min)");
+        }
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      setLastRun({ portal: "Nehnutelnosti.sk", time: new Date() });
+    },
+  });
+
+  // Spustí oba scrapers s 5s pauzou medzi
+  const runBoth = async () => {
+    await bazosMutation.mutateAsync();
+    await new Promise(r => setTimeout(r, 5000));
+    await nehnutelnostiMutation.mutateAsync();
+  };
+
+  const bothMutation = useMutation({
+    mutationFn: runBoth,
+    onSuccess: () => {
+      setLastRun({ portal: "Všetko", time: new Date() });
+    },
+  });
+
+  const isAnyRunning = bazosMutation.isPending || nehnutelnostiMutation.isPending || bothMutation.isPending;
 
   return (
     <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
@@ -85,182 +118,173 @@ export default function ScraperControl() {
           <div>
             <h2 className="text-xl font-bold text-white">Scraper Control</h2>
             <p className="text-sm text-slate-400">
-              Manuálne spustenie scrapera pre všetky portály
+              Manuálne spustenie scrapera
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`w-2 h-2 rounded-full ${runMutation.isPending ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
+          <span className={`w-2 h-2 rounded-full ${isAnyRunning ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
           <span className="text-sm text-slate-400">
-            {runMutation.isPending ? "Beží..." : "Pripravený"}
+            {isAnyRunning ? "Beží..." : "Pripravený"}
           </span>
         </div>
       </div>
 
-      {/* Portals info */}
-      <div className="mb-6 p-4 bg-slate-900/50 rounded-lg border border-slate-700/50">
-        <p className="text-sm text-slate-400 mb-3">Bude scrapovať tieto portály:</p>
-        <div className="flex flex-wrap gap-2">
-          {portals.map((portal) => (
-            <span 
-              key={portal}
-              className="px-3 py-1.5 text-sm bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-lg"
-            >
-              {portal}
-            </span>
-          ))}
-        </div>
-        <p className="text-xs text-slate-500 mt-3">
-          Portály: Bazoš + Nehnutelnosti.sk | Byty, Domy, Pozemky
-        </p>
+      {/* Portal Buttons - 2 samostatné tlačidlá */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        {/* Bazoš Button */}
+        <button
+          onClick={() => bazosMutation.mutate()}
+          disabled={isAnyRunning}
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-yellow-500/80 to-amber-500/80 hover:from-yellow-600 hover:to-amber-600 disabled:from-slate-600 disabled:to-slate-600 text-white font-bold rounded-xl transition-all disabled:cursor-not-allowed"
+        >
+          {bazosMutation.isPending ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Scrapujem Bazoš...
+            </>
+          ) : (
+            <>
+              <Play className="w-5 h-5" />
+              Spustiť Bazoš
+            </>
+          )}
+        </button>
+
+        {/* Nehnutelnosti.sk Button */}
+        <button
+          onClick={() => nehnutelnostiMutation.mutate()}
+          disabled={isAnyRunning}
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500/80 to-cyan-500/80 hover:from-blue-600 hover:to-cyan-600 disabled:from-slate-600 disabled:to-slate-600 text-white font-bold rounded-xl transition-all disabled:cursor-not-allowed"
+        >
+          {nehnutelnostiMutation.isPending ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Scrapujem Nehnutelnosti...
+            </>
+          ) : (
+            <>
+              <Play className="w-5 h-5" />
+              Spustiť Nehnutelnosti.sk
+            </>
+          )}
+        </button>
       </div>
 
-      {/* Run Button - ONE CLICK */}
+      {/* Run Both Button */}
       <button
-        onClick={() => runMutation.mutate()}
-        disabled={runMutation.isPending}
+        onClick={() => bothMutation.mutate()}
+        disabled={isAnyRunning}
         className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:from-slate-600 disabled:to-slate-600 text-white font-bold text-lg rounded-xl transition-all disabled:cursor-not-allowed shadow-lg shadow-emerald-500/25"
       >
-        {runMutation.isPending ? (
+        {bothMutation.isPending ? (
           <>
             <Loader2 className="w-6 h-6 animate-spin" />
-            Scrapujem všetky portály... (2-5 minút)
+            Scrapujem všetko... (3-5 minút)
           </>
         ) : (
           <>
             <Zap className="w-6 h-6" />
-            Spustiť Scraping - Všetko
+            Spustiť Obidva Portály
           </>
         )}
       </button>
 
-      {/* Results */}
-      {runMutation.data && (
-        <div className={`mt-6 p-5 rounded-xl border ${
-          runMutation.data.success 
-            ? "bg-emerald-500/10 border-emerald-500/30" 
-            : "bg-rose-500/10 border-rose-500/30"
-        }`}>
-          {/* Header */}
-          <div className="flex items-center gap-3 mb-4">
-            {runMutation.data.success ? (
-              <CheckCircle className="w-6 h-6 text-emerald-400" />
-            ) : (
-              <XCircle className="w-6 h-6 text-rose-400" />
-            )}
-            <span className={`text-lg font-bold ${runMutation.data.success ? "text-emerald-300" : "text-rose-300"}`}>
-              Scraping dokončený!
-            </span>
-          </div>
+      {/* Info */}
+      <p className="text-xs text-slate-500 mt-3 text-center">
+        Bazoš: Byty, Domy, Pozemky | Nehnutelnosti.sk: Byty, Domy
+      </p>
 
-          {/* Summary Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-slate-800/50 rounded-lg p-3">
-              <div className="text-2xl font-bold text-white">
-                {runMutation.data.summary.totalFound.toLocaleString()}
-              </div>
-              <div className="text-xs text-slate-400">Nájdených inzerátov</div>
-            </div>
-            <div className="bg-slate-800/50 rounded-lg p-3">
-              <div className="text-2xl font-bold text-emerald-400">
-                +{runMutation.data.summary.totalNew.toLocaleString()}
-              </div>
-              <div className="text-xs text-slate-400">Nových nehnuteľností</div>
-            </div>
-            <div className="bg-slate-800/50 rounded-lg p-3">
-              <div className="text-2xl font-bold text-blue-400">
-                {runMutation.data.summary.totalUpdated.toLocaleString()}
-              </div>
-              <div className="text-xs text-slate-400">Aktualizovaných</div>
-            </div>
-            <div className="bg-slate-800/50 rounded-lg p-3">
-              <div className="text-2xl font-bold text-red-400">
-                🔥 {runMutation.data.summary.hotDealsFound}
-              </div>
-              <div className="text-xs text-slate-400">Hot Deals</div>
-            </div>
-            <div className="bg-slate-800/50 rounded-lg p-3">
-              <div className="text-2xl font-bold text-slate-300">
-                <Database className="w-5 h-5 inline mr-1" />
-                {runMutation.data.summary.totalInDatabase.toLocaleString()}
-              </div>
-              <div className="text-xs text-slate-400">Celkom v databáze</div>
-            </div>
-            <div className="bg-slate-800/50 rounded-lg p-3">
-              <div className="text-2xl font-bold text-slate-300">
-                <Clock className="w-5 h-5 inline mr-1" />
-                {runMutation.data.summary.duration}
-              </div>
-              <div className="text-xs text-slate-400">Trvanie</div>
-            </div>
-          </div>
-
-          {/* Per-portal breakdown */}
-          <div className="border-t border-slate-700 pt-4">
-            <p className="text-sm font-medium text-slate-300 mb-3">Rozdelenie podľa portálu:</p>
-            <div className="space-y-2">
-              {runMutation.data.details.map((detail) => (
-                <div 
-                  key={detail.portal}
-                  className="flex items-center justify-between p-3 bg-slate-800/30 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="font-medium text-white">{detail.portal}</span>
-                    {detail.errors.length > 0 && (
-                      <AlertTriangle className="w-4 h-4 text-amber-400" />
-                    )}
-                  </div>
-                  <div className="flex items-center gap-4 text-sm">
-                    <span className="text-slate-400">
-                      {detail.propertiesFound} nájdených
-                    </span>
-                    <span className="text-emerald-400 font-medium">
-                      +{detail.newProperties} nových
-                    </span>
-                    <span className="text-slate-500">
-                      {detail.duration}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Notifications */}
-          {runMutation.data.summary.notificationsSent > 0 && (
-            <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-              <p className="text-sm text-blue-300">
-                📱 Odoslaných {runMutation.data.summary.notificationsSent} Telegram notifikácií
-              </p>
-            </div>
-          )}
-        </div>
+      {/* Bazoš Result */}
+      {bazosMutation.data && (
+        <ResultCard result={bazosMutation.data} color="yellow" />
       )}
 
-      {/* Error display */}
-      {runMutation.error && (
-        <div className="mt-6 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl">
-          <div className="flex items-center gap-2 mb-2">
-            <XCircle className="w-5 h-5 text-rose-400" />
-            <span className="font-semibold text-rose-300">Chyba pri scrapingu</span>
-          </div>
-          <p className="text-sm text-rose-400">
-            {runMutation.error instanceof Error ? runMutation.error.message : "Neznáma chyba"}
-          </p>
-        </div>
+      {/* Nehnutelnosti Result */}
+      {nehnutelnostiMutation.data && (
+        <ResultCard result={nehnutelnostiMutation.data} color="blue" />
+      )}
+
+      {/* Errors */}
+      {bazosMutation.error && (
+        <ErrorCard error={bazosMutation.error} portal="Bazoš" />
+      )}
+      {nehnutelnostiMutation.error && (
+        <ErrorCard error={nehnutelnostiMutation.error} portal="Nehnutelnosti.sk" />
       )}
 
       {/* Info footer */}
       <div className="mt-6 flex items-center justify-between text-xs text-slate-500">
         <span>
-          Automatický scraping: 7:00, 15:00, 23:00 (CET)
+          Automatický scraping: 6:00, 10:00, 14:00, 18:00, 22:00
         </span>
         {lastRun && (
           <span>
-            Posledné spustenie: {lastRun.toLocaleTimeString("sk-SK")}
+            Posledné: {lastRun.portal} o {lastRun.time.toLocaleTimeString("sk-SK")}
           </span>
         )}
       </div>
+    </div>
+  );
+}
+
+function ResultCard({ result, color }: { result: PortalResult; color: "yellow" | "blue" }) {
+  const colorClass = color === "yellow" 
+    ? "bg-amber-500/10 border-amber-500/30" 
+    : "bg-blue-500/10 border-blue-500/30";
+  const textColor = color === "yellow" ? "text-amber-300" : "text-blue-300";
+  
+  return (
+    <div className={`mt-4 p-4 rounded-xl border ${colorClass}`}>
+      <div className="flex items-center gap-2 mb-3">
+        {result.success ? (
+          <CheckCircle className={`w-5 h-5 ${textColor}`} />
+        ) : (
+          <AlertTriangle className="w-5 h-5 text-amber-400" />
+        )}
+        <span className={`font-bold ${textColor}`}>
+          {result.portal}
+        </span>
+        <span className="text-slate-400 text-sm">
+          ({Math.round(result.duration / 1000)}s)
+        </span>
+      </div>
+
+      <div className="grid grid-cols-4 gap-3 text-center">
+        <div>
+          <div className="text-xl font-bold text-white">{result.found}</div>
+          <div className="text-xs text-slate-400">Nájdených</div>
+        </div>
+        <div>
+          <div className="text-xl font-bold text-emerald-400">+{result.new}</div>
+          <div className="text-xs text-slate-400">Nových</div>
+        </div>
+        <div>
+          <div className="text-xl font-bold text-blue-400">{result.updated}</div>
+          <div className="text-xs text-slate-400">Aktualizovaných</div>
+        </div>
+        <div>
+          <div className="text-xl font-bold text-slate-300 flex items-center justify-center gap-1">
+            <Database className="w-4 h-4" />
+            {result.totalInDatabase}
+          </div>
+          <div className="text-xs text-slate-400">V databáze</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ErrorCard({ error, portal }: { error: Error | unknown; portal: string }) {
+  return (
+    <div className="mt-4 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl">
+      <div className="flex items-center gap-2 mb-2">
+        <XCircle className="w-5 h-5 text-rose-400" />
+        <span className="font-semibold text-rose-300">Chyba: {portal}</span>
+      </div>
+      <p className="text-sm text-rose-400">
+        {error instanceof Error ? error.message : "Neznáma chyba"}
+      </p>
     </div>
   );
 }
