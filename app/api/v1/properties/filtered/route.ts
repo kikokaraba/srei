@@ -76,12 +76,23 @@ export async function GET(request: Request) {
     }
 
     // Mesto - prioritne z query, potom z preferencií (regióny + okresy + mestá)
+    // Case-insensitive matching - databáza má "Bratislava" ale frontend môže poslať "BRATISLAVA"
     const citiesInput = citiesParam || cityParam;
     if (citiesInput) {
       // Podporuje viac miest oddelených čiarkou
-      const cities = citiesInput.split(",").filter(Boolean) as string[];
+      const cities = citiesInput.split(",").filter(Boolean);
       if (cities.length > 0) {
-        where.city = { in: cities };
+        // Normalize city names for case-insensitive matching
+        // Build AND condition for cities (if any city matches)
+        const cityConditions = cities.map(city => ({
+          city: { contains: city.toLowerCase(), mode: "insensitive" as const }
+        }));
+        
+        // Combine with existing where using AND
+        if (!where.AND) where.AND = [];
+        (where.AND as Prisma.PropertyWhereInput[]).push({
+          OR: cityConditions
+        });
       }
     } else if (preferences) {
       // Rozšír regióny a okresy na mestá
@@ -127,11 +138,18 @@ export async function GET(request: Request) {
         } catch { /* ignore parse errors */ }
       }
       
-      // Ak sú nejaké mestá, filtruj podľa nich
+      // Ak sú nejaké mestá, filtruj podľa nich (case-insensitive)
       if (allCities.length > 0) {
         // Odstráň duplicity
         const uniqueCities = [...new Set(allCities)];
-        where.city = { in: uniqueCities };
+        const cityConditions = uniqueCities.map(city => ({
+          city: { contains: city.toLowerCase(), mode: "insensitive" as const }
+        }));
+        
+        if (!where.AND) where.AND = [];
+        (where.AND as Prisma.PropertyWhereInput[]).push({
+          OR: cityConditions
+        });
       }
     }
 
