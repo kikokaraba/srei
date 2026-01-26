@@ -9,7 +9,6 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import * as cheerio from "cheerio";
 
 // Konfigurácia
 const CONFIG = {
@@ -230,73 +229,104 @@ async function scrapePage(url: string, listingType: string): Promise<ScrapedProp
   }
 
   const html = await response.text();
-  const $ = cheerio.load(html);
   const properties: ScrapedProperty[] = [];
 
-  // Nehnutelnosti.sk selektory
-  $("article.advertisement-item, div.advertisement-item, .inzerat, .property-item, [data-testid='property-item']").each((_, element) => {
-    try {
-      const $el = $(element);
-      
-      // Názov
-      const title = $el.find("h2 a, .title a, .advertisement-item--content__title a, a.advertisement-item--content__title").first().text().trim() ||
-                    $el.find("a").first().attr("title") || "";
-      
-      if (!title || title.length < 5) return;
+  // Nehnutelnosti.sk uses React/MUI - parse with regex patterns
+  // Find all detail links: /detail/[id]/[slug]
+  const detailLinkPattern = /href="(\/detail\/([^\/]+)\/([^"]+))"/g;
+  const pricePattern = /MuiTypography-h5[^>]*>([^<]*\d[\d\s]*€)/g;
+  const areaPattern = /(\d+)\s*m²/g;
 
-      // URL
-      let sourceUrl = $el.find("a").first().attr("href") || "";
-      if (sourceUrl && !sourceUrl.startsWith("http")) {
-        sourceUrl = `${CONFIG.baseUrl}${sourceUrl}`;
-      }
+  // Extract all detail URLs
+  const detailLinks: { url: string; id: string; slug: string }[] = [];
+  let linkMatch;
+  while ((linkMatch = detailLinkPattern.exec(html)) !== null) {
+    detailLinks.push({
+      url: linkMatch[1],
+      id: linkMatch[2],
+      slug: linkMatch[3],
+    });
+  }
 
-      // External ID z URL
-      const externalIdMatch = sourceUrl.match(/\/(\d+)\/?$/);
-      const externalId = externalIdMatch ? externalIdMatch[1] : sourceUrl;
-
-      // Cena
-      const priceText = $el.find(".advertisement-item--content__price, .price, .cena").first().text();
-      const priceMatch = priceText.replace(/\s/g, "").match(/(\d+)/);
-      const price = priceMatch ? parseInt(priceMatch[1], 10) : 0;
-
-      if (price < 1000) return; // Skip invalid
-
-      // Plocha
-      const areaText = $el.find(".advertisement-item--content__info, .info, .parametre").text();
-      const areaMatch = areaText.match(/(\d+)\s*m²/);
-      const areaM2 = areaMatch ? parseInt(areaMatch[1], 10) : 50;
-
-      // Izby
-      const roomsMatch = areaText.match(/(\d+)\s*(?:izb|room)/i);
-      const rooms = roomsMatch ? parseInt(roomsMatch[1], 10) : null;
-
-      // Lokalita
-      const locationText = $el.find(".advertisement-item--content__info--location, .location, .lokalita").first().text().trim();
-      const locationParts = locationText.split(",").map(s => s.trim());
-      const city = locationParts[0] || "Slovensko";
-      const district = locationParts[1] || locationParts[0] || "";
-
-      // Popis
-      const description = $el.find(".advertisement-item--content__text, .description, .popis").first().text().trim();
-
-      properties.push({
-        externalId: `neh-${externalId}`,
-        title,
-        price,
-        pricePerM2: areaM2 > 0 ? Math.round(price / areaM2) : price,
-        areaM2,
-        city,
-        district,
-        rooms,
-        sourceUrl,
-        listingType,
-        description: description.substring(0, 500),
-      });
-
-    } catch (error) {
-      // Skip this property
+  // Extract all prices
+  const prices: number[] = [];
+  let priceMatch;
+  while ((priceMatch = pricePattern.exec(html)) !== null) {
+    const priceStr = priceMatch[1].replace(/\s/g, "").replace("€", "");
+    const price = parseInt(priceStr, 10);
+    if (price >= 10000) {
+      prices.push(price);
     }
-  });
+  }
+
+  // Extract all areas
+  const areas: number[] = [];
+  let areaMatch;
+  while ((areaMatch = areaPattern.exec(html)) !== null) {
+    const area = parseInt(areaMatch[1], 10);
+    if (area >= 10 && area <= 1000) {
+      areas.push(area);
+    }
+  }
+
+  // Remove duplicates from links
+  const uniqueLinks = [...new Map(detailLinks.map(l => [l.id, l])).values()];
+
+  console.log(`  Found ${uniqueLinks.length} unique links, ${prices.length} prices, ${areas.length} areas`);
+
+  // Match links with prices (they should be in order)
+  for (let i = 0; i < uniqueLinks.length && i < prices.length; i++) {
+    const link = uniqueLinks[i];
+    const price = prices[i];
+    const area = areas[i] || 50;
+
+    // Parse title and location from slug
+    // Example: 3-izbovy-prazak-68m2-kosice-stare-mesto-vojenska
+    const slugParts = link.slug.split("-");
+    
+    // Extract rooms from slug
+    let rooms: number | null = null;
+    const roomsMatch = link.slug.match(/(\d+)-izb/);
+    if (roomsMatch) {
+      rooms = parseInt(roomsMatch[1], 10);
+    }
+
+    // Try to extract city from slug (usually after m2)
+    let city = "Slovensko";
+    let district = "";
+    const m2Index = link.slug.indexOf("m2-");
+    if (m2Index > 0) {
+      const locationPart = link.slug.substring(m2Index + 3);
+      const locationParts = locationPart.split("-");
+      if (locationParts.length >= 1) {
+        city = locationParts[0].charAt(0).toUpperCase() + locationParts[0].slice(1);
+      }
+      if (locationParts.length >= 2) {
+        district = locationParts.slice(1, 3).join(" ");
+        district = district.charAt(0).toUpperCase() + district.slice(1);
+      }
+    }
+
+    // Create title from slug
+    const title = link.slug
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, c => c.toUpperCase())
+      .substring(0, 100);
+
+    properties.push({
+      externalId: `neh-${link.id}`,
+      title,
+      price,
+      pricePerM2: area > 0 ? Math.round(price / area) : price,
+      areaM2: area,
+      city,
+      district,
+      rooms,
+      sourceUrl: `${CONFIG.baseUrl}${link.url}`,
+      listingType,
+      description: "",
+    });
+  }
 
   return properties;
 }
