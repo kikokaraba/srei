@@ -1,5 +1,5 @@
 /**
- * Test - pozri skutočný HTML z Nehnutelnosti.sk
+ * Test - pozri skutočný HTML z Nehnutelnosti.sk a testuj regex
  */
 
 import { NextResponse } from "next/server";
@@ -22,40 +22,54 @@ export async function GET() {
 
     const html = await response.text();
     
-    // Find property items patterns
-    const patterns = [
-      { name: "article.advertisement", count: (html.match(/article[^>]*advertisement/gi) || []).length },
-      { name: "div.advertisement", count: (html.match(/div[^>]*advertisement/gi) || []).length },
-      { name: "class=inzerat", count: (html.match(/class="[^"]*inzerat/gi) || []).length },
-      { name: "class=property", count: (html.match(/class="[^"]*property/gi) || []).length },
-      { name: "data-testid", count: (html.match(/data-testid/gi) || []).length },
-      { name: "class=offer", count: (html.match(/class="[^"]*offer/gi) || []).length },
-      { name: "class=listing", count: (html.match(/class="[^"]*listing/gi) || []).length },
-      { name: "class=card", count: (html.match(/class="[^"]*card/gi) || []).length },
-      { name: "class=item", count: (html.match(/class="[^"]*item/gi) || []).length },
-    ];
+    // Test the exact regex patterns from paginated scraper
+    const detailLinkPattern = /href="(\/detail\/([^\/]+)\/([^"]+))"/g;
+    const pricePattern = /MuiTypography-h5[^>]*>([^<]*\d[\d\s]*€)/g;
+    const areaPattern = /(\d+)\s*m²/g;
 
-    // Extract a sample of class names
-    const classMatches = html.match(/class="[^"]{5,100}"/g) || [];
-    const uniqueClasses = [...new Set(classMatches)].slice(0, 50);
+    // Extract detail links
+    const detailLinks: string[] = [];
+    let linkMatch;
+    while ((linkMatch = detailLinkPattern.exec(html)) !== null) {
+      detailLinks.push(linkMatch[1]);
+    }
 
-    // Find price patterns
-    const pricePatterns = html.match(/\d{2,3}\s?\d{3}\s?€|\d{5,7}\s?€/g) || [];
+    // Extract prices
+    const prices: string[] = [];
+    let priceMatch;
+    while ((priceMatch = pricePattern.exec(html)) !== null) {
+      prices.push(priceMatch[1]);
+    }
 
-    // Sample of HTML around prices
-    const priceContext = html.match(/.{0,200}\d{2,3}\s?\d{3}\s?€.{0,200}/g)?.slice(0, 3) || [];
+    // Extract areas
+    const areas: string[] = [];
+    let areaMatch;
+    while ((areaMatch = areaPattern.exec(html)) !== null) {
+      areas.push(areaMatch[1] + " m²");
+    }
+
+    // Alternative price patterns to test
+    const altPricePattern1 = html.match(/>\s*(\d[\d\s]*)\s*€\s*</g) || [];
+    const altPricePattern2 = html.match(/data-test-id="text">([^<]*€)/g) || [];
 
     return NextResponse.json({
       success: true,
       url,
       htmlLength: html.length,
-      patterns,
-      sampleClasses: uniqueClasses.slice(0, 30),
-      pricesFound: pricePatterns.length,
-      priceExamples: pricePatterns.slice(0, 10),
-      priceContext: priceContext.map(c => c.substring(0, 300)),
-      // First 5000 chars of body
-      htmlSample: html.substring(html.indexOf('<body'), html.indexOf('<body') + 8000),
+      extraction: {
+        detailLinksFound: detailLinks.length,
+        detailLinksExamples: detailLinks.slice(0, 5),
+        pricesFound: prices.length,
+        pricesExamples: prices.slice(0, 10),
+        areasFound: areas.length,
+        areasExamples: areas.slice(0, 10),
+      },
+      alternativePatterns: {
+        altPrice1Count: altPricePattern1.length,
+        altPrice1Examples: altPricePattern1.slice(0, 5),
+        altPrice2Count: altPricePattern2.length,
+        altPrice2Examples: altPricePattern2.slice(0, 5),
+      },
     });
 
   } catch (error) {
