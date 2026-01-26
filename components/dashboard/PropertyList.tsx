@@ -287,32 +287,16 @@ export function PropertyList() {
   // Investor batch metrics
   const [batchMetrics, setBatchMetrics] = useState<Record<string, BatchMetrics>>({});
   
-  // Load user preferences
-  const { preferences, isLoading: prefsLoading, hasLocationPreferences } = useUserPreferences();
+  // Load user preferences (but DON'T auto-apply them to filters - let user choose)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { preferences: _preferences, isLoading: prefsLoading } = useUserPreferences();
   
-  // Apply user preferences to filters on first load
+  // Set filters as initialized immediately - don't wait for or apply preferences
   useEffect(() => {
-    if (prefsLoading || filtersInitialized) return;
-    
-    if (preferences) {
-      const newFilters = { ...defaultFilters };
-      
-      // Apply price range from preferences
-      if (preferences.minPrice) newFilters.minPrice = preferences.minPrice.toString();
-      if (preferences.maxPrice) newFilters.maxPrice = preferences.maxPrice.toString();
-      if (preferences.minYield) newFilters.minYield = preferences.minYield.toString();
-      
-      // Apply region from tracked regions/cities
-      if (preferences.trackedRegions?.length > 0) {
-        // Use first tracked region as default filter
-        newFilters.region = preferences.trackedRegions[0];
-      }
-      
-      setFilters(newFilters);
+    if (!filtersInitialized) {
+      setFiltersInitialized(true);
     }
-    
-    setFiltersInitialized(true);
-  }, [preferences, prefsLoading, filtersInitialized]);
+  }, [filtersInitialized]);
 
   const ITEMS_PER_PAGE = 12;
 
@@ -455,9 +439,24 @@ export function PropertyList() {
     setPage(1);
   };
 
-  const activeFiltersCount = Object.entries(filters).filter(
-    ([key, value]) => value && key !== "sortBy" && key !== "sortOrder" && value !== defaultFilters[key as keyof Filters]
-  ).length;
+  // Count only truly user-set filters (exclude sorting and defaults)
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    // Only count these specific filters if they have non-default values
+    if (filters.search) count++;
+    if (filters.region) count++;
+    if (filters.source) count++;
+    if (filters.minPrice) count++;
+    if (filters.maxPrice) count++;
+    if (filters.minArea) count++;
+    if (filters.maxArea) count++;
+    if (filters.minRooms) count++;
+    if (filters.maxRooms) count++;
+    if (filters.condition) count++;
+    if (filters.minYield) count++;
+    // listingType is always PREDAJ now (not user-selectable), don't count it
+    return count;
+  }, [filters]);
 
   const getRegionLabel = (city: string) => {
     // Case-insensitive lookup
