@@ -4,7 +4,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import type { Property, PropertyMatch, PropertyFingerprint } from "@/generated/prisma";
+import type { Property, PropertyMatch, PropertyFingerprint } from "@/generated/prisma/client";
 import { createFingerprint, removeDiacritics, normalizeAddress } from "./fingerprint";
 
 // ============================================================================

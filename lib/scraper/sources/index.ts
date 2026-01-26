@@ -11,7 +11,7 @@ import { bazosScraper } from "./bazos";
 import { nehnutelnostiScraper } from "./nehnutelnosti";
 import { realityScraper } from "./reality";
 import type { BaseScraper } from "../base-scraper";
-import type { PropertySource } from "@/generated/prisma";
+import type { PropertySource } from "@/generated/prisma/client";
 
 /**
  * Mapa všetkých dostupných scraperov

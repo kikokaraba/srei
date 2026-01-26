@@ -12,7 +12,7 @@ import {
 } from "@/lib/predictions/investment-score";
 import type { PriceDataPoint } from "@/lib/predictions/types";
 import { canAccess } from "@/lib/access-control";
-import { UserRole } from "@/generated/prisma";
+import { UserRole } from "@/generated/prisma/client";
 
 export async function GET(request: Request) {
   try {

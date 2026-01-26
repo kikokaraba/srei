@@ -6,7 +6,7 @@
  */
 
 import * as cheerio from "cheerio";
-import type { ListingType, PropertySource } from "@/generated/prisma";
+import type { ListingType, PropertySource } from "@/generated/prisma/client";
 
 export interface ScrapedProperty {
   externalId: string;

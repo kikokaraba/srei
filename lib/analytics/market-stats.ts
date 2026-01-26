@@ -4,7 +4,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import type { ListingType, PropertySource, PropertyCondition } from "@/generated/prisma";
+import type { ListingType, PropertySource, PropertyCondition } from "@/generated/prisma/client";
 
 /**
  * Create daily market statistics for all cities

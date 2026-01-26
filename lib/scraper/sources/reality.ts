@@ -11,7 +11,7 @@ import {
   normalizeText,
   removeDiacritics,
 } from "../base-scraper";
-import type { ListingType } from "@/generated/prisma";
+import type { ListingType } from "@/generated/prisma/client";
 import { parseDescription } from "../parser";
 
 // Mapovanie lokalít na štandardizované názvy miest

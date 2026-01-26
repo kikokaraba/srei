@@ -1,6 +1,6 @@
 // Scraper Types - Typové definície pre realitný scraper
 
-import type { PropertyCondition, EnergyCertificate } from "@/generated/prisma";
+import type { PropertyCondition, EnergyCertificate } from "@/generated/prisma/client";
 
 /**
  * Surové dáta z inzerátu pred spracovaním

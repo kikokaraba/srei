@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 import { compare } from "bcryptjs";
-import type { UserRole } from "@/generated/prisma";
+import type { UserRole } from "@/generated/prisma/client";
 
 const credentialsSchema = z.object({
   email: z.string().email(),

@@ -6,7 +6,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import type { Property, PropertySource} from "@/generated/prisma";
+import type { Property, PropertySource} from "@/generated/prisma/client";
 
 // ============================================
 // TYPES

@@ -10,7 +10,7 @@
  * - Optimalizované launch options
  */
 
-import type { ListingType, PropertySource } from "@/generated/prisma";
+import type { ListingType, PropertySource } from "@/generated/prisma/client";
 
 // ============================================
 // Types

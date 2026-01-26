@@ -12,7 +12,7 @@ import {
   scrapePortal,
   type ScrapedProperty 
 } from "@/lib/scraper/browserless-scraper";
-import type { ListingType } from "@/generated/prisma";
+import type { ListingType } from "@/generated/prisma/client";
 
 /**
  * GET - Test Browserless connection

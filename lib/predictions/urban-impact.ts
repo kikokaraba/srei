@@ -6,7 +6,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import type { InfrastructureType } from "@/generated/prisma";
+import type { InfrastructureType } from "@/generated/prisma/client";
 
 // ============================================
 // TYPES

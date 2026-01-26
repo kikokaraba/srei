@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getAIValuation, type PropertyInput } from "@/lib/ai/valuation";
-import type { PropertyCondition } from "@/generated/prisma";
+import type { PropertyCondition } from "@/generated/prisma/client";
 
 // Validácia vstupu
 function validateInput(body: unknown): PropertyInput | { error: string } {

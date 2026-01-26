@@ -4,7 +4,7 @@ import { ReactNode, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Lock, Sparkles } from "lucide-react";
 import { canAccess, FeatureKey, FEATURE_DESCRIPTIONS } from "@/lib/access-control";
-import { UserRole } from "@/generated/prisma";
+import { UserRole } from "@/generated/prisma/client";
 import UpgradeModal from "./UpgradeModal";
 
 interface PremiumGateProps {

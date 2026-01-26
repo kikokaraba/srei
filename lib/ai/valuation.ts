@@ -6,7 +6,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
-import type { PropertyCondition } from "@/generated/prisma";
+import type { PropertyCondition } from "@/generated/prisma/client";
 
 // Inicializácia Claude
 const anthropic = new Anthropic({
