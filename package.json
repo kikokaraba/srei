@@ -1,10 +1,10 @@
 {
   "name": "sria",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "rm -rf generated node_modules/.prisma && prisma generate && next build",
+    "build": "rm -rf generated .next/cache node_modules/.prisma && npx prisma generate --schema=./prisma/schema.prisma && next build",
     "start": "node .next/standalone/server.js",
     "start:prod": "next start",
     "lint": "next lint",
