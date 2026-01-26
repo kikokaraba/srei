@@ -759,7 +759,8 @@ export function PropertyList() {
             return (
               <div
                 key={property.id}
-                className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden hover:border-emerald-500/30 transition-colors group"
+                onClick={() => window.location.href = `/dashboard/property/${property.id}`}
+                className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden hover:border-emerald-500/30 transition-colors group cursor-pointer"
               >
                 {/* Header with badges */}
                 <div className="p-4 border-b border-slate-800">
@@ -1009,7 +1010,8 @@ export function PropertyList() {
             return (
               <div
                 key={property.id}
-                className="bg-slate-900 rounded-xl border border-slate-800 p-4 hover:border-emerald-500/30 transition-colors"
+                onClick={() => window.location.href = `/dashboard/property/${property.id}`}
+                className="bg-slate-900 rounded-xl border border-slate-800 p-4 hover:border-emerald-500/30 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-6">
                   {/* Main Info */}
