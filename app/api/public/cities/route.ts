@@ -21,8 +21,29 @@ const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   "Zvolen": { lat: 48.5744, lng: 19.1236 },
 };
 
+// Normalize city names for matching
+function normalizeCity(city: string): string {
+  return city
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+    .toLowerCase()
+    .trim();
+}
+
+// Create normalized lookup
+const CITY_COORDS_NORMALIZED: Record<string, { name: string; lat: number; lng: number }> = {};
+for (const [name, coords] of Object.entries(CITY_COORDS)) {
+  CITY_COORDS_NORMALIZED[normalizeCity(name)] = { name, ...coords };
+}
+
 export async function GET() {
   try {
+    // Get TOTAL property count first (regardless of city matching)
+    const [totalCount, totalHotDeals] = await Promise.all([
+      prisma.property.count(),
+      prisma.property.count({ where: { is_distressed: true } }),
+    ]);
+
     // Get property stats grouped by city
     const cityStats = await prisma.property.groupBy({
       by: ["city"],
@@ -42,24 +63,39 @@ export async function GET() {
       hotDealsByCity.map(h => [h.city, h._count.id])
     );
 
+    // Aggregate by normalized city name
+    const cityAggregated = new Map<string, { properties: number; avgPrice: number; hotDeals: number }>();
+    
+    for (const c of cityStats) {
+      const normalized = normalizeCity(c.city);
+      const match = CITY_COORDS_NORMALIZED[normalized];
+      
+      if (match) {
+        const existing = cityAggregated.get(match.name) || { properties: 0, avgPrice: 0, hotDeals: 0 };
+        existing.properties += c._count.id;
+        existing.avgPrice = Math.round(c._avg.price_per_m2 || existing.avgPrice || 0);
+        existing.hotDeals += hotDealsMap.get(c.city) || 0;
+        cityAggregated.set(match.name, existing);
+      }
+    }
+
     // Format data for maps
-    const cities = cityStats
-      .filter(c => CITY_COORDS[c.city]) // Only cities we have coords for
-      .map(c => ({
-        name: c.city,
-        lat: CITY_COORDS[c.city].lat,
-        lng: CITY_COORDS[c.city].lng,
-        properties: c._count.id,
-        avgPrice: Math.round(c._avg.price_per_m2 || 0),
-        hotDeals: hotDealsMap.get(c.city) || 0,
+    const cities = Array.from(cityAggregated.entries())
+      .map(([name, data]) => ({
+        name,
+        lat: CITY_COORDS[name].lat,
+        lng: CITY_COORDS[name].lng,
+        properties: data.properties,
+        avgPrice: data.avgPrice,
+        hotDeals: data.hotDeals,
       }))
       .sort((a, b) => b.properties - a.properties);
 
-    // Calculate totals
+    // Use TOTAL counts (all properties, not just matched cities)
     const totals = {
-      properties: cities.reduce((sum, c) => sum + c.properties, 0),
-      hotDeals: cities.reduce((sum, c) => sum + c.hotDeals, 0),
-      cities: cities.length,
+      properties: totalCount,
+      hotDeals: totalHotDeals,
+      cities: cities.length > 0 ? cities.length : Object.keys(CITY_COORDS).length,
     };
 
     return NextResponse.json({
@@ -68,7 +104,7 @@ export async function GET() {
         cities,
         totals,
       },
-      live: totals.properties > 0,
+      live: totalCount > 0,
       updatedAt: new Date().toISOString(),
     });
   } catch (error) {

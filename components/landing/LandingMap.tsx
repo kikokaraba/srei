@@ -6,7 +6,6 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {
   MapPin,
-  Flame,
   ChevronRight,
   BarChart3,
   Sparkles,
@@ -118,16 +117,16 @@ export function LandingMap() {
             <div className="text-sm text-slate-400">Nehnuteľností</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-red-400">
-              {loading ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : totals.hotDeals}
-            </div>
-            <div className="text-sm text-slate-400">Hot Deals</div>
-          </div>
-          <div className="text-center">
             <div className="text-2xl sm:text-3xl font-bold text-emerald-400">
               {loading ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : totals.cities}
             </div>
             <div className="text-sm text-slate-400">Miest</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl sm:text-3xl font-bold text-amber-400">
+              3×
+            </div>
+            <div className="text-sm text-slate-400">Denne aktualizované</div>
           </div>
         </div>
 
@@ -177,15 +176,6 @@ export function LandingMap() {
                           <span className="text-slate-600">Ponuky:</span>
                           <span className="font-semibold">{city.properties}</span>
                         </div>
-                        {city.hotDeals > 0 && (
-                          <div className="flex justify-between pt-1 border-t">
-                            <span className="text-red-600 flex items-center gap-1">
-                              <Flame className="w-3 h-3" />
-                              Hot Deals:
-                            </span>
-                            <span className="font-bold text-red-600">{city.hotDeals}</span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </Popup>
@@ -229,7 +219,7 @@ export function LandingMap() {
         <div className="text-center mt-10">
           <p className="text-slate-400 mb-4">
             Získajte prístup k <span className="text-emerald-400 font-semibold">AI predikciam</span>, 
-            <span className="text-gold-400 font-semibold"> hot deals</span> a 
+            <span className="text-gold-400 font-semibold"> cenovým alertom</span> a 
             <span className="text-white font-semibold"> investorským nástrojom</span>
           </p>
           <Link
