@@ -518,14 +518,14 @@ export default function PropertyDetailPage() {
                 Otvoriť inzerát
               </a>
               <Link 
-                href="/dashboard/calculators"
+                href={`/dashboard/calculators?calc=mortgage&price=${property.price}&title=${encodeURIComponent(property.title)}`}
                 className="flex items-center gap-3 w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
               >
                 <Calculator className="w-5 h-5" />
                 Hypotekárna kalkulačka
               </Link>
               <Link 
-                href="/dashboard/calculators"
+                href={`/dashboard/calculators?calc=investment&price=${property.price}&area=${property.area_m2}&rent=${estimatedRent || 0}&title=${encodeURIComponent(property.title)}`}
                 className="flex items-center gap-3 w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
               >
                 <PiggyBank className="w-5 h-5" />

@@ -54,17 +54,41 @@ const PRESET_SCENARIOS = [
   { name: "Agresívny", downPayment: 15, interestRate: 5.0, vacancyRate: 3 },
 ];
 
-export function ScenarioSimulator() {
-  const [inputs, setInputs] = useState<ScenarioInputs>({
-    propertyPrice: 150000,
-    monthlyRent: 650,
-    interestRate: 4.5,
-    downPayment: 20,
-    loanTerm: 25,
-    vacancyRate: 5,
-    monthlyExpenses: 120,
-    annualAppreciation: 3,
-    rentGrowth: 2,
+interface ScenarioSimulatorProps {
+  initialData?: {
+    price: number;
+    area: number;
+    rent: number;
+    title: string;
+  } | null;
+}
+
+export function ScenarioSimulator({ initialData }: ScenarioSimulatorProps) {
+  const [inputs, setInputs] = useState<ScenarioInputs>(() => {
+    if (initialData?.price) {
+      return {
+        propertyPrice: initialData.price,
+        monthlyRent: initialData.rent || Math.round(initialData.price * 0.004), // ~0.4% of price as estimate
+        interestRate: 4.5,
+        downPayment: 20,
+        loanTerm: 25,
+        vacancyRate: 5,
+        monthlyExpenses: 120,
+        annualAppreciation: 3,
+        rentGrowth: 2,
+      };
+    }
+    return {
+      propertyPrice: 150000,
+      monthlyRent: 650,
+      interestRate: 4.5,
+      downPayment: 20,
+      loanTerm: 25,
+      vacancyRate: 5,
+      monthlyExpenses: 120,
+      annualAppreciation: 3,
+      rentGrowth: 2,
+    };
   });
 
   const [activeSection, setActiveSection] = useState<"inputs" | "projection">("inputs");

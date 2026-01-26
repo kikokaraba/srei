@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { 
   Calculator, 
@@ -11,6 +12,7 @@ import {
   ArrowRight,
   Sparkles,
   X,
+  Home,
 } from "lucide-react";
 import { ScenarioSimulator } from "@/components/dashboard/ScenarioSimulator";
 import { TaxAssistant } from "@/components/dashboard/TaxAssistant";
@@ -24,8 +26,39 @@ const MortgageCalculator = dynamic(
 
 type CalculatorType = "investment" | "tax" | "brrrr" | "mortgage" | null;
 
+interface PropertyData {
+  price: number;
+  area: number;
+  rent: number;
+  title: string;
+}
+
 export default function CalculatorsPage() {
+  const searchParams = useSearchParams();
   const [openCalculator, setOpenCalculator] = useState<CalculatorType>(null);
+  const [propertyData, setPropertyData] = useState<PropertyData | null>(null);
+
+  // Read URL params and auto-open calculator
+  useEffect(() => {
+    const calc = searchParams.get("calc") as CalculatorType;
+    const price = searchParams.get("price");
+    const area = searchParams.get("area");
+    const rent = searchParams.get("rent");
+    const title = searchParams.get("title");
+
+    if (calc && ["mortgage", "investment", "tax", "brrrr"].includes(calc)) {
+      setOpenCalculator(calc);
+    }
+
+    if (price) {
+      setPropertyData({
+        price: parseInt(price) || 0,
+        area: parseInt(area || "0") || 0,
+        rent: parseInt(rent || "0") || 0,
+        title: title || "",
+      });
+    }
+  }, [searchParams]);
 
   const calculators = [
     {
@@ -81,6 +114,27 @@ export default function CalculatorsPage() {
 
     return (
       <div className="min-h-screen">
+        {/* Property Info Banner */}
+        {propertyData && propertyData.price > 0 && (
+          <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                <Home className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-emerald-400 font-medium">Kalkulácia pre nehnuteľnosť</p>
+                <p className="text-white font-semibold truncate">{propertyData.title || "Vybraná nehnuteľnosť"}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-white">€{propertyData.price.toLocaleString()}</p>
+                {propertyData.area > 0 && (
+                  <p className="text-sm text-slate-400">{propertyData.area} m²</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Calculator Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between">
@@ -94,7 +148,10 @@ export default function CalculatorsPage() {
               </div>
             </div>
             <button
-              onClick={() => setOpenCalculator(null)}
+              onClick={() => {
+                setOpenCalculator(null);
+                setPropertyData(null);
+              }}
               className="p-3 rounded-xl bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-slate-400 hover:text-white transition-all"
             >
               <X className="w-5 h-5" />
@@ -105,15 +162,15 @@ export default function CalculatorsPage() {
         {/* Calculator Content */}
         <div className="bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-slate-800/50 p-6 md:p-8">
           {calc.id === "mortgage" ? (
-            <MortgageCalculator />
+            <MortgageCalculator initialPrice={propertyData?.price} />
           ) : (
             <PremiumGate 
               feature={calc.id === "tax" ? "advancedTax" : "scenarioSimulator"} 
               minHeight="400px"
             >
-              {calc.id === "investment" && <ScenarioSimulator />}
+              {calc.id === "investment" && <ScenarioSimulator initialData={propertyData} />}
               {calc.id === "tax" && <TaxAssistant />}
-              {calc.id === "brrrr" && <BRRRRCalculator />}
+              {calc.id === "brrrr" && <BRRRRCalculator initialPrice={propertyData?.price} />}
             </PremiumGate>
           )}
         </div>

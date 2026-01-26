@@ -45,8 +45,22 @@ const PRESETS = [
   { name: "Agresívny", inputs: { ...DEFAULT_INPUTS, refinanceLTV: 80, renovationCost: 30000, afterRepairValue: 150000, monthlyRent: 650 } },
 ];
 
-export function BRRRRCalculator() {
-  const [inputs, setInputs] = useState<BRRRRInputs>(DEFAULT_INPUTS);
+interface BRRRRCalculatorProps {
+  initialPrice?: number;
+}
+
+export function BRRRRCalculator({ initialPrice }: BRRRRCalculatorProps) {
+  const [inputs, setInputs] = useState<BRRRRInputs>(() => {
+    if (initialPrice) {
+      return {
+        ...DEFAULT_INPUTS,
+        purchasePrice: initialPrice,
+        purchaseCosts: Math.round(initialPrice * 0.05),
+        afterRepairValue: Math.round(initialPrice * 1.3),
+      };
+    }
+    return DEFAULT_INPUTS;
+  });
   const [expandedPhase, setExpandedPhase] = useState<number>(0);
 
   const results = useMemo(() => calculateBRRRR(inputs), [inputs]);

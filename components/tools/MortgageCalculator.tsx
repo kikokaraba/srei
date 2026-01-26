@@ -25,9 +25,13 @@ const BANK_RATES = [
   { name: "Tatra banka", rate: 4.29, color: "bg-orange-500" },
 ];
 
-export default function MortgageCalculator() {
-  const [propertyPrice, setPropertyPrice] = useState(150000);
-  const [downPayment, setDownPayment] = useState(30000);
+interface MortgageCalculatorProps {
+  initialPrice?: number;
+}
+
+export default function MortgageCalculator({ initialPrice }: MortgageCalculatorProps) {
+  const [propertyPrice, setPropertyPrice] = useState(initialPrice || 150000);
+  const [downPayment, setDownPayment] = useState(Math.round((initialPrice || 150000) * 0.2));
   const [interestRate, setInterestRate] = useState(4.09);
   const [loanTermYears, setLoanTermYears] = useState(30);
   const [showBanks, setShowBanks] = useState(false);
