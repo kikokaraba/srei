@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
       success: true,
       runId,
       status: status.status,
-      datasetId: status.datasetId,
-      finishedAt: status.finishedAt
+      datasetId: status.datasetId
     });
 
   } catch (error) {
