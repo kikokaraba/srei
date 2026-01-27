@@ -92,9 +92,38 @@ async function pageFunction(context) {
             if (h1) result.title = h1.textContent.trim();
         }
 
-        // Cena
-        const priceEl = document.querySelector('[class*="price-value"], [class*="price-main"], .cena');
-        if (priceEl) result.price_raw = priceEl.textContent.trim();
+        // Cena - viacero selektorov
+        const priceSelectors = [
+            '[class*="price-value"]',
+            '[class*="price-main"]', 
+            '[class*="detail-price"]',
+            '.cena',
+            '[data-testid="price"]',
+            '.price',
+            'span[class*="price"]',
+            'div[class*="price"]'
+        ];
+        
+        for (const sel of priceSelectors) {
+            const el = document.querySelector(sel);
+            if (el && el.textContent) {
+                const text = el.textContent.trim();
+                // Musí obsahovať číslo alebo "dohodou"
+                if (text.match(/\\d/) || text.toLowerCase().includes('dohodou')) {
+                    result.price_raw = text;
+                    break;
+                }
+            }
+        }
+        
+        // Fallback: hľadaj v texte stránky vzor "XXX XXX €"
+        if (!result.price_raw) {
+            const bodyText = document.body.innerText;
+            const priceMatch = bodyText.match(/(\\d{1,3}(?:\\s?\\d{3})+)\\s*€/);
+            if (priceMatch) {
+                result.price_raw = priceMatch[0];
+            }
+        }
 
         // AGRESÍVNA EXTRAKCIA - hľadá reálne slová, nie CSS triedy
         const getCleanText = (labels) => {
