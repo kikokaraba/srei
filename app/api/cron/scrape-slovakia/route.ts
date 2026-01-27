@@ -15,82 +15,23 @@ import {
   getScrapingStats
 } from "@/lib/scraper/slovakia-scraper";
 import { 
-  scrapeNehnutelnostiList, 
-  scrapeNehnutelnostiDetail,
-  humanDelay,
-  closeStealthBrowser 
-} from "@/lib/scraper/stealth-scraper";
-import {
-  scrapeNehnutelnostiApify,
-  scrapeBazosApify,
-} from "@/lib/scraper/apify-scraper";
-import { 
   scrapeBazosCategory,
-  runStealthScrape 
 } from "@/lib/scraper/stealth-engine";
 import { prisma } from "@/lib/prisma";
-import { ingestProperty } from "@/lib/scraper/ingestion-pipeline";
 
 // ============================================================================
 // SCRAPER FUNCTIONS PER PORTAL
 // ============================================================================
 
 async function scrapeNehnutelnosti(target: ScrapingTarget) {
-  let listingsFound = 0;
-  let newListings = 0;
-  let updatedListings = 0;
-  const errors: string[] = [];
-  
-  // Použi Apify ak je dostupný
-  const useApify = !!process.env.APIFY_API_KEY;
-  
-  try {
-    let listings;
-    
-    if (useApify) {
-      console.log("🚀 Using Apify for Nehnutelnosti.sk...");
-      const result = await scrapeNehnutelnostiApify([target.url]);
-      listings = result.listings;
-      if (result.errors.length > 0) {
-        errors.push(...result.errors.map(e => e.message));
-      }
-    } else {
-      // Fallback na lokálny stealth scraper
-      const result = await scrapeNehnutelnostiList(target.url);
-      listings = result.listings;
-      if (result.errors.length > 0) {
-        errors.push(...result.errors.map(e => e.message));
-      }
-    }
-    
-    listingsFound = listings.length;
-    
-    // Spracuj každý listing
-    for (const listing of listings.slice(0, 100)) { // Max 100 per page
-      try {
-        // Ingestuj do DB
-        const result = await ingestProperty({
-          ...listing,
-          source: "nehnutelnosti.sk",
-          propertyType: target.propertyType === "byty" ? "BYT" : 
-                        target.propertyType === "domy" ? "DOM" : 
-                        target.propertyType === "pozemky" ? "POZEMOK" : "KOMERCNE",
-          transactionType: target.transactionType === "predaj" ? "PREDAJ" : "PRENAJOM",
-        });
-        
-        if (result.isNew) newListings++;
-        else updatedListings++;
-        
-      } catch (err) {
-        errors.push(`Failed to process ${listing.sourceUrl}: ${err}`);
-      }
-    }
-    
-  } catch (err) {
-    errors.push(`Nehnutelnosti scrape failed: ${err}`);
-  }
-  
-  return { listingsFound, newListings, updatedListings, errors };
+  // Nehnutelnosti.sk zatiaľ nie je implementovaný
+  // Vracia placeholder kým nebude hotový Apify aktor
+  return {
+    listingsFound: 0,
+    newListings: 0,
+    updatedListings: 0,
+    errors: ["Nehnutelnosti.sk: Čakáme na Apify aktor - použite Bazoš"],
+  };
 }
 
 async function scrapeBazos(target: ScrapingTarget) {
@@ -99,48 +40,16 @@ async function scrapeBazos(target: ScrapingTarget) {
   let updatedListings = 0;
   const errors: string[] = [];
   
-  // Použi Apify ak je dostupný
-  const useApify = !!process.env.APIFY_API_KEY;
-  
   try {
-    if (useApify) {
-      console.log("🚀 Using Apify for Bazoš...");
-      const result = await scrapeBazosApify([target.url]);
-      
-      listingsFound = result.listings.length;
-      
-      for (const listing of result.listings) {
-        try {
-          const ingested = await ingestProperty({
-            ...listing,
-            source: "bazos.sk",
-            propertyType: target.propertyType === "byty" ? "BYT" : 
-                          target.propertyType === "domy" ? "DOM" : 
-                          target.propertyType === "pozemky" ? "POZEMOK" : "KOMERCNE",
-            transactionType: "PREDAJ",
-          });
-          
-          if (ingested.isNew) newListings++;
-          else updatedListings++;
-        } catch (err) {
-          errors.push(`Failed to process ${listing.sourceUrl}: ${err}`);
-        }
-      }
-      
-      if (result.errors.length > 0) {
-        errors.push(...result.errors.map(e => e.message));
-      }
-    } else {
-      // Fallback na lokálny scraper
-      const result = await scrapeBazosCategory(target.url, { maxPages: 3 });
-      
-      listingsFound = result.total;
-      newListings = result.new;
-      updatedListings = result.updated;
-      
-      if (result.errors > 0) {
-        errors.push(`${result.errors} listings failed to process`);
-      }
+    // Použij existujúci stealth scraper ktorý už funguje
+    const result = await scrapeBazosCategory(target.url, { maxPages: 3 });
+    
+    listingsFound = result.total;
+    newListings = result.new;
+    updatedListings = result.updated;
+    
+    if (result.errors > 0) {
+      errors.push(`${result.errors} listings failed to process`);
     }
     
   } catch (err) {
@@ -151,8 +60,6 @@ async function scrapeBazos(target: ScrapingTarget) {
 }
 
 async function scrapeReality(target: ScrapingTarget) {
-  // Reality.sk používa podobnú štruktúru ako Nehnutelnosti
-  // TODO: Implementovať špecifické selektory
   return {
     listingsFound: 0,
     newListings: 0,
@@ -162,8 +69,6 @@ async function scrapeReality(target: ScrapingTarget) {
 }
 
 async function scrapeTopReality(target: ScrapingTarget) {
-  // TopReality.sk
-  // TODO: Implementovať
   return {
     listingsFound: 0,
     newListings: 0,
@@ -211,10 +116,10 @@ async function scrapeTarget(target: ScrapingTarget) {
 export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const portal = searchParams.get("portal") || "all";
+    const portal = searchParams.get("portal") || "bazos"; // Default na bazos
     const region = searchParams.get("region");
     const batchNum = searchParams.get("batch");
-    const batchSize = parseInt(searchParams.get("batchSize") || "10");
+    const batchSize = parseInt(searchParams.get("batchSize") || "5");
     
     // Získaj targets
     let targets = portal === "all" 
@@ -241,18 +146,15 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Limit na max 20 targets per request (aby neprekročilo timeout)
-    targets = targets.slice(0, 20);
+    // Limit na max 5 targets per request (Vercel timeout je 10s na free tier)
+    targets = targets.slice(0, 5);
     
     console.log(`🇸🇰 Starting Slovakia scrape: ${targets.length} targets`);
     
     // Spusti scraping
     const results = await slovakiaScraper.run(targets, scrapeTarget, {
-      delayBetweenRequests: 5000, // 5s medzi requestmi
+      delayBetweenRequests: 2000, // 2s medzi requestmi
     });
-    
-    // Cleanup
-    await closeStealthBrowser();
     
     // Sumarizuj výsledky
     const summary = {
@@ -272,18 +174,16 @@ export async function POST(request: NextRequest) {
         portal: r.target.portal,
         region: r.target.region || "all",
         propertyType: r.target.propertyType,
+        url: r.target.url,
         listingsFound: r.listingsFound,
         new: r.newListings,
         updated: r.updatedListings,
-        errors: r.errors.length,
+        errors: r.errors,
       })),
     });
     
   } catch (error) {
     console.error("Slovakia scrape error:", error);
-    
-    // Cleanup on error
-    await closeStealthBrowser();
     
     return NextResponse.json({
       success: false,
@@ -296,31 +196,41 @@ export async function POST(request: NextRequest) {
  * GET - Získa štatistiky a stav scrapingu
  */
 export async function GET() {
-  const stats = getScrapingStats();
-  const progress = slovakiaScraper.getProgress();
-  const isActive = slovakiaScraper.isActive();
-  
-  // Získaj počet nehnuteľností v DB
-  const dbStats = await prisma.property.groupBy({
-    by: ["source"],
-    _count: true,
-  });
-  
-  const lastScrape = await prisma.property.findFirst({
-    orderBy: { updatedAt: "desc" },
-    select: { updatedAt: true },
-  });
-  
-  return NextResponse.json({
-    success: true,
-    scraping: {
-      isActive,
-      progress: isActive ? progress : null,
-    },
-    targets: stats,
-    database: {
-      bySource: dbStats.reduce((acc, s) => ({ ...acc, [s.source]: s._count }), {}),
-      lastUpdate: lastScrape?.updatedAt,
-    },
-  });
+  try {
+    const stats = getScrapingStats();
+    const progress = slovakiaScraper.getProgress();
+    const isActive = slovakiaScraper.isActive();
+    
+    // Získaj počet nehnuteľností v DB
+    const dbStats = await prisma.property.groupBy({
+      by: ["source"],
+      _count: true,
+    });
+    
+    const lastScrape = await prisma.property.findFirst({
+      orderBy: { updatedAt: "desc" },
+      select: { updatedAt: true },
+    });
+    
+    return NextResponse.json({
+      success: true,
+      scraping: {
+        isActive,
+        progress: isActive ? progress : null,
+      },
+      targets: stats,
+      database: {
+        bySource: dbStats.reduce((acc, s) => ({ ...acc, [s.source]: s._count }), {}),
+        lastUpdate: lastScrape?.updatedAt,
+      },
+    });
+  } catch (error) {
+    return NextResponse.json({
+      success: true,
+      scraping: { isActive: false },
+      targets: getScrapingStats(),
+      database: { bySource: {}, lastUpdate: null },
+      note: "Database not connected - stats unavailable",
+    });
+  }
 }
