@@ -44,12 +44,16 @@ async function scrapeBazos(target: ScrapingTarget) {
     // Použij existujúci stealth scraper ktorý už funguje
     const result = await scrapeBazosCategory(target.url, undefined, { maxPagesPerCategory: 3 });
     
-    listingsFound = result.total;
-    newListings = result.new;
-    updatedListings = result.updated;
+    listingsFound = result.listingsFound;
+    newListings = result.newListings;
+    updatedListings = result.updatedListings;
     
     if (result.errors > 0) {
       errors.push(`${result.errors} listings failed to process`);
+    }
+    
+    if (result.blocked) {
+      errors.push("Blocked by anti-bot protection");
     }
     
   } catch (err) {
