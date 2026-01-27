@@ -124,7 +124,39 @@ export async function POST(request: NextRequest) {
       try {
         const price = parsePrice(item.price_raw);
         const area = parseArea(item.area_m2);
-        const city = item.location?.city || "Slovensko";
+        
+        // Extrahuj mesto z location (môže byť string alebo objekt)
+        let city = "Slovensko";
+        let district = "";
+        
+        if (typeof item.location === "string") {
+          // Bazoš vracia location ako string
+          const parts = item.location.split(",").map(s => s.trim());
+          city = parts[0] || "Slovensko";
+          district = parts[1] || "";
+        } else if (item.location?.city) {
+          city = item.location.city;
+          district = item.location.district || "";
+        }
+        
+        // Extrahuj mesto z URL ak stále nemáme
+        if (city === "Slovensko" && item.url) {
+          const urlMatch = item.url.match(/\/(?:bratislava|kosice|zilina|presov|nitra|trnava|trencin|banska-bystrica)[-\/]/i);
+          if (urlMatch) {
+            const cityMap: Record<string, string> = {
+              "bratislava": "Bratislava",
+              "kosice": "Košice", 
+              "zilina": "Žilina",
+              "presov": "Prešov",
+              "nitra": "Nitra",
+              "trnava": "Trnava",
+              "trencin": "Trenčín",
+              "banska-bystrica": "Banská Bystrica"
+            };
+            const matched = urlMatch[0].replace(/[\/-]/g, "").toLowerCase();
+            city = cityMap[matched] || city;
+          }
+        }
         
         // Základná validácia - musí mať aspoň titulok
         if (!item.title) {
@@ -139,7 +171,7 @@ export async function POST(request: NextRequest) {
         
         const fingerprint = generateCoreFingerprint({
           city,
-          district: item.location?.district || "",
+          district,
           area_m2: area,
           rooms: parseRooms(item.rooms),
         });
@@ -156,9 +188,9 @@ export async function POST(request: NextRequest) {
           condition: item.condition || "NEZISTENY",
           energy_certificate: "NEZISTENY" as const,
           city,
-          district: item.location?.district || "",
-          street: item.location?.street || null,
-          address: item.location?.full || city,
+          district,
+          street: (typeof item.location === "object" ? item.location?.street : null) || null,
+          address: (typeof item.location === "string" ? item.location : item.location?.full) || city,
           photos: JSON.stringify(item.images || []),
           photo_count: (item.images || []).length,
           source: portal.toUpperCase() === "NEHNUTELNOSTI" ? "NEHNUTELNOSTI" : 
