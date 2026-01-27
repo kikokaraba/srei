@@ -79,6 +79,20 @@ function generateSlug(title: string, externalId: string): string {
   return `${base}-${externalId.slice(-8)}`;
 }
 
+function mapCondition(condition: string | undefined | null): "POVODNY" | "REKONSTRUKCIA" | "NOVOSTAVBA" {
+  if (!condition) return "POVODNY";
+  const lower = condition.toLowerCase();
+  
+  if (lower.includes("novostavba") || lower.includes("nový") || lower.includes("nova")) {
+    return "NOVOSTAVBA";
+  }
+  if (lower.includes("rekonstrukc") || lower.includes("rekonštruk") || lower.includes("čiastočná") || lower.includes("kompletná")) {
+    return "REKONSTRUKCIA";
+  }
+  // Pôvodný stav ako default
+  return "POVODNY";
+}
+
 // ============================================================================
 // API HANDLER
 // ============================================================================
@@ -187,8 +201,8 @@ export async function POST(request: NextRequest) {
           area_m2: area,
           rooms: parseRooms(item.rooms),
           floor: parseFloor(item.floor),
-          condition: item.condition || "NEZISTENY",
-          energy_certificate: "NEZISTENY" as const,
+          condition: mapCondition(item.condition),
+          energy_certificate: "NONE" as const,
           city,
           district,
           street: (typeof loc === "object" && loc ? loc.street : null) || null,
@@ -239,6 +253,7 @@ export async function POST(request: NextRequest) {
           
           stats.updated++;
         } else {
+          console.log(`➕ [ProcessApify] Creating: ${item.title?.substring(0, 50)} - ${city}`);
           const newProperty = await prisma.property.create({
             data: propertyData as any,
           });
@@ -254,10 +269,13 @@ export async function POST(request: NextRequest) {
           }
           
           stats.created++;
+          console.log(`✅ [ProcessApify] Created: ${newProperty.id}`);
         }
         
       } catch (error) {
-        stats.errors.push(error instanceof Error ? error.message : "Unknown error");
+        const errorMsg = error instanceof Error ? error.message : "Unknown error";
+        console.error(`❌ [ProcessApify] Error processing item: ${item.url}`, errorMsg);
+        stats.errors.push(`${item.url}: ${errorMsg}`);
         stats.skipped++;
       }
     }
