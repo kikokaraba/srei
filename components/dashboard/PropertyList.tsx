@@ -736,13 +736,15 @@ export function PropertyList() {
                 {/* Photo Section */}
                 <div className="relative h-44 bg-zinc-900 overflow-hidden">
                   {thumbnailUrl ? (
-                    <Image
+                    <img
                       src={thumbnailUrl}
                       alt={property.title}
-                      fill
-                      className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      unoptimized
+                      referrerPolicy="no-referrer"
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
                     />
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-700">
@@ -897,13 +899,15 @@ export function PropertyList() {
                   {/* Thumbnail */}
                   <div className="relative w-40 h-28 flex-shrink-0 bg-zinc-800/50">
                     {thumbnailUrl ? (
-                      <Image
+                      <img
                         src={thumbnailUrl}
                         alt={property.title}
-                        fill
-                        className="object-cover"
-                        sizes="160px"
-                        unoptimized
+                        referrerPolicy="no-referrer"
+                        className="absolute inset-0 w-full h-full object-cover"
+                        loading="lazy"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center text-zinc-600">
