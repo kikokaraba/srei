@@ -72,7 +72,7 @@ export function PageHeader({
   const colors = COLOR_CLASSES[color];
 
   return (
-    <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 ${colors.gradient} p-6 lg:p-8`}>
+    <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 ${colors.gradient} p-6 lg:p-8`}>
       {/* Ambient glow */}
       <div className={`absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 ${colors.glow1}`} />
       <div className={`absolute -bottom-24 -left-24 w-48 h-48 rounded-full blur-3xl opacity-10 ${colors.glow2}`} />
@@ -89,7 +89,7 @@ export function PageHeader({
               </h1>
               {showSparkle && <Sparkles className={`w-5 h-5 ${colors.accent}`} />}
             </div>
-            <p className="text-slate-400 text-sm lg:text-base">
+            <p className="text-zinc-400 text-sm lg:text-base">
               {description}
             </p>
           </div>
@@ -101,7 +101,7 @@ export function PageHeader({
             {features.map((feature, i) => (
               <div 
                 key={i}
-                className="px-4 py-2 rounded-xl bg-slate-800/50 border border-slate-700/50 flex items-center gap-2"
+                className="px-4 py-2 rounded-xl bg-zinc-800/50 border border-zinc-700/50 flex items-center gap-2"
               >
                 <feature.icon className={`w-4 h-4 ${colors.accent}`} />
                 <span className="text-sm text-white font-medium">{feature.label}</span>

@@ -62,7 +62,7 @@ const features = [
 
 export function Features() {
   return (
-    <section id="features" className="py-24 sm:py-32 bg-slate-950 relative overflow-hidden">
+    <section id="features" className="py-24 sm:py-32 bg-zinc-950 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-grid-slate-800/[0.08] bg-[size:48px_48px]" />
       <div className="absolute top-1/4 -left-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl" />
@@ -78,7 +78,7 @@ export function Features() {
             Všetko pre{" "}
             <span className="text-emerald-400">úspešné investovanie</span>
           </h2>
-          <p className="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto">
+          <p className="text-lg sm:text-xl text-zinc-400 max-w-3xl mx-auto">
             Kombinácia AI technológie, real-time dát a pokročilých analytických nástrojov,
             ktoré vám dajú konkurenčnú výhodu na trhu
           </p>
@@ -101,10 +101,10 @@ export function Features() {
                 glow: "hover:glow-gold-soft hover:border-gold-500/30",
               },
               slate: {
-                icon: "text-slate-400",
-                iconBg: "bg-slate-800/80 border-slate-700",
-                stat: "text-slate-400 bg-slate-800 border-slate-700",
-                glow: "hover:border-slate-600",
+                icon: "text-zinc-400",
+                iconBg: "bg-zinc-800/80 border-zinc-700",
+                stat: "text-zinc-400 bg-zinc-800 border-zinc-700",
+                glow: "hover:border-zinc-600",
               },
             };
             const colors = colorClasses[feature.color as keyof typeof colorClasses];
@@ -127,7 +127,7 @@ export function Features() {
                 <h3 className="text-xl font-bold text-white mb-3">
                   {feature.title}
                 </h3>
-                <p className="text-slate-400 leading-relaxed">
+                <p className="text-zinc-400 leading-relaxed">
                   {feature.description}
                 </p>
               </div>

@@ -7,7 +7,7 @@ export default function ComparisonPage() {
   return (
     <div className="space-y-6">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-violet-950/30 p-6 lg:p-8">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-violet-950/30 p-6 lg:p-8">
         {/* Ambient glow */}
         <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 bg-violet-500" />
         <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full blur-3xl opacity-10 bg-purple-500" />
@@ -24,7 +24,7 @@ export default function ComparisonPage() {
                 </h1>
                 <Sparkles className="w-5 h-5 text-violet-400" />
               </div>
-              <p className="text-slate-400 text-sm lg:text-base">
+              <p className="text-zinc-400 text-sm lg:text-base">
                 Porovnajte až 3 nehnuteľnosti s 10-ročnými projekciami ROI
               </p>
             </div>
@@ -32,11 +32,11 @@ export default function ComparisonPage() {
           
           {/* Features */}
           <div className="flex gap-3">
-            <div className="px-4 py-2 rounded-xl bg-slate-800/50 border border-slate-700/50 flex items-center gap-2">
+            <div className="px-4 py-2 rounded-xl bg-zinc-800/50 border border-zinc-700/50 flex items-center gap-2">
               <GitCompare className="w-4 h-4 text-violet-400" />
               <span className="text-sm text-white font-medium">3 nehnuteľnosti</span>
             </div>
-            <div className="px-4 py-2 rounded-xl bg-slate-800/50 border border-slate-700/50 flex items-center gap-2">
+            <div className="px-4 py-2 rounded-xl bg-zinc-800/50 border border-zinc-700/50 flex items-center gap-2">
               <Calculator className="w-4 h-4 text-violet-400" />
               <span className="text-sm text-white font-medium">10Y ROI</span>
             </div>

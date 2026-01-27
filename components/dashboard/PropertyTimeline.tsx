@@ -133,7 +133,7 @@ export function PropertyTimeline({ propertyId, onClose }: PropertyTimelineProps)
 
   if (loading) {
     return (
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+      <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
         </div>
@@ -143,29 +143,29 @@ export function PropertyTimeline({ propertyId, onClose }: PropertyTimelineProps)
 
   if (error || !data) {
     return (
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+      <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
         <div className="text-red-400">{error || "Nehnuteľnosť nebola nájdená"}</div>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+    <div className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-slate-800">
+      <div className="p-6 border-b border-zinc-800">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-xl font-bold text-slate-100 mb-1">
+            <h2 className="text-xl font-bold text-zinc-100 mb-1">
               {data.property.title}
             </h2>
-            <p className="text-slate-400">
+            <p className="text-zinc-400">
               {data.property.district}, {data.property.city}
             </p>
           </div>
           {onClose && (
             <button
               onClick={onClose}
-              className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-slate-100 transition-colors"
+              className="p-2 rounded-lg bg-zinc-800 text-zinc-400 hover:text-zinc-100 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -174,29 +174,29 @@ export function PropertyTimeline({ propertyId, onClose }: PropertyTimelineProps)
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-          <div className="bg-slate-800/50 rounded-lg p-3">
-            <div className="text-sm text-slate-400 mb-1">Aktuálna cena</div>
-            <div className="text-lg font-bold text-slate-100">
+          <div className="bg-zinc-800/50 rounded-lg p-3">
+            <div className="text-sm text-zinc-400 mb-1">Aktuálna cena</div>
+            <div className="text-lg font-bold text-zinc-100">
               €{data.property.price.toLocaleString()}
             </div>
           </div>
-          <div className="bg-slate-800/50 rounded-lg p-3">
-            <div className="text-sm text-slate-400 mb-1">Dni v ponuke</div>
-            <div className="text-lg font-bold text-slate-100">
+          <div className="bg-zinc-800/50 rounded-lg p-3">
+            <div className="text-sm text-zinc-400 mb-1">Dni v ponuke</div>
+            <div className="text-lg font-bold text-zinc-100">
               {data.stats.daysOnMarket}
             </div>
           </div>
-          <div className="bg-slate-800/50 rounded-lg p-3">
-            <div className="text-sm text-slate-400 mb-1">Zmeny ceny</div>
-            <div className="text-lg font-bold text-slate-100">
+          <div className="bg-zinc-800/50 rounded-lg p-3">
+            <div className="text-sm text-zinc-400 mb-1">Zmeny ceny</div>
+            <div className="text-lg font-bold text-zinc-100">
               {data.stats.totalPriceChanges}x
             </div>
           </div>
-          <div className="bg-slate-800/50 rounded-lg p-3">
-            <div className="text-sm text-slate-400 mb-1">Celková zmena</div>
+          <div className="bg-zinc-800/50 rounded-lg p-3">
+            <div className="text-sm text-zinc-400 mb-1">Celková zmena</div>
             <div className={`text-lg font-bold ${
               data.stats.totalPriceChange < 0 ? "text-emerald-400" : 
-              data.stats.totalPriceChange > 0 ? "text-red-400" : "text-slate-100"
+              data.stats.totalPriceChange > 0 ? "text-red-400" : "text-zinc-100"
             }`}>
               {data.stats.totalPriceChange > 0 ? "+" : ""}
               €{data.stats.totalPriceChange.toLocaleString()}
@@ -206,13 +206,13 @@ export function PropertyTimeline({ propertyId, onClose }: PropertyTimelineProps)
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800">
+      <div className="flex border-b border-zinc-800">
         <button
           onClick={() => setActiveTab("timeline")}
           className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
             activeTab === "timeline"
               ? "text-emerald-400 border-b-2 border-emerald-400"
-              : "text-slate-400 hover:text-slate-100"
+              : "text-zinc-400 hover:text-zinc-100"
           }`}
         >
           História zmien ({data.timeline.length})
@@ -222,7 +222,7 @@ export function PropertyTimeline({ propertyId, onClose }: PropertyTimelineProps)
           className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
             activeTab === "matches"
               ? "text-emerald-400 border-b-2 border-emerald-400"
-              : "text-slate-400 hover:text-slate-100"
+              : "text-zinc-400 hover:text-zinc-100"
           }`}
         >
           Podobné inzeráty ({data.matches.length})
@@ -234,7 +234,7 @@ export function PropertyTimeline({ propertyId, onClose }: PropertyTimelineProps)
         {activeTab === "timeline" ? (
           <div className="space-y-4">
             {data.timeline.length === 0 ? (
-              <p className="text-slate-400 text-center py-8">
+              <p className="text-zinc-400 text-center py-8">
                 Zatiaľ neboli zaznamenané žiadne zmeny
               </p>
             ) : (
@@ -259,29 +259,29 @@ export function PropertyTimeline({ propertyId, onClose }: PropertyTimelineProps)
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 bg-slate-800/30 rounded-lg p-4">
+                  <div className="flex-1 bg-zinc-800/30 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-slate-100">
+                      <span className="font-medium text-zinc-100">
                         {event.type === "listed" && "Zverejnené"}
                         {event.type === "price_change" && "Zmena ceny"}
                         {event.type === "update" && "Aktualizácia"}
                       </span>
-                      <span className="text-sm text-slate-400 flex items-center gap-1">
+                      <span className="text-sm text-zinc-400 flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
                         {formatDate(event.date)}
                       </span>
                     </div>
 
                     {event.type === "listed" && event.data.price && (
-                      <p className="text-slate-300">
+                      <p className="text-zinc-300">
                         Počiatočná cena: <span className="font-bold">€{event.data.price.toLocaleString()}</span>
                       </p>
                     )}
 
                     {event.type === "price_change" && (
-                      <div className="flex items-center gap-2 text-slate-300">
+                      <div className="flex items-center gap-2 text-zinc-300">
                         <span>€{event.data.from?.toLocaleString()}</span>
-                        <ArrowRight className="w-4 h-4 text-slate-500" />
+                        <ArrowRight className="w-4 h-4 text-zinc-500" />
                         <span className="font-bold">€{event.data.to?.toLocaleString()}</span>
                         <span className={`ml-2 ${
                           event.data.change && event.data.change < 0 ? "text-emerald-400" : "text-red-400"
@@ -293,7 +293,7 @@ export function PropertyTimeline({ propertyId, onClose }: PropertyTimelineProps)
                     )}
 
                     {event.type === "update" && (
-                      <div className="space-y-1 text-sm text-slate-400">
+                      <div className="space-y-1 text-sm text-zinc-400">
                         {event.data.photosChanged && (
                           <p className="flex items-center gap-2">
                             <Camera className="w-4 h-4" />
@@ -326,40 +326,40 @@ export function PropertyTimeline({ propertyId, onClose }: PropertyTimelineProps)
         ) : (
           <div className="space-y-4">
             {data.matches.length === 0 ? (
-              <p className="text-slate-400 text-center py-8">
+              <p className="text-zinc-400 text-center py-8">
                 Neboli nájdené žiadne podobné inzeráty
               </p>
             ) : (
               data.matches.map((match) => (
                 <div
                   key={match.matchId}
-                  className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/50"
+                  className="bg-zinc-800/30 rounded-lg p-4 border border-zinc-700/50"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-medium text-slate-100">
+                        <h4 className="font-medium text-zinc-100">
                           {match.property.title}
                         </h4>
                         <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                           match.matchScore >= 80 ? "bg-emerald-500/20 text-emerald-400" :
                           match.matchScore >= 60 ? "bg-yellow-500/20 text-yellow-400" :
-                          "bg-slate-700 text-slate-300"
+                          "bg-zinc-700 text-zinc-300"
                         }`}>
                           {match.matchScore}% zhoda
                         </span>
                       </div>
-                      <p className="text-sm text-slate-400 mb-2">
+                      <p className="text-sm text-zinc-400 mb-2">
                         {match.property.address}
                       </p>
                       <div className="flex flex-wrap gap-3 text-sm">
-                        <span className="text-slate-300">
+                        <span className="text-zinc-300">
                           €{match.property.price.toLocaleString()}
                         </span>
-                        <span className="text-slate-400">
+                        <span className="text-zinc-400">
                           {match.property.area_m2} m²
                         </span>
-                        <span className="text-slate-500">
+                        <span className="text-zinc-500">
                           {formatDate(match.property.createdAt)}
                         </span>
                       </div>
@@ -367,7 +367,7 @@ export function PropertyTimeline({ propertyId, onClose }: PropertyTimelineProps)
                         {match.matchReason.map((reason, idx) => (
                           <span
                             key={idx}
-                            className="px-2 py-0.5 rounded-full text-xs bg-slate-700 text-slate-300"
+                            className="px-2 py-0.5 rounded-full text-xs bg-zinc-700 text-zinc-300"
                           >
                             {reason}
                           </span>
@@ -379,7 +379,7 @@ export function PropertyTimeline({ propertyId, onClose }: PropertyTimelineProps)
                         href={match.property.source_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 rounded-lg bg-slate-700/50 text-slate-400 hover:text-blue-400 transition-colors"
+                        className="p-2 rounded-lg bg-zinc-700/50 text-zinc-400 hover:text-blue-400 transition-colors"
                       >
                         <Link2 className="w-4 h-4" />
                       </a>

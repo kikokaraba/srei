@@ -61,12 +61,12 @@ export function EconomicIndicators() {
 
   if (isLoading) {
     return (
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/20 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-amber-950/20 p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-slate-800/50 rounded-lg w-2/3"></div>
+          <div className="h-8 bg-zinc-800/50 rounded-lg w-2/3"></div>
           <div className="grid grid-cols-2 gap-3">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-24 bg-slate-800/30 rounded-xl" />
+              <div key={i} className="h-24 bg-zinc-800/30 rounded-xl" />
             ))}
           </div>
         </div>
@@ -122,7 +122,7 @@ export function EconomicIndicators() {
   ];
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/20">
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-amber-950/20">
       {/* Ambient glow */}
       <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 bg-amber-500" />
       <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full blur-3xl opacity-10 bg-orange-500" />
@@ -133,7 +133,7 @@ export function EconomicIndicators() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className="w-5 h-5 text-amber-400" />
-              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
                 Ekonomika
               </span>
             </div>
@@ -144,7 +144,7 @@ export function EconomicIndicators() {
           
           {/* Mortgage rate highlight */}
           <div className="text-right">
-            <p className="text-xs text-slate-500 mb-0.5">Hypotéka</p>
+            <p className="text-xs text-zinc-500 mb-0.5">Hypotéka</p>
             <p className="text-2xl font-bold text-amber-400 tabular-nums">
               {summary.economicIndicators.mortgageRate}%
             </p>
@@ -161,7 +161,7 @@ export function EconomicIndicators() {
               <div
                 key={index}
                 className={`relative overflow-hidden p-4 rounded-xl bg-gradient-to-br ${indicator.bg} 
-                            border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300`}
+                            border border-zinc-700/50 hover:border-zinc-600/50 transition-all duration-300`}
               >
                 {/* Icon */}
                 <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${indicator.gradient} 
@@ -176,7 +176,7 @@ export function EconomicIndicators() {
                 
                 {/* Label & Change */}
                 <div className="flex items-center justify-between mt-1">
-                  <span className="text-xs text-slate-400">{indicator.label}</span>
+                  <span className="text-xs text-zinc-400">{indicator.label}</span>
                   {isPositive !== undefined && (
                     <span className={`flex items-center gap-0.5 text-xs font-medium ${
                       isPositive ? "text-emerald-400" : "text-red-400"
@@ -217,20 +217,20 @@ export function EconomicIndicators() {
         </div>
 
         {/* Unemployment & Listings */}
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-800/50">
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-800/50">
           <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-slate-500" />
-            <span className="text-sm text-slate-400">
+            <Users className="w-4 h-4 text-zinc-500" />
+            <span className="text-sm text-zinc-400">
               Nezamestnanosť: <span className="text-white font-semibold">{summary.economicIndicators.unemployment}%</span>
             </span>
           </div>
-          <div className="text-sm text-slate-400">
+          <div className="text-sm text-zinc-400">
             <span className="text-white font-semibold">{summary.totalListings.toLocaleString()}</span> ponúk
           </div>
         </div>
         
         {/* Source */}
-        <div className="flex items-center justify-center gap-2 mt-4 text-xs text-slate-600">
+        <div className="flex items-center justify-center gap-2 mt-4 text-xs text-zinc-600">
           <span>NBS + ŠÚ SR</span>
           <span>•</span>
           <span>Q3 2025</span>

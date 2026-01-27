@@ -167,7 +167,7 @@ export default function PropertyValuator() {
         {/* Inputs */}
         <div className="lg:col-span-2 space-y-4">
           {/* Location & Type */}
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
+          <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-blue-400" />
               Lokalita a typ
@@ -175,11 +175,11 @@ export default function PropertyValuator() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-slate-400 mb-2">Mesto</label>
+                <label className="block text-sm text-zinc-400 mb-2">Mesto</label>
                 <select
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="BRATISLAVA">Bratislava</option>
                   <option value="KOSICE">Košice</option>
@@ -193,14 +193,14 @@ export default function PropertyValuator() {
               </div>
               
               <div>
-                <label className="block text-sm text-slate-400 mb-2">Typ nehnuteľnosti</label>
+                <label className="block text-sm text-zinc-400 mb-2">Typ nehnuteľnosti</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setPropertyType("byty")}
                     className={`px-4 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors ${
                       propertyType === "byty"
                         ? "bg-blue-500 text-white"
-                        : "bg-slate-800 text-slate-400 hover:text-white"
+                        : "bg-zinc-800 text-zinc-400 hover:text-white"
                     }`}
                   >
                     <Building2 className="w-4 h-4" />
@@ -211,7 +211,7 @@ export default function PropertyValuator() {
                     className={`px-4 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors ${
                       propertyType === "domy"
                         ? "bg-blue-500 text-white"
-                        : "bg-slate-800 text-slate-400 hover:text-white"
+                        : "bg-zinc-800 text-zinc-400 hover:text-white"
                     }`}
                   >
                     <Home className="w-4 h-4" />
@@ -223,7 +223,7 @@ export default function PropertyValuator() {
           </div>
           
           {/* Size & Layout */}
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
+          <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <Ruler className="w-5 h-5 text-emerald-400" />
               Veľkosť a dispozícia
@@ -231,7 +231,7 @@ export default function PropertyValuator() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="flex items-center justify-between text-sm text-slate-400 mb-2">
+                <label className="flex items-center justify-between text-sm text-zinc-400 mb-2">
                   <span>Úžitková plocha</span>
                   <span className="text-white font-medium">{area} m²</span>
                 </label>
@@ -241,12 +241,12 @@ export default function PropertyValuator() {
                   max={200}
                   value={area}
                   onChange={(e) => setArea(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                  className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                 />
               </div>
               
               <div>
-                <label className="flex items-center justify-between text-sm text-slate-400 mb-2">
+                <label className="flex items-center justify-between text-sm text-zinc-400 mb-2">
                   <span>Počet izieb</span>
                   <span className="text-white font-medium">{rooms}</span>
                 </label>
@@ -256,14 +256,14 @@ export default function PropertyValuator() {
                   max={6}
                   value={rooms}
                   onChange={(e) => setRooms(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                  className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                 />
               </div>
             </div>
           </div>
           
           {/* Condition & Details */}
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
+          <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <Zap className="w-5 h-5 text-orange-400" />
               Stav a vybavenie
@@ -271,11 +271,11 @@ export default function PropertyValuator() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm text-slate-400 mb-2">Stav nehnuteľnosti</label>
+                <label className="block text-sm text-zinc-400 mb-2">Stav nehnuteľnosti</label>
                 <select
                   value={condition}
                   onChange={(e) => setCondition(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="NOVOSTAVBA">Novostavba</option>
                   <option value="PO_REKONSTRUKCII">Po rekonštrukcii</option>
@@ -287,11 +287,11 @@ export default function PropertyValuator() {
               
               {propertyType === "byty" && (
                 <div>
-                  <label className="block text-sm text-slate-400 mb-2">Poschodie</label>
+                  <label className="block text-sm text-zinc-400 mb-2">Poschodie</label>
                   <select
                     value={floor}
                     onChange={(e) => setFloor(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="PRIZEME">Prízemie</option>
                     <option value="NIZKE">1-2 poschodie</option>
@@ -303,14 +303,14 @@ export default function PropertyValuator() {
               )}
               
               <div>
-                <label className="block text-sm text-slate-400 mb-2">Rok výstavby</label>
+                <label className="block text-sm text-zinc-400 mb-2">Rok výstavby</label>
                 <input
                   type="number"
                   min={1900}
                   max={2026}
                   value={yearBuilt}
                   onChange={(e) => setYearBuilt(Number(e.target.value))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -322,7 +322,7 @@ export default function PropertyValuator() {
                 className={`px-4 py-2 rounded-lg text-sm transition-colors ${
                   hasBalcony
                     ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/50"
-                    : "bg-slate-800 text-slate-400 border border-slate-700"
+                    : "bg-zinc-800 text-zinc-400 border border-zinc-700"
                 }`}
               >
                 Balkón/Terasa
@@ -332,7 +332,7 @@ export default function PropertyValuator() {
                 className={`px-4 py-2 rounded-lg text-sm transition-colors ${
                   hasParking
                     ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/50"
-                    : "bg-slate-800 text-slate-400 border border-slate-700"
+                    : "bg-zinc-800 text-zinc-400 border border-zinc-700"
                 }`}
               >
                 Parkovanie
@@ -343,7 +343,7 @@ export default function PropertyValuator() {
                   className={`px-4 py-2 rounded-lg text-sm transition-colors ${
                     hasElevator
                       ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/50"
-                      : "bg-slate-800 text-slate-400 border border-slate-700"
+                      : "bg-zinc-800 text-zinc-400 border border-zinc-700"
                   }`}
                 >
                   Výťah
@@ -383,8 +383,8 @@ export default function PropertyValuator() {
           </div>
           
           {/* Price per m2 */}
-          <div className="bg-slate-900 rounded-xl border border-slate-800 p-4">
-            <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
+          <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-4">
+            <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1">
               <Euro className="w-4 h-4" />
               Cena za m²
             </div>
@@ -404,8 +404,8 @@ export default function PropertyValuator() {
           </div>
           
           {/* Market Average */}
-          <div className="bg-slate-900 rounded-xl border border-slate-800 p-4">
-            <div className="flex items-center gap-2 text-slate-400 text-sm mb-1">
+          <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-4">
+            <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1">
               <BarChart3 className="w-4 h-4" />
               Trhový priemer v {city.replace(/_/g, " ")}
             </div>
@@ -419,15 +419,15 @@ export default function PropertyValuator() {
           </div>
           
           {/* Factors */}
-          <div className="bg-slate-900 rounded-xl border border-slate-800 p-4">
-            <div className="flex items-center gap-2 text-slate-400 text-sm mb-3">
+          <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-4">
+            <div className="flex items-center gap-2 text-zinc-400 text-sm mb-3">
               <Target className="w-4 h-4" />
               Faktory ovplyvňujúce cenu
             </div>
             <div className="space-y-2">
               {valuation.factors.map((factor, idx) => (
                 <div key={idx} className="flex items-center justify-between text-sm">
-                  <span className="text-slate-300">{factor.name}</span>
+                  <span className="text-zinc-300">{factor.name}</span>
                   <span className={`font-medium ${
                     factor.impact >= 0 ? "text-emerald-400" : "text-red-400"
                   }`}>

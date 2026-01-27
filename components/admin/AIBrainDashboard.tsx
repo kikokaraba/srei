@@ -178,7 +178,7 @@ export function AIBrainDashboard() {
       case "critical": return "text-red-400 bg-red-500/10 border-red-500/30";
       case "high": return "text-orange-400 bg-orange-500/10 border-orange-500/30";
       case "medium": return "text-yellow-400 bg-yellow-500/10 border-yellow-500/30";
-      case "low": return "text-slate-400 bg-slate-500/10 border-slate-500/30";
+      case "low": return "text-zinc-400 bg-zinc-500/10 border-zinc-500/30";
     }
   };
 
@@ -189,7 +189,7 @@ export function AIBrainDashboard() {
       case "approved": return <ThumbsUp className="w-4 h-4 text-green-400" />;
       case "implemented": return <Check className="w-4 h-4 text-emerald-400" />;
       case "dismissed": return <X className="w-4 h-4 text-red-400" />;
-      default: return <Clock className="w-4 h-4 text-slate-400" />;
+      default: return <Clock className="w-4 h-4 text-zinc-400" />;
     }
   };
 
@@ -204,7 +204,7 @@ export function AIBrainDashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-purple-950/20 to-slate-900 p-6 lg:p-8">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-purple-950/20 to-zinc-900 p-6 lg:p-8">
         <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 bg-purple-500" />
         
         <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -220,7 +220,7 @@ export function AIBrainDashboard() {
                   Active
                 </div>
               </div>
-              <p className="text-slate-400">
+              <p className="text-zinc-400">
                 Centrálny AI systém pre automatické vylepšenia a insights
               </p>
             </div>
@@ -245,21 +245,21 @@ export function AIBrainDashboard() {
         {/* Stats */}
         {brainData?.stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <div className="bg-slate-800/50 rounded-xl p-4">
+            <div className="bg-zinc-800/50 rounded-xl p-4">
               <p className="text-2xl font-bold text-white">{brainData.stats.total || 0}</p>
-              <p className="text-sm text-slate-400">Celkom insights</p>
+              <p className="text-sm text-zinc-400">Celkom insights</p>
             </div>
-            <div className="bg-slate-800/50 rounded-xl p-4">
+            <div className="bg-zinc-800/50 rounded-xl p-4">
               <p className="text-2xl font-bold text-emerald-400">{brainData.stats.byStatus?.new || 0}</p>
-              <p className="text-sm text-slate-400">Nové</p>
+              <p className="text-sm text-zinc-400">Nové</p>
             </div>
-            <div className="bg-slate-800/50 rounded-xl p-4">
+            <div className="bg-zinc-800/50 rounded-xl p-4">
               <p className="text-2xl font-bold text-orange-400">{brainData.stats.byPriority?.high || 0}</p>
-              <p className="text-sm text-slate-400">Vysoká priorita</p>
+              <p className="text-sm text-zinc-400">Vysoká priorita</p>
             </div>
-            <div className="bg-slate-800/50 rounded-xl p-4">
+            <div className="bg-zinc-800/50 rounded-xl p-4">
               <p className="text-2xl font-bold text-red-400">{brainData.stats.byPriority?.critical || 0}</p>
-              <p className="text-sm text-slate-400">Kritické</p>
+              <p className="text-sm text-zinc-400">Kritické</p>
             </div>
           </div>
         )}
@@ -279,7 +279,7 @@ export function AIBrainDashboard() {
               className={`relative overflow-hidden rounded-xl p-5 text-left transition-all ${
                 isSelected 
                   ? `bg-${agent.color}-500/20 border border-${agent.color}-500/50`
-                  : "bg-slate-900 border border-slate-800 hover:border-slate-700"
+                  : "bg-zinc-900 border border-zinc-800 hover:border-zinc-700"
               }`}
             >
               <div className="flex items-start justify-between mb-3">
@@ -292,21 +292,21 @@ export function AIBrainDashboard() {
                     runMutation.mutate(agent.type);
                   }}
                   disabled={runMutation.isPending}
-                  className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors"
+                  className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 transition-colors"
                   title="Spustiť agenta"
                 >
                   {runMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />
+                    <Loader2 className="w-4 h-4 text-zinc-400 animate-spin" />
                   ) : (
-                    <Play className="w-4 h-4 text-slate-400" />
+                    <Play className="w-4 h-4 text-zinc-400" />
                   )}
                 </button>
               </div>
               
               <h3 className="font-semibold text-white mb-1">{agent.name}</h3>
-              <p className="text-sm text-slate-400 mb-3">{agent.description}</p>
+              <p className="text-sm text-zinc-400 mb-3">{agent.description}</p>
               
-              <div className="flex items-center gap-2 text-xs text-slate-500">
+              <div className="flex items-center gap-2 text-xs text-zinc-500">
                 <Clock className="w-3 h-3" />
                 {lastRun ? `Posledné: ${new Date(lastRun).toLocaleString("sk-SK")}` : "Nikdy nespustený"}
               </div>
@@ -317,7 +317,7 @@ export function AIBrainDashboard() {
 
       {/* Status Filters */}
       <div className="flex flex-wrap gap-2">
-        <span className="text-sm text-slate-400 py-2">Filter:</span>
+        <span className="text-sm text-zinc-400 py-2">Filter:</span>
         {(["new", "approved", "implemented", "dismissed"] as InsightStatus[]).map((status) => (
           <button
             key={status}
@@ -325,7 +325,7 @@ export function AIBrainDashboard() {
             className={`px-3 py-1.5 rounded-lg text-sm transition-all flex items-center gap-2 ${
               selectedStatus === status
                 ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                : "bg-slate-800 text-slate-400 border border-slate-700 hover:border-slate-600"
+                : "bg-zinc-800 text-zinc-400 border border-zinc-700 hover:border-zinc-600"
             }`}
           >
             {getStatusIcon(status)}
@@ -337,7 +337,7 @@ export function AIBrainDashboard() {
         ))}
         <button
           onClick={() => refetchInsights()}
-          className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 border border-slate-700 hover:border-slate-600 transition-all"
+          className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-400 border border-zinc-700 hover:border-zinc-600 transition-all"
         >
           <RefreshCw className="w-4 h-4" />
         </button>
@@ -350,7 +350,7 @@ export function AIBrainDashboard() {
             <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
           </div>
         ) : insights?.length === 0 ? (
-          <div className="text-center py-12 text-slate-400">
+          <div className="text-center py-12 text-zinc-400">
             <Brain className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p>Žiadne insights. Spustite agentov pre generovanie.</p>
           </div>
@@ -358,12 +358,12 @@ export function AIBrainDashboard() {
           insights?.map((insight: AIInsight) => (
             <div
               key={insight.id}
-              className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden"
+              className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden"
             >
               {/* Insight Header */}
               <button
                 onClick={() => setExpandedInsight(expandedInsight === insight.id ? null : insight.id)}
-                className="w-full p-4 flex items-start gap-4 text-left hover:bg-slate-800/50 transition-colors"
+                className="w-full p-4 flex items-start gap-4 text-left hover:bg-zinc-800/50 transition-colors"
               >
                 <div className={`px-2 py-1 rounded text-xs font-medium border ${getPriorityColor(insight.priority)}`}>
                   {insight.priority.toUpperCase()}
@@ -374,17 +374,17 @@ export function AIBrainDashboard() {
                     {getStatusIcon(insight.status)}
                     <h3 className="font-medium text-white truncate">{insight.title}</h3>
                   </div>
-                  <p className="text-sm text-slate-400 line-clamp-2">{insight.description}</p>
+                  <p className="text-sm text-zinc-400 line-clamp-2">{insight.description}</p>
                 </div>
                 
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <p className="text-sm text-slate-400">{insight.agentType}</p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-sm text-zinc-400">{insight.agentType}</p>
+                    <p className="text-xs text-zinc-500">
                       {new Date(insight.createdAt).toLocaleDateString("sk-SK")}
                     </p>
                   </div>
-                  <ChevronRight className={`w-5 h-5 text-slate-400 transition-transform ${
+                  <ChevronRight className={`w-5 h-5 text-zinc-400 transition-transform ${
                     expandedInsight === insight.id ? "rotate-90" : ""
                   }`} />
                 </div>
@@ -392,12 +392,12 @@ export function AIBrainDashboard() {
 
               {/* Expanded Content */}
               {expandedInsight === insight.id && (
-                <div className="px-4 pb-4 border-t border-slate-800">
+                <div className="px-4 pb-4 border-t border-zinc-800">
                   <div className="pt-4 space-y-4">
                     {/* Details */}
                     {insight.details && (
-                      <div className="bg-slate-800/50 rounded-lg p-4">
-                        <pre className="text-sm text-slate-300 whitespace-pre-wrap font-sans">
+                      <div className="bg-zinc-800/50 rounded-lg p-4">
+                        <pre className="text-sm text-zinc-300 whitespace-pre-wrap font-sans">
                           {insight.details}
                         </pre>
                       </div>
@@ -406,16 +406,16 @@ export function AIBrainDashboard() {
                     {/* Metrics */}
                     <div className="flex flex-wrap gap-4">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-slate-400">Confidence:</span>
+                        <span className="text-sm text-zinc-400">Confidence:</span>
                         <span className="text-sm font-medium text-white">{insight.confidence}%</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-slate-400">Impact:</span>
+                        <span className="text-sm text-zinc-400">Impact:</span>
                         <span className="text-sm font-medium text-white">{insight.impact}%</span>
                       </div>
                       {insight.effort && (
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-slate-400">Effort:</span>
+                          <span className="text-sm text-zinc-400">Effort:</span>
                           <span className="text-sm font-medium text-white">{insight.effort}%</span>
                         </div>
                       )}
@@ -425,7 +425,7 @@ export function AIBrainDashboard() {
                     {insight.suggestedAction && (
                       <div className="flex items-center gap-2 text-sm">
                         <Zap className="w-4 h-4 text-amber-400" />
-                        <span className="text-slate-400">Odporúčaná akcia:</span>
+                        <span className="text-zinc-400">Odporúčaná akcia:</span>
                         <span className="text-white">{insight.suggestedAction}</span>
                       </div>
                     )}
@@ -510,14 +510,14 @@ function InsightActions({
       case "safe": return "text-emerald-400 bg-emerald-500/10 border-emerald-500/30";
       case "moderate": return "text-amber-400 bg-amber-500/10 border-amber-500/30";
       case "high": return "text-red-400 bg-red-500/10 border-red-500/30";
-      default: return "text-slate-400 bg-slate-500/10 border-slate-500/30";
+      default: return "text-zinc-400 bg-zinc-500/10 border-zinc-500/30";
     }
   };
 
   if (showActions && actions.length > 0) {
     return (
       <div className="space-y-3 pt-2">
-        <div className="flex items-center gap-2 text-sm text-slate-400">
+        <div className="flex items-center gap-2 text-sm text-zinc-400">
           <Zap className="w-4 h-4 text-amber-400" />
           Dostupné automatické akcie:
         </div>
@@ -530,7 +530,7 @@ function InsightActions({
               className={`w-full p-3 rounded-lg border text-left transition-all ${
                 selectedAction === action.id 
                   ? "bg-violet-500/10 border-violet-500/30" 
-                  : "bg-slate-800/30 border-slate-700 hover:border-slate-600"
+                  : "bg-zinc-800/30 border-zinc-700 hover:border-zinc-600"
               }`}
             >
               <div className="flex items-start justify-between">
@@ -541,8 +541,8 @@ function InsightActions({
                       {action.risk === "safe" ? "Bezpečné" : action.risk === "moderate" ? "Stredné riziko" : "Vysoké riziko"}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400">{action.description}</p>
-                  <p className="text-xs text-slate-500 mt-1">Trvanie: {action.estimatedDuration}</p>
+                  <p className="text-xs text-zinc-400">{action.description}</p>
+                  <p className="text-xs text-zinc-500 mt-1">Trvanie: {action.estimatedDuration}</p>
                 </div>
                 {selectedAction === action.id && (
                   <Check className="w-5 h-5 text-violet-400" />
@@ -573,13 +573,13 @@ function InsightActions({
           <button
             onClick={onDismiss}
             disabled={isPending || executing}
-            className="px-4 py-2.5 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors"
+            className="px-4 py-2.5 bg-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-600 transition-colors"
           >
             Zamietnuť
           </button>
           <button
             onClick={() => setShowActions(false)}
-            className="px-4 py-2.5 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 transition-colors"
+            className="px-4 py-2.5 bg-zinc-800 text-zinc-400 rounded-lg hover:bg-zinc-700 transition-colors"
           >
             Späť
           </button>
@@ -654,7 +654,7 @@ function ApprovedInsightActions({
       case "safe": return "text-emerald-400 bg-emerald-500/10 border-emerald-500/30";
       case "moderate": return "text-amber-400 bg-amber-500/10 border-amber-500/30";
       case "high": return "text-red-400 bg-red-500/10 border-red-500/30";
-      default: return "text-slate-400 bg-slate-500/10 border-slate-500/30";
+      default: return "text-zinc-400 bg-zinc-500/10 border-zinc-500/30";
     }
   };
 
@@ -671,7 +671,7 @@ function ApprovedInsightActions({
     <div className="space-y-3 pt-2">
       {actions.length > 0 && (
         <>
-          <div className="flex items-center gap-2 text-sm text-slate-400">
+          <div className="flex items-center gap-2 text-sm text-zinc-400">
             <Zap className="w-4 h-4 text-amber-400" />
             Vykonať automatickú akciu:
           </div>
@@ -685,7 +685,7 @@ function ApprovedInsightActions({
                 className={`p-3 rounded-lg border text-left transition-all hover:border-violet-500/50 ${
                   executing === action.id 
                     ? "bg-violet-500/10 border-violet-500/30" 
-                    : "bg-slate-800/30 border-slate-700"
+                    : "bg-zinc-800/30 border-zinc-700"
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
@@ -698,7 +698,7 @@ function ApprovedInsightActions({
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-500">{action.estimatedDuration}</p>
+                <p className="text-xs text-zinc-500">{action.estimatedDuration}</p>
               </button>
             ))}
           </div>

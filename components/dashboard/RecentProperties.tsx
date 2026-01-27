@@ -112,7 +112,7 @@ export function RecentProperties() {
 
   if (loading) {
     return (
-      <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
+      <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-6">
         <div className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
         </div>
@@ -121,11 +121,11 @@ export function RecentProperties() {
   }
 
   return (
-    <div className="bg-slate-900 rounded-lg border border-slate-800 p-6">
+    <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Home className="w-5 h-5 text-emerald-400" />
-          <h2 className="text-xl font-bold text-slate-100">Nedávne nehnuteľnosti</h2>
+          <h2 className="text-xl font-bold text-zinc-100">Nedávne nehnuteľnosti</h2>
         </div>
         <button className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors">
           Zobraziť všetko →
@@ -135,9 +135,9 @@ export function RecentProperties() {
       <div className="space-y-4">
         {properties.length === 0 ? (
           <div className="text-center py-8">
-            <Home className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-            <p className="text-slate-400 mb-2">Zatiaľ žiadne nehnuteľnosti</p>
-            <p className="text-slate-500 text-sm">
+            <Home className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
+            <p className="text-zinc-400 mb-2">Zatiaľ žiadne nehnuteľnosti</p>
+            <p className="text-zinc-500 text-sm">
               Nastavte si lokality v{" "}
               <Link href="/dashboard/settings" className="text-emerald-400 hover:underline">
                 nastaveniach
@@ -152,12 +152,12 @@ export function RecentProperties() {
           return (
           <div
             key={property.id}
-            className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50 hover:border-emerald-500/30 transition-colors cursor-pointer"
+            className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50 hover:border-emerald-500/30 transition-colors cursor-pointer"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-slate-100">
+                  <h3 className="font-semibold text-zinc-100">
                     {property.title}
                   </h3>
                   <button
@@ -166,7 +166,7 @@ export function RecentProperties() {
                     className={`p-2 rounded-lg transition-colors ${
                       isSaved
                         ? "bg-emerald-500/20 text-emerald-400"
-                        : "bg-slate-700/50 text-slate-400 hover:text-emerald-400"
+                        : "bg-zinc-700/50 text-zinc-400 hover:text-emerald-400"
                     }`}
                     title={isSaved ? "Odstrániť zo sledovaných" : "Pridať do sledovaných"}
                   >
@@ -179,7 +179,7 @@ export function RecentProperties() {
                     )}
                   </button>
                 </div>
-                <div className="flex items-center gap-4 text-sm text-slate-400 mb-3">
+                <div className="flex items-center gap-4 text-sm text-zinc-400 mb-3">
                   <div className="flex items-center gap-1">
                     <MapPin className="w-4 h-4" />
                     <span>{property.district}</span>
@@ -194,19 +194,19 @@ export function RecentProperties() {
                 </div>
                 <div className="flex items-center gap-4">
                   <div>
-                    <p className="text-xs text-slate-500 mb-1">Cena</p>
-                    <p className="text-lg font-bold text-slate-100">
+                    <p className="text-xs text-zinc-500 mb-1">Cena</p>
+                    <p className="text-lg font-bold text-zinc-100">
                       €{property.price.toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 mb-1">Cena/m²</p>
-                    <p className="text-sm font-medium text-slate-200">
+                    <p className="text-xs text-zinc-500 mb-1">Cena/m²</p>
+                    <p className="text-sm font-medium text-zinc-200">
                       €{property.price_per_m2.toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 mb-1">Výnos</p>
+                    <p className="text-xs text-zinc-500 mb-1">Výnos</p>
                     <div className="flex items-center gap-1">
                       <TrendingUp className="w-4 h-4 text-emerald-400" />
                       <p className="text-sm font-bold text-emerald-400">

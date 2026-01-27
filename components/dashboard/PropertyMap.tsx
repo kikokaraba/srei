@@ -126,7 +126,7 @@ function PropertyMarker({ property, onClick }: { property: Property; onClick: ()
       <Popup className="property-popup">
         <div className="min-w-[250px] p-1">
           <div className="flex items-start justify-between gap-2 mb-2">
-            <h3 className="font-semibold text-sm text-slate-900 line-clamp-2">
+            <h3 className="font-semibold text-sm text-zinc-900 line-clamp-2">
               {property.title}
             </h3>
             {isHotDeal && (
@@ -137,27 +137,27 @@ function PropertyMarker({ property, onClick }: { property: Property; onClick: ()
             )}
           </div>
           
-          <div className="space-y-1.5 text-xs text-slate-600">
+          <div className="space-y-1.5 text-xs text-zinc-600">
             <div className="flex items-center gap-2">
-              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+              <MapPin className="w-3.5 h-3.5 text-zinc-400" />
               <span>{property.district}, {property.city}</span>
             </div>
             
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
               <div>
-                <div className="text-lg font-bold text-slate-900">
+                <div className="text-lg font-bold text-zinc-900">
                   {property.price.toLocaleString("sk-SK")} €
                 </div>
-                <div className="text-slate-500">
+                <div className="text-zinc-500">
                   {property.price_per_m2.toLocaleString("sk-SK")} €/m²
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-medium text-slate-700">
+                <div className="font-medium text-zinc-700">
                   {property.area_m2} m²
                 </div>
                 {property.rooms && (
-                  <div className="text-slate-500">
+                  <div className="text-zinc-500">
                     {property.rooms} izby
                   </div>
                 )}
@@ -217,8 +217,8 @@ function ClusterIndicator({
     >
       <Popup>
         <div className="text-center p-2">
-          <div className="text-2xl font-bold text-slate-900">{count}</div>
-          <div className="text-sm text-slate-600">nehnuteľností</div>
+          <div className="text-2xl font-bold text-zinc-900">{count}</div>
+          <div className="text-sm text-zinc-600">nehnuteľností</div>
           {hasHotDeals && (
             <div className="text-xs text-red-600 mt-1">
               vrátane Hot Deals
@@ -344,7 +344,7 @@ export default function PropertyMap() {
   return (
     <div className="relative h-full w-full flex flex-col">
       {/* Header with stats */}
-      <div className="flex-none bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 p-4">
+      <div className="flex-none bg-zinc-900/95 backdrop-blur-xl border-b border-zinc-800 p-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           {/* Title and stats */}
           <div className="flex items-center gap-6">
@@ -354,7 +354,7 @@ export default function PropertyMap() {
             </h1>
             
             <div className="hidden md:flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-2 text-slate-400">
+              <div className="flex items-center gap-2 text-zinc-400">
                 <Building2 className="w-4 h-4" />
                 <span className="text-white font-medium">{stats.total}</span>
                 <span>nehnuteľností</span>
@@ -368,7 +368,7 @@ export default function PropertyMap() {
                 </div>
               )}
               
-              <div className="flex items-center gap-2 text-slate-400">
+              <div className="flex items-center gap-2 text-zinc-400">
                 <TrendingUp className="w-4 h-4" />
                 <span className="text-white font-medium">{stats.avgPrice.toLocaleString("sk-SK")}</span>
                 <span>€/m² priemer</span>
@@ -382,7 +382,7 @@ export default function PropertyMap() {
             <select
               value={filters.city}
               onChange={(e) => setFilters(f => ({ ...f, city: e.target.value }))}
-              className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="ALL">Celé Slovensko</option>
               <option value="BRATISLAVA">Bratislava</option>
@@ -399,7 +399,7 @@ export default function PropertyMap() {
             <select
               value={filters.listingType}
               onChange={(e) => setFilters(f => ({ ...f, listingType: e.target.value as MapFilters["listingType"] }))}
-              className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="ALL">Všetky typy</option>
               <option value="PREDAJ">Predaj</option>
@@ -412,7 +412,7 @@ export default function PropertyMap() {
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
                 filters.hotDealsOnly 
                   ? "bg-red-500/20 text-red-400 border border-red-500/50" 
-                  : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-white"
+                  : "bg-zinc-800 text-zinc-400 border border-zinc-700 hover:text-white"
               }`}
             >
               <Flame className="w-4 h-4" />
@@ -425,7 +425,7 @@ export default function PropertyMap() {
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
                 showFilters 
                   ? "bg-blue-500/20 text-blue-400 border border-blue-500/50" 
-                  : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-white"
+                  : "bg-zinc-800 text-zinc-400 border border-zinc-700 hover:text-white"
               }`}
             >
               <SlidersHorizontal className="w-4 h-4" />
@@ -435,7 +435,7 @@ export default function PropertyMap() {
             {/* Reset */}
             <button
               onClick={resetFilters}
-              className="p-2 rounded-lg bg-slate-800 text-slate-400 border border-slate-700 hover:text-white transition-colors"
+              className="p-2 rounded-lg bg-zinc-800 text-zinc-400 border border-zinc-700 hover:text-white transition-colors"
               title="Reset filtrov"
             >
               <RotateCcw className="w-4 h-4" />
@@ -445,48 +445,48 @@ export default function PropertyMap() {
         
         {/* Extended filters panel */}
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-slate-800 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="mt-4 pt-4 border-t border-zinc-800 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Cena od (€)</label>
+              <label className="block text-xs text-zinc-500 mb-1">Cena od (€)</label>
               <input
                 type="number"
                 value={filters.priceMin || ""}
                 onChange={(e) => setFilters(f => ({ ...f, priceMin: e.target.value ? Number(e.target.value) : null }))}
                 placeholder="0"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Cena do (€)</label>
+              <label className="block text-xs text-zinc-500 mb-1">Cena do (€)</label>
               <input
                 type="number"
                 value={filters.priceMax || ""}
                 onChange={(e) => setFilters(f => ({ ...f, priceMax: e.target.value ? Number(e.target.value) : null }))}
                 placeholder="∞"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Plocha od (m²)</label>
+              <label className="block text-xs text-zinc-500 mb-1">Plocha od (m²)</label>
               <input
                 type="number"
                 value={filters.areaMin || ""}
                 onChange={(e) => setFilters(f => ({ ...f, areaMin: e.target.value ? Number(e.target.value) : null }))}
                 placeholder="0"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Plocha do (m²)</label>
+              <label className="block text-xs text-zinc-500 mb-1">Plocha do (m²)</label>
               <input
                 type="number"
                 value={filters.areaMax || ""}
                 onChange={(e) => setFilters(f => ({ ...f, areaMax: e.target.value ? Number(e.target.value) : null }))}
                 placeholder="∞"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -496,16 +496,16 @@ export default function PropertyMap() {
       {/* Map container */}
       <div className="flex-1 relative">
         {loading && (
-          <div className="absolute inset-0 z-[1000] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center">
+          <div className="absolute inset-0 z-[1000] bg-zinc-900/80 backdrop-blur-sm flex items-center justify-center">
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-              <span className="text-slate-400">Načítavam mapu...</span>
+              <span className="text-zinc-400">Načítavam mapu...</span>
             </div>
           </div>
         )}
         
         {error && (
-          <div className="absolute inset-0 z-[1000] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center">
+          <div className="absolute inset-0 z-[1000] bg-zinc-900/80 backdrop-blur-sm flex items-center justify-center">
             <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-6 max-w-md text-center">
               <div className="text-red-400 mb-2">Chyba pri načítaní</div>
               <div className="text-white">{error}</div>
@@ -543,29 +543,29 @@ export default function PropertyMap() {
         </MapContainer>
         
         {/* Legend */}
-        <div className="absolute bottom-4 left-4 z-[1000] bg-slate-900/90 backdrop-blur-xl rounded-xl p-3 border border-slate-800">
-          <div className="text-xs text-slate-400 mb-2">Legenda</div>
+        <div className="absolute bottom-4 left-4 z-[1000] bg-zinc-900/90 backdrop-blur-xl rounded-xl p-3 border border-zinc-800">
+          <div className="text-xs text-zinc-400 mb-2">Legenda</div>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-xs">
               <div className="w-3 h-3 rounded-full bg-blue-500" />
-              <span className="text-slate-300">Predaj ({stats.forSale})</span>
+              <span className="text-zinc-300">Predaj ({stats.forSale})</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
               <div className="w-3 h-3 rounded-full bg-purple-500" />
-              <span className="text-slate-300">Prenájom ({stats.forRent})</span>
+              <span className="text-zinc-300">Prenájom ({stats.forRent})</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
               <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-red-300" />
-              <span className="text-slate-300">Hot Deal ({stats.hotDeals})</span>
+              <span className="text-zinc-300">Hot Deal ({stats.hotDeals})</span>
             </div>
           </div>
         </div>
         
         {/* Property count indicator */}
-        <div className="absolute top-4 right-4 z-[1000] bg-slate-900/90 backdrop-blur-xl rounded-xl px-4 py-2 border border-slate-800">
+        <div className="absolute top-4 right-4 z-[1000] bg-zinc-900/90 backdrop-blur-xl rounded-xl px-4 py-2 border border-zinc-800">
           <div className="text-white font-medium">
             {mappableProperties.length} 
-            <span className="text-slate-400 ml-1 font-normal">na mape</span>
+            <span className="text-zinc-400 ml-1 font-normal">na mape</span>
           </div>
         </div>
       </div>

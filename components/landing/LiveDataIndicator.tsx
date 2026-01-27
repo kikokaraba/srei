@@ -46,17 +46,17 @@ export function LiveDataIndicator() {
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 hidden md:block">
-      <div className="bg-slate-900/95 backdrop-blur-lg border border-emerald-500/20 rounded-full px-6 py-3 shadow-2xl flex items-center gap-3">
+      <div className="bg-zinc-900/95 backdrop-blur-lg border border-emerald-500/20 rounded-full px-6 py-3 shadow-2xl flex items-center gap-3">
         <div className="flex items-center gap-2">
           <div className="relative">
             <Radio className="w-4 h-4 text-emerald-400" />
             <span className="absolute top-0 left-0 w-2 h-2 bg-emerald-400 rounded-full animate-ping" />
           </div>
-          <span className="text-xs text-slate-400 font-medium">LIVE</span>
+          <span className="text-xs text-zinc-400 font-medium">LIVE</span>
         </div>
-        <div className="h-4 w-px bg-slate-700" />
+        <div className="h-4 w-px bg-zinc-700" />
         <p
-          className={`text-sm text-slate-200 transition-opacity duration-300 ${
+          className={`text-sm text-zinc-200 transition-opacity duration-300 ${
             isVisible ? "opacity-100" : "opacity-0"
           }`}
         >

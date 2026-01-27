@@ -311,21 +311,21 @@ export default function MapboxPropertyMap() {
         const html = `
           <div class="p-3 min-w-[250px]">
             <div class="flex items-start justify-between gap-2 mb-2">
-              <h3 class="font-semibold text-sm text-slate-100 line-clamp-2">${props.title}</h3>
+              <h3 class="font-semibold text-sm text-zinc-100 line-clamp-2">${props.title}</h3>
               ${isHotDeal ? '<span class="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded-full whitespace-nowrap">Hot Deal</span>' : ''}
             </div>
-            <div class="text-xs text-slate-400 mb-3">${props.district}, ${props.city}</div>
-            <div class="flex items-center justify-between border-t border-slate-700 pt-2">
+            <div class="text-xs text-zinc-400 mb-3">${props.district}, ${props.city}</div>
+            <div class="flex items-center justify-between border-t border-zinc-700 pt-2">
               <div>
                 <div class="text-lg font-bold text-white">${Number(props.price).toLocaleString("sk-SK")} €</div>
-                <div class="text-xs text-slate-400">${Number(props.price_per_m2).toLocaleString("sk-SK")} €/m²</div>
+                <div class="text-xs text-zinc-400">${Number(props.price_per_m2).toLocaleString("sk-SK")} €/m²</div>
               </div>
               <div class="text-right">
-                <div class="font-medium text-slate-300">${props.area_m2} m²</div>
-                ${props.rooms ? `<div class="text-xs text-slate-400">${props.rooms} izby</div>` : ''}
+                <div class="font-medium text-zinc-300">${props.area_m2} m²</div>
+                ${props.rooms ? `<div class="text-xs text-zinc-400">${props.rooms} izby</div>` : ''}
               </div>
             </div>
-            <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-700">
+            <div class="flex items-center justify-between mt-3 pt-2 border-t border-zinc-700">
               <span class="px-2 py-1 rounded text-xs ${isRent ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'}">
                 ${isRent ? 'Prenájom' : 'Predaj'}
               </span>
@@ -403,10 +403,10 @@ export default function MapboxPropertyMap() {
   // If no token, show message
   if (!MAPBOX_TOKEN) {
     return (
-      <div className="h-full w-full flex flex-col items-center justify-center bg-slate-950 text-white p-8">
-        <MapPin className="w-16 h-16 text-slate-600 mb-4" />
+      <div className="h-full w-full flex flex-col items-center justify-center bg-zinc-950 text-white p-8">
+        <MapPin className="w-16 h-16 text-zinc-600 mb-4" />
         <h2 className="text-xl font-semibold mb-2">Mapbox token nie je nastavený</h2>
-        <p className="text-slate-400 text-center max-w-md mb-4">
+        <p className="text-zinc-400 text-center max-w-md mb-4">
           Pre zobrazenie mapy je potrebné nastaviť NEXT_PUBLIC_MAPBOX_TOKEN v environment variables.
         </p>
         <a 
@@ -423,9 +423,9 @@ export default function MapboxPropertyMap() {
   }
   
   return (
-    <div className="h-full w-full flex flex-col bg-slate-950">
+    <div className="h-full w-full flex flex-col bg-zinc-950">
       {/* Header */}
-      <div className="flex-none bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 p-4 z-10">
+      <div className="flex-none bg-zinc-900/95 backdrop-blur-xl border-b border-zinc-800 p-4 z-10">
         <div className="flex flex-wrap items-center justify-between gap-4">
           {/* Title and stats */}
           <div className="flex items-center gap-6">
@@ -435,7 +435,7 @@ export default function MapboxPropertyMap() {
             </h1>
             
             <div className="hidden md:flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-2 text-slate-400">
+              <div className="flex items-center gap-2 text-zinc-400">
                 <Building2 className="w-4 h-4" />
                 <span className="text-white font-medium">{stats.total.toLocaleString()}</span>
                 <span>nehnuteľností</span>
@@ -447,7 +447,7 @@ export default function MapboxPropertyMap() {
                   <span>hot deals</span>
                 </div>
               )}
-              <div className="flex items-center gap-2 text-slate-400">
+              <div className="flex items-center gap-2 text-zinc-400">
                 <Euro className="w-4 h-4" />
                 <span className="text-white font-medium">{stats.avgPrice.toLocaleString()}</span>
                 <span>€/m² priemer</span>
@@ -461,7 +461,7 @@ export default function MapboxPropertyMap() {
             <select
               value={filters.listingType}
               onChange={(e) => setFilters(f => ({ ...f, listingType: e.target.value as MapFilters["listingType"] }))}
-              className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white"
+              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white"
             >
               <option value="ALL">Všetky typy</option>
               <option value="PREDAJ">Predaj</option>
@@ -474,7 +474,7 @@ export default function MapboxPropertyMap() {
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
                 filters.hotDealsOnly 
                   ? "bg-red-500/20 text-red-400 border border-red-500/50" 
-                  : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-white"
+                  : "bg-zinc-800 text-zinc-400 border border-zinc-700 hover:text-white"
               }`}
             >
               <Flame className="w-4 h-4" />
@@ -484,8 +484,8 @@ export default function MapboxPropertyMap() {
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                showFilters ? "bg-blue-500/20 text-blue-400" : "bg-slate-800 text-slate-400 hover:text-white"
-              } border border-slate-700`}
+                showFilters ? "bg-blue-500/20 text-blue-400" : "bg-zinc-800 text-zinc-400 hover:text-white"
+              } border border-zinc-700`}
             >
               <SlidersHorizontal className="w-4 h-4" />
             </button>
@@ -493,7 +493,7 @@ export default function MapboxPropertyMap() {
             {/* Reset */}
             <button
               onClick={resetView}
-              className="p-2 rounded-lg bg-slate-800 text-slate-400 border border-slate-700 hover:text-white"
+              className="p-2 rounded-lg bg-zinc-800 text-zinc-400 border border-zinc-700 hover:text-white"
               title="Reset pohľadu"
             >
               <RotateCcw className="w-4 h-4" />
@@ -503,25 +503,25 @@ export default function MapboxPropertyMap() {
         
         {/* Extended filters */}
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-slate-800 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="mt-4 pt-4 border-t border-zinc-800 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Cena od (€)</label>
+              <label className="block text-xs text-zinc-500 mb-1">Cena od (€)</label>
               <input
                 type="number"
                 value={filters.priceMin || ""}
                 onChange={(e) => setFilters(f => ({ ...f, priceMin: e.target.value ? Number(e.target.value) : null }))}
                 placeholder="0"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500"
               />
             </div>
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Cena do (€)</label>
+              <label className="block text-xs text-zinc-500 mb-1">Cena do (€)</label>
               <input
                 type="number"
                 value={filters.priceMax || ""}
                 onChange={(e) => setFilters(f => ({ ...f, priceMax: e.target.value ? Number(e.target.value) : null }))}
                 placeholder="∞"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500"
               />
             </div>
           </div>
@@ -531,10 +531,10 @@ export default function MapboxPropertyMap() {
       {/* Map */}
       <div className="flex-1 relative">
         {loading && (
-          <div className="absolute inset-0 z-20 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center">
+          <div className="absolute inset-0 z-20 bg-zinc-900/80 backdrop-blur-sm flex items-center justify-center">
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-              <span className="text-slate-400">Načítavam mapu...</span>
+              <span className="text-zinc-400">Načítavam mapu...</span>
             </div>
           </div>
         )}
@@ -542,14 +542,14 @@ export default function MapboxPropertyMap() {
         <div ref={mapContainer} className="w-full h-full" />
         
         {/* City quick navigation */}
-        <div className="absolute top-4 left-4 z-10 bg-slate-900/90 backdrop-blur-xl rounded-xl p-3 border border-slate-800 max-w-[200px]">
-          <div className="text-xs text-slate-400 mb-2">Rýchla navigácia</div>
+        <div className="absolute top-4 left-4 z-10 bg-zinc-900/90 backdrop-blur-xl rounded-xl p-3 border border-zinc-800 max-w-[200px]">
+          <div className="text-xs text-zinc-400 mb-2">Rýchla navigácia</div>
           <div className="flex flex-wrap gap-1">
             {cities.slice(0, 6).map(city => (
               <button
                 key={city.slug}
                 onClick={() => flyToCity(city)}
-                className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs text-white transition-colors"
+                className="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 rounded text-xs text-white transition-colors"
               >
                 {city.name.substring(0, 3)}
               </button>
@@ -558,29 +558,29 @@ export default function MapboxPropertyMap() {
         </div>
         
         {/* Legend */}
-        <div className="absolute bottom-4 left-4 z-10 bg-slate-900/90 backdrop-blur-xl rounded-xl p-3 border border-slate-800">
-          <div className="text-xs text-slate-400 mb-2">Legenda</div>
+        <div className="absolute bottom-4 left-4 z-10 bg-zinc-900/90 backdrop-blur-xl rounded-xl p-3 border border-zinc-800">
+          <div className="text-xs text-zinc-400 mb-2">Legenda</div>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-xs">
               <div className="w-3 h-3 rounded-full bg-blue-500" />
-              <span className="text-slate-300">Predaj</span>
+              <span className="text-zinc-300">Predaj</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
               <div className="w-3 h-3 rounded-full bg-purple-500" />
-              <span className="text-slate-300">Prenájom</span>
+              <span className="text-zinc-300">Prenájom</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
               <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-white" />
-              <span className="text-slate-300">Hot Deal</span>
+              <span className="text-zinc-300">Hot Deal</span>
             </div>
           </div>
         </div>
         
         {/* Count indicator */}
-        <div className="absolute top-4 right-16 z-10 bg-slate-900/90 backdrop-blur-xl rounded-xl px-4 py-2 border border-slate-800">
+        <div className="absolute top-4 right-16 z-10 bg-zinc-900/90 backdrop-blur-xl rounded-xl px-4 py-2 border border-zinc-800">
           <div className="text-white font-medium">
             {filteredProperties.length.toLocaleString()}
-            <span className="text-slate-400 ml-1 font-normal">na mape</span>
+            <span className="text-zinc-400 ml-1 font-normal">na mape</span>
           </div>
         </div>
       </div>

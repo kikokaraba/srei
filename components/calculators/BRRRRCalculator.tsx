@@ -142,7 +142,7 @@ export function BRRRRCalculator({ initialPrice }: BRRRRCalculatorProps) {
           ? "bg-emerald-950/30 border-emerald-500/20" 
           : isClose 
             ? "bg-amber-950/30 border-amber-500/20" 
-            : "bg-slate-800/30 border-slate-700/50"
+            : "bg-zinc-800/30 border-zinc-700/50"
       }`}>
         {/* Background glow */}
         {isSuccess && (
@@ -158,28 +158,28 @@ export function BRRRRCalculator({ initialPrice }: BRRRRCalculatorProps) {
               ) : isClose ? (
                 <AlertTriangle className="w-5 h-5 text-amber-400" />
               ) : null}
-              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+              <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
                 {isSuccess ? "Úspešný BRRRR" : isClose ? "Takmer tam" : "Cash Recovery"}
               </span>
             </div>
             <div className="flex items-baseline gap-1">
               <span className={`text-5xl font-light tabular-nums ${
-                isSuccess ? "text-emerald-400" : isClose ? "text-amber-400" : "text-slate-300"
+                isSuccess ? "text-emerald-400" : isClose ? "text-amber-400" : "text-zinc-300"
               }`}>
                 {results.cashRecoveredPercent}
               </span>
-              <span className="text-xl text-slate-600">%</span>
+              <span className="text-xl text-zinc-600">%</span>
             </div>
             {/* Progress Bar */}
-            <div className="mt-3 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div className="mt-3 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
               <div 
                 className={`h-full rounded-full transition-all duration-500 ${
-                  isSuccess ? "bg-emerald-500" : isClose ? "bg-amber-500" : "bg-slate-600"
+                  isSuccess ? "bg-emerald-500" : isClose ? "bg-amber-500" : "bg-zinc-600"
                 }`}
                 style={{ width: `${Math.min(100, results.cashRecoveredPercent)}%` }}
               />
             </div>
-            <div className="mt-1 flex justify-between text-[10px] text-slate-600">
+            <div className="mt-1 flex justify-between text-[10px] text-zinc-600">
               <span>0%</span>
               <span>100%</span>
             </div>
@@ -213,7 +213,7 @@ export function BRRRRCalculator({ initialPrice }: BRRRRCalculatorProps) {
 
       {/* Presets */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-slate-600">Scenár:</span>
+        <span className="text-xs text-zinc-600">Scenár:</span>
         <div className="flex gap-2">
           {PRESETS.map((preset) => {
             const isActive = JSON.stringify(inputs) === JSON.stringify(preset.inputs);
@@ -224,7 +224,7 @@ export function BRRRRCalculator({ initialPrice }: BRRRRCalculatorProps) {
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   isActive
                     ? "bg-violet-500/20 text-violet-400 border border-violet-500/30"
-                    : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
                 }`}
               >
                 {preset.name}
@@ -247,7 +247,7 @@ export function BRRRRCalculator({ initialPrice }: BRRRRCalculatorProps) {
               <div 
                 key={phase.id}
                 className={`rounded-xl border transition-all ${
-                  isExpanded ? `${colors.bg} ${colors.border}` : "bg-slate-800/20 border-slate-800/50"
+                  isExpanded ? `${colors.bg} ${colors.border}` : "bg-zinc-800/20 border-zinc-800/50"
                 }`}
               >
                 {/* Phase Header */}
@@ -261,17 +261,17 @@ export function BRRRRCalculator({ initialPrice }: BRRRRCalculatorProps) {
                     </div>
                     <div className="text-left">
                       <div className="flex items-center gap-2">
-                        <span className={`text-sm font-medium ${isExpanded ? "text-white" : "text-slate-300"}`}>
+                        <span className={`text-sm font-medium ${isExpanded ? "text-white" : "text-zinc-300"}`}>
                           {phase.label}
                         </span>
-                        <span className="text-xs text-slate-600">• {phase.sublabel}</span>
+                        <span className="text-xs text-zinc-600">• {phase.sublabel}</span>
                       </div>
                     </div>
                   </div>
                   {isExpanded ? (
-                    <ChevronUp className="w-4 h-4 text-slate-500" />
+                    <ChevronUp className="w-4 h-4 text-zinc-500" />
                   ) : (
-                    <ChevronDown className="w-4 h-4 text-slate-500" />
+                    <ChevronDown className="w-4 h-4 text-zinc-500" />
                   )}
                 </button>
 
@@ -302,7 +302,7 @@ export function BRRRRCalculator({ initialPrice }: BRRRRCalculatorProps) {
                           : "bg-red-950/30 border border-red-500/20"
                       }`}>
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-slate-500">Vytvorené equity</span>
+                          <span className="text-xs text-zinc-500">Vytvorené equity</span>
                           <span className={`text-sm font-medium ${
                             results.forcedEquity > 0 ? "text-emerald-400" : "text-red-400"
                           }`}>
@@ -321,29 +321,29 @@ export function BRRRRCalculator({ initialPrice }: BRRRRCalculatorProps) {
         {/* Results Column */}
         <div className="space-y-4">
           {/* Cash Flow Breakdown */}
-          <div className="p-5 rounded-xl bg-slate-800/20 border border-slate-800/50">
-            <div className="text-xs text-slate-500 uppercase tracking-wider mb-4">
+          <div className="p-5 rounded-xl bg-zinc-800/20 border border-zinc-800/50">
+            <div className="text-xs text-zinc-500 uppercase tracking-wider mb-4">
               Mesačný Cash Flow
             </div>
             <div className="space-y-2">
               <FlowLine label="Nájom" value={inputs.monthlyRent} />
               <FlowLine label="Náklady" value={-inputs.monthlyExpenses} />
               <FlowLine label="Splátka" value={-results.monthlyMortgagePayment} />
-              <div className="pt-3 mt-3 border-t border-slate-800">
+              <div className="pt-3 mt-3 border-t border-zinc-800">
                 <FlowLine label="Cash Flow" value={results.monthlyCashFlow} highlight />
               </div>
             </div>
           </div>
 
           {/* Equity Position */}
-          <div className="p-5 rounded-xl bg-slate-800/20 border border-slate-800/50">
+          <div className="p-5 rounded-xl bg-zinc-800/20 border border-zinc-800/50">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-slate-500 uppercase tracking-wider">Equity pozícia</span>
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-zinc-500 uppercase tracking-wider">Equity pozícia</span>
+              <span className="text-xs text-zinc-500">
                 {((results.equityPosition / inputs.afterRepairValue) * 100).toFixed(0)}% z ARV
               </span>
             </div>
-            <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
+            <div className="h-3 bg-zinc-800 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-gradient-to-r from-violet-500 to-violet-400 rounded-full"
                 style={{ width: `${(results.equityPosition / inputs.afterRepairValue) * 100}%` }}
@@ -351,7 +351,7 @@ export function BRRRRCalculator({ initialPrice }: BRRRRCalculatorProps) {
             </div>
             <div className="mt-3 flex items-center justify-between text-sm">
               <span className="text-violet-400 font-medium">€{results.equityPosition.toLocaleString()}</span>
-              <span className="text-slate-600">ARV: €{inputs.afterRepairValue.toLocaleString()}</span>
+              <span className="text-zinc-600">ARV: €{inputs.afterRepairValue.toLocaleString()}</span>
             </div>
           </div>
 
@@ -385,7 +385,7 @@ export function BRRRRCalculator({ initialPrice }: BRRRRCalculatorProps) {
                 <Zap className="w-4 h-4 text-emerald-400" />
                 <span className="text-sm font-medium text-emerald-400">Nekonečná návratnosť</span>
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-zinc-500">
                 Vybrali ste všetku investovanú hotovosť a máte nehnuteľnosť generujúcu pasívny príjem. 
                 Použite €{results.cashRecovered.toLocaleString()} na ďalší deal.
               </p>
@@ -427,7 +427,7 @@ function CompactSlider({
     orange: "from-orange-500/80 to-orange-400/80",
     green: "from-green-500/80 to-green-400/80",
     violet: "from-violet-500/80 to-violet-400/80",
-  }[color] || "from-slate-500/80 to-slate-400/80";
+  }[color] || "from-zinc-500/80 to-zinc-400/80";
 
   const formatValue = () => {
     const num = decimals > 0 ? value.toFixed(decimals) : value.toLocaleString();
@@ -438,12 +438,12 @@ function CompactSlider({
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <div>
-          <span className="text-sm text-slate-400">{label}</span>
-          {sublabel && <span className="text-xs text-slate-600 ml-2">{sublabel}</span>}
+          <span className="text-sm text-zinc-400">{label}</span>
+          {sublabel && <span className="text-xs text-zinc-600 ml-2">{sublabel}</span>}
         </div>
         <span className="text-sm font-medium text-white tabular-nums">{formatValue()}</span>
       </div>
-      <div className="relative h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+      <div className="relative h-1.5 bg-zinc-700/50 rounded-full overflow-hidden">
         <div 
           className={`absolute inset-y-0 left-0 bg-gradient-to-r ${colorClass} rounded-full`}
           style={{ width: `${percentage}%` }}
@@ -477,13 +477,13 @@ function MiniMetric({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="p-3 rounded-lg bg-slate-800/30 border border-slate-800/50">
-      <div className="text-[10px] text-slate-600 uppercase tracking-wider">{label}</div>
-      <div className={`text-lg font-medium flex items-center gap-1 ${highlight ? "text-emerald-400" : "text-slate-300"}`}>
+    <div className="p-3 rounded-lg bg-zinc-800/30 border border-zinc-800/50">
+      <div className="text-[10px] text-zinc-600 uppercase tracking-wider">{label}</div>
+      <div className={`text-lg font-medium flex items-center gap-1 ${highlight ? "text-emerald-400" : "text-zinc-300"}`}>
         {icon}
         {value}
       </div>
-      {sublabel && <div className="text-[10px] text-slate-600">{sublabel}</div>}
+      {sublabel && <div className="text-[10px] text-zinc-600">{sublabel}</div>}
     </div>
   );
 }
@@ -493,11 +493,11 @@ function FlowLine({ label, value, highlight }: { label: string; value: number; h
   const isPositive = value >= 0;
   return (
     <div className="flex justify-between items-center">
-      <span className={`text-sm ${highlight ? "text-white font-medium" : "text-slate-500"}`}>{label}</span>
+      <span className={`text-sm ${highlight ? "text-white font-medium" : "text-zinc-500"}`}>{label}</span>
       <span className={`text-sm font-medium tabular-nums ${
         highlight 
           ? isPositive ? "text-emerald-400" : "text-red-400"
-          : isPositive ? "text-slate-400" : "text-red-400/70"
+          : isPositive ? "text-zinc-400" : "text-red-400/70"
       }`}>
         {isPositive ? "+" : ""}€{Math.abs(value).toLocaleString()}
       </span>
@@ -508,10 +508,10 @@ function FlowLine({ label, value, highlight }: { label: string; value: number; h
 // Summary Tile
 function SummaryTile({ label, value, good }: { label: string; value: string; good?: boolean }) {
   return (
-    <div className="p-3 rounded-lg bg-slate-800/20 border border-slate-800/30">
-      <div className="text-[10px] text-slate-600 uppercase tracking-wider">{label}</div>
+    <div className="p-3 rounded-lg bg-zinc-800/20 border border-zinc-800/30">
+      <div className="text-[10px] text-zinc-600 uppercase tracking-wider">{label}</div>
       <div className={`text-lg font-medium ${
-        good === undefined ? "text-slate-300" : good ? "text-emerald-400" : "text-slate-400"
+        good === undefined ? "text-zinc-300" : good ? "text-emerald-400" : "text-zinc-400"
       }`}>
         {value}
       </div>

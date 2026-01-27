@@ -172,38 +172,38 @@ export function AnalyticsDashboard() {
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-          <div className="flex items-center gap-2 text-slate-400 mb-2">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
+          <div className="flex items-center gap-2 text-zinc-400 mb-2">
             <Home className="w-5 h-5" />
             <span className="text-sm">Celkom nehnuteľností</span>
           </div>
-          <div className="text-3xl font-bold text-slate-100">
+          <div className="text-3xl font-bold text-zinc-100">
             {totalStats.totalProperties}
           </div>
         </div>
 
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-          <div className="flex items-center gap-2 text-slate-400 mb-2">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
+          <div className="flex items-center gap-2 text-zinc-400 mb-2">
             <Euro className="w-5 h-5" />
             <span className="text-sm">Priem. cena</span>
           </div>
-          <div className="text-3xl font-bold text-slate-100">
+          <div className="text-3xl font-bold text-zinc-100">
             €{totalStats.avgPrice.toLocaleString()}
           </div>
         </div>
 
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-          <div className="flex items-center gap-2 text-slate-400 mb-2">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
+          <div className="flex items-center gap-2 text-zinc-400 mb-2">
             <BarChart3 className="w-5 h-5" />
             <span className="text-sm">Priem. €/m²</span>
           </div>
-          <div className="text-3xl font-bold text-slate-100">
+          <div className="text-3xl font-bold text-zinc-100">
             €{totalStats.avgPricePerM2.toLocaleString()}
           </div>
         </div>
 
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-          <div className="flex items-center gap-2 text-slate-400 mb-2">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
+          <div className="flex items-center gap-2 text-zinc-400 mb-2">
             <TrendingUp className="w-5 h-5" />
             <span className="text-sm">Priem. výnos</span>
           </div>
@@ -212,12 +212,12 @@ export function AnalyticsDashboard() {
           </div>
         </div>
 
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-          <div className="flex items-center gap-2 text-slate-400 mb-2">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
+          <div className="flex items-center gap-2 text-zinc-400 mb-2">
             <Calendar className="w-5 h-5" />
             <span className="text-sm">Priem. dní v ponuke</span>
           </div>
-          <div className="text-3xl font-bold text-slate-100">
+          <div className="text-3xl font-bold text-zinc-100">
             {totalStats.avgDaysOnMarket}
           </div>
         </div>
@@ -225,24 +225,24 @@ export function AnalyticsDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* City Comparison */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
           <div className="flex items-center gap-2 mb-6">
             <Activity className="w-5 h-5 text-emerald-400" />
-            <h3 className="text-lg font-bold text-slate-100">Porovnanie regiónov</h3>
+            <h3 className="text-lg font-bold text-zinc-100">Porovnanie regiónov</h3>
           </div>
 
           <div className="space-y-4">
             {regionStats.map((region) => (
               <div key={region.region} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-slate-100">{region.regionLabel}</span>
+                  <span className="font-medium text-zinc-100">{region.regionLabel}</span>
                   <div className="flex items-center gap-4 text-sm">
-                    <span className="text-slate-400">{region.count} ponúk</span>
-                    <span className="text-slate-100">€{region.avgPricePerM2}/m²</span>
+                    <span className="text-zinc-400">{region.count} ponúk</span>
+                    <span className="text-zinc-100">€{region.avgPricePerM2}/m²</span>
                     <span className="text-emerald-400 font-medium">{region.avgYield.toFixed(1)}%</span>
                   </div>
                 </div>
-                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
                     style={{ width: `${(region.count / (regionStats[0]?.count || 1)) * 100}%` }}
@@ -254,20 +254,20 @@ export function AnalyticsDashboard() {
         </div>
 
         {/* Price Distribution */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
           <div className="flex items-center gap-2 mb-6">
             <BarChart3 className="w-5 h-5 text-emerald-400" />
-            <h3 className="text-lg font-bold text-slate-100">Cenové rozloženie</h3>
+            <h3 className="text-lg font-bold text-zinc-100">Cenové rozloženie</h3>
           </div>
 
           <div className="space-y-4">
             {priceRanges.map((range) => (
               <div key={range.range} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-300">{range.range}</span>
-                  <span className="text-slate-400">{range.count} ({range.percentage.toFixed(0)}%)</span>
+                  <span className="text-zinc-300">{range.range}</span>
+                  <span className="text-zinc-400">{range.count} ({range.percentage.toFixed(0)}%)</span>
                 </div>
-                <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-3 bg-zinc-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all"
                     style={{ width: `${range.percentage}%` }}
@@ -279,10 +279,10 @@ export function AnalyticsDashboard() {
         </div>
 
         {/* Condition Distribution */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
           <div className="flex items-center gap-2 mb-6">
             <PieChart className="w-5 h-5 text-emerald-400" />
-            <h3 className="text-lg font-bold text-slate-100">Stav nehnuteľností</h3>
+            <h3 className="text-lg font-bold text-zinc-100">Stav nehnuteľností</h3>
           </div>
 
           <div className="flex items-center justify-center gap-8">
@@ -321,8 +321,8 @@ export function AnalyticsDashboard() {
                   <div key={stat.condition} className="flex items-center gap-3">
                     <div className={`w-4 h-4 rounded-full ${colors[idx % colors.length]}`} />
                     <div>
-                      <div className="font-medium text-slate-100">{stat.conditionLabel}</div>
-                      <div className="text-sm text-slate-400">
+                      <div className="font-medium text-zinc-100">{stat.conditionLabel}</div>
+                      <div className="text-sm text-zinc-400">
                         {stat.count} ({stat.percentage.toFixed(0)}%)
                       </div>
                     </div>
@@ -334,10 +334,10 @@ export function AnalyticsDashboard() {
         </div>
 
         {/* Top Performers */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
           <div className="flex items-center gap-2 mb-6">
             <TrendingUp className="w-5 h-5 text-emerald-400" />
-            <h3 className="text-lg font-bold text-slate-100">Najlepšie investičné regióny</h3>
+            <h3 className="text-lg font-bold text-zinc-100">Najlepšie investičné regióny</h3>
           </div>
 
           <div className="space-y-4">
@@ -347,20 +347,20 @@ export function AnalyticsDashboard() {
               .map((region, idx) => (
                 <div
                   key={region.region}
-                  className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-zinc-800/50 rounded-lg"
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
                       idx === 0 ? "bg-yellow-500/20 text-yellow-400" :
-                      idx === 1 ? "bg-slate-400/20 text-slate-300" :
+                      idx === 1 ? "bg-zinc-400/20 text-zinc-300" :
                       idx === 2 ? "bg-amber-600/20 text-amber-500" :
-                      "bg-slate-700 text-slate-400"
+                      "bg-zinc-700 text-zinc-400"
                     }`}>
                       {idx + 1}
                     </div>
                     <div>
-                      <div className="font-medium text-slate-100">{region.regionLabel}</div>
-                      <div className="text-sm text-slate-400">€{region.avgPricePerM2}/m²</div>
+                      <div className="font-medium text-zinc-100">{region.regionLabel}</div>
+                      <div className="text-sm text-zinc-400">€{region.avgPricePerM2}/m²</div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -368,7 +368,7 @@ export function AnalyticsDashboard() {
                       <ArrowUpRight className="w-4 h-4" />
                       {region.avgYield.toFixed(1)}%
                     </div>
-                    <div className="text-sm text-slate-400">hrubý výnos</div>
+                    <div className="text-sm text-zinc-400">hrubý výnos</div>
                   </div>
                 </div>
               ))}

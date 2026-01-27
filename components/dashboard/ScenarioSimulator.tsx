@@ -146,7 +146,7 @@ export function ScenarioSimulator({ initialData }: ScenarioSimulatorProps) {
             "bg-red-950/30 border-red-500/20"
           }`}>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Skóre</span>
+              <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Skóre</span>
               {results.isPositive ? (
                 <CheckCircle className={`w-4 h-4 ${
                   scoreColor === "emerald" ? "text-emerald-400" :
@@ -163,10 +163,10 @@ export function ScenarioSimulator({ initialData }: ScenarioSimulatorProps) {
               }`}>
                 {investmentScore}
               </span>
-              <span className="text-slate-600 text-lg">/100</span>
+              <span className="text-zinc-600 text-lg">/100</span>
             </div>
             {/* Score Bar */}
-            <div className="mt-4 h-1 bg-slate-800 rounded-full overflow-hidden">
+            <div className="mt-4 h-1 bg-zinc-800 rounded-full overflow-hidden">
               <div 
                 className={`h-full rounded-full transition-all duration-500 ${
                   scoreColor === "emerald" ? "bg-emerald-500" :
@@ -206,7 +206,7 @@ export function ScenarioSimulator({ initialData }: ScenarioSimulatorProps) {
 
       {/* Presets */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-slate-600">Scenár:</span>
+        <span className="text-xs text-zinc-600">Scenár:</span>
         <div className="flex gap-2">
           {PRESET_SCENARIOS.map((preset) => {
             const isActive = inputs.downPayment === preset.downPayment && inputs.interestRate === preset.interestRate;
@@ -216,8 +216,8 @@ export function ScenarioSimulator({ initialData }: ScenarioSimulatorProps) {
                 onClick={() => applyPreset(preset)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   isActive
-                    ? "bg-slate-700 text-white"
-                    : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+                    ? "bg-zinc-700 text-white"
+                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
                 }`}
               >
                 {preset.name}
@@ -228,13 +228,13 @@ export function ScenarioSimulator({ initialData }: ScenarioSimulatorProps) {
       </div>
 
       {/* Section Toggle */}
-      <div className="flex gap-1 p-1 bg-slate-800/30 rounded-lg w-fit">
+      <div className="flex gap-1 p-1 bg-zinc-800/30 rounded-lg w-fit">
         <button
           onClick={() => setActiveSection("inputs")}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
             activeSection === "inputs"
-              ? "bg-slate-700 text-white"
-              : "text-slate-500 hover:text-slate-300"
+              ? "bg-zinc-700 text-white"
+              : "text-zinc-500 hover:text-zinc-300"
           }`}
         >
           Parametre
@@ -243,8 +243,8 @@ export function ScenarioSimulator({ initialData }: ScenarioSimulatorProps) {
           onClick={() => setActiveSection("projection")}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
             activeSection === "projection"
-              ? "bg-slate-700 text-white"
-              : "text-slate-500 hover:text-slate-300"
+              ? "bg-zinc-700 text-white"
+              : "text-zinc-500 hover:text-zinc-300"
           }`}
         >
           10-ročná projekcia
@@ -257,7 +257,7 @@ export function ScenarioSimulator({ initialData }: ScenarioSimulatorProps) {
           {/* Inputs Column */}
           <div className="lg:col-span-3 space-y-1">
             {/* Property & Rent */}
-            <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50 space-y-4">
+            <div className="p-4 rounded-xl bg-zinc-800/20 border border-zinc-800/50 space-y-4">
               <ModernSlider
                 label="Cena nehnuteľnosti"
                 value={inputs.propertyPrice}
@@ -279,10 +279,10 @@ export function ScenarioSimulator({ initialData }: ScenarioSimulatorProps) {
             </div>
 
             {/* Financing */}
-            <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50 space-y-4">
+            <div className="p-4 rounded-xl bg-zinc-800/20 border border-zinc-800/50 space-y-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-slate-500 uppercase tracking-wider">Financovanie</span>
-                <span className="text-xs text-slate-600">
+                <span className="text-xs text-zinc-500 uppercase tracking-wider">Financovanie</span>
+                <span className="text-xs text-zinc-600">
                   Úver: €{results.loanAmount.toLocaleString()}
                 </span>
               </div>
@@ -317,8 +317,8 @@ export function ScenarioSimulator({ initialData }: ScenarioSimulatorProps) {
             </div>
 
             {/* Costs */}
-            <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50 space-y-4">
-              <span className="text-xs text-slate-500 uppercase tracking-wider">Náklady & Rast</span>
+            <div className="p-4 rounded-xl bg-zinc-800/20 border border-zinc-800/50 space-y-4">
+              <span className="text-xs text-zinc-500 uppercase tracking-wider">Náklady & Rast</span>
               <ModernSlider
                 label="Výpadok nájmu"
                 value={inputs.vacancyRate}
@@ -353,14 +353,14 @@ export function ScenarioSimulator({ initialData }: ScenarioSimulatorProps) {
           {/* Results Column */}
           <div className="lg:col-span-2 space-y-4">
             {/* Cash Flow */}
-            <div className="p-5 rounded-xl bg-slate-800/30 border border-slate-800/50">
-              <div className="text-xs text-slate-500 uppercase tracking-wider mb-4">Mesačný Cash Flow</div>
+            <div className="p-5 rounded-xl bg-zinc-800/30 border border-zinc-800/50">
+              <div className="text-xs text-zinc-500 uppercase tracking-wider mb-4">Mesačný Cash Flow</div>
               <div className="space-y-2">
                 <FlowRow label="Nájom" value={inputs.monthlyRent} />
                 <FlowRow label="Vacancy" value={-(inputs.monthlyRent * inputs.vacancyRate / 100)} />
                 <FlowRow label="Náklady" value={-inputs.monthlyExpenses} />
                 <FlowRow label="Splátka" value={-results.monthlyPayment} />
-                <div className="pt-3 mt-3 border-t border-slate-800">
+                <div className="pt-3 mt-3 border-t border-zinc-800">
                   <FlowRow label="Cash Flow" value={results.netAnnualIncome / 12} highlight />
                 </div>
               </div>
@@ -395,17 +395,17 @@ export function ScenarioSimulator({ initialData }: ScenarioSimulatorProps) {
       {activeSection === "projection" && (
         <div className="space-y-6">
           {/* Chart */}
-          <div className="p-6 rounded-xl bg-slate-800/20 border border-slate-800/50">
+          <div className="p-6 rounded-xl bg-zinc-800/20 border border-zinc-800/50">
             <div className="flex items-center justify-between mb-6">
-              <span className="text-xs text-slate-500 uppercase tracking-wider">Vývoj hodnoty a equity</span>
+              <span className="text-xs text-zinc-500 uppercase tracking-wider">Vývoj hodnoty a equity</span>
               <div className="flex items-center gap-4 text-xs">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-slate-600" />
-                  <span className="text-slate-500">Hodnota</span>
+                  <span className="w-2 h-2 rounded-full bg-zinc-600" />
+                  <span className="text-zinc-500">Hodnota</span>
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <span className="text-slate-500">Equity</span>
+                  <span className="text-zinc-500">Equity</span>
                 </span>
               </div>
             </div>
@@ -418,7 +418,7 @@ export function ScenarioSimulator({ initialData }: ScenarioSimulatorProps) {
                 return (
                   <div key={idx} className="flex-1 flex flex-col items-center gap-1 group">
                     <div 
-                      className="w-full bg-slate-700/50 rounded-sm relative transition-all group-hover:bg-slate-700" 
+                      className="w-full bg-zinc-700/50 rounded-sm relative transition-all group-hover:bg-zinc-700" 
                       style={{ height: `${height}%` }}
                     >
                       <div
@@ -426,7 +426,7 @@ export function ScenarioSimulator({ initialData }: ScenarioSimulatorProps) {
                         style={{ height: `${equityHeight}%` }}
                       />
                     </div>
-                    <span className="text-[10px] text-slate-600">{year.year}</span>
+                    <span className="text-[10px] text-zinc-600">{year.year}</span>
                   </div>
                 );
               })}
@@ -456,27 +456,27 @@ export function ScenarioSimulator({ initialData }: ScenarioSimulatorProps) {
           </div>
 
           {/* Compact Table */}
-          <div className="overflow-x-auto rounded-xl border border-slate-800/50">
+          <div className="overflow-x-auto rounded-xl border border-zinc-800/50">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-800/30">
-                  <th className="text-left py-3 px-4 text-xs font-medium text-slate-500 uppercase tracking-wider">Rok</th>
-                  <th className="text-right py-3 px-4 text-xs font-medium text-slate-500 uppercase tracking-wider">Hodnota</th>
-                  <th className="text-right py-3 px-4 text-xs font-medium text-slate-500 uppercase tracking-wider">Equity</th>
-                  <th className="text-right py-3 px-4 text-xs font-medium text-slate-500 uppercase tracking-wider">Zisk/rok</th>
-                  <th className="text-right py-3 px-4 text-xs font-medium text-slate-500 uppercase tracking-wider">ROI</th>
+                <tr className="bg-zinc-800/30">
+                  <th className="text-left py-3 px-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Rok</th>
+                  <th className="text-right py-3 px-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Hodnota</th>
+                  <th className="text-right py-3 px-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Equity</th>
+                  <th className="text-right py-3 px-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Zisk/rok</th>
+                  <th className="text-right py-3 px-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">ROI</th>
                 </tr>
               </thead>
               <tbody>
                 {results.yearlyProjection.map((year, idx) => (
-                  <tr key={year.year} className={`border-t border-slate-800/30 ${idx % 2 === 0 ? "bg-slate-800/10" : ""}`}>
-                    <td className="py-2.5 px-4 text-slate-300 font-medium">{year.year}</td>
-                    <td className="py-2.5 px-4 text-right text-slate-400">€{year.propertyValue.toLocaleString()}</td>
+                  <tr key={year.year} className={`border-t border-zinc-800/30 ${idx % 2 === 0 ? "bg-zinc-800/10" : ""}`}>
+                    <td className="py-2.5 px-4 text-zinc-300 font-medium">{year.year}</td>
+                    <td className="py-2.5 px-4 text-right text-zinc-400">€{year.propertyValue.toLocaleString()}</td>
                     <td className="py-2.5 px-4 text-right text-emerald-400/80">€{year.equity.toLocaleString()}</td>
                     <td className={`py-2.5 px-4 text-right ${year.netIncome >= 0 ? "text-emerald-400/80" : "text-red-400/80"}`}>
                       €{year.netIncome.toLocaleString()}
                     </td>
-                    <td className="py-2.5 px-4 text-right text-slate-400">{year.roi.toFixed(0)}%</td>
+                    <td className="py-2.5 px-4 text-right text-zinc-400">{year.roi.toFixed(0)}%</td>
                   </tr>
                 ))}
               </tbody>
@@ -513,13 +513,13 @@ function ModernSlider({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm text-slate-400">{label}</span>
+        <span className="text-sm text-zinc-400">{label}</span>
         <div className="text-right">
           <span className="text-sm font-medium text-white tabular-nums">{format(value)}</span>
-          {sublabel && <span className="text-xs text-slate-600 ml-2">{sublabel}</span>}
+          {sublabel && <span className="text-xs text-zinc-600 ml-2">{sublabel}</span>}
         </div>
       </div>
-      <div className="relative h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+      <div className="relative h-1.5 bg-zinc-700/50 rounded-full overflow-hidden">
         <div 
           className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500/80 to-emerald-400/80 rounded-full"
           style={{ width: `${percentage}%` }}
@@ -551,11 +551,11 @@ function MetricTile({
   prefix?: string;
 }) {
   return (
-    <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50">
-      <div className="text-xs text-slate-500 mb-1">{label}</div>
+    <div className="p-4 rounded-xl bg-zinc-800/20 border border-zinc-800/50">
+      <div className="text-xs text-zinc-500 mb-1">{label}</div>
       <div className={`text-xl font-medium tabular-nums ${
         status === "good" ? "text-emerald-400" :
-        status === "bad" ? "text-red-400" : "text-slate-300"
+        status === "bad" ? "text-red-400" : "text-zinc-300"
       }`}>
         {prefix}{value}
       </div>
@@ -568,11 +568,11 @@ function FlowRow({ label, value, highlight }: { label: string; value: number; hi
   const isPositive = value >= 0;
   return (
     <div className="flex justify-between items-center">
-      <span className={`text-sm ${highlight ? "text-white font-medium" : "text-slate-500"}`}>{label}</span>
+      <span className={`text-sm ${highlight ? "text-white font-medium" : "text-zinc-500"}`}>{label}</span>
       <span className={`text-sm font-medium tabular-nums ${
         highlight 
           ? isPositive ? "text-emerald-400" : "text-red-400"
-          : isPositive ? "text-slate-400" : "text-red-400/70"
+          : isPositive ? "text-zinc-400" : "text-red-400/70"
       }`}>
         {isPositive ? "+" : ""}€{Math.abs(value).toFixed(0)}
       </span>
@@ -583,14 +583,14 @@ function FlowRow({ label, value, highlight }: { label: string; value: number; hi
 // Summary Card Component
 function SummaryCard({ label, value, good, sublabel }: { label: string; value: string; good?: boolean; sublabel?: string }) {
   return (
-    <div className="p-3 rounded-lg bg-slate-800/20 border border-slate-800/30">
-      <div className="text-[10px] text-slate-600 uppercase tracking-wider">{label}</div>
+    <div className="p-3 rounded-lg bg-zinc-800/20 border border-zinc-800/30">
+      <div className="text-[10px] text-zinc-600 uppercase tracking-wider">{label}</div>
       <div className={`text-lg font-medium ${
-        good === undefined ? "text-slate-300" : good ? "text-emerald-400" : "text-slate-400"
+        good === undefined ? "text-zinc-300" : good ? "text-emerald-400" : "text-zinc-400"
       }`}>
         {value}
       </div>
-      {sublabel && <div className="text-[10px] text-slate-600">{sublabel}</div>}
+      {sublabel && <div className="text-[10px] text-zinc-600">{sublabel}</div>}
     </div>
   );
 }
@@ -604,9 +604,9 @@ function ProjectionCard({ label, value, change, color }: { label: string; value:
   };
   return (
     <div className={`p-5 rounded-xl border ${colors[color]}`}>
-      <div className="text-xs text-slate-500 mb-1">{label}</div>
+      <div className="text-xs text-zinc-500 mb-1">{label}</div>
       <div className={`text-3xl font-light ${colors[color].split(" ")[2]}`}>{value}</div>
-      <div className="text-xs text-slate-600 mt-1">{change}</div>
+      <div className="text-xs text-zinc-600 mt-1">{change}</div>
     </div>
   );
 }

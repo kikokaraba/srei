@@ -57,7 +57,7 @@ export function LiquidityTracker() {
   const getDaysColor = (days: number) => {
     if (days >= 180) return "text-red-400";
     if (days >= 90) return "text-amber-400";
-    return "text-slate-400";
+    return "text-zinc-400";
   };
 
   const getDaysLabel = (days: number) => {
@@ -67,12 +67,12 @@ export function LiquidityTracker() {
 
   if (loading) {
     return (
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-rose-950/20 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-rose-950/20 p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-slate-800/50 rounded-lg w-2/3"></div>
+          <div className="h-8 bg-zinc-800/50 rounded-lg w-2/3"></div>
           <div className="space-y-3">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-20 bg-slate-800/30 rounded-xl" />
+              <div key={i} className="h-20 bg-zinc-800/30 rounded-xl" />
             ))}
           </div>
         </div>
@@ -82,16 +82,16 @@ export function LiquidityTracker() {
 
   if (properties.length === 0) {
     return (
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-rose-950/20 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-rose-950/20 p-6">
         <div className="text-center py-8">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
             <Clock className="w-8 h-8 text-emerald-400" />
           </div>
-          <p className="text-slate-300 font-medium">Žiadne dlhodobé ponuky</p>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-zinc-300 font-medium">Žiadne dlhodobé ponuky</p>
+          <p className="text-sm text-zinc-500 mt-1">
             Všetky ponuky sú na trhu menej ako 60 dní
           </p>
-          <p className="text-xs text-slate-600 mt-3">
+          <p className="text-xs text-zinc-600 mt-3">
             Dlhodobé ponuky (60+ dní) môžu byť vhodné na vyjednávanie
           </p>
         </div>
@@ -100,7 +100,7 @@ export function LiquidityTracker() {
   }
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-rose-950/20">
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-rose-950/20">
       {/* Ambient glow */}
       <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 bg-rose-500" />
       
@@ -110,7 +110,7 @@ export function LiquidityTracker() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Clock className="w-5 h-5 text-rose-400" />
-              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
                 Čas na trhu
               </span>
             </div>
@@ -121,7 +121,7 @@ export function LiquidityTracker() {
           
           <div className="px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/30">
             <span className="text-sm font-bold text-rose-400">{properties.length}</span>
-            <span className="text-xs text-slate-400 ml-1">60+ dní</span>
+            <span className="text-xs text-zinc-400 ml-1">60+ dní</span>
           </div>
         </div>
 
@@ -130,13 +130,13 @@ export function LiquidityTracker() {
           {sortedProperties.slice(0, 5).map((property) => (
             <div
               key={property.propertyId}
-              className="group relative p-4 rounded-xl bg-slate-800/30 backdrop-blur-sm border border-slate-700/50 
-                         hover:border-rose-500/40 hover:bg-slate-800/50 transition-all duration-300"
+              className="group relative p-4 rounded-xl bg-zinc-800/30 backdrop-blur-sm border border-zinc-700/50 
+                         hover:border-rose-500/40 hover:bg-zinc-800/50 transition-all duration-300"
             >
               <div className="flex items-center justify-between gap-4">
                 {/* Left - Days indicator */}
                 <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 rounded-xl bg-slate-800 flex flex-col items-center justify-center ${
+                  <div className={`w-12 h-12 rounded-xl bg-zinc-800 flex flex-col items-center justify-center ${
                     property.days_on_market >= 90 ? "border-2 border-rose-500/50" : ""
                   }`}>
                     <span className={`text-lg font-bold ${getDaysColor(property.days_on_market)}`}>
@@ -148,7 +148,7 @@ export function LiquidityTracker() {
                     <h4 className="font-medium text-white truncate text-sm">
                       {property.title}
                     </h4>
-                    <p className="text-xs text-slate-500 truncate">
+                    <p className="text-xs text-zinc-500 truncate">
                       {property.address}
                     </p>
                   </div>
@@ -177,7 +177,7 @@ export function LiquidityTracker() {
               
               {/* Negotiation indicator */}
               {property.days_on_market >= 90 && (
-                <div className="mt-3 pt-2 border-t border-slate-700/50 flex items-center gap-2">
+                <div className="mt-3 pt-2 border-t border-zinc-700/50 flex items-center gap-2">
                   <AlertTriangle className="w-3 h-3 text-amber-400" />
                   <span className="text-xs text-amber-400">Vysoký potenciál vyjednávania</span>
                 </div>
@@ -190,7 +190,7 @@ export function LiquidityTracker() {
         {properties.length > 5 && (
           <button className="w-full mt-4 py-3 flex items-center justify-center gap-2 text-sm font-medium 
                              text-rose-400 hover:text-rose-300 transition-colors rounded-xl 
-                             bg-slate-800/30 hover:bg-slate-800/50 border border-slate-700/50">
+                             bg-zinc-800/30 hover:bg-zinc-800/50 border border-zinc-700/50">
             Zobraziť všetkých {properties.length}
             <ArrowRight className="w-4 h-4" />
           </button>

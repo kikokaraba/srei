@@ -80,10 +80,10 @@ export function UrbanDevelopment() {
 
   if (loading) {
     return (
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+      <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-slate-800 rounded w-1/3"></div>
-          <div className="h-32 bg-slate-800 rounded"></div>
+          <div className="h-6 bg-zinc-800 rounded w-1/3"></div>
+          <div className="h-32 bg-zinc-800 rounded"></div>
         </div>
       </div>
     );
@@ -91,7 +91,7 @@ export function UrbanDevelopment() {
 
   if (error) {
     return (
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+      <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
         <div className="text-red-400 flex items-center gap-2">
           <AlertCircle className="w-5 h-5" />
           <span>{error}</span>
@@ -102,19 +102,19 @@ export function UrbanDevelopment() {
 
   if (developments.length === 0) {
     return (
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+      <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-purple-500/10 rounded-lg">
             <MapPin className="w-6 h-6 text-purple-400" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-slate-100">Urbanistický rozvoj</h3>
-            <p className="text-sm text-slate-400">Plánovaná infraštruktúra a jej vplyv na ceny</p>
+            <h3 className="text-xl font-bold text-zinc-100">Urbanistický rozvoj</h3>
+            <p className="text-sm text-zinc-400">Plánovaná infraštruktúra a jej vplyv na ceny</p>
           </div>
         </div>
         <div className="text-center py-8">
-          <p className="text-slate-400">Momentálne nie sú k dispozícii žiadne dáta.</p>
-          <p className="text-sm text-slate-500 mt-2">
+          <p className="text-zinc-400">Momentálne nie sú k dispozícii žiadne dáta.</p>
+          <p className="text-sm text-zinc-500 mt-2">
             Systém automaticky sleduje plánovanú infraštruktúru a jej vplyv na nehnuteľnosti.
           </p>
         </div>
@@ -123,22 +123,22 @@ export function UrbanDevelopment() {
   }
 
   return (
-    <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+    <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-purple-500/10 rounded-lg">
             <MapPin className="w-6 h-6 text-purple-400" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-slate-100">Urbanistický rozvoj</h3>
-            <p className="text-sm text-slate-400">
+            <h3 className="text-xl font-bold text-zinc-100">Urbanistický rozvoj</h3>
+            <p className="text-sm text-zinc-400">
               {developments.length} {developments.length === 1 ? "projekt" : "projektov"} v databáze
             </p>
           </div>
         </div>
         <button
           onClick={fetchDevelopments}
-          className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors"
+          className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors"
           title="Obnoviť dáta"
         >
           <RefreshCw className="w-5 h-5" />
@@ -149,7 +149,7 @@ export function UrbanDevelopment() {
         {developments.map((dev) => (
           <div
             key={dev.id}
-            className="bg-slate-800/50 rounded-lg border border-slate-700 p-5 hover:border-purple-500/40 transition-all"
+            className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-5 hover:border-purple-500/40 transition-all"
           >
             <div className="flex items-start justify-between gap-4 mb-3">
               <div className="flex-1">
@@ -158,15 +158,15 @@ export function UrbanDevelopment() {
                     {TYPE_LABELS[dev.type] || dev.type}
                   </span>
                   <span className={`text-xs font-medium ${
-                    STATUS_LABELS[dev.status]?.color || "text-slate-400"
+                    STATUS_LABELS[dev.status]?.color || "text-zinc-400"
                   }`}>
                     {STATUS_LABELS[dev.status]?.label || dev.status}
                   </span>
                 </div>
-                <h4 className="text-lg font-bold text-slate-100 mb-1">
+                <h4 className="text-lg font-bold text-zinc-100 mb-1">
                   {dev.name}
                 </h4>
-                <div className="flex items-center gap-2 text-sm text-slate-400 mb-3">
+                <div className="flex items-center gap-2 text-sm text-zinc-400 mb-3">
                   <MapPin className="w-4 h-4" />
                   <span>{dev.district}, {dev.city}</span>
                 </div>
@@ -177,7 +177,7 @@ export function UrbanDevelopment() {
               <div className="flex items-center gap-2 mb-3 p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
                 <TrendingUp className="w-5 h-5 text-emerald-400" />
                 <div>
-                  <p className="text-sm text-slate-400">Očakávaný vplyv na ceny</p>
+                  <p className="text-sm text-zinc-400">Očakávaný vplyv na ceny</p>
                   <p className="text-lg font-bold text-emerald-400">
                     +{dev.expected_impact.toFixed(1)}% zhodnotenie
                   </p>
@@ -187,35 +187,35 @@ export function UrbanDevelopment() {
 
             <div className="grid grid-cols-2 gap-4 mb-3">
               <div>
-                <p className="text-xs text-slate-500 mb-1">Plánované dokončenie</p>
+                <p className="text-xs text-zinc-500 mb-1">Plánované dokončenie</p>
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-slate-400" />
-                  <p className="text-sm font-medium text-slate-300">
+                  <Calendar className="w-4 h-4 text-zinc-400" />
+                  <p className="text-sm font-medium text-zinc-300">
                     {formatDate(dev.planned_completion)}
                   </p>
                 </div>
               </div>
               <div>
-                <p className="text-xs text-slate-500 mb-1">Ovplyvnené nehnuteľnosti</p>
-                <p className="text-sm font-medium text-slate-300">
+                <p className="text-xs text-zinc-500 mb-1">Ovplyvnené nehnuteľnosti</p>
+                <p className="text-sm font-medium text-zinc-300">
                   {dev._count.propertyImpacts} nehnuteľností
                 </p>
               </div>
             </div>
 
             {dev.description && (
-              <div className="mt-3 pt-3 border-t border-slate-700">
-                <p className="text-sm text-slate-400">{dev.description}</p>
+              <div className="mt-3 pt-3 border-t border-zinc-700">
+                <p className="text-sm text-zinc-400">{dev.description}</p>
               </div>
             )}
 
             {/* Príklad použitia */}
             {dev.expected_impact && (
-              <div className="mt-4 pt-4 border-t border-slate-700">
-                <p className="text-xs text-slate-500 mb-2">
+              <div className="mt-4 pt-4 border-t border-zinc-700">
+                <p className="text-xs text-zinc-500 mb-2">
                   Príklad: Nehnuteľnosť v okruhu 300m od tejto infraštruktúry
                 </p>
-                <p className="text-sm text-slate-300">
+                <p className="text-sm text-zinc-300">
                   <span className="font-semibold">Predpokladané zhodnotenie o 5 rokov:</span>{" "}
                   <span className="text-emerald-400 font-bold">
                     +{dev.expected_impact.toFixed(0)}%

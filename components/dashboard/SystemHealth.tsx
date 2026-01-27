@@ -56,7 +56,7 @@ function getStatusIcon(status: ScraperStatus["status"]) {
     case "error":
       return <XCircle className="w-4 h-4 text-red-400" />;
     default:
-      return <Clock className="w-4 h-4 text-slate-400" />;
+      return <Clock className="w-4 h-4 text-zinc-400" />;
   }
 }
 
@@ -70,7 +70,7 @@ function getStatusColor(status: ScraperStatus["status"]) {
     case "error":
       return "bg-red-500/20 text-red-400 border-red-500/30";
     default:
-      return "bg-slate-500/20 text-slate-400 border-slate-500/30";
+      return "bg-zinc-500/20 text-zinc-400 border-zinc-500/30";
   }
 }
 
@@ -112,7 +112,7 @@ export default function SystemHealth() {
           </div>
           <div>
             <h3 className="text-lg font-semibold text-white">System Health</h3>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-zinc-400">
               Monitoring dátových zdrojov
             </p>
           </div>
@@ -121,7 +121,7 @@ export default function SystemHealth() {
         <button
           onClick={() => refetch()}
           disabled={isRefetching}
-          className="p-2 rounded-lg bg-slate-700/50 hover:bg-slate-700 text-slate-300 
+          className="p-2 rounded-lg bg-zinc-700/50 hover:bg-zinc-700 text-zinc-300 
                      hover:text-white transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${isRefetching ? "animate-spin" : ""}`} />
@@ -129,11 +129,11 @@ export default function SystemHealth() {
       </div>
       
       {/* Database Status */}
-      <div className="mb-4 p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
+      <div className="mb-4 p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Database className="w-4 h-4 text-slate-400" />
-            <span className="text-sm text-slate-300">PostgreSQL</span>
+            <Database className="w-4 h-4 text-zinc-400" />
+            <span className="text-sm text-zinc-300">PostgreSQL</span>
           </div>
           <div className="flex items-center gap-2">
             {displayData.database.connected ? (
@@ -150,7 +150,7 @@ export default function SystemHealth() {
           </div>
         </div>
         
-        <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
+        <div className="flex items-center gap-4 mt-2 text-xs text-zinc-500">
           <span>{displayData.database.totalProperties.toLocaleString()} nehnuteľností</span>
           <span>•</span>
           <span>{displayData.database.totalHotDeals} hot deals</span>
@@ -159,7 +159,7 @@ export default function SystemHealth() {
       
       {/* Scrapers Status */}
       <div className="space-y-2">
-        <h4 className="text-sm font-medium text-slate-400 mb-3">Scrapery</h4>
+        <h4 className="text-sm font-medium text-zinc-400 mb-3">Scrapery</h4>
         
         {displayData.scrapers.map((scraper) => (
           <div
@@ -199,14 +199,14 @@ export default function SystemHealth() {
         ))}
         
         {displayData.scrapers.length === 0 && (
-          <div className="text-center py-4 text-slate-500 text-sm">
+          <div className="text-center py-4 text-zinc-500 text-sm">
             Zatiaľ neboli spustené žiadne scrapery
           </div>
         )}
       </div>
       
       {/* Quick Actions */}
-      <div className="mt-4 pt-4 border-t border-slate-700/50">
+      <div className="mt-4 pt-4 border-t border-zinc-700/50">
         <div className="flex items-center gap-2">
           <button
             className="flex-1 py-2 px-3 rounded-lg bg-emerald-500/20 text-emerald-400 
@@ -215,8 +215,8 @@ export default function SystemHealth() {
             Spustiť Scraper
           </button>
           <button
-            className="flex-1 py-2 px-3 rounded-lg bg-slate-700/50 text-slate-300 
-                       hover:bg-slate-700 transition-colors text-sm"
+            className="flex-1 py-2 px-3 rounded-lg bg-zinc-700/50 text-zinc-300 
+                       hover:bg-zinc-700 transition-colors text-sm"
           >
             Zobraziť logy
           </button>

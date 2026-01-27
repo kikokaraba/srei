@@ -84,14 +84,14 @@ export const DuplicatesBadge = memo(function DuplicatesBadge({ propertyId, curre
 
         {/* Dropdown */}
         {isOpen && (
-          <div className="absolute top-full left-0 mt-2 z-50 w-72 bg-slate-800 rounded-lg border border-slate-700 shadow-xl p-3">
+          <div className="absolute top-full left-0 mt-2 z-50 w-72 bg-zinc-800 rounded-lg border border-zinc-700 shadow-xl p-3">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-slate-200">
+              <span className="text-sm font-semibold text-zinc-200">
                 Dostupné na {data.totalSources} portáloch
               </span>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-slate-400 hover:text-slate-200"
+                className="text-zinc-400 hover:text-zinc-200"
               >
                 ✕
               </button>
@@ -114,8 +114,8 @@ export const DuplicatesBadge = memo(function DuplicatesBadge({ propertyId, curre
               {data.sources.map((source, idx) => {
                 const info = SOURCE_INFO[source.source] || {
                   name: source.source,
-                  color: "text-slate-400",
-                  bgColor: "bg-slate-500/20",
+                  color: "text-zinc-400",
+                  bgColor: "bg-zinc-500/20",
                 };
                 const isLowest = source.price === data.priceComparison.lowest;
 
@@ -135,7 +135,7 @@ export const DuplicatesBadge = memo(function DuplicatesBadge({ propertyId, curre
                       )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-slate-200">
+                      <span className="text-sm font-semibold text-zinc-200">
                         €{source.price.toLocaleString()}
                       </span>
                       {source.url && (
@@ -143,7 +143,7 @@ export const DuplicatesBadge = memo(function DuplicatesBadge({ propertyId, curre
                           href={source.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-slate-400 hover:text-slate-200"
+                          className="text-zinc-400 hover:text-zinc-200"
                         >
                           <ExternalLink className="w-3 h-3" />
                         </a>
@@ -155,10 +155,10 @@ export const DuplicatesBadge = memo(function DuplicatesBadge({ propertyId, curre
             </div>
 
             {/* Price range */}
-            <div className="mt-3 pt-3 border-t border-slate-700">
-              <div className="flex items-center justify-between text-xs text-slate-400">
+            <div className="mt-3 pt-3 border-t border-zinc-700">
+              <div className="flex items-center justify-between text-xs text-zinc-400">
                 <span>Cenový rozsah:</span>
-                <span className="text-slate-300">
+                <span className="text-zinc-300">
                   €{data.priceComparison.lowest.toLocaleString()} - €{data.priceComparison.highest.toLocaleString()}
                 </span>
               </div>
@@ -191,8 +191,8 @@ export const DuplicatesBadge = memo(function DuplicatesBadge({ propertyId, curre
         {data.sources.slice(0, 3).map((source, idx) => {
           const info = SOURCE_INFO[source.source] || {
             name: source.source,
-            color: "text-slate-400",
-            bgColor: "bg-slate-500/20",
+            color: "text-zinc-400",
+            bgColor: "bg-zinc-500/20",
           };
           const isLowest = source.price === data.priceComparison.lowest;
 
@@ -207,7 +207,7 @@ export const DuplicatesBadge = memo(function DuplicatesBadge({ propertyId, curre
               <span className={`text-xs font-medium ${info.color}`}>
                 {info.name.split(".")[0]}
               </span>
-              <span className={`text-sm font-bold ${isLowest ? "text-emerald-400" : "text-slate-200"}`}>
+              <span className={`text-sm font-bold ${isLowest ? "text-emerald-400" : "text-zinc-200"}`}>
                 €{(source.price / 1000).toFixed(0)}k
               </span>
               {isLowest && (

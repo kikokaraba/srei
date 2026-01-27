@@ -198,10 +198,10 @@ export default function MortgageCalculator({ initialPrice }: MortgageCalculatorP
       </div>
 
       {/* Bank Comparison */}
-      <div className="rounded-3xl border border-slate-800/50 overflow-hidden bg-slate-900/30">
+      <div className="rounded-3xl border border-zinc-800/50 overflow-hidden bg-zinc-900/30">
         <button
           onClick={() => setShowBanks(!showBanks)}
-          className="w-full px-6 py-5 flex items-center justify-between hover:bg-slate-800/30 transition-colors"
+          className="w-full px-6 py-5 flex items-center justify-between hover:bg-zinc-800/30 transition-colors"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
@@ -209,10 +209,10 @@ export default function MortgageCalculator({ initialPrice }: MortgageCalculatorP
             </div>
             <div className="text-left">
               <p className="font-semibold text-white">Porovnanie slovenských bánk</p>
-              <p className="text-sm text-slate-400">Aktuálne sadzby pre 5-ročnú fixáciu</p>
+              <p className="text-sm text-zinc-400">Aktuálne sadzby pre 5-ročnú fixáciu</p>
             </div>
           </div>
-          {showBanks ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+          {showBanks ? <ChevronUp className="w-5 h-5 text-zinc-400" /> : <ChevronDown className="w-5 h-5 text-zinc-400" />}
         </button>
 
         {showBanks && (
@@ -223,7 +223,7 @@ export default function MortgageCalculator({ initialPrice }: MortgageCalculatorP
                 className={`flex items-center justify-between p-4 rounded-2xl transition-all ${
                   idx === 0 
                     ? "bg-emerald-500/10 border border-emerald-500/20" 
-                    : "bg-slate-800/30 border border-slate-800/50"
+                    : "bg-zinc-800/30 border border-zinc-800/50"
                 }`}
               >
                 <div className="flex items-center gap-4">
@@ -232,7 +232,7 @@ export default function MortgageCalculator({ initialPrice }: MortgageCalculatorP
                   </div>
                   <div>
                     <p className="font-medium text-white">{bank.name}</p>
-                    <p className="text-sm text-slate-400">{bank.rate.toFixed(2)}% p.a.</p>
+                    <p className="text-sm text-zinc-400">{bank.rate.toFixed(2)}% p.a.</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -242,7 +242,7 @@ export default function MortgageCalculator({ initialPrice }: MortgageCalculatorP
                       <CheckCircle className="w-3 h-3" /> Najlepšia
                     </p>
                   ) : (
-                    <p className="text-sm text-slate-500">+€{fmt(bank.diff)}/mes</p>
+                    <p className="text-sm text-zinc-500">+€{fmt(bank.diff)}/mes</p>
                   )}
                 </div>
               </div>
@@ -252,10 +252,10 @@ export default function MortgageCalculator({ initialPrice }: MortgageCalculatorP
       </div>
 
       {/* Amortization Schedule */}
-      <div className="rounded-3xl border border-slate-800/50 overflow-hidden bg-slate-900/30">
+      <div className="rounded-3xl border border-zinc-800/50 overflow-hidden bg-zinc-900/30">
         <button
           onClick={() => setShowSchedule(!showSchedule)}
-          className="w-full px-6 py-5 flex items-center justify-between hover:bg-slate-800/30 transition-colors"
+          className="w-full px-6 py-5 flex items-center justify-between hover:bg-zinc-800/30 transition-colors"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center">
@@ -263,10 +263,10 @@ export default function MortgageCalculator({ initialPrice }: MortgageCalculatorP
             </div>
             <div className="text-left">
               <p className="font-semibold text-white">Splátkový kalendár</p>
-              <p className="text-sm text-slate-400">Rozloženie splátok v čase</p>
+              <p className="text-sm text-zinc-400">Rozloženie splátok v čase</p>
             </div>
           </div>
-          {showSchedule ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+          {showSchedule ? <ChevronUp className="w-5 h-5 text-zinc-400" /> : <ChevronDown className="w-5 h-5 text-zinc-400" />}
         </button>
 
         {showSchedule && (
@@ -274,22 +274,22 @@ export default function MortgageCalculator({ initialPrice }: MortgageCalculatorP
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-800">
-                    <th className="text-left py-3 text-xs font-medium text-slate-500 uppercase">Obdobie</th>
-                    <th className="text-right py-3 text-xs font-medium text-slate-500 uppercase">Istina</th>
-                    <th className="text-right py-3 text-xs font-medium text-slate-500 uppercase">Úrok</th>
-                    <th className="text-right py-3 text-xs font-medium text-slate-500 uppercase">Zostatok</th>
+                  <tr className="border-b border-zinc-800">
+                    <th className="text-left py-3 text-xs font-medium text-zinc-500 uppercase">Obdobie</th>
+                    <th className="text-right py-3 text-xs font-medium text-zinc-500 uppercase">Istina</th>
+                    <th className="text-right py-3 text-xs font-medium text-zinc-500 uppercase">Úrok</th>
+                    <th className="text-right py-3 text-xs font-medium text-zinc-500 uppercase">Zostatok</th>
                   </tr>
                 </thead>
                 <tbody>
                   {calc.schedule.slice(0, 15).map((row) => (
-                    <tr key={row.month} className="border-b border-slate-800/50">
+                    <tr key={row.month} className="border-b border-zinc-800/50">
                       <td className="py-3 text-sm text-white">
                         {row.month <= 12 ? `${row.month}. mesiac` : `${Math.floor(row.month / 12)}. rok`}
                       </td>
                       <td className="py-3 text-sm text-right text-emerald-400">€{fmt(row.principal)}</td>
                       <td className="py-3 text-sm text-right text-amber-400">€{fmt(row.interest)}</td>
-                      <td className="py-3 text-sm text-right text-slate-400">€{fmt(row.balance)}</td>
+                      <td className="py-3 text-sm text-right text-zinc-400">€{fmt(row.balance)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -342,21 +342,21 @@ function InputSlider({
   };
 
   return (
-    <div className="p-5 rounded-2xl bg-slate-900/50 border border-slate-800/50">
+    <div className="p-5 rounded-2xl bg-zinc-900/50 border border-zinc-800/50">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center`}>
             <Icon className={`w-5 h-5 ${c.icon}`} />
           </div>
           <div>
-            <p className="text-sm text-slate-400">{label}</p>
-            {sublabel && <p className="text-xs text-slate-500">{sublabel}</p>}
+            <p className="text-sm text-zinc-400">{label}</p>
+            {sublabel && <p className="text-xs text-zinc-500">{sublabel}</p>}
           </div>
         </div>
         <p className="text-lg font-semibold text-white">{formatValue()}</p>
       </div>
       
-      <div className="relative h-2 bg-slate-800 rounded-full overflow-hidden">
+      <div className="relative h-2 bg-zinc-800 rounded-full overflow-hidden">
         <div 
           className={`absolute inset-y-0 left-0 ${c.track} rounded-full transition-all`}
           style={{ width: `${percentage}%` }}
@@ -372,7 +372,7 @@ function InputSlider({
         />
       </div>
       
-      <div className="flex justify-between mt-2 text-xs text-slate-600">
+      <div className="flex justify-between mt-2 text-xs text-zinc-600">
         <span>{format === "€" ? `€${min.toLocaleString()}` : `${min}${format}`}</span>
         <span>{format === "€" ? `€${max.toLocaleString()}` : `${max}${format}`}</span>
       </div>
@@ -394,10 +394,10 @@ function MetricCard({
   status?: "good" | "warning";
 }) {
   return (
-    <div className="p-5 rounded-2xl bg-slate-900/50 border border-slate-800/50">
+    <div className="p-5 rounded-2xl bg-zinc-900/50 border border-zinc-800/50">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-sm text-slate-400">{label}</p>
-        {Icon && <Icon className="w-4 h-4 text-slate-500" />}
+        <p className="text-sm text-zinc-400">{label}</p>
+        {Icon && <Icon className="w-4 h-4 text-zinc-500" />}
       </div>
       <p className={`text-2xl font-bold ${
         status === "good" ? "text-emerald-400" : 
@@ -406,7 +406,7 @@ function MetricCard({
       }`}>
         {value}
       </p>
-      {sublabel && <p className="text-xs text-slate-500 mt-1">{sublabel}</p>}
+      {sublabel && <p className="text-xs text-zinc-500 mt-1">{sublabel}</p>}
     </div>
   );
 }

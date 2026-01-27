@@ -149,22 +149,20 @@ export function Portfolio() {
 
   return (
     <div className="space-y-4 lg:space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* Header - Premium */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-100 flex items-center gap-2 sm:gap-3">
-            <Briefcase className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-400" />
-            Moje portfólio
-          </h2>
-          <p className="text-sm text-slate-400 mt-1 hidden sm:block">
-            Spravujte svoje investičné nehnuteľnosti a sledujte výnosy
+          <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-medium mb-1">INVESTÍCIE</p>
+          <h2 className="text-xl font-semibold text-zinc-100 tracking-tight">Moje portfólio</h2>
+          <p className="text-sm text-zinc-500 mt-1 hidden sm:block">
+            Spravujte svoje investičné nehnuteľnosti
           </p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center justify-center gap-2 px-3 py-2 sm:px-4 bg-emerald-500 hover:bg-emerald-600 text-white text-sm sm:text-base font-medium rounded-lg transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-medium rounded-lg transition-colors"
         >
-          <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+          <Plus className="w-4 h-4" />
           <span>Pridať</span>
         </button>
       </div>
@@ -213,50 +211,48 @@ export function Portfolio() {
         </div>
       )}
 
-      {/* Cash Flow Breakdown */}
+      {/* Cash Flow Breakdown - Premium */}
       {metrics && metrics.monthlyRentIncome > 0 && (
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 lg:p-6">
-          <h3 className="font-semibold text-slate-100 mb-3 lg:mb-4 text-sm lg:text-base">Mesačný prehľad</h3>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
-            <div className="p-3 lg:p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-              <div className="flex items-center gap-1.5 sm:gap-2 text-emerald-400 mb-1.5 sm:mb-2">
-                <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs sm:text-sm">Príjem z nájmu</span>
+        <div className="premium-card p-4 lg:p-5">
+          <h3 className="text-sm font-medium text-zinc-300 mb-4">Mesačný prehľad</h3>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="p-3 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
+              <div className="flex items-center gap-1.5 text-emerald-400 mb-1.5">
+                <ArrowUpRight className="w-3.5 h-3.5" />
+                <span className="text-[10px] uppercase tracking-wide">Príjem</span>
               </div>
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-100">
+              <div className="text-base font-semibold text-zinc-100 font-mono">
                 €{metrics.monthlyRentIncome.toLocaleString()}
               </div>
             </div>
-            <div className="p-3 lg:p-4 bg-red-500/10 rounded-lg border border-red-500/20">
-              <div className="flex items-center gap-1.5 sm:gap-2 text-red-400 mb-1.5 sm:mb-2">
-                <ArrowDownRight className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs sm:text-sm">Hypotéky</span>
+            <div className="p-3 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
+              <div className="flex items-center gap-1.5 text-red-400 mb-1.5">
+                <ArrowDownRight className="w-3.5 h-3.5" />
+                <span className="text-[10px] uppercase tracking-wide">Hypotéky</span>
               </div>
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-100">
+              <div className="text-base font-semibold text-zinc-100 font-mono">
                 €{metrics.monthlyMortgagePayments.toLocaleString()}
               </div>
             </div>
-            <div className="p-3 lg:p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
-              <div className="flex items-center gap-1.5 sm:gap-2 text-orange-400 mb-1.5 sm:mb-2">
-                <ArrowDownRight className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs sm:text-sm">Náklady</span>
+            <div className="p-3 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
+              <div className="flex items-center gap-1.5 text-amber-400 mb-1.5">
+                <ArrowDownRight className="w-3.5 h-3.5" />
+                <span className="text-[10px] uppercase tracking-wide">Náklady</span>
               </div>
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-100">
+              <div className="text-base font-semibold text-zinc-100 font-mono">
                 €{metrics.monthlyExpenses.toLocaleString()}
               </div>
             </div>
-            <div className={`p-3 lg:p-4 rounded-lg border ${
-              metrics.monthlyCashFlow >= 0
-                ? "bg-emerald-500/10 border-emerald-500/20"
-                : "bg-red-500/10 border-red-500/20"
-            }`}>
-              <div className={`flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 ${
+            <div className="p-3 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
+              <div className={`flex items-center gap-1.5 mb-1.5 ${
                 metrics.monthlyCashFlow >= 0 ? "text-emerald-400" : "text-red-400"
               }`}>
-                <Euro className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs sm:text-sm">Čistý CF</span>
+                <Euro className="w-3.5 h-3.5" />
+                <span className="text-[10px] uppercase tracking-wide">Čistý CF</span>
               </div>
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-100">
+              <div className={`text-base font-semibold font-mono ${
+                metrics.monthlyCashFlow >= 0 ? "text-emerald-400" : "text-red-400"
+              }`}>
                 €{metrics.monthlyCashFlow.toLocaleString()}
               </div>
             </div>
@@ -266,17 +262,19 @@ export function Portfolio() {
 
       {/* Properties List */}
       {properties.length === 0 ? (
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-12 text-center">
-          <Briefcase className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-slate-100 mb-2">Zatiaľ nemáte žiadne nehnuteľnosti</h3>
-          <p className="text-slate-400 mb-6">
-            Pridajte svoju prvú investičnú nehnuteľnosť a začnite sledovať výnosy
+        <div className="premium-card p-12 text-center">
+          <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto mb-4">
+            <Briefcase className="w-6 h-6 text-zinc-600" />
+          </div>
+          <h3 className="text-base font-medium text-zinc-100 mb-1">Zatiaľ nemáte žiadne nehnuteľnosti</h3>
+          <p className="text-sm text-zinc-500 mb-6">
+            Pridajte svoju prvú investičnú nehnuteľnosť
           </p>
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-medium rounded-lg transition-colors"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4" />
             Pridať nehnuteľnosť
           </button>
         </div>
@@ -343,21 +341,21 @@ function MetricCard({
   color: "emerald" | "blue" | "purple" | "yellow" | "red";
 }) {
   const colorClasses = {
-    emerald: "text-emerald-400 bg-emerald-500/10",
-    blue: "text-blue-400 bg-blue-500/10",
-    purple: "text-purple-400 bg-purple-500/10",
-    yellow: "text-yellow-400 bg-yellow-500/10",
-    red: "text-red-400 bg-red-500/10",
+    emerald: "text-emerald-400",
+    blue: "text-blue-400",
+    purple: "text-violet-400",
+    yellow: "text-amber-400",
+    red: "text-red-400",
   };
 
   return (
-    <div className="bg-slate-900 rounded-xl border border-slate-800 p-4">
-      <div className={`w-10 h-10 rounded-lg ${colorClasses[color]} flex items-center justify-center mb-3`}>
+    <div className="premium-card p-4">
+      <div className={`${colorClasses[color]} mb-2`}>
         {icon}
       </div>
-      <div className="text-xl font-bold text-slate-100">{value}</div>
-      <div className="text-sm text-slate-400">{label}</div>
-      {subValue && <div className="text-xs text-slate-500 mt-1">{subValue}</div>}
+      <div className="text-lg font-semibold text-zinc-100 font-mono">{value}</div>
+      <div className="text-[10px] text-zinc-500 uppercase tracking-wide mt-0.5">{label}</div>
+      {subValue && <div className="text-xs text-zinc-600 font-mono mt-1">{subValue}</div>}
     </div>
   );
 }
@@ -378,49 +376,49 @@ function PropertyCard({
   return (
     <div
       onClick={onClick}
-      className="bg-slate-900 rounded-xl border border-slate-800 p-5 hover:border-slate-700 transition-colors cursor-pointer"
+      className="group premium-card-interactive p-4"
     >
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-3">
         <div>
-          <h3 className="font-semibold text-slate-100">{property.name}</h3>
-          <div className="flex items-center gap-1 text-sm text-slate-400 mt-1">
+          <h3 className="text-sm font-medium text-zinc-100 group-hover:text-white transition-colors">{property.name}</h3>
+          <div className="flex items-center gap-1 text-xs text-zinc-500 mt-0.5">
             <MapPin className="w-3 h-3" />
             {property.district ? `${property.district}, ` : ""}{getCityRegionLabel(property.city)}
           </div>
         </div>
-        <span className={`px-2 py-1 rounded text-xs font-medium ${status.color}`}>
+        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-medium ${status.color}`}>
           {status.label}
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-2 gap-3 mb-3">
         <div>
-          <div className="text-xs text-slate-500">Aktuálna hodnota</div>
-          <div className="font-bold text-slate-100">€{property.currentValue.toLocaleString()}</div>
+          <div className="text-[10px] text-zinc-600 uppercase tracking-wide">Hodnota</div>
+          <div className="text-sm font-semibold text-zinc-100 font-mono">€{property.currentValue.toLocaleString()}</div>
         </div>
         <div>
-          <div className="text-xs text-slate-500">Zhodnotenie</div>
-          <div className={`font-bold ${appreciationPercent >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+          <div className="text-[10px] text-zinc-600 uppercase tracking-wide">Zhodnotenie</div>
+          <div className={`text-sm font-semibold font-mono ${appreciationPercent >= 0 ? "text-emerald-400" : "text-red-400"}`}>
             {appreciationPercent >= 0 ? "+" : ""}{appreciationPercent.toFixed(1)}%
           </div>
         </div>
       </div>
 
       {property.isRented && (
-        <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-emerald-400" />
-            <span className="text-sm text-slate-300">€{property.monthlyRent}/mes</span>
+        <div className="flex items-center justify-between pt-3 border-t border-zinc-800/50">
+          <div className="flex items-center gap-1.5">
+            <Users className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-xs text-zinc-400 font-mono">€{property.monthlyRent}/mes</span>
           </div>
-          <div className={`text-sm font-medium ${monthlyCashFlow >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-            Cash flow: €{monthlyCashFlow.toLocaleString()}
+          <div className={`text-xs font-medium font-mono ${monthlyCashFlow >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+            CF: €{monthlyCashFlow.toLocaleString()}
           </div>
         </div>
       )}
 
-      <div className="flex items-center justify-end mt-4 text-slate-400">
-        <span className="text-sm">Detail</span>
-        <ChevronRight className="w-4 h-4" />
+      <div className="flex items-center justify-end mt-3 text-zinc-600 group-hover:text-zinc-400 transition-colors">
+        <span className="text-xs">Detail</span>
+        <ChevronRight className="w-3.5 h-3.5" />
       </div>
     </div>
   );
@@ -490,50 +488,50 @@ function AddPropertyModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900 rounded-xl border border-slate-800 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-900">
-          <h3 className="font-bold text-slate-100 text-lg">Pridať nehnuteľnosť do portfólia</h3>
-          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-100">
-            <X className="w-5 h-5" />
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-[#0f0f0f] rounded-xl border border-zinc-800/50 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="p-5 border-b border-zinc-800/50 flex items-center justify-between sticky top-0 bg-[#0f0f0f]">
+          <h3 className="text-base font-medium text-zinc-100">Pridať nehnuteľnosť</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-500 hover:text-zinc-200 transition-colors">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-5 space-y-5">
           {/* Basic Info */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-slate-100 flex items-center gap-2">
-              <Home className="w-4 h-4 text-emerald-400" />
+          <div className="space-y-3">
+            <h4 className="text-xs font-medium text-zinc-400 uppercase tracking-wide flex items-center gap-2">
+              <Home className="w-3.5 h-3.5 text-emerald-400" />
               Základné údaje
             </h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
-                <label className="block text-sm text-slate-400 mb-1">Názov *</label>
+                <label className="block text-sm text-zinc-400 mb-1">Názov *</label>
                 <input
                   type="text"
                   required
                   placeholder="napr. Byt Petržalka"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
                 />
               </div>
               <div className="col-span-2">
-                <label className="block text-sm text-slate-400 mb-1">Adresa *</label>
+                <label className="block text-sm text-zinc-400 mb-1">Adresa *</label>
                 <input
                   type="text"
                   required
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Región *</label>
+                <label className="block text-sm text-zinc-400 mb-1">Región *</label>
                 <select
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
                 >
                   {REGION_OPTIONS.map((region) => (
                     <option key={region.value} value={region.value}>{region.label}</option>
@@ -541,11 +539,11 @@ function AddPropertyModal({
                 </select>
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Typ</label>
+                <label className="block text-sm text-zinc-400 mb-1">Typ</label>
                 <select
                   value={formData.propertyType}
                   onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
                 >
                   {Object.entries(PROPERTY_TYPE_LABELS).map(([key, label]) => (
                     <option key={key} value={key}>{label}</option>
@@ -553,72 +551,72 @@ function AddPropertyModal({
                 </select>
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Plocha (m²) *</label>
+                <label className="block text-sm text-zinc-400 mb-1">Plocha (m²) *</label>
                 <input
                   type="number"
                   required
                   value={formData.area_m2}
                   onChange={(e) => setFormData({ ...formData, area_m2: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Počet izieb</label>
+                <label className="block text-sm text-zinc-400 mb-1">Počet izieb</label>
                 <input
                   type="number"
                   value={formData.rooms}
                   onChange={(e) => setFormData({ ...formData, rooms: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
                 />
               </div>
             </div>
           </div>
 
           {/* Purchase Info */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-slate-100 flex items-center gap-2">
-              <Euro className="w-4 h-4 text-emerald-400" />
+          <div className="space-y-3">
+            <h4 className="text-xs font-medium text-zinc-400 uppercase tracking-wide flex items-center gap-2">
+              <Euro className="w-3.5 h-3.5 text-emerald-400" />
               Nákup
             </h4>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Dátum kúpy *</label>
+                <label className="block text-sm text-zinc-400 mb-1">Dátum kúpy *</label>
                 <input
                   type="date"
                   required
                   value={formData.purchaseDate}
                   onChange={(e) => setFormData({ ...formData, purchaseDate: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Kúpna cena (€) *</label>
+                <label className="block text-sm text-zinc-400 mb-1">Kúpna cena (€) *</label>
                 <input
                   type="number"
                   required
                   value={formData.purchasePrice}
                   onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Náklady na kúpu (€)</label>
+                <label className="block text-sm text-zinc-400 mb-1">Náklady na kúpu (€)</label>
                 <input
                   type="number"
                   placeholder="Právnik, dane, atď."
                   value={formData.purchaseCosts}
                   onChange={(e) => setFormData({ ...formData, purchaseCosts: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Aktuálna hodnota (€)</label>
+                <label className="block text-sm text-zinc-400 mb-1">Aktuálna hodnota (€)</label>
                 <input
                   type="number"
                   placeholder="Odhad"
                   value={formData.currentValue}
                   onChange={(e) => setFormData({ ...formData, currentValue: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
                 />
               </div>
             </div>
@@ -631,38 +629,38 @@ function AddPropertyModal({
                 type="checkbox"
                 checked={formData.hasMortgage}
                 onChange={(e) => setFormData({ ...formData, hasMortgage: e.target.checked })}
-                className="w-5 h-5 rounded border-slate-600 bg-slate-700 text-emerald-500"
+                className="w-5 h-5 rounded border-zinc-600 bg-zinc-700 text-emerald-500"
               />
-              <span className="font-medium text-slate-100">Mám hypotéku</span>
+              <span className="font-medium text-zinc-100">Mám hypotéku</span>
             </label>
             {formData.hasMortgage && (
               <div className="grid grid-cols-3 gap-4 pl-8">
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">Výška (€)</label>
+                  <label className="block text-sm text-zinc-400 mb-1">Výška (€)</label>
                   <input
                     type="number"
                     value={formData.mortgageAmount}
                     onChange={(e) => setFormData({ ...formData, mortgageAmount: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+                    className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">Úrok (%)</label>
+                  <label className="block text-sm text-zinc-400 mb-1">Úrok (%)</label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.mortgageRate}
                     onChange={(e) => setFormData({ ...formData, mortgageRate: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+                    className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">Splátka (€/mes)</label>
+                  <label className="block text-sm text-zinc-400 mb-1">Splátka (€/mes)</label>
                   <input
                     type="number"
                     value={formData.mortgagePayment}
                     onChange={(e) => setFormData({ ...formData, mortgagePayment: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+                    className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
                   />
                 </div>
               </div>
@@ -676,29 +674,29 @@ function AddPropertyModal({
                 type="checkbox"
                 checked={formData.isRented}
                 onChange={(e) => setFormData({ ...formData, isRented: e.target.checked })}
-                className="w-5 h-5 rounded border-slate-600 bg-slate-700 text-emerald-500"
+                className="w-5 h-5 rounded border-zinc-600 bg-zinc-700 text-emerald-500"
               />
-              <span className="font-medium text-slate-100">Prenajímam</span>
+              <span className="font-medium text-zinc-100">Prenajímam</span>
             </label>
             {formData.isRented && (
               <div className="grid grid-cols-2 gap-4 pl-8">
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">Mesačný nájom (€)</label>
+                  <label className="block text-sm text-zinc-400 mb-1">Mesačný nájom (€)</label>
                   <input
                     type="number"
                     value={formData.monthlyRent}
                     onChange={(e) => setFormData({ ...formData, monthlyRent: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+                    className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">Mesačné náklady (€)</label>
+                  <label className="block text-sm text-zinc-400 mb-1">Mesačné náklady (€)</label>
                   <input
                     type="number"
                     placeholder="Správa, poistenie, atď."
                     value={formData.monthlyExpenses}
                     onChange={(e) => setFormData({ ...formData, monthlyExpenses: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+                    className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
                   />
                 </div>
               </div>
@@ -707,29 +705,29 @@ function AddPropertyModal({
 
           {/* Notes */}
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Poznámky</label>
+            <label className="block text-sm text-zinc-400 mb-1">Poznámky</label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={3}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+              className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+          <div className="flex justify-end gap-2 pt-4 border-t border-zinc-800/50">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700"
+              className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-200 rounded-lg hover:bg-zinc-800/50 transition-colors"
             >
               Zrušiť
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
-              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               Pridať
             </button>
           </div>
@@ -768,85 +766,85 @@ function PropertyDetailModal({
   const status = STATUS_LABELS[property.status] || STATUS_LABELS.OWNED;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900 rounded-xl border border-slate-800 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-900">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-[#0f0f0f] rounded-xl border border-zinc-800/50 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+        <div className="p-5 border-b border-zinc-800/50 flex items-center justify-between sticky top-0 bg-[#0f0f0f]">
           <div>
-            <h3 className="font-bold text-slate-100 text-lg">{property.name}</h3>
-            <div className="flex items-center gap-2 text-sm text-slate-400 mt-1">
+            <h3 className="text-base font-medium text-zinc-100">{property.name}</h3>
+            <div className="flex items-center gap-1.5 text-xs text-zinc-500 mt-0.5">
               <MapPin className="w-3 h-3" />
               {property.address}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className={`px-2 py-1 rounded text-xs font-medium ${status.color}`}>
+            <span className={`px-2 py-0.5 rounded-lg text-[10px] font-medium ${status.color}`}>
               {status.label}
             </span>
-            <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-100">
-              <X className="w-5 h-5" />
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-500 hover:text-zinc-200 transition-colors">
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-5 space-y-4">
           {/* Key Metrics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 bg-slate-800/50 rounded-lg">
-              <div className="text-sm text-slate-400">Aktuálna hodnota</div>
-              <div className="text-xl font-bold text-slate-100">€{property.currentValue.toLocaleString()}</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="p-3 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
+              <div className="text-[10px] text-zinc-500 uppercase tracking-wide">Hodnota</div>
+              <div className="text-base font-semibold text-zinc-100 font-mono">€{property.currentValue.toLocaleString()}</div>
             </div>
-            <div className="p-4 bg-slate-800/50 rounded-lg">
-              <div className="text-sm text-slate-400">Zhodnotenie</div>
-              <div className={`text-xl font-bold ${appreciationPercent >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+            <div className="p-3 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
+              <div className="text-[10px] text-zinc-500 uppercase tracking-wide">Zhodnotenie</div>
+              <div className={`text-base font-semibold font-mono ${appreciationPercent >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                 {appreciationPercent >= 0 ? "+" : ""}{appreciationPercent.toFixed(1)}%
               </div>
-              <div className="text-xs text-slate-500">€{appreciation.toLocaleString()}</div>
+              <div className="text-xs text-zinc-600 font-mono">€{appreciation.toLocaleString()}</div>
             </div>
-            <div className="p-4 bg-slate-800/50 rounded-lg">
-              <div className="text-sm text-slate-400">Vlastný kapitál</div>
-              <div className="text-xl font-bold text-blue-400">€{equity.toLocaleString()}</div>
+            <div className="p-3 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
+              <div className="text-[10px] text-zinc-500 uppercase tracking-wide">Kapitál</div>
+              <div className="text-base font-semibold text-blue-400 font-mono">€{equity.toLocaleString()}</div>
             </div>
-            <div className="p-4 bg-slate-800/50 rounded-lg">
-              <div className="text-sm text-slate-400">Doba držania</div>
-              <div className="text-xl font-bold text-slate-100">{holdingYears} rokov</div>
+            <div className="p-3 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
+              <div className="text-[10px] text-zinc-500 uppercase tracking-wide">Držanie</div>
+              <div className="text-base font-semibold text-zinc-100 font-mono">{holdingYears} rokov</div>
             </div>
           </div>
 
           {/* Cash Flow */}
           {property.isRented && (
-            <div className="bg-slate-800/30 rounded-xl p-5 border border-slate-700">
-              <h4 className="font-medium text-slate-100 mb-4 flex items-center gap-2">
-                <Euro className="w-4 h-4 text-emerald-400" />
+            <div className="bg-zinc-900/30 rounded-lg p-4 border border-zinc-800/50">
+              <h4 className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-3 flex items-center gap-2">
+                <Euro className="w-3.5 h-3.5 text-emerald-400" />
                 Cash Flow
               </h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
-                  <div className="text-sm text-slate-400">Mesačný nájom</div>
-                  <div className="font-bold text-emerald-400">€{property.monthlyRent?.toLocaleString()}</div>
+                  <div className="text-[10px] text-zinc-500 uppercase tracking-wide">Nájom</div>
+                  <div className="text-sm font-semibold text-emerald-400 font-mono">€{property.monthlyRent?.toLocaleString()}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-slate-400">Splátka hypotéky</div>
-                  <div className="font-bold text-red-400">-€{property.mortgagePayment?.toLocaleString() || 0}</div>
+                  <div className="text-[10px] text-zinc-500 uppercase tracking-wide">Hypotéka</div>
+                  <div className="text-sm font-semibold text-red-400 font-mono">-€{property.mortgagePayment?.toLocaleString() || 0}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-slate-400">Náklady</div>
-                  <div className="font-bold text-red-400">-€{property.monthlyExpenses.toLocaleString()}</div>
+                  <div className="text-[10px] text-zinc-500 uppercase tracking-wide">Náklady</div>
+                  <div className="text-sm font-semibold text-red-400 font-mono">-€{property.monthlyExpenses.toLocaleString()}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-slate-400">Čistý cash flow</div>
-                  <div className={`font-bold ${monthlyCashFlow >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                  <div className="text-[10px] text-zinc-500 uppercase tracking-wide">Čistý CF</div>
+                  <div className={`text-sm font-semibold font-mono ${monthlyCashFlow >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                     €{monthlyCashFlow.toLocaleString()}/mes
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-700">
+              <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-zinc-800/50">
                 <div>
-                  <div className="text-sm text-slate-400">Hrubý výnos</div>
-                  <div className="font-bold text-purple-400">{grossYield.toFixed(1)}%</div>
+                  <div className="text-[10px] text-zinc-500 uppercase tracking-wide">Hrubý výnos</div>
+                  <div className="text-sm font-semibold text-violet-400 font-mono">{grossYield.toFixed(1)}%</div>
                 </div>
                 <div>
-                  <div className="text-sm text-slate-400">Čistý výnos</div>
-                  <div className="font-bold text-yellow-400">{netYield.toFixed(1)}%</div>
+                  <div className="text-[10px] text-zinc-500 uppercase tracking-wide">Čistý výnos</div>
+                  <div className="text-sm font-semibold text-amber-400 font-mono">{netYield.toFixed(1)}%</div>
                 </div>
               </div>
             </div>
@@ -854,54 +852,54 @@ function PropertyDetailModal({
 
           {/* Mortgage */}
           {property.hasMortgage && (
-            <div className="bg-slate-800/30 rounded-xl p-5 border border-slate-700">
-              <h4 className="font-medium text-slate-100 mb-4 flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-blue-400" />
+            <div className="bg-zinc-900/30 rounded-lg p-4 border border-zinc-800/50">
+              <h4 className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-3 flex items-center gap-2">
+                <CreditCard className="w-3.5 h-3.5 text-blue-400" />
                 Hypotéka
               </h4>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <div className="text-sm text-slate-400">Zostatok</div>
-                  <div className="font-bold text-slate-100">€{property.mortgageAmount?.toLocaleString()}</div>
+                  <div className="text-[10px] text-zinc-500 uppercase tracking-wide">Zostatok</div>
+                  <div className="text-sm font-semibold text-zinc-100 font-mono">€{property.mortgageAmount?.toLocaleString()}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-slate-400">Úroková sadzba</div>
-                  <div className="font-bold text-slate-100">{property.mortgageRate}%</div>
+                  <div className="text-[10px] text-zinc-500 uppercase tracking-wide">Úrok</div>
+                  <div className="text-sm font-semibold text-zinc-100 font-mono">{property.mortgageRate}%</div>
                 </div>
                 <div>
-                  <div className="text-sm text-slate-400">Mesačná splátka</div>
-                  <div className="font-bold text-slate-100">€{property.mortgagePayment?.toLocaleString()}</div>
+                  <div className="text-[10px] text-zinc-500 uppercase tracking-wide">Splátka</div>
+                  <div className="text-sm font-semibold text-zinc-100 font-mono">€{property.mortgagePayment?.toLocaleString()}</div>
                 </div>
               </div>
             </div>
           )}
 
           {/* Recent Transactions */}
-          <div className="bg-slate-800/30 rounded-xl p-5 border border-slate-700">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="font-medium text-slate-100 flex items-center gap-2">
-                <Receipt className="w-4 h-4 text-yellow-400" />
-                Posledné transakcie
+          <div className="bg-zinc-900/30 rounded-lg p-4 border border-zinc-800/50">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-xs font-medium text-zinc-400 uppercase tracking-wide flex items-center gap-2">
+                <Receipt className="w-3.5 h-3.5 text-amber-400" />
+                Transakcie
               </h4>
               <button
                 onClick={onAddTransaction}
-                className="flex items-center gap-1 text-sm text-emerald-400 hover:text-emerald-300"
+                className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3.5 h-3.5" />
                 Pridať
               </button>
             </div>
             {property.transactions.length === 0 ? (
-              <p className="text-slate-500 text-sm">Žiadne transakcie</p>
+              <p className="text-zinc-600 text-xs">Žiadne transakcie</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {property.transactions.slice(0, 5).map((t: any) => (
-                  <div key={t.id} className="flex items-center justify-between py-2 border-b border-slate-700 last:border-0">
+                  <div key={t.id} className="flex items-center justify-between py-2 border-b border-zinc-800/50 last:border-0">
                     <div>
-                      <div className="text-sm text-slate-100">{t.description || t.type}</div>
-                      <div className="text-xs text-slate-500">{new Date(t.date).toLocaleDateString("sk-SK")}</div>
+                      <div className="text-xs text-zinc-300">{t.description || t.type}</div>
+                      <div className="text-[10px] text-zinc-600">{new Date(t.date).toLocaleDateString("sk-SK")}</div>
                     </div>
-                    <div className={`font-medium ${t.amount >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                    <div className={`text-xs font-medium font-mono ${t.amount >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                       {t.amount >= 0 ? "+" : ""}€{t.amount.toLocaleString()}
                     </div>
                   </div>
@@ -912,24 +910,24 @@ function PropertyDetailModal({
 
           {/* Notes */}
           {property.notes && (
-            <div className="bg-slate-800/30 rounded-xl p-5 border border-slate-700">
-              <h4 className="font-medium text-slate-100 mb-2">Poznámky</h4>
-              <p className="text-slate-400 text-sm">{property.notes}</p>
+            <div className="bg-zinc-900/30 rounded-lg p-4 border border-zinc-800/50">
+              <h4 className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-2">Poznámky</h4>
+              <p className="text-zinc-500 text-xs">{property.notes}</p>
             </div>
           )}
 
           {/* Actions */}
-          <div className="flex justify-between pt-4 border-t border-slate-800">
+          <div className="flex justify-between pt-4 border-t border-zinc-800/50">
             <button
               onClick={onDelete}
-              className="flex items-center gap-2 px-4 py-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-3.5 h-3.5" />
               Vymazať
             </button>
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700"
+              className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-200 rounded-lg hover:bg-zinc-800/50 transition-colors"
             >
               Zavrieť
             </button>
@@ -995,22 +993,22 @@ function AddTransactionModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900 rounded-xl border border-slate-800 w-full max-w-md">
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-          <h3 className="font-bold text-slate-100">Pridať transakciu</h3>
-          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-100">
-            <X className="w-5 h-5" />
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-[#0f0f0f] rounded-xl border border-zinc-800/50 w-full max-w-md">
+        <div className="p-5 border-b border-zinc-800/50 flex items-center justify-between">
+          <h3 className="text-base font-medium text-zinc-100">Pridať transakciu</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-500 hover:text-zinc-200 transition-colors">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Typ transakcie</label>
+            <label className="block text-sm text-zinc-400 mb-1">Typ transakcie</label>
             <select
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+              className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
             >
               <optgroup label="Príjmy">
                 {transactionTypes.filter((t) => t.isIncome).map((t) => (
@@ -1026,51 +1024,51 @@ function AddTransactionModal({
           </div>
 
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Suma (€)</label>
+            <label className="block text-sm text-zinc-400 mb-1">Suma (€)</label>
             <input
               type="number"
               required
               value={formData.amount}
               onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+              className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Dátum</label>
+            <label className="block text-sm text-zinc-400 mb-1">Dátum</label>
             <input
               type="date"
               required
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+              className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Popis</label>
+            <label className="block text-sm text-zinc-400 mb-1">Popis</label>
             <input
               type="text"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+              className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-2 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700"
+              className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-200 rounded-lg hover:bg-zinc-800/50 transition-colors"
             >
               Zrušiť
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
-              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               Pridať
             </button>
           </div>

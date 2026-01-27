@@ -129,7 +129,7 @@ export function InvestorBadges({ propertyId, compact = false }: InvestorBadgesPr
     badges.push(
       <div 
         key="stale" 
-        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-500/20 text-slate-400 border border-slate-500/30"
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-500/20 text-zinc-400 border border-zinc-500/30"
         title={`Na trhu ${metrics.daysOnMarket} dní - možná motivovaný predajca`}
       >
         <Clock className="w-3 h-3" />
@@ -183,11 +183,11 @@ export function PriceStoryInline({ propertyId }: { propertyId: string }) {
   }
 
   return (
-    <div className="flex items-center gap-2 text-xs text-slate-400">
+    <div className="flex items-center gap-2 text-xs text-zinc-400">
       {data.changes.slice(0, 3).map((change: { price: number }, i: number) => (
         <span key={i} className="flex items-center gap-1">
           {i > 0 && <TrendingDown className="w-3 h-3 text-emerald-400" />}
-          <span className={i === 0 ? "line-through text-slate-500" : ""}>
+          <span className={i === 0 ? "line-through text-zinc-500" : ""}>
             {(change.price / 1000).toFixed(0)}k
           </span>
         </span>
@@ -222,7 +222,7 @@ export function MomentumIndicator({ city }: { city: string }) {
   const trendConfig = {
     rising: { icon: TrendingUp, color: "text-red-400", label: "Ceny rastú" },
     falling: { icon: TrendingDown, color: "text-emerald-400", label: "Ceny klesajú" },
-    stable: { icon: Clock, color: "text-slate-400", label: "Stabilné" },
+    stable: { icon: Clock, color: "text-zinc-400", label: "Stabilné" },
   };
 
   const config = trendConfig[data.trend as keyof typeof trendConfig] || trendConfig.stable;

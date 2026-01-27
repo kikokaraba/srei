@@ -118,8 +118,8 @@ export function OnboardingFlow() {
   // Show loading while checking authentication
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/20 flex items-center justify-center">
-        <div className="text-slate-400">Načítavam...</div>
+      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-emerald-950/20 flex items-center justify-center">
+        <div className="text-zinc-400">Načítavam...</div>
       </div>
     );
   }
@@ -245,22 +245,22 @@ export function OnboardingFlow() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/20 flex items-center justify-center p-4 md:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-emerald-950/20 flex items-center justify-center p-4 md:p-6">
       <div className="max-w-2xl w-full mx-auto">
         {/* Header s možnosťou preskočiť */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-slate-100 mb-1">
+            <h1 className="text-2xl font-bold text-zinc-100 mb-1">
               Vitajte v SRIA
             </h1>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-zinc-400">
               Nastavte si aplikáciu podľa svojich potrieb
             </p>
           </div>
           <button
             onClick={handleSkip}
             disabled={isSaving}
-            className="px-4 py-2 text-sm text-slate-400 hover:text-slate-100 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors disabled:opacity-50"
           >
             Preskočiť
           </button>
@@ -269,14 +269,14 @@ export function OnboardingFlow() {
         {/* Progress bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-slate-400">
+            <span className="text-sm text-zinc-400">
               Krok {step} z 5
             </span>
-            <span className="text-sm text-slate-400">
+            <span className="text-sm text-zinc-400">
               {Math.round((step / 5) * 100)}%
             </span>
           </div>
-          <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+          <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
             <div
               className="h-full bg-emerald-500 transition-all duration-300"
               style={{ width: `${(step / 5) * 100}%` }}
@@ -285,14 +285,14 @@ export function OnboardingFlow() {
         </div>
 
         {/* Step content */}
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 md:p-8 overflow-x-hidden">
+        <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-6 md:p-8 overflow-x-hidden">
           {step === 1 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-3xl font-bold text-slate-100 mb-2">
+                <h2 className="text-3xl font-bold text-zinc-100 mb-2">
                   Kde hľadáte investície?
                 </h2>
-                <p className="text-slate-400">
+                <p className="text-zinc-400">
                   Vyberte kraje, ktoré vás zaujímajú (môžete vybrať viacero)
                 </p>
               </div>
@@ -312,7 +312,7 @@ export function OnboardingFlow() {
                       className={`relative p-4 rounded-xl border transition-all ${
                         isSelected
                           ? "bg-emerald-500/10 border-emerald-500"
-                          : "bg-slate-800 border-slate-700 hover:border-slate-600"
+                          : "bg-zinc-800 border-zinc-700 hover:border-zinc-600"
                       }`}
                     >
                       {isSelected && (
@@ -320,11 +320,11 @@ export function OnboardingFlow() {
                           <Check className="w-3 h-3 text-white" />
                         </div>
                       )}
-                      <MapPin className={`w-6 h-6 mb-2 mx-auto ${isSelected ? "text-emerald-400" : "text-slate-400"}`} />
-                      <div className={`text-sm font-semibold ${isSelected ? "text-emerald-400" : "text-slate-300"}`}>
+                      <MapPin className={`w-6 h-6 mb-2 mx-auto ${isSelected ? "text-emerald-400" : "text-zinc-400"}`} />
+                      <div className={`text-sm font-semibold ${isSelected ? "text-emerald-400" : "text-zinc-300"}`}>
                         {region.shortName}
                       </div>
-                      <div className="text-xs text-slate-500 mt-1">
+                      <div className="text-xs text-zinc-500 mt-1">
                         {region.name.replace(" kraj", "")}
                       </div>
                     </button>
@@ -333,29 +333,29 @@ export function OnboardingFlow() {
               </div>
 
               {/* Quick select */}
-              <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-800">
-                <span className="text-xs text-slate-500">Rýchly výber:</span>
+              <div className="flex flex-wrap gap-2 pt-4 border-t border-zinc-800">
+                <span className="text-xs text-zinc-500">Rýchly výber:</span>
                 <button
                   onClick={() => updateData({ trackedRegions: SLOVAK_REGIONS.map(r => r.id) })}
-                  className="text-xs px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                  className="text-xs px-3 py-1 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
                 >
                   Celé Slovensko
                 </button>
                 <button
                   onClick={() => updateData({ trackedRegions: ["BA", "TT", "NR"] })}
-                  className="text-xs px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                  className="text-xs px-3 py-1 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
                 >
                   Západ
                 </button>
                 <button
                   onClick={() => updateData({ trackedRegions: ["ZA", "BB", "TN"] })}
-                  className="text-xs px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                  className="text-xs px-3 py-1 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
                 >
                   Stred
                 </button>
                 <button
                   onClick={() => updateData({ trackedRegions: ["PO", "KE"] })}
-                  className="text-xs px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                  className="text-xs px-3 py-1 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
                 >
                   Východ
                 </button>
@@ -376,10 +376,10 @@ export function OnboardingFlow() {
           {step === 2 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-3xl font-bold text-slate-100 mb-2">
+                <h2 className="text-3xl font-bold text-zinc-100 mb-2">
                   Aký typ investícií vás zaujíma?
                 </h2>
-                <p className="text-slate-400">
+                <p className="text-zinc-400">
                   Vyberte všetky stratégie, ktoré vás zaujímajú (môžete vybrať viacero)
                 </p>
               </div>
@@ -400,7 +400,7 @@ export function OnboardingFlow() {
                       className={`w-full p-4 rounded-xl border text-left transition-all ${
                         isSelected
                           ? "bg-emerald-500/10 border-emerald-500"
-                          : "bg-slate-800 border-slate-700 hover:border-slate-600"
+                          : "bg-zinc-800 border-zinc-700 hover:border-zinc-600"
                       }`}
                     >
                       <div className="flex items-start gap-4">
@@ -408,16 +408,16 @@ export function OnboardingFlow() {
                           className={`p-2 rounded-lg ${
                             isSelected
                               ? "bg-emerald-500/20 text-emerald-400"
-                              : "bg-slate-700 text-slate-400"
+                              : "bg-zinc-700 text-zinc-400"
                           }`}
                         >
                           <Icon className="w-5 h-5" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-slate-100 mb-1">
+                          <h3 className="font-semibold text-zinc-100 mb-1">
                             {type.title}
                           </h3>
-                          <p className="text-sm text-slate-400">
+                          <p className="text-sm text-zinc-400">
                             {type.description}
                           </p>
                         </div>
@@ -445,10 +445,10 @@ export function OnboardingFlow() {
           {step === 3 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-3xl font-bold text-slate-100 mb-2">
+                <h2 className="text-3xl font-bold text-zinc-100 mb-2">
                   Základné kritériá
                 </h2>
-                <p className="text-slate-400">
+                <p className="text-zinc-400">
                   Nastavte základné filtre pre vaše investície
                 </p>
               </div>
@@ -456,7 +456,7 @@ export function OnboardingFlow() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="min-w-0">
-                    <label className="block text-slate-300 mb-2 font-medium">
+                    <label className="block text-zinc-300 mb-2 font-medium">
                       Minimálny výnos (%)
                     </label>
                     <input
@@ -469,12 +469,12 @@ export function OnboardingFlow() {
                       placeholder="Napríklad 5.0"
                       step="0.1"
                       max="20"
-                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
 
                   <div className="min-w-0">
-                    <label className="block text-slate-300 mb-2 font-medium">
+                    <label className="block text-zinc-300 mb-2 font-medium">
                       Maximálna cena (€)
                     </label>
                     <input
@@ -486,14 +486,14 @@ export function OnboardingFlow() {
                       }}
                       placeholder="Napríklad 200000"
                       step="1000"
-                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="min-w-0">
-                    <label className="block text-slate-300 mb-2 font-medium">
+                    <label className="block text-zinc-300 mb-2 font-medium">
                       Minimálna cena (€)
                     </label>
                     <input
@@ -505,12 +505,12 @@ export function OnboardingFlow() {
                       }}
                       placeholder="Napríklad 50000"
                       step="1000"
-                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
 
                   <div className="min-w-0">
-                    <label className="block text-slate-300 mb-2 font-medium">
+                    <label className="block text-zinc-300 mb-2 font-medium">
                       Počet izieb
                     </label>
                     <div className="flex gap-2 min-w-0">
@@ -522,7 +522,7 @@ export function OnboardingFlow() {
                           updateData({ minRooms: val === "" ? null : parseInt(val) || null });
                         }}
                         placeholder="Od"
-                        className="flex-1 min-w-0 px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="flex-1 min-w-0 px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                       <input
                         type="number"
@@ -532,7 +532,7 @@ export function OnboardingFlow() {
                           updateData({ maxRooms: val === "" ? null : parseInt(val) || null });
                         }}
                         placeholder="Do"
-                        className="flex-1 min-w-0 px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="flex-1 min-w-0 px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
                   </div>
@@ -544,17 +544,17 @@ export function OnboardingFlow() {
           {step === 4 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-3xl font-bold text-slate-100 mb-2">
+                <h2 className="text-3xl font-bold text-zinc-100 mb-2">
                   Pokročilé kritériá
                 </h2>
-                <p className="text-slate-400">
+                <p className="text-zinc-400">
                   Voliteľné: Nastavte pokročilé filtre pre ešte presnejšie výsledky
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
-                  <label className="block text-slate-300 mb-2 font-medium text-sm">
+                  <label className="block text-zinc-300 mb-2 font-medium text-sm">
                     Cena za m² (€/m²)
                   </label>
                   <div className="flex gap-2 min-w-0">
@@ -566,7 +566,7 @@ export function OnboardingFlow() {
                         updateData({ minPricePerM2: val === "" ? null : parseFloat(val) || null });
                       }}
                       placeholder="Od"
-                      className="flex-1 min-w-0 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="flex-1 min-w-0 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     <input
                       type="number"
@@ -576,13 +576,13 @@ export function OnboardingFlow() {
                         updateData({ maxPricePerM2: val === "" ? null : parseFloat(val) || null });
                       }}
                       placeholder="Do"
-                      className="flex-1 min-w-0 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="flex-1 min-w-0 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                 </div>
 
                 <div className="min-w-0">
-                  <label className="block text-slate-300 mb-2 font-medium text-sm">
+                  <label className="block text-zinc-300 mb-2 font-medium text-sm">
                     Plocha (m²)
                   </label>
                   <div className="flex gap-2 min-w-0">
@@ -594,7 +594,7 @@ export function OnboardingFlow() {
                         updateData({ minArea: val === "" ? null : parseFloat(val) || null });
                       }}
                       placeholder="Od"
-                      className="flex-1 min-w-0 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="flex-1 min-w-0 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     <input
                       type="number"
@@ -604,13 +604,13 @@ export function OnboardingFlow() {
                         updateData({ maxArea: val === "" ? null : parseFloat(val) || null });
                       }}
                       placeholder="Do"
-                      className="flex-1 min-w-0 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="flex-1 min-w-0 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                 </div>
 
                 <div className="min-w-0">
-                  <label className="block text-slate-300 mb-2 font-medium text-sm">
+                  <label className="block text-zinc-300 mb-2 font-medium text-sm">
                     Min. zľava oproti priemeru (%)
                   </label>
                   <input
@@ -622,15 +622,15 @@ export function OnboardingFlow() {
                     }}
                     placeholder="Napr. 10 = 10% pod priemerom"
                     step="1"
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-zinc-500 mt-1">
                     Zobraziť len nehnuteľnosti lacnejšie ako priemer v lokalite
                   </p>
                 </div>
 
                 <div className="min-w-0">
-                  <label className="block text-slate-300 mb-2 font-medium text-sm">
+                  <label className="block text-zinc-300 mb-2 font-medium text-sm">
                     Max. doba v ponuke (dní)
                   </label>
                   <input
@@ -642,26 +642,26 @@ export function OnboardingFlow() {
                     }}
                     placeholder="Napr. 90"
                     step="1"
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-zinc-500 mt-1">
                     Nehnuteľnosti dlhšie v ponuke = väčší priestor na vyjednávanie
                   </p>
                 </div>
               </div>
 
-              <label className="flex items-center gap-3 p-4 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-slate-600 transition-colors">
+              <label className="flex items-center gap-3 p-4 rounded-lg border border-zinc-700 bg-zinc-800 cursor-pointer hover:border-zinc-600 transition-colors">
                 <input
                   type="checkbox"
                   checked={data.onlyDistressed}
                   onChange={(e) => updateData({ onlyDistressed: e.target.checked })}
-                  className="w-5 h-5 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500"
+                  className="w-5 h-5 rounded border-zinc-600 bg-zinc-700 text-emerald-500 focus:ring-emerald-500"
                 />
                 <div>
-                  <h3 className="font-semibold text-slate-100 mb-1">
+                  <h3 className="font-semibold text-zinc-100 mb-1">
                     Len nehnuteľnosti v núdzi
                   </h3>
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-zinc-400">
                     Zobraziť len nehnuteľnosti, ktoré sú dlhšie v ponuke alebo majú zníženú cenu
                   </p>
                 </div>
@@ -672,10 +672,10 @@ export function OnboardingFlow() {
           {step === 5 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-3xl font-bold text-slate-100 mb-2">
+                <h2 className="text-3xl font-bold text-zinc-100 mb-2">
                   Notifikácie
                 </h2>
-                <p className="text-slate-400">
+                <p className="text-zinc-400">
                   Vyberte, o čom chcete dostávať upozornenia
                 </p>
               </div>
@@ -705,7 +705,7 @@ export function OnboardingFlow() {
                 ].map((notif) => (
                   <label
                     key={notif.id}
-                    className="flex items-start gap-4 p-4 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-slate-600 transition-colors"
+                    className="flex items-start gap-4 p-4 rounded-lg border border-zinc-700 bg-zinc-800 cursor-pointer hover:border-zinc-600 transition-colors"
                   >
                     <input
                       type="checkbox"
@@ -713,13 +713,13 @@ export function OnboardingFlow() {
                       onChange={(e) =>
                         updateData({ [notif.id]: e.target.checked } as Partial<OnboardingData>)
                       }
-                      className="mt-1 w-5 h-5 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500"
+                      className="mt-1 w-5 h-5 rounded border-zinc-600 bg-zinc-700 text-emerald-500 focus:ring-emerald-500"
                     />
                     <div>
-                      <h3 className="font-semibold text-slate-100 mb-1">
+                      <h3 className="font-semibold text-zinc-100 mb-1">
                         {notif.title}
                       </h3>
-                      <p className="text-sm text-slate-400">{notif.description}</p>
+                      <p className="text-sm text-zinc-400">{notif.description}</p>
                     </div>
                   </label>
                 ))}
@@ -728,11 +728,11 @@ export function OnboardingFlow() {
           )}
 
           {/* Navigation buttons */}
-          <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-800">
+          <div className="flex items-center justify-between mt-8 pt-6 border-t border-zinc-800">
             <button
               onClick={handleBack}
               disabled={step === 1}
-              className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
               Späť

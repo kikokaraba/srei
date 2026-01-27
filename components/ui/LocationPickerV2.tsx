@@ -173,7 +173,7 @@ export function LocationPickerV2({
           ? "bg-emerald-500 border-emerald-500" 
           : isIndeterminate
           ? "border-emerald-500 bg-emerald-500/30"
-          : "border-slate-600 hover:border-slate-500"
+          : "border-zinc-600 hover:border-zinc-500"
       }`}>
         {isSelected && <Check className={`${iconSize} text-white`} />}
         {isIndeterminate && !isSelected && <Minus className={`${iconSize} text-emerald-300`} />}
@@ -186,21 +186,21 @@ export function LocationPickerV2({
       {/* Search & Summary */}
       <div className="flex gap-3">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Hľadať kraj, okres alebo mesto..."
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white 
-                       placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+            className="w-full pl-10 pr-4 py-2.5 bg-zinc-800/50 border border-zinc-700/50 rounded-xl text-white 
+                       placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
           />
         </div>
         {totalSelected > 0 && (
           <button
             onClick={clearAll}
-            className="px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-400 
-                       hover:text-white hover:border-slate-600 transition-all flex items-center gap-2"
+            className="px-4 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-xl text-zinc-400 
+                       hover:text-white hover:border-zinc-600 transition-all flex items-center gap-2"
           >
             <X className="w-4 h-4" />
             <span className="text-sm">Vymazať</span>
@@ -210,7 +210,7 @@ export function LocationPickerV2({
 
       {/* Stats bar */}
       {!compact && (
-        <div className="flex items-center gap-4 text-sm text-slate-400">
+        <div className="flex items-center gap-4 text-sm text-zinc-400">
           <span>
             {stats.isAllSlovakia ? (
               <span className="text-emerald-400 font-medium">Celé Slovensko</span>
@@ -227,7 +227,7 @@ export function LocationPickerV2({
             ) : stats.totalCities > 0 ? (
               <span><span className="text-violet-400 font-medium">{stats.totalCities}</span> miest/obcí</span>
             ) : (
-              <span className="text-slate-500">Žiadne lokality vybrané</span>
+              <span className="text-zinc-500">Žiadne lokality vybrané</span>
             )}
           </span>
         </div>
@@ -276,7 +276,7 @@ export function LocationPickerV2({
             </span>
           ))}
           {selectedCities.length > 5 && (
-            <span className="px-3 py-1 rounded-full bg-slate-700/50 text-slate-400 text-sm">
+            <span className="px-3 py-1 rounded-full bg-zinc-700/50 text-zinc-400 text-sm">
               +{selectedCities.length - 5} ďalších
             </span>
           )}
@@ -304,7 +304,7 @@ export function LocationPickerV2({
                     ? "bg-emerald-500/20 border border-emerald-500/30" 
                     : regionState.isIndeterminate
                     ? "bg-emerald-500/10 border border-emerald-500/20"
-                    : "bg-slate-800/30 border border-slate-700/50 hover:bg-slate-800/50"
+                    : "bg-zinc-800/30 border border-zinc-700/50 hover:bg-zinc-800/50"
                 } rounded-xl`}
               >
                 {/* Expand button */}
@@ -315,12 +315,12 @@ export function LocationPickerV2({
                     e.stopPropagation();
                     handleToggleRegionExpand(region.id);
                   }}
-                  className="p-1 hover:bg-slate-700/50 rounded z-10"
+                  className="p-1 hover:bg-zinc-700/50 rounded z-10"
                 >
                   {isExpanded ? (
-                    <ChevronDown className="w-4 h-4 text-slate-400" />
+                    <ChevronDown className="w-4 h-4 text-zinc-400" />
                   ) : (
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                    <ChevronRight className="w-4 h-4 text-zinc-400" />
                   )}
                 </button>
                 
@@ -346,7 +346,7 @@ export function LocationPickerV2({
                   <span className="flex-1 font-medium text-white">{region.name}</span>
                 </div>
                 
-                <span className="text-xs text-slate-500 shrink-0">{districts.length} okresov</span>
+                <span className="text-xs text-zinc-500 shrink-0">{districts.length} okresov</span>
               </div>
 
               {/* Districts */}
@@ -370,7 +370,7 @@ export function LocationPickerV2({
                               ? "bg-blue-500/10 border border-blue-500/20"
                               : districtState.isIndeterminate
                               ? "bg-blue-500/5 border border-blue-500/10"
-                              : "bg-slate-800/20 border border-transparent hover:bg-slate-800/40"
+                              : "bg-zinc-800/20 border border-transparent hover:bg-zinc-800/40"
                           }`}
                         >
                           {/* Expand button */}
@@ -381,12 +381,12 @@ export function LocationPickerV2({
                               e.stopPropagation();
                               handleToggleDistrictExpand(district.id);
                             }}
-                            className="p-0.5 hover:bg-slate-700/50 rounded z-10"
+                            className="p-0.5 hover:bg-zinc-700/50 rounded z-10"
                           >
                             {isDistExpanded ? (
-                              <ChevronDown className="w-3 h-3 text-slate-400" />
+                              <ChevronDown className="w-3 h-3 text-zinc-400" />
                             ) : (
-                              <ChevronRight className="w-3 h-3 text-slate-400" />
+                              <ChevronRight className="w-3 h-3 text-zinc-400" />
                             )}
                           </button>
                           
@@ -409,10 +409,10 @@ export function LocationPickerV2({
                           >
                             {renderCheckbox(districtState.isSelected, districtState.isIndeterminate, "sm")}
                             <MapPin className="w-3 h-3 text-blue-400 shrink-0" />
-                            <span className="flex-1 text-sm text-slate-300">{district.name}</span>
+                            <span className="flex-1 text-sm text-zinc-300">{district.name}</span>
                           </div>
                           
-                          <span className="text-xs text-slate-600 shrink-0">{district.cities.length}</span>
+                          <span className="text-xs text-zinc-600 shrink-0">{district.cities.length}</span>
                         </div>
 
                         {/* Cities */}
@@ -434,13 +434,13 @@ export function LocationPickerV2({
                                   className={`flex items-center gap-2 p-1.5 rounded text-left transition-all ${
                                     citySelected
                                       ? "bg-violet-500/10 text-violet-400"
-                                      : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-300"
+                                      : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300"
                                   }`}
                                 >
                                   <div className={`w-3 h-3 rounded border flex items-center justify-center ${
                                     citySelected
                                       ? "bg-violet-500 border-violet-500"
-                                      : "border-slate-600"
+                                      : "border-zinc-600"
                                   }`}>
                                     {citySelected && <Check className="w-2 h-2 text-white" />}
                                   </div>
@@ -461,29 +461,29 @@ export function LocationPickerV2({
       </div>
 
       {/* Quick select */}
-      <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-800">
-        <span className="text-xs text-slate-500">Rýchly výber:</span>
+      <div className="flex flex-wrap gap-2 pt-4 border-t border-zinc-800">
+        <span className="text-xs text-zinc-500">Rýchly výber:</span>
         <button
           onClick={selectAllSlovakia}
-          className="text-xs px-2 py-1 rounded bg-slate-800 text-slate-400 hover:text-white transition-colors"
+          className="text-xs px-2 py-1 rounded bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
         >
           Celé Slovensko
         </button>
         <button
           onClick={() => onChange(normalizeSelection(["BA", "TT", "NR"], [], []))}
-          className="text-xs px-2 py-1 rounded bg-slate-800 text-slate-400 hover:text-white transition-colors"
+          className="text-xs px-2 py-1 rounded bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
         >
           Západné Slovensko
         </button>
         <button
           onClick={() => onChange(normalizeSelection(["ZA", "BB", "TN"], [], []))}
-          className="text-xs px-2 py-1 rounded bg-slate-800 text-slate-400 hover:text-white transition-colors"
+          className="text-xs px-2 py-1 rounded bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
         >
           Stredné Slovensko
         </button>
         <button
           onClick={() => onChange(normalizeSelection(["PO", "KE"], [], []))}
-          className="text-xs px-2 py-1 rounded bg-slate-800 text-slate-400 hover:text-white transition-colors"
+          className="text-xs px-2 py-1 rounded bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
         >
           Východné Slovensko
         </button>

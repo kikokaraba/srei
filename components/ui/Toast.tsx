@@ -44,14 +44,14 @@ export function ToastContainer() {
         >
           <div className={`shrink-0 ${ICON_COLORS[toast.type]}`}>{ICONS[toast.type]}</div>
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-slate-100 text-sm sm:text-base">{toast.title}</p>
+            <p className="font-medium text-zinc-100 text-sm sm:text-base">{toast.title}</p>
             {toast.message && (
-              <p className="text-xs sm:text-sm text-slate-400 mt-0.5 sm:mt-1">{toast.message}</p>
+              <p className="text-xs sm:text-sm text-zinc-400 mt-0.5 sm:mt-1">{toast.message}</p>
             )}
           </div>
           <button
             onClick={() => removeToast(toast.id)}
-            className="text-slate-400 hover:text-slate-100 transition-colors shrink-0 p-1"
+            className="text-zinc-400 hover:text-zinc-100 transition-colors shrink-0 p-1"
           >
             <X className="w-4 h-4" />
           </button>

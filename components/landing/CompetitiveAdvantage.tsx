@@ -96,7 +96,7 @@ const investorFeatures = [
 
 export function CompetitiveAdvantage() {
   return (
-    <section id="why-sria" className="py-24 sm:py-32 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
+    <section id="why-sria" className="py-24 sm:py-32 bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-grid-slate-800/[0.05] bg-[size:40px_40px]" />
       <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
@@ -113,7 +113,7 @@ export function CompetitiveAdvantage() {
             Prečo investori volia{" "}
             <span className="text-emerald-400">SRIA</span>
           </h2>
-          <p className="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto">
+          <p className="text-lg sm:text-xl text-zinc-400 max-w-3xl mx-auto">
             Ostatné portály sú pre bežných kupujúcich. SRIA je postavená špeciálne pre investorov, 
             ktorí potrebujú viac než len zoznam inzerátov.
           </p>
@@ -132,11 +132,11 @@ export function CompetitiveAdvantage() {
                 key={index}
                 className={`p-6 sm:p-8 rounded-2xl bg-gradient-to-br ${colorClasses} border backdrop-blur-sm`}
               >
-                <div className={`w-14 h-14 rounded-xl bg-slate-900/80 border ${feature.color === "emerald" ? "border-emerald-500/30" : "border-gold-500/30"} flex items-center justify-center mb-5`}>
+                <div className={`w-14 h-14 rounded-xl bg-zinc-900/80 border ${feature.color === "emerald" ? "border-emerald-500/30" : "border-gold-500/30"} flex items-center justify-center mb-5`}>
                   <Icon className={`w-7 h-7 ${feature.color === "emerald" ? "text-emerald-400" : "text-gold-400"}`} />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
-                <p className="text-slate-400">{feature.description}</p>
+                <p className="text-zinc-400">{feature.description}</p>
               </div>
             );
           })}
@@ -146,15 +146,15 @@ export function CompetitiveAdvantage() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
             <h3 className="text-2xl font-bold text-white mb-2">Porovnanie funkcií</h3>
-            <p className="text-slate-400">SRIA vs. bežné realitné portály</p>
+            <p className="text-zinc-400">SRIA vs. bežné realitné portály</p>
           </div>
           
-          <div className="rounded-2xl overflow-hidden border border-slate-800 bg-slate-900/50 backdrop-blur-sm">
+          <div className="rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm">
             {/* Table header */}
-            <div className="grid grid-cols-3 bg-slate-800/50 border-b border-slate-700">
-              <div className="p-4 sm:p-5 text-sm font-semibold text-slate-400">Funkcia</div>
+            <div className="grid grid-cols-3 bg-zinc-800/50 border-b border-zinc-700">
+              <div className="p-4 sm:p-5 text-sm font-semibold text-zinc-400">Funkcia</div>
               <div className="p-4 sm:p-5 text-sm font-bold text-emerald-400 text-center">SRIA</div>
-              <div className="p-4 sm:p-5 text-sm font-semibold text-slate-500 text-center">Konkurencia</div>
+              <div className="p-4 sm:p-5 text-sm font-semibold text-zinc-500 text-center">Konkurencia</div>
             </div>
             
             {/* Table rows */}
@@ -163,13 +163,13 @@ export function CompetitiveAdvantage() {
               return (
                 <div 
                   key={index} 
-                  className={`grid grid-cols-3 ${index < comparisonData.length - 1 ? "border-b border-slate-800" : ""} hover:bg-slate-800/30 transition-colors`}
+                  className={`grid grid-cols-3 ${index < comparisonData.length - 1 ? "border-b border-zinc-800" : ""} hover:bg-zinc-800/30 transition-colors`}
                 >
                   <div className="p-4 sm:p-5 flex items-center gap-3">
-                    {Icon && <Icon className="w-5 h-5 text-slate-500 hidden sm:block" />}
+                    {Icon && <Icon className="w-5 h-5 text-zinc-500 hidden sm:block" />}
                     <div>
                       <div className="text-sm font-medium text-white">{item.feature}</div>
-                      <div className="text-xs text-slate-500 hidden sm:block">{item.description}</div>
+                      <div className="text-xs text-zinc-500 hidden sm:block">{item.description}</div>
                     </div>
                   </div>
                   <div className="p-4 sm:p-5 flex items-center justify-center">
@@ -178,15 +178,15 @@ export function CompetitiveAdvantage() {
                         <Check className="w-5 h-5 text-emerald-400" />
                       </div>
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
-                        <X className="w-5 h-5 text-slate-600" />
+                      <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+                        <X className="w-5 h-5 text-zinc-600" />
                       </div>
                     )}
                   </div>
                   <div className="p-4 sm:p-5 flex items-center justify-center">
                     {item.competition ? (
-                      <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
-                        <Check className="w-5 h-5 text-slate-400" />
+                      <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center">
+                        <Check className="w-5 h-5 text-zinc-400" />
                       </div>
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
@@ -201,7 +201,7 @@ export function CompetitiveAdvantage() {
           
           {/* Bottom CTA */}
           <div className="text-center mt-10">
-            <p className="text-slate-400 mb-4">
+            <p className="text-zinc-400 mb-4">
               <span className="text-emerald-400 font-semibold">7 funkcií</span> ktoré konkurencia nemá
             </p>
             <a

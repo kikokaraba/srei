@@ -312,9 +312,13 @@ body {
 }
 
 /* Grid pattern background */
-.bg-grid-slate-800\/\[0\.2\] {
-  background-image: linear-gradient(to right, rgba(30, 41, 59, 0.2) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(30, 41, 59, 0.2) 1px, transparent 1px);
+.bg-grid-slate-800\/\[0\.2\],
+.bg-grid-slate-800\/\[0\.05\],
+.bg-grid-slate-800\/\[0\.08\],
+.bg-grid-slate-800\/\[0\.1\],
+.bg-grid-slate-800\/\[0\.15\] {
+  background-image: linear-gradient(to right, rgba(39, 39, 42, 0.15) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(39, 39, 42, 0.15) 1px, transparent 1px);
 }
 
 /* Animation utilities */

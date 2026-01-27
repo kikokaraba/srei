@@ -78,12 +78,12 @@ export function MarketOverview() {
 
   if (isLoading) {
     return (
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/20 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-emerald-950/20 p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-slate-800/50 rounded-lg w-2/3"></div>
+          <div className="h-8 bg-zinc-800/50 rounded-lg w-2/3"></div>
           <div className="space-y-3">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-20 bg-slate-800/30 rounded-xl" />
+              <div key={i} className="h-20 bg-zinc-800/30 rounded-xl" />
             ))}
           </div>
         </div>
@@ -101,7 +101,7 @@ export function MarketOverview() {
     : allRegions;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/20">
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-emerald-950/20">
       {/* Ambient glow */}
       <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 bg-emerald-500" />
       
@@ -111,7 +111,7 @@ export function MarketOverview() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <BarChart3 className="w-5 h-5 text-emerald-400" />
-              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
                 Prehľad trhu
               </span>
             </div>
@@ -119,7 +119,7 @@ export function MarketOverview() {
               Slovensko
             </h3>
             {overview && (
-              <p className="text-sm text-slate-400 mt-1">
+              <p className="text-sm text-zinc-400 mt-1">
                 Ø €{overview.nationalAvg.toLocaleString()}/m² • {overview.totalProperties.toLocaleString()} nehnuteľností
               </p>
             )}
@@ -143,16 +143,16 @@ export function MarketOverview() {
         {/* Quick Stats */}
         {overview && (
           <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-slate-800/30 border border-slate-700/50">
-              <p className="text-xs text-slate-500">Nové (24h)</p>
+            <div className="p-3 rounded-xl bg-zinc-800/30 border border-zinc-700/50">
+              <p className="text-xs text-zinc-500">Nové (24h)</p>
               <p className="text-lg font-bold text-white">{overview.newLast24h}</p>
             </div>
-            <div className="p-3 rounded-xl bg-slate-800/30 border border-slate-700/50">
-              <p className="text-xs text-slate-500">Nové (7d)</p>
+            <div className="p-3 rounded-xl bg-zinc-800/30 border border-zinc-700/50">
+              <p className="text-xs text-zinc-500">Nové (7d)</p>
               <p className="text-lg font-bold text-white">{overview.newLast7d}</p>
             </div>
-            <div className="p-3 rounded-xl bg-slate-800/30 border border-slate-700/50">
-              <p className="text-xs text-slate-500">Celkom</p>
+            <div className="p-3 rounded-xl bg-zinc-800/30 border border-zinc-700/50">
+              <p className="text-xs text-zinc-500">Celkom</p>
               <p className="text-lg font-bold text-white">{overview.totalProperties.toLocaleString()}</p>
             </div>
           </div>
@@ -169,21 +169,21 @@ export function MarketOverview() {
             return (
               <div
                 key={index}
-                className="group relative p-4 rounded-xl bg-slate-800/30 backdrop-blur-sm border border-slate-700/50 
-                           hover:border-emerald-500/40 hover:bg-slate-800/50 transition-all duration-300"
+                className="group relative p-4 rounded-xl bg-zinc-800/30 backdrop-blur-sm border border-zinc-700/50 
+                           hover:border-emerald-500/40 hover:bg-zinc-800/50 transition-all duration-300"
               >
                 <div className="flex items-center justify-between">
                   {/* Left - Region info */}
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 
-                                    flex items-center justify-center text-sm font-bold text-slate-300
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-700 to-zinc-800 
+                                    flex items-center justify-center text-sm font-bold text-zinc-300
                                     group-hover:from-emerald-500/20 group-hover:to-emerald-600/20 
                                     group-hover:text-emerald-400 transition-all duration-300">
                       {shortCode}
                     </div>
                     <div>
                       <h4 className="font-semibold text-white">{regionName} kraj</h4>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-zinc-500">
                         {region.propertyCount.toLocaleString()} nehnuteľností
                       </p>
                     </div>
@@ -196,7 +196,7 @@ export function MarketOverview() {
                       <p className="text-lg font-bold text-white tabular-nums">
                         €{region.avgPricePerM2.toLocaleString()}
                       </p>
-                      <p className="text-xs text-slate-500">za m²</p>
+                      <p className="text-xs text-zinc-500">za m²</p>
                     </div>
                     
                     {/* Change */}
@@ -222,7 +222,7 @@ export function MarketOverview() {
                 {/* Weekly change indicator */}
                 {region.changeVsLastWeek !== null && (
                   <div className="mt-2 flex items-center gap-2">
-                    <span className="text-xs text-slate-500">Týždenná zmena:</span>
+                    <span className="text-xs text-zinc-500">Týždenná zmena:</span>
                     <span className={`text-xs font-medium ${
                       region.changeVsLastWeek >= 0 ? "text-emerald-400" : "text-red-400"
                     }`}>
@@ -239,14 +239,14 @@ export function MarketOverview() {
         {analytics.length > 4 && (
           <button className="w-full mt-4 py-3 flex items-center justify-center gap-2 text-sm font-medium 
                              text-emerald-400 hover:text-emerald-300 transition-colors rounded-xl 
-                             bg-slate-800/30 hover:bg-slate-800/50 border border-slate-700/50">
+                             bg-zinc-800/30 hover:bg-zinc-800/50 border border-zinc-700/50">
             Zobraziť všetkých {analytics.length} krajov
             <TrendingUp className="w-4 h-4" />
           </button>
         )}
         
         {/* Source */}
-        <div className="flex items-center justify-center gap-2 mt-4 text-xs text-slate-600">
+        <div className="flex items-center justify-center gap-2 mt-4 text-xs text-zinc-600">
           <Zap className="w-3 h-3" />
           <span>SRIA Real-time Data</span>
           <span>•</span>

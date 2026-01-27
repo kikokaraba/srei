@@ -62,11 +62,11 @@ export function DuplicatesFinder() {
 
   if (isLoading) {
     return (
-      <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6 animate-pulse">
-        <div className="h-6 bg-slate-700 rounded w-1/3 mb-4" />
+      <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-6 animate-pulse">
+        <div className="h-6 bg-zinc-700 rounded w-1/3 mb-4" />
         <div className="space-y-3">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-24 bg-slate-700/50 rounded" />
+            <div key={i} className="h-24 bg-zinc-700/50 rounded" />
           ))}
         </div>
       </div>
@@ -77,7 +77,7 @@ export function DuplicatesFinder() {
   const totalSavings = data?.data?.totalSavings || 0;
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/20 rounded-xl border border-slate-700/50 p-6">
+    <div className="bg-gradient-to-br from-zinc-900 via-zinc-900 to-amber-950/20 rounded-xl border border-zinc-700/50 p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
@@ -86,7 +86,7 @@ export function DuplicatesFinder() {
           </div>
           <div>
             <h2 className="text-lg font-bold text-white">Duplicitné inzeráty</h2>
-            <p className="text-xs text-slate-400">Rovnaká nehnuteľnosť, rôzne ceny</p>
+            <p className="text-xs text-zinc-400">Rovnaká nehnuteľnosť, rôzne ceny</p>
           </div>
         </div>
         
@@ -104,15 +104,15 @@ export function DuplicatesFinder() {
       {groups.length === 0 ? (
         <div className="text-center py-8">
           <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
-          <p className="text-slate-400">Žiadne duplicity nenájdené</p>
-          <p className="text-xs text-slate-500">Všetky inzeráty sú unikátne</p>
+          <p className="text-zinc-400">Žiadne duplicity nenájdené</p>
+          <p className="text-xs text-zinc-500">Všetky inzeráty sú unikátne</p>
         </div>
       ) : (
         <div className="space-y-4">
           {groups.slice(0, 5).map((group) => (
             <div 
               key={group.fingerprint}
-              className="bg-slate-800/50 rounded-lg p-4 hover:bg-slate-800/70 transition-all"
+              className="bg-zinc-800/50 rounded-lg p-4 hover:bg-zinc-800/70 transition-all"
             >
               {/* Group Header */}
               <div className="flex items-start justify-between mb-3">
@@ -120,7 +120,7 @@ export function DuplicatesFinder() {
                   <p className="text-white font-medium">
                     {group.properties[0]?.title?.substring(0, 50)}...
                   </p>
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-zinc-400">
                     {group.properties[0]?.city} • {group.properties[0]?.district}
                   </p>
                 </div>
@@ -129,7 +129,7 @@ export function DuplicatesFinder() {
                     <TrendingDown className="w-4 h-4" />
                     <span className="font-bold">-{group.savingsPercent}%</span>
                   </div>
-                  <p className="text-xs text-slate-500">úspora {group.potentialSavings.toLocaleString()} €</p>
+                  <p className="text-xs text-zinc-500">úspora {group.potentialSavings.toLocaleString()} €</p>
                 </div>
               </div>
 
@@ -141,19 +141,19 @@ export function DuplicatesFinder() {
                     className={`flex items-center justify-between p-2 rounded ${
                       prop.isBestPrice 
                         ? "bg-emerald-500/10 border border-emerald-500/20" 
-                        : "bg-slate-700/30"
+                        : "bg-zinc-700/30"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        SOURCE_COLORS[prop.source]?.bg || "bg-slate-700"
-                      } ${SOURCE_COLORS[prop.source]?.text || "text-slate-400"}`}>
+                        SOURCE_COLORS[prop.source]?.bg || "bg-zinc-700"
+                      } ${SOURCE_COLORS[prop.source]?.text || "text-zinc-400"}`}>
                         {prop.source}
                       </span>
                       <span className="text-white font-medium">
                         {prop.price.toLocaleString()} €
                       </span>
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-zinc-500">
                         ({prop.pricePerM2?.toLocaleString()} €/m²)
                       </span>
                     </div>
@@ -170,7 +170,7 @@ export function DuplicatesFinder() {
                           href={prop.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-1 text-slate-400 hover:text-white transition-colors"
+                          className="p-1 text-zinc-400 hover:text-white transition-colors"
                         >
                           <ExternalLink className="w-4 h-4" />
                         </a>
@@ -196,7 +196,7 @@ export function DuplicatesFinder() {
 
       {/* Show more */}
       {groups.length > 5 && (
-        <button className="w-full mt-4 py-2 text-center text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-2">
+        <button className="w-full mt-4 py-2 text-center text-zinc-400 hover:text-white transition-colors flex items-center justify-center gap-2">
           Zobraziť ďalších {groups.length - 5} skupín
           <ChevronRight className="w-4 h-4" />
         </button>

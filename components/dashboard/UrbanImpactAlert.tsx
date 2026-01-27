@@ -70,9 +70,9 @@ const SIGNAL_CONFIG = {
   },
   caution: {
     label: "Opatrne",
-    color: "text-slate-400",
-    bg: "bg-slate-500/20",
-    border: "border-slate-500/30",
+    color: "text-zinc-400",
+    bg: "bg-zinc-500/20",
+    border: "border-zinc-500/30",
   },
 };
 
@@ -115,14 +115,14 @@ export function UrbanImpactAlert() {
           </div>
           <div className="text-left">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-100">
+              <span className="font-semibold text-zinc-100">
                 {CITY_NAMES[topHotspot.city] || topHotspot.city}
               </span>
               <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.color} border ${config.border}`}>
                 +{topHotspot.impact.toFixed(0)}% rast
               </span>
             </div>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-zinc-400">
               {topHotspot.topProject}
             </p>
           </div>
@@ -131,16 +131,16 @@ export function UrbanImpactAlert() {
           <span className={`text-sm font-medium ${config.color}`}>
             {config.label}
           </span>
-          <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform ${expanded ? "rotate-90" : ""}`} />
+          <ChevronRight className={`w-4 h-4 text-zinc-400 transition-transform ${expanded ? "rotate-90" : ""}`} />
         </div>
       </button>
 
       {/* Expanded Details */}
       {expanded && (
-        <div className="border-t border-slate-700/50 p-4 space-y-4">
+        <div className="border-t border-zinc-700/50 p-4 space-y-4">
           {/* All Hotspots */}
           <div>
-            <h4 className="text-sm font-medium text-slate-300 mb-2 flex items-center gap-2">
+            <h4 className="text-sm font-medium text-zinc-300 mb-2 flex items-center gap-2">
               <MapPin className="w-4 h-4" />
               Investičné hotspoty
             </h4>
@@ -150,14 +150,14 @@ export function UrbanImpactAlert() {
                 return (
                   <div
                     key={`${hotspot.city}-${hotspot.district || "all"}`}
-                    className="flex items-center justify-between p-2 rounded-lg bg-slate-800/50"
+                    className="flex items-center justify-between p-2 rounded-lg bg-zinc-800/50"
                   >
                     <div>
-                      <span className="text-sm font-medium text-slate-200">
+                      <span className="text-sm font-medium text-zinc-200">
                         {CITY_NAMES[hotspot.city] || hotspot.city}
                       </span>
                       {hotspot.district && (
-                        <span className="text-xs text-slate-500 ml-1">
+                        <span className="text-xs text-zinc-500 ml-1">
                           ({hotspot.district})
                         </span>
                       )}
@@ -175,7 +175,7 @@ export function UrbanImpactAlert() {
 
           {/* Upcoming Projects */}
           <div>
-            <h4 className="text-sm font-medium text-slate-300 mb-2 flex items-center gap-2">
+            <h4 className="text-sm font-medium text-zinc-300 mb-2 flex items-center gap-2">
               <Clock className="w-4 h-4" />
               Najbližšie projekty
             </h4>
@@ -183,15 +183,15 @@ export function UrbanImpactAlert() {
               {data.upcomingProjects.slice(0, 3).map((project) => (
                 <div
                   key={project.id}
-                  className="flex items-center justify-between p-2 rounded-lg bg-slate-800/50"
+                  className="flex items-center justify-between p-2 rounded-lg bg-zinc-800/50"
                 >
                   <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-slate-500" />
+                    <Building2 className="w-4 h-4 text-zinc-500" />
                     <div>
-                      <span className="text-sm font-medium text-slate-200">
+                      <span className="text-sm font-medium text-zinc-200">
                         {project.name}
                       </span>
-                      <span className="text-xs text-slate-500 ml-2">
+                      <span className="text-xs text-zinc-500 ml-2">
                         {CITY_NAMES[project.city] || project.city}
                       </span>
                     </div>
@@ -200,7 +200,7 @@ export function UrbanImpactAlert() {
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
                       project.status === "in_progress" 
                         ? "bg-blue-500/20 text-blue-400" 
-                        : "bg-slate-500/20 text-slate-400"
+                        : "bg-zinc-500/20 text-zinc-400"
                     }`}>
                       {project.status === "in_progress" ? "V realizácii" : "Plánovaný"}
                     </span>
@@ -214,10 +214,10 @@ export function UrbanImpactAlert() {
           </div>
 
           {/* Pro Tip */}
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-slate-800/30 border border-slate-700/50">
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-zinc-800/30 border border-zinc-700/50">
             <Sparkles className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-slate-400">
-              <strong className="text-slate-300">Tip:</strong> Nakupuj nehnuteľnosti v okolí týchto projektov 
+            <p className="text-xs text-zinc-400">
+              <strong className="text-zinc-300">Tip:</strong> Nakupuj nehnuteľnosti v okolí týchto projektov 
               <em> pred</em> ich dokončením. Historicky ceny rastú najrýchlejšie 6-12 mesiacov pred otvorením.
             </p>
           </div>

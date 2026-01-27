@@ -134,7 +134,7 @@ function PropertyMarker({ property }: { property: Property }) {
       <Popup>
         <div className="min-w-[220px] p-1">
           <div className="flex items-start justify-between gap-2 mb-2">
-            <h3 className="font-semibold text-sm text-slate-900 line-clamp-2">
+            <h3 className="font-semibold text-sm text-zinc-900 line-clamp-2">
               {property.title}
             </h3>
             {isHotDeal && (
@@ -144,24 +144,24 @@ function PropertyMarker({ property }: { property: Property }) {
             )}
           </div>
           
-          <div className="space-y-1.5 text-xs text-slate-600">
+          <div className="space-y-1.5 text-xs text-zinc-600">
             <div className="flex items-center gap-2">
-              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+              <MapPin className="w-3.5 h-3.5 text-zinc-400" />
               <span>{property.district}</span>
             </div>
             
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
               <div>
-                <div className="text-base font-bold text-slate-900">
+                <div className="text-base font-bold text-zinc-900">
                   {property.price.toLocaleString("sk-SK")} €
                 </div>
-                <div className="text-slate-500">
+                <div className="text-zinc-500">
                   {property.price_per_m2.toLocaleString("sk-SK")} €/m²
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-medium text-slate-700">{property.area_m2} m²</div>
-                {property.rooms && <div className="text-slate-500">{property.rooms} izby</div>}
+                <div className="font-medium text-zinc-700">{property.area_m2} m²</div>
+                {property.rooms && <div className="text-zinc-500">{property.rooms} izby</div>}
               </div>
             </div>
             
@@ -386,9 +386,9 @@ export default function UnifiedMap() {
   }, [cities]);
   
   return (
-    <div className="h-full w-full flex flex-col bg-slate-950">
+    <div className="h-full w-full flex flex-col bg-zinc-950">
       {/* Header */}
-      <div className="flex-none bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 p-4">
+      <div className="flex-none bg-zinc-900/95 backdrop-blur-xl border-b border-zinc-800 p-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           {/* Title and stats */}
           <div className="flex items-center gap-6">
@@ -398,7 +398,7 @@ export default function UnifiedMap() {
             </h1>
             
             <div className="hidden md:flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-2 text-slate-400">
+              <div className="flex items-center gap-2 text-zinc-400">
                 <Building2 className="w-4 h-4" />
                 <span className="text-white font-medium">{stats.total}</span>
                 <span>nehnuteľností</span>
@@ -415,11 +415,11 @@ export default function UnifiedMap() {
           
           {/* View mode toggle */}
           <div className="flex items-center gap-2">
-            <div className="flex bg-slate-800 rounded-lg overflow-hidden">
+            <div className="flex bg-zinc-800 rounded-lg overflow-hidden">
               <button
                 onClick={() => setViewMode("auto")}
                 className={`px-3 py-2 text-sm flex items-center gap-2 transition-colors ${
-                  viewMode === "auto" ? "bg-blue-500/20 text-blue-400" : "text-slate-400 hover:text-white"
+                  viewMode === "auto" ? "bg-blue-500/20 text-blue-400" : "text-zinc-400 hover:text-white"
                 }`}
               >
                 <Eye className="w-4 h-4" />
@@ -428,7 +428,7 @@ export default function UnifiedMap() {
               <button
                 onClick={() => setViewMode("heatmap")}
                 className={`px-3 py-2 text-sm flex items-center gap-2 transition-colors ${
-                  viewMode === "heatmap" ? "bg-blue-500/20 text-blue-400" : "text-slate-400 hover:text-white"
+                  viewMode === "heatmap" ? "bg-blue-500/20 text-blue-400" : "text-zinc-400 hover:text-white"
                 }`}
               >
                 <Layers className="w-4 h-4" />
@@ -437,7 +437,7 @@ export default function UnifiedMap() {
               <button
                 onClick={() => setViewMode("properties")}
                 className={`px-3 py-2 text-sm flex items-center gap-2 transition-colors ${
-                  viewMode === "properties" ? "bg-blue-500/20 text-blue-400" : "text-slate-400 hover:text-white"
+                  viewMode === "properties" ? "bg-blue-500/20 text-blue-400" : "text-zinc-400 hover:text-white"
                 }`}
               >
                 <Home className="w-4 h-4" />
@@ -447,11 +447,11 @@ export default function UnifiedMap() {
             
             {/* Heatmap metric selector (only in heatmap mode) */}
             {effectiveViewMode === "heatmap" && (
-              <div className="flex bg-slate-800 rounded-lg overflow-hidden">
+              <div className="flex bg-zinc-800 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setMetric("price")}
                   className={`px-3 py-2 text-sm flex items-center gap-1 transition-colors ${
-                    metric === "price" ? "bg-emerald-500/20 text-emerald-400" : "text-slate-400 hover:text-white"
+                    metric === "price" ? "bg-emerald-500/20 text-emerald-400" : "text-zinc-400 hover:text-white"
                   }`}
                 >
                   <Euro className="w-4 h-4" />
@@ -460,7 +460,7 @@ export default function UnifiedMap() {
                 <button
                   onClick={() => setMetric("yield")}
                   className={`px-3 py-2 text-sm flex items-center gap-1 transition-colors ${
-                    metric === "yield" ? "bg-emerald-500/20 text-emerald-400" : "text-slate-400 hover:text-white"
+                    metric === "yield" ? "bg-emerald-500/20 text-emerald-400" : "text-zinc-400 hover:text-white"
                   }`}
                 >
                   <TrendingUp className="w-4 h-4" />
@@ -469,7 +469,7 @@ export default function UnifiedMap() {
                 <button
                   onClick={() => setMetric("properties")}
                   className={`px-3 py-2 text-sm flex items-center gap-1 transition-colors ${
-                    metric === "properties" ? "bg-emerald-500/20 text-emerald-400" : "text-slate-400 hover:text-white"
+                    metric === "properties" ? "bg-emerald-500/20 text-emerald-400" : "text-zinc-400 hover:text-white"
                   }`}
                 >
                   <Home className="w-4 h-4" />
@@ -484,7 +484,7 @@ export default function UnifiedMap() {
                 <select
                   value={filters.listingType}
                   onChange={(e) => setFilters(f => ({ ...f, listingType: e.target.value as MapFilters["listingType"] }))}
-                  className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white"
+                  className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white"
                 >
                   <option value="ALL">Všetky typy</option>
                   <option value="PREDAJ">Predaj</option>
@@ -496,7 +496,7 @@ export default function UnifiedMap() {
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
                     filters.hotDealsOnly 
                       ? "bg-red-500/20 text-red-400 border border-red-500/50" 
-                      : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-white"
+                      : "bg-zinc-800 text-zinc-400 border border-zinc-700 hover:text-white"
                   }`}
                 >
                   <Flame className="w-4 h-4" />
@@ -505,8 +505,8 @@ export default function UnifiedMap() {
                 <button
                   onClick={() => setShowFilters(!showFilters)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    showFilters ? "bg-blue-500/20 text-blue-400" : "bg-slate-800 text-slate-400 hover:text-white"
-                  } border border-slate-700`}
+                    showFilters ? "bg-blue-500/20 text-blue-400" : "bg-zinc-800 text-zinc-400 hover:text-white"
+                  } border border-zinc-700`}
                 >
                   <SlidersHorizontal className="w-4 h-4" />
                 </button>
@@ -517,7 +517,7 @@ export default function UnifiedMap() {
             {selectedCity && (
               <button
                 onClick={resetToOverview}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-slate-800 text-slate-400 border border-slate-700 hover:text-white"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-zinc-800 text-zinc-400 border border-zinc-700 hover:text-white"
               >
                 <RotateCcw className="w-4 h-4" />
                 <span className="hidden sm:inline">Reset</span>
@@ -528,25 +528,25 @@ export default function UnifiedMap() {
         
         {/* Extended filters */}
         {showFilters && effectiveViewMode === "properties" && (
-          <div className="mt-4 pt-4 border-t border-slate-800 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="mt-4 pt-4 border-t border-zinc-800 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Cena od (€)</label>
+              <label className="block text-xs text-zinc-500 mb-1">Cena od (€)</label>
               <input
                 type="number"
                 value={filters.priceMin || ""}
                 onChange={(e) => setFilters(f => ({ ...f, priceMin: e.target.value ? Number(e.target.value) : null }))}
                 placeholder="0"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500"
               />
             </div>
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Cena do (€)</label>
+              <label className="block text-xs text-zinc-500 mb-1">Cena do (€)</label>
               <input
                 type="number"
                 value={filters.priceMax || ""}
                 onChange={(e) => setFilters(f => ({ ...f, priceMax: e.target.value ? Number(e.target.value) : null }))}
                 placeholder="∞"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500"
               />
             </div>
           </div>
@@ -558,10 +558,10 @@ export default function UnifiedMap() {
         {/* Map */}
         <div className="flex-1 relative">
           {loading && (
-            <div className="absolute inset-0 z-[1000] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center">
+            <div className="absolute inset-0 z-[1000] bg-zinc-900/80 backdrop-blur-sm flex items-center justify-center">
               <div className="flex flex-col items-center gap-3">
                 <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-                <span className="text-slate-400">Načítavam mapu...</span>
+                <span className="text-zinc-400">Načítavam mapu...</span>
               </div>
             </div>
           )}
@@ -598,8 +598,8 @@ export default function UnifiedMap() {
           </MapContainer>
           
           {/* Legend */}
-          <div className="absolute bottom-4 left-4 z-[1000] bg-slate-900/90 backdrop-blur-xl rounded-xl p-3 border border-slate-800">
-            <div className="text-xs text-slate-400 mb-2">
+          <div className="absolute bottom-4 left-4 z-[1000] bg-zinc-900/90 backdrop-blur-xl rounded-xl p-3 border border-zinc-800">
+            <div className="text-xs text-zinc-400 mb-2">
               {effectiveViewMode === "heatmap" ? "Mestá" : "Nehnuteľnosti"}
             </div>
             {effectiveViewMode === "heatmap" ? (
@@ -607,7 +607,7 @@ export default function UnifiedMap() {
                 <div className="flex items-center gap-2 text-xs">
                   <div className="w-16 h-2 rounded-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500" />
                 </div>
-                <div className="flex justify-between text-xs text-slate-500">
+                <div className="flex justify-between text-xs text-zinc-500">
                   <span>{metric === "yield" ? "Nízky" : "Lacné"}</span>
                   <span>{metric === "yield" ? "Vysoký" : "Drahé"}</span>
                 </div>
@@ -616,31 +616,31 @@ export default function UnifiedMap() {
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 text-xs">
                   <div className="w-3 h-3 rounded-full bg-blue-500" />
-                  <span className="text-slate-300">Predaj</span>
+                  <span className="text-zinc-300">Predaj</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs">
                   <div className="w-3 h-3 rounded-full bg-purple-500" />
-                  <span className="text-slate-300">Prenájom</span>
+                  <span className="text-zinc-300">Prenájom</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs">
                   <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-red-300" />
-                  <span className="text-slate-300">Hot Deal</span>
+                  <span className="text-zinc-300">Hot Deal</span>
                 </div>
               </div>
             )}
           </div>
           
           {/* Zoom indicator */}
-          <div className="absolute top-4 left-4 z-[1000] bg-slate-900/90 backdrop-blur-xl rounded-lg px-3 py-2 border border-slate-800 text-xs text-slate-400">
+          <div className="absolute top-4 left-4 z-[1000] bg-zinc-900/90 backdrop-blur-xl rounded-lg px-3 py-2 border border-zinc-800 text-xs text-zinc-400">
             Zoom: {currentZoom} | Režim: {effectiveViewMode === "heatmap" ? "Heatmapa" : "Detail"}
           </div>
           
           {/* Property count */}
           {effectiveViewMode === "properties" && (
-            <div className="absolute top-4 right-4 z-[1000] bg-slate-900/90 backdrop-blur-xl rounded-xl px-4 py-2 border border-slate-800">
+            <div className="absolute top-4 right-4 z-[1000] bg-zinc-900/90 backdrop-blur-xl rounded-xl px-4 py-2 border border-zinc-800">
               <div className="text-white font-medium">
                 {filteredProperties.length}
-                <span className="text-slate-400 ml-1 font-normal">na mape</span>
+                <span className="text-zinc-400 ml-1 font-normal">na mape</span>
               </div>
             </div>
           )}
@@ -648,35 +648,35 @@ export default function UnifiedMap() {
         
         {/* Sidebar - City Details */}
         {selectedCity && (
-          <div className="w-80 flex-none bg-slate-900 border-l border-slate-800 p-4 overflow-y-auto">
+          <div className="w-80 flex-none bg-zinc-900 border-l border-zinc-800 p-4 overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-white">{selectedCity.name}</h3>
-              <button onClick={() => setSelectedCity(null)} className="text-slate-400 hover:text-white text-xl">×</button>
+              <button onClick={() => setSelectedCity(null)} className="text-zinc-400 hover:text-white text-xl">×</button>
             </div>
             
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-slate-800/50 rounded-lg p-3">
-                  <div className="flex items-center gap-2 text-slate-400 mb-1">
+                <div className="bg-zinc-800/50 rounded-lg p-3">
+                  <div className="flex items-center gap-2 text-zinc-400 mb-1">
                     <Euro className="w-4 h-4" />
                     <span className="text-xs">Priem. cena</span>
                   </div>
                   <div className="text-xl font-bold text-white">€{selectedCity.avgPrice.toLocaleString()}</div>
-                  <div className="text-xs text-slate-500">za m²</div>
+                  <div className="text-xs text-zinc-500">za m²</div>
                 </div>
                 
-                <div className="bg-slate-800/50 rounded-lg p-3">
-                  <div className="flex items-center gap-2 text-slate-400 mb-1">
+                <div className="bg-zinc-800/50 rounded-lg p-3">
+                  <div className="flex items-center gap-2 text-zinc-400 mb-1">
                     <TrendingUp className="w-4 h-4" />
                     <span className="text-xs">Výnos</span>
                   </div>
                   <div className="text-xl font-bold text-emerald-400">{selectedCity.avgYield.toFixed(1)}%</div>
-                  <div className="text-xs text-slate-500">hrubý ročný</div>
+                  <div className="text-xs text-zinc-500">hrubý ročný</div>
                 </div>
               </div>
               
-              <div className="bg-slate-800/50 rounded-lg p-3">
-                <div className="flex items-center gap-2 text-slate-400 mb-1">
+              <div className="bg-zinc-800/50 rounded-lg p-3">
+                <div className="flex items-center gap-2 text-zinc-400 mb-1">
                   <Home className="w-4 h-4" />
                   <span className="text-xs">Nehnuteľností</span>
                 </div>
@@ -691,8 +691,8 @@ export default function UnifiedMap() {
                 </div>
               </div>
               
-              <div className="bg-slate-800/50 rounded-lg p-3">
-                <div className="flex items-center gap-2 text-slate-400 mb-1">
+              <div className="bg-zinc-800/50 rounded-lg p-3">
+                <div className="flex items-center gap-2 text-zinc-400 mb-1">
                   <BarChart3 className="w-4 h-4" />
                   <span className="text-xs">Cenový trend (12 mes.)</span>
                 </div>
@@ -710,7 +710,7 @@ export default function UnifiedMap() {
             </div>
             
             {/* City Rankings */}
-            <div className="mt-6 pt-6 border-t border-slate-800">
+            <div className="mt-6 pt-6 border-t border-zinc-800">
               <h4 className="font-medium text-white mb-3">Porovnanie miest</h4>
               <div className="space-y-2">
                 {[...cities]
@@ -719,11 +719,11 @@ export default function UnifiedMap() {
                     <div
                       key={city.slug}
                       className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
-                        city.slug === selectedCity.slug ? "bg-blue-500/20" : "hover:bg-slate-800/50"
+                        city.slug === selectedCity.slug ? "bg-blue-500/20" : "hover:bg-zinc-800/50"
                       }`}
                       onClick={() => handleCityClick(city)}
                     >
-                      <div className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
+                      <div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-400">
                         {idx + 1}
                       </div>
                       <div className="flex-1 text-sm text-white">{city.name}</div>

@@ -135,26 +135,26 @@ export function PropertyComparison() {
         {selectedProperties.map((property, idx) => (
           <div
             key={property.id}
-            className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden"
+            className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden"
           >
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-              <span className="text-sm text-slate-400">Nehnuteľnosť {idx + 1}</span>
+            <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+              <span className="text-sm text-zinc-400">Nehnuteľnosť {idx + 1}</span>
               <button
                 onClick={() => removeProperty(property.id)}
-                className="p-1 text-slate-400 hover:text-red-400 transition-colors"
+                className="p-1 text-zinc-400 hover:text-red-400 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
             <div className="p-4">
-              <h3 className="font-semibold text-slate-100 mb-2 line-clamp-2">
+              <h3 className="font-semibold text-zinc-100 mb-2 line-clamp-2">
                 {property.title}
               </h3>
-              <div className="flex items-center gap-1 text-sm text-slate-400 mb-4">
+              <div className="flex items-center gap-1 text-sm text-zinc-400 mb-4">
                 <MapPin className="w-4 h-4" />
                 <span>{property.district}, {getCityRegionLabel(property.city)}</span>
               </div>
-              <div className="text-2xl font-bold text-slate-100">
+              <div className="text-2xl font-bold text-zinc-100">
                 €{property.price.toLocaleString()}
               </div>
             </div>
@@ -165,12 +165,12 @@ export function PropertyComparison() {
         {Array.from({ length: MAX_PROPERTIES - selectedProperties.length }).map((_, idx) => (
           <div
             key={`empty-${idx}`}
-            className="bg-slate-900 rounded-xl border border-dashed border-slate-700 min-h-[200px] flex items-center justify-center cursor-pointer hover:border-emerald-500/50 transition-colors"
+            className="bg-zinc-900 rounded-xl border border-dashed border-zinc-700 min-h-[200px] flex items-center justify-center cursor-pointer hover:border-emerald-500/50 transition-colors"
             onClick={() => setShowSearch(true)}
           >
             <div className="text-center">
-              <Plus className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-              <p className="text-slate-400">Pridať nehnuteľnosť</p>
+              <Plus className="w-8 h-8 text-zinc-600 mx-auto mb-2" />
+              <p className="text-zinc-400">Pridať nehnuteľnosť</p>
             </div>
           </div>
         ))}
@@ -179,16 +179,16 @@ export function PropertyComparison() {
       {/* Search Modal */}
       {showSearch && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 rounded-xl border border-slate-800 w-full max-w-lg max-h-[80vh] overflow-hidden">
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-              <h3 className="font-bold text-slate-100">Vyhľadať nehnuteľnosť</h3>
+          <div className="bg-zinc-900 rounded-xl border border-zinc-800 w-full max-w-lg max-h-[80vh] overflow-hidden">
+            <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+              <h3 className="font-bold text-zinc-100">Vyhľadať nehnuteľnosť</h3>
               <button
                 onClick={() => {
                   setShowSearch(false);
                   setSearchQuery("");
                   setSearchResults([]);
                 }}
-                className="p-1 text-slate-400 hover:text-slate-100"
+                className="p-1 text-zinc-400 hover:text-zinc-100"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -196,13 +196,13 @@ export function PropertyComparison() {
             
             <div className="p-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
                 <input
                   type="text"
                   placeholder="Hľadať podľa názvu alebo adresy..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-emerald-500"
+                  className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-emerald-500"
                   autoFocus
                 />
               </div>
@@ -214,28 +214,28 @@ export function PropertyComparison() {
                   <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
                 </div>
               ) : searchResults.length > 0 ? (
-                <div className="divide-y divide-slate-800">
+                <div className="divide-y divide-zinc-800">
                   {searchResults.map((property) => (
                     <div
                       key={property.id}
-                      className="p-4 hover:bg-slate-800/50 cursor-pointer transition-colors"
+                      className="p-4 hover:bg-zinc-800/50 cursor-pointer transition-colors"
                       onClick={() => addProperty(property)}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-slate-100 truncate">
+                          <h4 className="font-medium text-zinc-100 truncate">
                             {property.title}
                           </h4>
-                          <div className="flex items-center gap-1 text-sm text-slate-400 mt-1">
+                          <div className="flex items-center gap-1 text-sm text-zinc-400 mt-1">
                             <MapPin className="w-3 h-3" />
                             <span>{property.district}</span>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-bold text-slate-100">
+                          <div className="font-bold text-zinc-100">
                             €{property.price.toLocaleString()}
                           </div>
-                          <div className="text-sm text-slate-400">
+                          <div className="text-sm text-zinc-400">
                             {property.area_m2} m²
                           </div>
                         </div>
@@ -244,11 +244,11 @@ export function PropertyComparison() {
                   ))}
                 </div>
               ) : searchQuery ? (
-                <div className="text-center py-8 text-slate-400">
+                <div className="text-center py-8 text-zinc-400">
                   Žiadne výsledky pre "{searchQuery}"
                 </div>
               ) : (
-                <div className="text-center py-8 text-slate-400">
+                <div className="text-center py-8 text-zinc-400">
                   Začnite písať pre vyhľadávanie
                 </div>
               )}
@@ -259,30 +259,30 @@ export function PropertyComparison() {
 
       {/* Comparison Table */}
       {selectedProperties.length >= 2 && (
-        <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
-          <div className="p-4 border-b border-slate-800">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden">
+          <div className="p-4 border-b border-zinc-800">
             <div className="flex items-center gap-2">
               <Scale className="w-5 h-5 text-emerald-400" />
-              <h3 className="font-bold text-slate-100">Porovnanie</h3>
+              <h3 className="font-bold text-zinc-100">Porovnanie</h3>
             </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-800">
-                  <th className="text-left p-4 text-slate-400 font-medium">Metrika</th>
+                <tr className="border-b border-zinc-800">
+                  <th className="text-left p-4 text-zinc-400 font-medium">Metrika</th>
                   {selectedProperties.map((p, idx) => (
-                    <th key={p.id} className="text-center p-4 text-slate-100 font-medium">
+                    <th key={p.id} className="text-center p-4 text-zinc-100 font-medium">
                       Nehnuteľnosť {idx + 1}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-zinc-800">
                 {/* Price */}
                 <tr>
-                  <td className="p-4 text-slate-400">
+                  <td className="p-4 text-zinc-400">
                     <div className="flex items-center gap-2">
                       <Euro className="w-4 h-4" />
                       Cena
@@ -294,7 +294,7 @@ export function PropertyComparison() {
                       : false;
                     return (
                       <td key={p.id} className="p-4 text-center">
-                        <span className={`font-bold ${best ? "text-emerald-400" : "text-slate-100"}`}>
+                        <span className={`font-bold ${best ? "text-emerald-400" : "text-zinc-100"}`}>
                           €{p.price.toLocaleString()}
                         </span>
                         {best && <Check className="w-4 h-4 text-emerald-400 inline ml-2" />}
@@ -305,7 +305,7 @@ export function PropertyComparison() {
 
                 {/* Price per m² */}
                 <tr>
-                  <td className="p-4 text-slate-400">
+                  <td className="p-4 text-zinc-400">
                     <div className="flex items-center gap-2">
                       <Ruler className="w-4 h-4" />
                       Cena za m²
@@ -317,7 +317,7 @@ export function PropertyComparison() {
                       : false;
                     return (
                       <td key={p.id} className="p-4 text-center">
-                        <span className={`font-bold ${best ? "text-emerald-400" : "text-slate-100"}`}>
+                        <span className={`font-bold ${best ? "text-emerald-400" : "text-zinc-100"}`}>
                           €{p.price_per_m2.toLocaleString()}
                         </span>
                         {best && <Check className="w-4 h-4 text-emerald-400 inline ml-2" />}
@@ -328,7 +328,7 @@ export function PropertyComparison() {
 
                 {/* Area */}
                 <tr>
-                  <td className="p-4 text-slate-400">
+                  <td className="p-4 text-zinc-400">
                     <div className="flex items-center gap-2">
                       <Home className="w-4 h-4" />
                       Plocha
@@ -340,7 +340,7 @@ export function PropertyComparison() {
                       : false;
                     return (
                       <td key={p.id} className="p-4 text-center">
-                        <span className={`font-bold ${best ? "text-emerald-400" : "text-slate-100"}`}>
+                        <span className={`font-bold ${best ? "text-emerald-400" : "text-zinc-100"}`}>
                           {p.area_m2} m²
                         </span>
                         {best && <Check className="w-4 h-4 text-emerald-400 inline ml-2" />}
@@ -351,9 +351,9 @@ export function PropertyComparison() {
 
                 {/* Rooms */}
                 <tr>
-                  <td className="p-4 text-slate-400">Počet izieb</td>
+                  <td className="p-4 text-zinc-400">Počet izieb</td>
                   {selectedProperties.map((p) => (
-                    <td key={p.id} className="p-4 text-center text-slate-100">
+                    <td key={p.id} className="p-4 text-center text-zinc-100">
                       {p.rooms || "—"}
                     </td>
                   ))}
@@ -361,9 +361,9 @@ export function PropertyComparison() {
 
                 {/* Condition */}
                 <tr>
-                  <td className="p-4 text-slate-400">Stav</td>
+                  <td className="p-4 text-zinc-400">Stav</td>
                   {selectedProperties.map((p) => (
-                    <td key={p.id} className="p-4 text-center text-slate-100">
+                    <td key={p.id} className="p-4 text-center text-zinc-100">
                       {CONDITION_LABELS[p.condition] || p.condition}
                     </td>
                   ))}
@@ -371,7 +371,7 @@ export function PropertyComparison() {
 
                 {/* Gross Yield */}
                 <tr>
-                  <td className="p-4 text-slate-400">
+                  <td className="p-4 text-zinc-400">
                     <div className="flex items-center gap-2">
                       <TrendingUp className="w-4 h-4" />
                       Hrubý výnos
@@ -383,7 +383,7 @@ export function PropertyComparison() {
                     const best = selectedProperties.length === 2 && compareValues(yieldA, yieldB, true) === "a";
                     return (
                       <td key={p.id} className="p-4 text-center">
-                        <span className={`font-bold ${best ? "text-emerald-400" : "text-slate-100"}`}>
+                        <span className={`font-bold ${best ? "text-emerald-400" : "text-zinc-100"}`}>
                           {p.investmentMetrics?.gross_yield.toFixed(1) || "—"}%
                         </span>
                         {best && <Check className="w-4 h-4 text-emerald-400 inline ml-2" />}
@@ -394,14 +394,14 @@ export function PropertyComparison() {
 
                 {/* Net Yield */}
                 <tr>
-                  <td className="p-4 text-slate-400">Čistý výnos</td>
+                  <td className="p-4 text-zinc-400">Čistý výnos</td>
                   {selectedProperties.map((p, idx) => {
                     const yieldA = p.investmentMetrics?.net_yield || 0;
                     const yieldB = selectedProperties[1 - idx]?.investmentMetrics?.net_yield || 0;
                     const best = selectedProperties.length === 2 && compareValues(yieldA, yieldB, true) === "a";
                     return (
                       <td key={p.id} className="p-4 text-center">
-                        <span className={`font-bold ${best ? "text-emerald-400" : "text-slate-100"}`}>
+                        <span className={`font-bold ${best ? "text-emerald-400" : "text-zinc-100"}`}>
                           {p.investmentMetrics?.net_yield.toFixed(1) || "—"}%
                         </span>
                         {best && <Check className="w-4 h-4 text-emerald-400 inline ml-2" />}
@@ -412,14 +412,14 @@ export function PropertyComparison() {
 
                 {/* Days on market */}
                 <tr>
-                  <td className="p-4 text-slate-400">
+                  <td className="p-4 text-zinc-400">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
                       Dní v ponuke
                     </div>
                   </td>
                   {selectedProperties.map((p) => (
-                    <td key={p.id} className="p-4 text-center text-slate-100">
+                    <td key={p.id} className="p-4 text-center text-zinc-100">
                       {p.days_on_market}
                     </td>
                   ))}
@@ -432,11 +432,11 @@ export function PropertyComparison() {
 
       {/* 10-Year ROI Projection */}
       {selectedProperties.length >= 2 && (
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
           <div className="flex items-center gap-2 mb-6">
             <TrendingUp className="w-5 h-5 text-emerald-400" />
-            <h3 className="font-bold text-slate-100">10-ročná projekcia ROI</h3>
-            <span className="text-sm text-slate-400">(predpoklad: 3% ročné zhodnotenie)</span>
+            <h3 className="font-bold text-zinc-100">10-ročná projekcia ROI</h3>
+            <span className="text-sm text-zinc-400">(predpoklad: 3% ročné zhodnotenie)</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -445,28 +445,28 @@ export function PropertyComparison() {
               if (!roi) return null;
 
               return (
-                <div key={property.id} className="bg-slate-800/50 rounded-lg p-4">
-                  <div className="text-sm text-slate-400 mb-2">Nehnuteľnosť {idx + 1}</div>
+                <div key={property.id} className="bg-zinc-800/50 rounded-lg p-4">
+                  <div className="text-sm text-zinc-400 mb-2">Nehnuteľnosť {idx + 1}</div>
                   <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Počiatočná investícia:</span>
-                      <span className="font-medium text-slate-100">€{property.price.toLocaleString()}</span>
+                      <span className="text-zinc-400">Počiatočná investícia:</span>
+                      <span className="font-medium text-zinc-100">€{property.price.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Hodnota po 10 rokoch:</span>
-                      <span className="font-medium text-slate-100">€{roi.finalValue.toLocaleString()}</span>
+                      <span className="text-zinc-400">Hodnota po 10 rokoch:</span>
+                      <span className="font-medium text-zinc-100">€{roi.finalValue.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Celkový príjem z nájmu:</span>
+                      <span className="text-zinc-400">Celkový príjem z nájmu:</span>
                       <span className="font-medium text-emerald-400">+€{roi.totalRent.toLocaleString()}</span>
                     </div>
-                    <div className="border-t border-slate-700 pt-3">
+                    <div className="border-t border-zinc-700 pt-3">
                       <div className="flex justify-between">
-                        <span className="text-slate-300">Celkový výnos:</span>
+                        <span className="text-zinc-300">Celkový výnos:</span>
                         <span className="font-bold text-emerald-400">+€{roi.totalReturn.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between mt-1">
-                        <span className="text-slate-300">ROI:</span>
+                        <span className="text-zinc-300">ROI:</span>
                         <span className="font-bold text-2xl text-emerald-400">{roi.roi.toFixed(0)}%</span>
                       </div>
                     </div>
@@ -480,12 +480,12 @@ export function PropertyComparison() {
 
       {/* Empty State */}
       {selectedProperties.length < 2 && (
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-12 text-center">
-          <Scale className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-slate-300 mb-2">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-12 text-center">
+          <Scale className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-zinc-300 mb-2">
             Vyberte minimálne 2 nehnuteľnosti
           </h3>
-          <p className="text-slate-500">
+          <p className="text-zinc-500">
             Kliknite na "Pridať nehnuteľnosť" a vyhľadajte nehnuteľnosti na porovnanie
           </p>
         </div>

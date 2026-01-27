@@ -63,11 +63,11 @@ export function InvestorInsights() {
 
   if (isLoading) {
     return (
-      <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6 animate-pulse">
-        <div className="h-6 bg-slate-700 rounded w-1/3 mb-4" />
+      <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-6 animate-pulse">
+        <div className="h-6 bg-zinc-700 rounded w-1/3 mb-4" />
         <div className="space-y-3">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-12 bg-slate-700/50 rounded" />
+            <div key={i} className="h-12 bg-zinc-700/50 rounded" />
           ))}
         </div>
       </div>
@@ -78,7 +78,7 @@ export function InvestorInsights() {
   const summary = data?.data?.summary;
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/30 rounded-xl border border-slate-700/50 p-6">
+    <div className="bg-gradient-to-br from-zinc-900 via-zinc-900 to-indigo-950/30 rounded-xl border border-zinc-700/50 p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
@@ -87,12 +87,12 @@ export function InvestorInsights() {
           </div>
           <div>
             <h2 className="text-lg font-bold text-white">Price Momentum</h2>
-            <p className="text-xs text-slate-400">Kam smerujú ceny v reálnom čase</p>
+            <p className="text-xs text-zinc-400">Kam smerujú ceny v reálnom čase</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1 bg-slate-800/50 rounded-full">
+        <div className="flex items-center gap-2 px-3 py-1 bg-zinc-800/50 rounded-full">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-xs text-slate-400">Live</span>
+          <span className="text-xs text-zinc-400">Live</span>
         </div>
       </div>
 
@@ -132,7 +132,7 @@ export function InvestorInsights() {
         {momentum.map((m) => (
           <div 
             key={m.city}
-            className="flex items-center gap-3 p-3 bg-slate-800/30 hover:bg-slate-800/50 rounded-lg transition-all cursor-pointer group"
+            className="flex items-center gap-3 p-3 bg-zinc-800/30 hover:bg-zinc-800/50 rounded-lg transition-all cursor-pointer group"
           >
             {/* Trend Icon */}
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
@@ -140,21 +140,21 @@ export function InvestorInsights() {
                 ? "bg-emerald-500/20" 
                 : m.trend === "falling" 
                 ? "bg-rose-500/20" 
-                : "bg-slate-700/50"
+                : "bg-zinc-700/50"
             }`}>
               {m.trend === "rising" ? (
                 <TrendingUp className="w-4 h-4 text-emerald-400" />
               ) : m.trend === "falling" ? (
                 <TrendingDown className="w-4 h-4 text-rose-400" />
               ) : (
-                <Minus className="w-4 h-4 text-slate-400" />
+                <Minus className="w-4 h-4 text-zinc-400" />
               )}
             </div>
 
             {/* City */}
             <div className="flex-1">
               <p className="font-medium text-white">{CITY_NAMES[m.city] || m.city}</p>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-zinc-400">
                 Ø {m.avgPricePerM2.toLocaleString()} €/m²
               </p>
             </div>
@@ -165,7 +165,7 @@ export function InvestorInsights() {
                 ? "text-emerald-400" 
                 : m.changePercent30d < 0 
                 ? "text-rose-400" 
-                : "text-slate-400"
+                : "text-zinc-400"
             }`}>
               <p className="font-semibold">
                 {m.changePercent30d > 0 ? "+" : ""}{m.changePercent30d}%
@@ -179,29 +179,29 @@ export function InvestorInsights() {
                 ? "bg-emerald-500/20 text-emerald-400" 
                 : m.signal === "negotiate" 
                 ? "bg-amber-500/20 text-amber-400" 
-                : "bg-slate-700/50 text-slate-400"
+                : "bg-zinc-700/50 text-zinc-400"
             }`}>
               {m.signal === "buy" ? "KÚP" : m.signal === "negotiate" ? "VYJEDNÁVAJ" : "ČAK"}
             </div>
 
-            <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors" />
+            <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
           </div>
         ))}
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-6 mt-6 pt-4 border-t border-slate-800">
+      <div className="flex items-center justify-center gap-6 mt-6 pt-4 border-t border-zinc-800">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-emerald-400" />
-          <span className="text-xs text-slate-500">Rastúci</span>
+          <span className="text-xs text-zinc-500">Rastúci</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-slate-400" />
-          <span className="text-xs text-slate-500">Stabilný</span>
+          <div className="w-2 h-2 rounded-full bg-zinc-400" />
+          <span className="text-xs text-zinc-500">Stabilný</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-rose-400" />
-          <span className="text-xs text-slate-500">Klesajúci</span>
+          <span className="text-xs text-zinc-500">Klesajúci</span>
         </div>
       </div>
     </div>
@@ -229,7 +229,7 @@ export function TrustScoreBadge({
     <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full ${bg}`}>
       <Icon className={`w-3 h-3 ${text}`} />
       <span className={`text-xs font-medium ${text}`}>{score}</span>
-      <span className="text-xs text-slate-500">{label}</span>
+      <span className="text-xs text-zinc-500">{label}</span>
     </div>
   );
 }
@@ -247,7 +247,7 @@ export function NegotiationPowerBadge({
   const config = {
     strong: { bg: "bg-emerald-500/20", text: "text-emerald-400", label: "Silná pozícia" },
     medium: { bg: "bg-amber-500/20", text: "text-amber-400", label: "Stredná pozícia" },
-    weak: { bg: "bg-slate-700/50", text: "text-slate-400", label: "Slabá pozícia" },
+    weak: { bg: "bg-zinc-700/50", text: "text-zinc-400", label: "Slabá pozícia" },
   };
 
   const { bg, text, label } = config[level];
@@ -258,7 +258,7 @@ export function NegotiationPowerBadge({
       <div>
         <p className={`text-sm font-medium ${text}`}>{label}</p>
         {suggestedDiscount > 0 && (
-          <p className="text-xs text-slate-400">Navrhni -{suggestedDiscount}%</p>
+          <p className="text-xs text-zinc-400">Navrhni -{suggestedDiscount}%</p>
         )}
       </div>
     </div>
@@ -281,10 +281,10 @@ export function PriceStoryTimeline({
                 ? "bg-emerald-400" 
                 : point.change > 0 
                 ? "bg-rose-400" 
-                : "bg-slate-400"
+                : "bg-zinc-400"
             }`} />
             {index < story.length - 1 && (
-              <div className="w-0.5 h-8 bg-slate-700" />
+              <div className="w-0.5 h-8 bg-zinc-700" />
             )}
           </div>
           <div className="flex-1 pb-2">
@@ -298,8 +298,8 @@ export function PriceStoryTimeline({
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-400">{point.event}</p>
-            <p className="text-xs text-slate-500">{point.date}</p>
+            <p className="text-xs text-zinc-400">{point.event}</p>
+            <p className="text-xs text-zinc-500">{point.date}</p>
           </div>
         </div>
       ))}

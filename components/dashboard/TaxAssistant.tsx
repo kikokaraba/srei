@@ -88,7 +88,7 @@ export function TaxAssistant() {
           ? "bg-emerald-950/30 border-emerald-500/20" 
           : results.daysUntilExemption < 365 
             ? "bg-amber-950/30 border-amber-500/20" 
-            : "bg-slate-800/30 border-slate-700/50"
+            : "bg-zinc-800/30 border-zinc-700/50"
       }`}>
         {/* Background glow */}
         {results.isExempt && (
@@ -113,8 +113,8 @@ export function TaxAssistant() {
                 </>
               ) : (
                 <>
-                  <AlertTriangle className="w-4 h-4 text-slate-500" />
-                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Podlieha dani</span>
+                  <AlertTriangle className="w-4 h-4 text-zinc-500" />
+                  <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Podlieha dani</span>
                 </>
               )}
             </div>
@@ -122,18 +122,18 @@ export function TaxAssistant() {
             {/* Years owned display */}
             <div className="flex items-baseline gap-1 mb-3">
               <span className={`text-4xl font-light tabular-nums ${
-                results.isExempt ? "text-emerald-400" : results.daysUntilExemption < 365 ? "text-amber-400" : "text-slate-300"
+                results.isExempt ? "text-emerald-400" : results.daysUntilExemption < 365 ? "text-amber-400" : "text-zinc-300"
               }`}>
                 {results.yearsOwned.toFixed(1)}
               </span>
-              <span className="text-lg text-slate-600">/ 5 rokov</span>
+              <span className="text-lg text-zinc-600">/ 5 rokov</span>
             </div>
 
             {/* Progress Bar */}
-            <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
               <div 
                 className={`h-full rounded-full transition-all duration-500 ${
-                  results.isExempt ? "bg-emerald-500" : results.daysUntilExemption < 365 ? "bg-amber-500" : "bg-slate-600"
+                  results.isExempt ? "bg-emerald-500" : results.daysUntilExemption < 365 ? "bg-amber-500" : "bg-zinc-600"
                 }`}
                 style={{ width: `${progressPercent}%` }}
               />
@@ -169,15 +169,15 @@ export function TaxAssistant() {
         {/* Inputs Column */}
         <div className="space-y-4">
           {/* Ownership Type */}
-          <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50">
-            <div className="text-xs text-slate-500 uppercase tracking-wider mb-3">Typ vlastníctva</div>
+          <div className="p-4 rounded-xl bg-zinc-800/20 border border-zinc-800/50">
+            <div className="text-xs text-zinc-500 uppercase tracking-wider mb-3">Typ vlastníctva</div>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => handleChange("ownershipType", "individual")}
                 className={`p-3 rounded-lg border transition-all flex items-center gap-2 ${
                   inputs.ownershipType === "individual"
                     ? "bg-blue-500/10 border-blue-500/30 text-blue-400"
-                    : "border-slate-800 text-slate-500 hover:border-slate-700"
+                    : "border-zinc-800 text-zinc-500 hover:border-zinc-700"
                 }`}
               >
                 <User className="w-4 h-4" />
@@ -191,7 +191,7 @@ export function TaxAssistant() {
                 className={`p-3 rounded-lg border transition-all flex items-center gap-2 ${
                   inputs.ownershipType === "sro"
                     ? "bg-blue-500/10 border-blue-500/30 text-blue-400"
-                    : "border-slate-800 text-slate-500 hover:border-slate-700"
+                    : "border-zinc-800 text-zinc-500 hover:border-zinc-700"
                 }`}
               >
                 <Building className="w-4 h-4" />
@@ -204,7 +204,7 @@ export function TaxAssistant() {
           </div>
 
           {/* Dates & Prices */}
-          <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50 space-y-4">
+          <div className="p-4 rounded-xl bg-zinc-800/20 border border-zinc-800/50 space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <InputField
                 label="Dátum nadobudnutia"
@@ -248,24 +248,24 @@ export function TaxAssistant() {
           {/* Advanced Options */}
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full p-3 rounded-xl bg-slate-800/20 border border-slate-800/50 flex items-center justify-between text-sm text-slate-500 hover:text-slate-400 transition-colors"
+            className="w-full p-3 rounded-xl bg-zinc-800/20 border border-zinc-800/50 flex items-center justify-between text-sm text-zinc-500 hover:text-zinc-400 transition-colors"
           >
             <span>Rozšírené možnosti</span>
             {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
 
           {showAdvanced && (
-            <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50 space-y-4">
+            <div className="p-4 rounded-xl bg-zinc-800/20 border border-zinc-800/50 space-y-4">
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={inputs.wasInBusinessAssets}
                   onChange={(e) => handleChange("wasInBusinessAssets", e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded border-slate-700 bg-slate-800 text-blue-500"
+                  className="mt-0.5 w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-blue-500"
                 />
                 <div>
-                  <span className="text-sm text-slate-300">Bola v obchodnom majetku</span>
-                  <p className="text-xs text-slate-600 mt-0.5">
+                  <span className="text-sm text-zinc-300">Bola v obchodnom majetku</span>
+                  <p className="text-xs text-zinc-600 mt-0.5">
                     Oslobodenie nastáva až 5 rokov od vyradenia
                   </p>
                 </div>
@@ -287,11 +287,11 @@ export function TaxAssistant() {
                   type="checkbox"
                   checked={inputs.acquiredByInheritance}
                   onChange={(e) => handleChange("acquiredByInheritance", e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded border-slate-700 bg-slate-800 text-blue-500"
+                  className="mt-0.5 w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-blue-500"
                 />
                 <div>
-                  <span className="text-sm text-slate-300">Nadobudnutá dedením</span>
-                  <p className="text-xs text-slate-600 mt-0.5">
+                  <span className="text-sm text-zinc-300">Nadobudnutá dedením</span>
+                  <p className="text-xs text-zinc-600 mt-0.5">
                     V priamom rade sa započítava doba poručiteľa
                   </p>
                 </div>
@@ -304,9 +304,9 @@ export function TaxAssistant() {
                       type="checkbox"
                       checked={inputs.inheritanceDirectLine}
                       onChange={(e) => handleChange("inheritanceDirectLine", e.target.checked)}
-                      className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-blue-500"
+                      className="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-blue-500"
                     />
-                    <span className="text-sm text-slate-400">Dedenie v priamom rade</span>
+                    <span className="text-sm text-zinc-400">Dedenie v priamom rade</span>
                   </label>
                   {inputs.inheritanceDirectLine && (
                     <InputField
@@ -325,13 +325,13 @@ export function TaxAssistant() {
         {/* Results Column */}
         <div className="space-y-4">
           {/* Tax Breakdown */}
-          <div className="p-5 rounded-xl bg-slate-800/20 border border-slate-800/50">
-            <div className="text-xs text-slate-500 uppercase tracking-wider mb-4">Výpočet dane 2026</div>
+          <div className="p-5 rounded-xl bg-zinc-800/20 border border-zinc-800/50">
+            <div className="text-xs text-zinc-500 uppercase tracking-wider mb-4">Výpočet dane 2026</div>
             <div className="space-y-3">
               <TaxRow label="Predajná cena" value={inputs.currentValue} />
               <TaxRow label="Nadobúdacia cena" value={-inputs.purchasePrice} />
               <TaxRow label="Výdavky" value={-inputs.investmentCosts} />
-              <div className="pt-3 mt-3 border-t border-slate-800">
+              <div className="pt-3 mt-3 border-t border-zinc-800">
                 <TaxRow label="Základ dane" value={results.taxableGain} bold />
               </div>
 
@@ -347,7 +347,7 @@ export function TaxAssistant() {
                 </>
               )}
 
-              <div className="pt-3 mt-3 border-t border-slate-800">
+              <div className="pt-3 mt-3 border-t border-zinc-800">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-white">Čistý zisk</span>
                   <span className="text-2xl font-light text-emerald-400">
@@ -359,10 +359,10 @@ export function TaxAssistant() {
           </div>
 
           {/* Exemption conditions */}
-          <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50">
+          <div className="p-4 rounded-xl bg-zinc-800/20 border border-zinc-800/50">
             <div className="flex items-center gap-2 mb-3">
-              <Shield className="w-4 h-4 text-slate-500" />
-              <span className="text-xs text-slate-500 uppercase tracking-wider">Podmienky oslobodenia</span>
+              <Shield className="w-4 h-4 text-zinc-500" />
+              <span className="text-xs text-zinc-500 uppercase tracking-wider">Podmienky oslobodenia</span>
             </div>
             <div className="space-y-2 text-sm">
               <ExemptionItem 
@@ -383,10 +383,10 @@ export function TaxAssistant() {
           </div>
 
           {/* Timeline */}
-          <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-800/50">
-            <div className="text-xs text-slate-500 uppercase tracking-wider mb-4">Časová os</div>
+          <div className="p-4 rounded-xl bg-zinc-800/20 border border-zinc-800/50">
+            <div className="text-xs text-zinc-500 uppercase tracking-wider mb-4">Časová os</div>
             <div className="relative pl-6">
-              <div className="absolute left-2 top-1 bottom-1 w-px bg-slate-800" />
+              <div className="absolute left-2 top-1 bottom-1 w-px bg-zinc-800" />
               
               {inputs.acquiredByInheritance && inputs.inheritanceDirectLine && inputs.originalOwnerPurchaseDate && (
                 <TimelineItem 
@@ -423,7 +423,7 @@ export function TaxAssistant() {
                 <Info className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
                 <div className="text-sm">
                   <span className="text-amber-400 font-medium">Tip:</span>
-                  <span className="text-slate-400 ml-1">
+                  <span className="text-zinc-400 ml-1">
                     Počkajte {Math.ceil(results.daysUntilExemption / 30)} mesiacov a ušetríte{" "}
                     <span className="text-emerald-400 font-medium">€{results.totalDeductions.toLocaleString()}</span>
                   </span>
@@ -440,10 +440,10 @@ export function TaxAssistant() {
 // Helper Components
 function TaxMetric({ label, value, status }: { label: string; value: string; status?: "good" | "bad" }) {
   return (
-    <div className="p-3 rounded-lg bg-slate-800/30 border border-slate-800/50">
-      <div className="text-[10px] text-slate-600 uppercase tracking-wider">{label}</div>
+    <div className="p-3 rounded-lg bg-zinc-800/30 border border-zinc-800/50">
+      <div className="text-[10px] text-zinc-600 uppercase tracking-wider">{label}</div>
       <div className={`text-lg font-medium ${
-        status === "good" ? "text-emerald-400" : status === "bad" ? "text-red-400" : "text-slate-300"
+        status === "good" ? "text-emerald-400" : status === "bad" ? "text-red-400" : "text-zinc-300"
       }`}>
         {value}
       </div>
@@ -468,21 +468,21 @@ function InputField({
 }) {
   return (
     <div>
-      <label className="block text-xs text-slate-500 mb-1.5">{label}</label>
+      <label className="block text-xs text-zinc-500 mb-1.5">{label}</label>
       <div className="relative">
         {prefix && (
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 text-sm">{prefix}</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 text-sm">{prefix}</span>
         )}
         <input
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500/50 ${
+          className={`w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500/50 ${
             prefix ? "pl-7" : ""
           }`}
         />
       </div>
-      {sublabel && <p className="text-[10px] text-slate-600 mt-1">{sublabel}</p>}
+      {sublabel && <p className="text-[10px] text-zinc-600 mt-1">{sublabel}</p>}
     </div>
   );
 }
@@ -491,9 +491,9 @@ function TaxRow({ label, value, bold }: { label: string; value: number; bold?: b
   const isNegative = value < 0;
   return (
     <div className="flex justify-between items-center">
-      <span className={`text-sm ${bold ? "text-white font-medium" : "text-slate-500"}`}>{label}</span>
+      <span className={`text-sm ${bold ? "text-white font-medium" : "text-zinc-500"}`}>{label}</span>
       <span className={`text-sm font-medium tabular-nums ${
-        bold ? "text-white" : isNegative ? "text-red-400/80" : "text-slate-400"
+        bold ? "text-white" : isNegative ? "text-red-400/80" : "text-zinc-400"
       }`}>
         {isNegative ? "-" : ""}€{Math.abs(value).toLocaleString()}
       </span>
@@ -507,9 +507,9 @@ function ExemptionItem({ met, text, neutral }: { met: boolean; text: string; neu
       {met ? (
         <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
       ) : (
-        <div className={`w-3.5 h-3.5 rounded-full border ${neutral ? "border-slate-700" : "border-slate-600"}`} />
+        <div className={`w-3.5 h-3.5 rounded-full border ${neutral ? "border-zinc-700" : "border-zinc-600"}`} />
       )}
-      <span className={met ? "text-slate-300" : "text-slate-600"}>{text}</span>
+      <span className={met ? "text-zinc-300" : "text-zinc-600"}>{text}</span>
     </div>
   );
 }
@@ -530,15 +530,15 @@ function TimelineItem({
     blue: "bg-blue-500",
     emerald: "bg-emerald-500",
     amber: "bg-amber-500",
-    slate: "bg-slate-600",
+    slate: "bg-zinc-600",
   };
 
   return (
     <div className="relative flex items-center gap-3 pb-4 last:pb-0">
       <div className={`w-2 h-2 rounded-full ${colors[color]} -ml-[5px] z-10`} />
       <div className="flex-1 flex items-center justify-between">
-        <span className="text-sm text-slate-400">{label}</span>
-        <span className="text-xs text-slate-600">{new Date(date).toLocaleDateString("sk-SK")}</span>
+        <span className="text-sm text-zinc-400">{label}</span>
+        <span className="text-xs text-zinc-600">{new Date(date).toLocaleDateString("sk-SK")}</span>
       </div>
     </div>
   );

@@ -355,13 +355,13 @@ export default function PropertyDetailPage() {
                 <p className="text-base font-semibold text-zinc-200 font-mono">
                   {new Date(property.createdAt).toLocaleDateString("sk-SK")}
                 </p>
-                <p className="text-xs text-slate-400">Pridané</p>
+                <p className="text-xs text-zinc-400">Pridané</p>
               </div>
             </div>
           </div>
 
           {/* Investor Analysis */}
-          <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+          <div className="premium-card p-5">
             <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-emerald-400" />
               Investičná analýza
@@ -373,42 +373,42 @@ export default function PropertyDetailPage() {
                   <p className="text-2xl font-bold text-emerald-400">
                     {property.investmentMetrics.gross_yield.toFixed(1)}%
                   </p>
-                  <p className="text-sm text-slate-400">Hrubý výnos</p>
+                  <p className="text-sm text-zinc-400">Hrubý výnos</p>
                 </div>
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
                   <p className="text-2xl font-bold text-blue-400">
                     {property.investmentMetrics.net_yield.toFixed(1)}%
                   </p>
-                  <p className="text-sm text-slate-400">Čistý výnos</p>
+                  <p className="text-sm text-zinc-400">Čistý výnos</p>
                 </div>
                 <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
                   <p className="text-2xl font-bold text-purple-400">
                     {property.investmentMetrics.cash_on_cash.toFixed(1)}%
                   </p>
-                  <p className="text-sm text-slate-400">Cash-on-Cash</p>
+                  <p className="text-sm text-zinc-400">Cash-on-Cash</p>
                 </div>
                 <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
                   <p className="text-2xl font-bold text-amber-400">
                     {property.investmentMetrics.price_to_rent_ratio.toFixed(0)}
                   </p>
-                  <p className="text-sm text-slate-400">Price-to-Rent</p>
+                  <p className="text-sm text-zinc-400">Price-to-Rent</p>
                 </div>
               </div>
             ) : (
-              <p className="text-slate-400 mb-6">Investičné metriky nie sú dostupné</p>
+              <p className="text-zinc-400 mb-6">Investičné metriky nie sú dostupné</p>
             )}
 
             {/* Market Comparison */}
             {marketComparison && (
-              <div className="bg-slate-800/50 rounded-lg p-4">
+              <div className="bg-zinc-800/50 rounded-lg p-4">
                 <h3 className="font-medium text-white mb-3">Porovnanie s trhom v {property.city}</h3>
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="text-slate-400">Priemerná cena/m²</span>
+                      <span className="text-zinc-400">Priemerná cena/m²</span>
                       <span className="text-white">€{marketComparison.avgPricePerM2.toLocaleString()}</span>
                     </div>
-                    <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-2 bg-zinc-700 rounded-full overflow-hidden">
                       <div 
                         className={`h-full ${marketComparison.propertyVsAvg < 0 ? "bg-emerald-500" : "bg-rose-500"}`}
                         style={{ width: `${Math.min(Math.abs(marketComparison.propertyVsAvg) + 50, 100)}%` }}
@@ -420,7 +420,7 @@ export default function PropertyDetailPage() {
                       ? "bg-emerald-500/20 text-emerald-400" 
                       : marketComparison.propertyVsAvg > 10 
                       ? "bg-rose-500/20 text-rose-400"
-                      : "bg-slate-600 text-slate-300"
+                      : "bg-zinc-600 text-zinc-300"
                   }`}>
                     {marketComparison.propertyVsAvg > 0 ? "+" : ""}{marketComparison.propertyVsAvg.toFixed(0)}%
                   </div>
@@ -438,17 +438,17 @@ export default function PropertyDetailPage() {
                 <div className="grid grid-cols-2 gap-4 mb-3">
                   <div>
                     <p className="text-2xl font-bold text-white">€{estimatedRent.estimatedRent}/mes</p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-zinc-400">
                       Rozpätie: €{estimatedRent.rentRange.min} – €{estimatedRent.rentRange.max}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-emerald-400">{estimatedRent.grossYield.toFixed(1)}%</p>
-                    <p className="text-xs text-slate-400">Potenciálny hrubý výnos</p>
+                    <p className="text-xs text-zinc-400">Potenciálny hrubý výnos</p>
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">
+                  <span className="text-zinc-400">
                     Na základe {estimatedRent.basedOnCount} podobných prenájmov
                   </span>
                   <span className={`px-2 py-0.5 rounded ${
@@ -456,7 +456,7 @@ export default function PropertyDetailPage() {
                       ? "bg-emerald-500/20 text-emerald-400" 
                       : estimatedRent.confidence === "medium"
                       ? "bg-amber-500/20 text-amber-400"
-                      : "bg-slate-600 text-slate-400"
+                      : "bg-zinc-600 text-zinc-400"
                   }`}>
                     {estimatedRent.confidence === "high" ? "Vysoká" : estimatedRent.confidence === "medium" ? "Stredná" : "Nízka"} spoľahlivosť
                   </span>
@@ -475,20 +475,20 @@ export default function PropertyDetailPage() {
               
               {/* Summary Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-slate-800/50 rounded-lg p-3 text-center">
+                <div className="bg-zinc-800/50 rounded-lg p-3 text-center">
                   <p className="text-2xl font-bold text-white">{timeline.summary.daysOnMarket}</p>
-                  <p className="text-xs text-slate-400">Dní na trhu</p>
+                  <p className="text-xs text-zinc-400">Dní na trhu</p>
                 </div>
-                <div className="bg-slate-800/50 rounded-lg p-3 text-center">
+                <div className="bg-zinc-800/50 rounded-lg p-3 text-center">
                   <p className="text-2xl font-bold text-white">{timeline.summary.priceDrops}</p>
-                  <p className="text-xs text-slate-400">Zníženia ceny</p>
+                  <p className="text-xs text-zinc-400">Zníženia ceny</p>
                 </div>
                 <div className={`rounded-lg p-3 text-center ${
                   timeline.summary.totalPriceChangePercent < 0 
                     ? "bg-emerald-500/20" 
                     : timeline.summary.totalPriceChangePercent > 0 
                     ? "bg-rose-500/20" 
-                    : "bg-slate-800/50"
+                    : "bg-zinc-800/50"
                 }`}>
                   <p className={`text-2xl font-bold ${
                     timeline.summary.totalPriceChangePercent < 0 
@@ -499,17 +499,17 @@ export default function PropertyDetailPage() {
                   }`}>
                     {timeline.summary.totalPriceChangePercent > 0 ? "+" : ""}{timeline.summary.totalPriceChangePercent}%
                   </p>
-                  <p className="text-xs text-slate-400">Celková zmena</p>
+                  <p className="text-xs text-zinc-400">Celková zmena</p>
                 </div>
                 <div className={`rounded-lg p-3 text-center ${
-                  timeline.summary.totalPriceChange < 0 ? "bg-emerald-500/20" : "bg-slate-800/50"
+                  timeline.summary.totalPriceChange < 0 ? "bg-emerald-500/20" : "bg-zinc-800/50"
                 }`}>
                   <p className={`text-2xl font-bold ${
                     timeline.summary.totalPriceChange < 0 ? "text-emerald-400" : "text-white"
                   }`}>
                     €{Math.abs(timeline.summary.totalPriceChange).toLocaleString()}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-zinc-400">
                     {timeline.summary.totalPriceChange < 0 ? "Úspora" : "Navýšenie"}
                   </p>
                 </div>
@@ -517,7 +517,7 @@ export default function PropertyDetailPage() {
 
               {/* Timeline Events */}
               <div className="relative">
-                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-700"></div>
+                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-zinc-700"></div>
                 <div className="space-y-4">
                   {timeline.events.map((event, index) => (
                     <div key={index} className="relative pl-10">
@@ -530,9 +530,9 @@ export default function PropertyDetailPage() {
                           ? "bg-rose-500 border-rose-400"
                           : event.type === "RELISTED"
                           ? "bg-amber-500 border-amber-400"
-                          : "bg-slate-500 border-slate-400"
+                          : "bg-zinc-500 border-zinc-400"
                       }`}></div>
-                      <div className="bg-slate-800/50 rounded-lg p-3">
+                      <div className="bg-zinc-800/50 rounded-lg p-3">
                         <div className="flex items-center justify-between">
                           <span className={`text-sm font-medium ${
                             event.type === "PRICE_DROP" 
@@ -549,11 +549,11 @@ export default function PropertyDetailPage() {
                             {event.type === "RELISTED" && "🔄 Návrat na trh"}
                             {event.type === "REMOVED" && "❌ Odstránené"}
                           </span>
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-zinc-500">
                             {new Date(event.date).toLocaleDateString("sk-SK")}
                           </span>
                         </div>
-                        <p className="text-sm text-slate-300 mt-1">{event.description}</p>
+                        <p className="text-sm text-zinc-300 mt-1">{event.description}</p>
                       </div>
                     </div>
                   ))}
@@ -562,8 +562,8 @@ export default function PropertyDetailPage() {
 
               {/* Price Chart (simple) */}
               {timeline.priceHistory.length > 2 && (
-                <div className="mt-6 pt-4 border-t border-slate-700">
-                  <p className="text-sm text-slate-400 mb-3">Vývoj ceny:</p>
+                <div className="mt-6 pt-4 border-t border-zinc-700">
+                  <p className="text-sm text-zinc-400 mb-3">Vývoj ceny:</p>
                   <div className="flex items-end gap-1 h-24">
                     {timeline.priceHistory.map((ph, index) => {
                       const maxPrice = Math.max(...timeline.priceHistory.map(p => p.price));
@@ -582,15 +582,15 @@ export default function PropertyDetailPage() {
                                 ? "bg-indigo-500"
                                 : ph.changePercent && ph.changePercent < 0
                                 ? "bg-emerald-500/60"
-                                : "bg-slate-600"
+                                : "bg-zinc-600"
                             }`}
                             style={{ height: `${heightPercent}%` }}
                           ></div>
                           {/* Tooltip */}
                           <div className="absolute bottom-full mb-2 hidden group-hover:block z-10">
-                            <div className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs whitespace-nowrap">
+                            <div className="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-xs whitespace-nowrap">
                               <p className="text-white font-medium">€{ph.price.toLocaleString()}</p>
-                              <p className="text-slate-400">
+                              <p className="text-zinc-400">
                                 {new Date(ph.date).toLocaleDateString("sk-SK")}
                               </p>
                               {ph.changePercent && (
@@ -604,7 +604,7 @@ export default function PropertyDetailPage() {
                       );
                     })}
                   </div>
-                  <div className="flex justify-between text-xs text-slate-500 mt-2">
+                  <div className="flex justify-between text-xs text-zinc-500 mt-2">
                     <span>{new Date(timeline.priceHistory[0].date).toLocaleDateString("sk-SK", { month: "short", year: "2-digit" })}</span>
                     <span>{new Date(timeline.priceHistory[timeline.priceHistory.length - 1].date).toLocaleDateString("sk-SK", { month: "short", year: "2-digit" })}</span>
                   </div>
@@ -625,15 +625,15 @@ export default function PropertyDetailPage() {
 
           {/* Cross-Portal Price Comparison - "Dostupné u partnerov" */}
           {duplicates && duplicates.count > 1 && (
-            <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+            <div className="premium-card overflow-hidden">
               {/* Header s potenciálnou úsporou */}
-              <div className="p-4 sm:p-6 border-b border-slate-700/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="p-4 sm:p-6 border-b border-zinc-700/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-bold text-white flex items-center gap-2">
                     <Users className="w-5 h-5 text-blue-400" />
                     Dostupné u partnerov
                   </h2>
-                  <p className="text-sm text-slate-400 mt-1">
+                  <p className="text-sm text-zinc-400 mt-1">
                     Rovnaká nehnuteľnosť na {duplicates.count} portáloch
                   </p>
                 </div>
@@ -687,12 +687,12 @@ export default function PropertyDetailPage() {
                           className={`flex items-center justify-between p-4 rounded-xl transition-all ${
                             isLowest 
                               ? "bg-emerald-500/10 border-2 border-emerald-500/50 shadow-lg shadow-emerald-500/10" 
-                              : "bg-slate-800/50 border border-slate-700/50 hover:border-slate-600"
+                              : "bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600"
                           }`}
                         >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                              isLowest ? "bg-emerald-500/20" : "bg-slate-700"
+                              isLowest ? "bg-emerald-500/20" : "bg-zinc-700"
                             }`}>
                               <span className="text-lg font-bold text-white">
                                 {index + 1}
@@ -703,7 +703,7 @@ export default function PropertyDetailPage() {
                                 <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                                   isLowest 
                                     ? "bg-emerald-500/30 text-emerald-300" 
-                                    : "bg-slate-700 text-slate-300"
+                                    : "bg-zinc-700 text-zinc-300"
                                 }`}>
                                   {dup.source}
                                 </span>
@@ -731,7 +731,7 @@ export default function PropertyDetailPage() {
                           <div className="flex items-center gap-2 ml-3">
                             <Link
                               href={`/dashboard/property/${dup.id}`}
-                              className="p-2.5 rounded-lg bg-slate-700 text-slate-300 hover:text-white hover:bg-slate-600 transition-colors"
+                              className="p-2.5 rounded-lg bg-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-600 transition-colors"
                               title="Detail v SRIA"
                             >
                               <Home className="w-4 h-4" />
@@ -759,7 +759,7 @@ export default function PropertyDetailPage() {
 
                 {/* Insight */}
                 <div className="mt-4 p-4 bg-gradient-to-r from-blue-500/10 to-emerald-500/10 border border-blue-500/20 rounded-xl">
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-zinc-300">
                     <strong className="text-white">💡 Investorský tip:</strong> Tá istá nehnuteľnosť môže mať rôzne ceny 
                     podľa toho, či ju predáva majiteľ (Bazoš) alebo realitka (Reality.sk). 
                     {duplicates.savings && duplicates.savings > 1000 && (
@@ -783,33 +783,33 @@ export default function PropertyDetailPage() {
               
               <div className="space-y-3">
                 {property.days_on_market > 90 && (
-                  <div className="flex items-start gap-3 p-3 bg-slate-800/50 rounded-lg">
+                  <div className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-lg">
                     <CheckCircle className="w-5 h-5 text-emerald-400 mt-0.5" />
                     <div>
                       <p className="font-medium text-white">Motivovaný predajca</p>
-                      <p className="text-sm text-slate-400">
+                      <p className="text-sm text-zinc-400">
                         Nehnuteľnosť je na trhu {property.days_on_market} dní. Navrhni cenu o 10-15% nižšiu.
                       </p>
                     </div>
                   </div>
                 )}
                 {property.days_on_market > 60 && property.days_on_market <= 90 && (
-                  <div className="flex items-start gap-3 p-3 bg-slate-800/50 rounded-lg">
+                  <div className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-lg">
                     <CheckCircle className="w-5 h-5 text-blue-400 mt-0.5" />
                     <div>
                       <p className="font-medium text-white">Priestor na vyjednávanie</p>
-                      <p className="text-sm text-slate-400">
+                      <p className="text-sm text-zinc-400">
                         Po {property.days_on_market} dňoch môže byť predajca otvorený zľave 5-10%.
                       </p>
                     </div>
                   </div>
                 )}
                 {priceChange !== null && priceChange < 0 && (
-                  <div className="flex items-start gap-3 p-3 bg-slate-800/50 rounded-lg">
+                  <div className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-lg">
                     <TrendingDown className="w-5 h-5 text-emerald-400 mt-0.5" />
                     <div>
                       <p className="font-medium text-white">Cena už klesla</p>
-                      <p className="text-sm text-slate-400">
+                      <p className="text-sm text-zinc-400">
                         Predajca už znížil cenu o {Math.abs(priceChange).toFixed(1)}%. Môže byť ochotný ísť ešte nižšie.
                       </p>
                     </div>
@@ -823,7 +823,7 @@ export default function PropertyDetailPage() {
         {/* Right Column - Sidebar */}
         <div className="space-y-6">
           {/* Quick Actions */}
-          <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+          <div className="premium-card p-5">
             <h3 className="font-bold text-white mb-4">Rýchle akcie</h3>
             <div className="space-y-3">
               <a
@@ -837,14 +837,14 @@ export default function PropertyDetailPage() {
               </a>
               <Link 
                 href={`/dashboard/calculators?calc=mortgage&price=${property.price}&title=${encodeURIComponent(property.title)}`}
-                className="flex items-center gap-3 w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
+                className="flex items-center gap-3 w-full px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors"
               >
                 <Calculator className="w-5 h-5" />
                 Hypotekárna kalkulačka
               </Link>
               <Link 
                 href={`/dashboard/calculators?calc=investment&price=${property.price}&area=${property.area_m2}&rent=${estimatedRent || 0}&title=${encodeURIComponent(property.title)}`}
-                className="flex items-center gap-3 w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
+                className="flex items-center gap-3 w-full px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors"
               >
                 <PiggyBank className="w-5 h-5" />
                 Výnosová kalkulačka
@@ -853,11 +853,11 @@ export default function PropertyDetailPage() {
           </div>
 
           {/* Property Details */}
-          <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+          <div className="premium-card p-5">
             <h3 className="font-bold text-white mb-4">Detaily</h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-400">Stav</span>
+                <span className="text-zinc-400">Stav</span>
                 <span className="text-white">
                   {property.condition === "POVODNY" ? "Pôvodný" : 
                    property.condition === "REKONSTRUKCIA" ? "Po rekonštrukcii" : 
@@ -865,19 +865,19 @@ export default function PropertyDetailPage() {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Energetický certifikát</span>
+                <span className="text-zinc-400">Energetický certifikát</span>
                 <span className="text-white">{property.energy_certificate || "–"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Poschodie</span>
+                <span className="text-zinc-400">Poschodie</span>
                 <span className="text-white">{property.floor || "–"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Zdroj</span>
+                <span className="text-zinc-400">Zdroj</span>
                 <span className="text-white">{property.source}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Typ</span>
+                <span className="text-zinc-400">Typ</span>
                 <span className="text-white">
                   {property.listing_type === "PREDAJ" ? "Predaj" : "Prenájom"}
                 </span>
@@ -886,9 +886,9 @@ export default function PropertyDetailPage() {
           </div>
 
           {/* Legend */}
-          <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+          <div className="premium-card p-5">
             <h3 className="font-bold text-white mb-4 flex items-center gap-2">
-              <Info className="w-5 h-5 text-slate-400" />
+              <Info className="w-5 h-5 text-zinc-400" />
               Vysvetlenie ikoniek
             </h3>
             <div className="space-y-3 text-sm">
@@ -898,7 +898,7 @@ export default function PropertyDetailPage() {
                 </div>
                 <div>
                   <p className="text-white">Investičné skóre</p>
-                  <p className="text-slate-400 text-xs">0-100 bodov podľa výnosnosti</p>
+                  <p className="text-zinc-400 text-xs">0-100 bodov podľa výnosnosti</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -907,7 +907,7 @@ export default function PropertyDetailPage() {
                 </div>
                 <div>
                   <p className="text-white">Duplicity</p>
-                  <p className="text-slate-400 text-xs">Inzerát na viacerých portáloch</p>
+                  <p className="text-zinc-400 text-xs">Inzerát na viacerých portáloch</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -916,7 +916,7 @@ export default function PropertyDetailPage() {
                 </div>
                 <div>
                   <p className="text-white">Zníženie ceny</p>
-                  <p className="text-slate-400 text-xs">Cena bola znížená</p>
+                  <p className="text-zinc-400 text-xs">Cena bola znížená</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -925,7 +925,7 @@ export default function PropertyDetailPage() {
                 </div>
                 <div>
                   <p className="text-white">Hot Deal</p>
-                  <p className="text-slate-400 text-xs">15%+ pod trhovou cenou</p>
+                  <p className="text-zinc-400 text-xs">15%+ pod trhovou cenou</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -934,7 +934,7 @@ export default function PropertyDetailPage() {
                 </div>
                 <div>
                   <p className="text-white">Vyjednaj zľavu</p>
-                  <p className="text-slate-400 text-xs">Dlho na trhu, navrhni -10%</p>
+                  <p className="text-zinc-400 text-xs">Dlho na trhu, navrhni -10%</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -943,16 +943,16 @@ export default function PropertyDetailPage() {
                 </div>
                 <div>
                   <p className="text-white">Čerstvý inzerát</p>
-                  <p className="text-slate-400 text-xs">Pridané pred menej ako 3 dňami</p>
+                  <p className="text-zinc-400 text-xs">Pridané pred menej ako 3 dňami</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-slate-600/30 border border-slate-500/30 rounded-lg flex items-center justify-center">
-                  <Clock className="w-4 h-4 text-slate-400" />
+                <div className="w-8 h-8 bg-zinc-600/30 border border-zinc-500/30 rounded-lg flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-zinc-400" />
                 </div>
                 <div>
                   <p className="text-white">Dni na trhu</p>
-                  <p className="text-slate-400 text-xs">Koľko dní je v ponuke</p>
+                  <p className="text-zinc-400 text-xs">Koľko dní je v ponuke</p>
                 </div>
               </div>
             </div>

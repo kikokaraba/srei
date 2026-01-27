@@ -214,8 +214,8 @@ export function WatchdogSettings() {
     return (
       <div className="bg-amber-900/20 border border-amber-800 rounded-xl p-6 text-center">
         <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
-        <h3 className="text-xl font-bold text-slate-100 mb-2">Prihlás sa</h3>
-        <p className="text-slate-400">
+        <h3 className="text-xl font-bold text-zinc-100 mb-2">Prihlás sa</h3>
+        <p className="text-zinc-400">
           Pre používanie strážneho psa sa musíš prihlásiť.
         </p>
       </div>
@@ -238,7 +238,7 @@ export function WatchdogSettings() {
           <div className="flex items-center gap-3">
             <Eye className="w-6 h-6 text-amber-400" />
             <div>
-              <span className="text-slate-100 font-medium">Aktuálne vyhovuje tvojim kritériám:</span>
+              <span className="text-zinc-100 font-medium">Aktuálne vyhovuje tvojim kritériám:</span>
               <span className="text-amber-400 font-bold text-xl ml-2">{matchingCount} nehnuteľností</span>
             </div>
           </div>
@@ -247,55 +247,55 @@ export function WatchdogSettings() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Cena */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
           <div className="flex items-center gap-2 mb-6">
             <Euro className="w-5 h-5 text-amber-400" />
-            <h3 className="text-lg font-bold text-slate-100">Cenové kritériá</h3>
+            <h3 className="text-lg font-bold text-zinc-100">Cenové kritériá</h3>
           </div>
 
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Min. cena (€)</label>
+                <label className="block text-sm text-zinc-400 mb-1">Min. cena (€)</label>
                 <input
                   type="number"
                   value={config.minPrice || ""}
                   onChange={(e) => updateConfig("minPrice", e.target.value ? Number(e.target.value) : null)}
                   placeholder="0"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Max. cena (€)</label>
+                <label className="block text-sm text-zinc-400 mb-1">Max. cena (€)</label>
                 <input
                   type="number"
                   value={config.maxPrice || ""}
                   onChange={(e) => updateConfig("maxPrice", e.target.value ? Number(e.target.value) : null)}
                   placeholder="500000"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Min. €/m²</label>
+                <label className="block text-sm text-zinc-400 mb-1">Min. €/m²</label>
                 <input
                   type="number"
                   value={config.minPricePerM2 || ""}
                   onChange={(e) => updateConfig("minPricePerM2", e.target.value ? Number(e.target.value) : null)}
                   placeholder="0"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Max. €/m²</label>
+                <label className="block text-sm text-zinc-400 mb-1">Max. €/m²</label>
                 <input
                   type="number"
                   value={config.maxPricePerM2 || ""}
                   onChange={(e) => updateConfig("maxPricePerM2", e.target.value ? Number(e.target.value) : null)}
                   placeholder="5000"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                 />
               </div>
             </div>
@@ -303,16 +303,16 @@ export function WatchdogSettings() {
         </div>
 
         {/* Nehnuteľnosť */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
           <div className="flex items-center gap-2 mb-6">
             <Home className="w-5 h-5 text-amber-400" />
-            <h3 className="text-lg font-bold text-slate-100">Parametre nehnuteľnosti</h3>
+            <h3 className="text-lg font-bold text-zinc-100">Parametre nehnuteľnosti</h3>
           </div>
 
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-slate-400 mb-1 flex items-center gap-1">
+                <label className="block text-sm text-zinc-400 mb-1 flex items-center gap-1">
                   <Maximize2 className="w-4 h-4" /> Min. plocha (m²)
                 </label>
                 <input
@@ -320,11 +320,11 @@ export function WatchdogSettings() {
                   value={config.minArea || ""}
                   onChange={(e) => updateConfig("minArea", e.target.value ? Number(e.target.value) : null)}
                   placeholder="30"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1 flex items-center gap-1">
+                <label className="block text-sm text-zinc-400 mb-1 flex items-center gap-1">
                   <Maximize2 className="w-4 h-4" /> Max. plocha (m²)
                 </label>
                 <input
@@ -332,14 +332,14 @@ export function WatchdogSettings() {
                   value={config.maxArea || ""}
                   onChange={(e) => updateConfig("maxArea", e.target.value ? Number(e.target.value) : null)}
                   placeholder="200"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-slate-400 mb-1 flex items-center gap-1">
+                <label className="block text-sm text-zinc-400 mb-1 flex items-center gap-1">
                   <BedDouble className="w-4 h-4" /> Min. izby
                 </label>
                 <input
@@ -347,11 +347,11 @@ export function WatchdogSettings() {
                   value={config.minRooms || ""}
                   onChange={(e) => updateConfig("minRooms", e.target.value ? Number(e.target.value) : null)}
                   placeholder="1"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1 flex items-center gap-1">
+                <label className="block text-sm text-zinc-400 mb-1 flex items-center gap-1">
                   <BedDouble className="w-4 h-4" /> Max. izby
                 </label>
                 <input
@@ -359,7 +359,7 @@ export function WatchdogSettings() {
                   value={config.maxRooms || ""}
                   onChange={(e) => updateConfig("maxRooms", e.target.value ? Number(e.target.value) : null)}
                   placeholder="5"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                 />
               </div>
             </div>
@@ -367,15 +367,15 @@ export function WatchdogSettings() {
         </div>
 
         {/* Výhodnosť */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
           <div className="flex items-center gap-2 mb-6">
             <TrendingDown className="w-5 h-5 text-amber-400" />
-            <h3 className="text-lg font-bold text-slate-100">Kritériá výhodnosti</h3>
+            <h3 className="text-lg font-bold text-zinc-100">Kritériá výhodnosti</h3>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-slate-400 mb-1 flex items-center gap-1">
+              <label className="block text-sm text-zinc-400 mb-1 flex items-center gap-1">
                 <Percent className="w-4 h-4" /> Min. hrubý výnos (%)
               </label>
               <input
@@ -384,13 +384,13 @@ export function WatchdogSettings() {
                 value={config.minGrossYield || ""}
                 onChange={(e) => updateConfig("minGrossYield", e.target.value ? Number(e.target.value) : null)}
                 placeholder="5.0"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
               />
-              <p className="text-xs text-slate-500 mt-1">Upozorním ťa na nehnuteľnosti s vyšším výnosom</p>
+              <p className="text-xs text-zinc-500 mt-1">Upozorním ťa na nehnuteľnosti s vyšším výnosom</p>
             </div>
 
             <div>
-              <label className="block text-sm text-slate-400 mb-1 flex items-center gap-1">
+              <label className="block text-sm text-zinc-400 mb-1 flex items-center gap-1">
                 <Clock className="w-4 h-4" /> Max. dní na trhu
               </label>
               <input
@@ -398,13 +398,13 @@ export function WatchdogSettings() {
                 value={config.maxDaysOnMarket || ""}
                 onChange={(e) => updateConfig("maxDaysOnMarket", e.target.value ? Number(e.target.value) : null)}
                 placeholder="30"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
               />
-              <p className="text-xs text-slate-500 mt-1">Len čerstvé ponuky</p>
+              <p className="text-xs text-zinc-500 mt-1">Len čerstvé ponuky</p>
             </div>
 
             <div>
-              <label className="block text-sm text-slate-400 mb-1 flex items-center gap-1">
+              <label className="block text-sm text-zinc-400 mb-1 flex items-center gap-1">
                 <TrendingDown className="w-4 h-4" /> Min. pokles ceny (%)
               </label>
               <input
@@ -413,18 +413,18 @@ export function WatchdogSettings() {
                 value={config.minPriceDrop || ""}
                 onChange={(e) => updateConfig("minPriceDrop", e.target.value ? Number(e.target.value) : null)}
                 placeholder="10"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
               />
-              <p className="text-xs text-slate-500 mt-1">Upozorním ťa na výrazné zľavy</p>
+              <p className="text-xs text-zinc-500 mt-1">Upozorním ťa na výrazné zľavy</p>
             </div>
           </div>
         </div>
 
         {/* Lokality */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
           <div className="flex items-center gap-2 mb-6">
             <MapPin className="w-5 h-5 text-amber-400" />
-            <h3 className="text-lg font-bold text-slate-100">Sledované mestá</h3>
+            <h3 className="text-lg font-bold text-zinc-100">Sledované mestá</h3>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -434,8 +434,8 @@ export function WatchdogSettings() {
                 onClick={() => toggleCity(city)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   config.trackedCities.includes(city)
-                    ? "bg-amber-500 text-slate-900"
-                    : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                    ? "bg-amber-500 text-zinc-900"
+                    : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
                 }`}
               >
                 {city}
@@ -444,7 +444,7 @@ export function WatchdogSettings() {
           </div>
           
           {config.trackedCities.length === 0 && (
-            <p className="text-slate-500 text-sm mt-4">
+            <p className="text-zinc-500 text-sm mt-4">
               Ak nevyberieš žiadne mesto, budem sledovať všetky.
             </p>
           )}
@@ -452,49 +452,49 @@ export function WatchdogSettings() {
       </div>
 
       {/* Notifikácie */}
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+      <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
         <div className="flex items-center gap-2 mb-6">
           <Bell className="w-5 h-5 text-amber-400" />
-          <h3 className="text-lg font-bold text-slate-100">Notifikácie</h3>
+          <h3 className="text-lg font-bold text-zinc-100">Notifikácie</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <label className="flex items-center gap-3 p-4 bg-slate-800/50 rounded-lg cursor-pointer hover:bg-slate-800">
+          <label className="flex items-center gap-3 p-4 bg-zinc-800/50 rounded-lg cursor-pointer hover:bg-zinc-800">
             <input
               type="checkbox"
               checked={config.notifyNewProperties}
               onChange={(e) => updateConfig("notifyNewProperties", e.target.checked)}
-              className="w-5 h-5 rounded border-slate-600 bg-slate-700 text-amber-500 focus:ring-amber-500"
+              className="w-5 h-5 rounded border-zinc-600 bg-zinc-700 text-amber-500 focus:ring-amber-500"
             />
             <div>
-              <span className="text-slate-100 font-medium">Nové nehnuteľnosti</span>
-              <p className="text-sm text-slate-400">Upozornenie na nové ponuky</p>
+              <span className="text-zinc-100 font-medium">Nové nehnuteľnosti</span>
+              <p className="text-sm text-zinc-400">Upozornenie na nové ponuky</p>
             </div>
           </label>
 
-          <label className="flex items-center gap-3 p-4 bg-slate-800/50 rounded-lg cursor-pointer hover:bg-slate-800">
+          <label className="flex items-center gap-3 p-4 bg-zinc-800/50 rounded-lg cursor-pointer hover:bg-zinc-800">
             <input
               type="checkbox"
               checked={config.notifyPriceDrops}
               onChange={(e) => updateConfig("notifyPriceDrops", e.target.checked)}
-              className="w-5 h-5 rounded border-slate-600 bg-slate-700 text-amber-500 focus:ring-amber-500"
+              className="w-5 h-5 rounded border-zinc-600 bg-zinc-700 text-amber-500 focus:ring-amber-500"
             />
             <div>
-              <span className="text-slate-100 font-medium">Poklesy cien</span>
-              <p className="text-sm text-slate-400">Upozornenie na zľavy</p>
+              <span className="text-zinc-100 font-medium">Poklesy cien</span>
+              <p className="text-sm text-zinc-400">Upozornenie na zľavy</p>
             </div>
           </label>
 
-          <label className="flex items-center gap-3 p-4 bg-slate-800/50 rounded-lg cursor-pointer hover:bg-slate-800">
+          <label className="flex items-center gap-3 p-4 bg-zinc-800/50 rounded-lg cursor-pointer hover:bg-zinc-800">
             <input
               type="checkbox"
               checked={config.telegramEnabled}
               onChange={(e) => updateConfig("telegramEnabled", e.target.checked)}
-              className="w-5 h-5 rounded border-slate-600 bg-slate-700 text-amber-500 focus:ring-amber-500"
+              className="w-5 h-5 rounded border-zinc-600 bg-zinc-700 text-amber-500 focus:ring-amber-500"
             />
             <div>
-              <span className="text-slate-100 font-medium">Telegram</span>
-              <p className="text-sm text-slate-400">Posielať na Telegram</p>
+              <span className="text-zinc-100 font-medium">Telegram</span>
+              <p className="text-sm text-zinc-400">Posielať na Telegram</p>
             </div>
           </label>
         </div>
@@ -505,7 +505,7 @@ export function WatchdogSettings() {
         <button
           onClick={saveSettings}
           disabled={saving}
-          className="flex items-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-500/50 text-slate-900 font-bold rounded-xl transition-colors"
+          className="flex items-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-500/50 text-zinc-900 font-bold rounded-xl transition-colors"
         >
           {saving ? (
             <Loader2 className="w-5 h-5 animate-spin" />

@@ -74,7 +74,7 @@ const plans = [
 
 export function Pricing() {
   return (
-    <section id="pricing" className="py-24 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
+    <section id="pricing" className="py-24 bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-grid-slate-800/[0.1] bg-[size:40px_40px]" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-emerald-500/5 rounded-full blur-3xl" />
@@ -87,17 +87,17 @@ export function Pricing() {
             <span>Transparentné ceny, žiadne skryté poplatky</span>
           </div>
           
-          <h2 className="text-4xl lg:text-6xl font-bold text-slate-100 mb-6">
+          <h2 className="text-4xl lg:text-6xl font-bold text-zinc-100 mb-6">
             Vyberte si{" "}
             <span className="text-emerald-400">
               svoj plán
             </span>
           </h2>
           
-          <p className="text-xl text-slate-300 max-w-2xl mx-auto mb-4">
+          <p className="text-xl text-zinc-300 max-w-2xl mx-auto mb-4">
             Začnite zdarma a upgradeujte, keď budete pripravení na viac
           </p>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-zinc-400">
             Všetky plány zahŕňajú 14-dňovú bezplatnú skúšobnú verziu • Zrušiteľné kedykoľvek
           </p>
         </div>
@@ -108,10 +108,10 @@ export function Pricing() {
             const colorClasses = {
               slate: {
                 card: "glass-card",
-                border: "border-slate-700/50 hover:border-slate-600",
-                icon: "text-slate-400",
-                iconBg: "bg-slate-800/80",
-                button: "bg-slate-700 hover:bg-slate-600 text-white",
+                border: "border-zinc-700/50 hover:border-zinc-600",
+                icon: "text-zinc-400",
+                iconBg: "bg-zinc-800/80",
+                button: "bg-zinc-700 hover:bg-zinc-600 text-white",
                 glow: "",
                 priceColor: "text-white",
               },
@@ -129,7 +129,7 @@ export function Pricing() {
                 border: "border-gold-500/30 hover:border-gold-500/50",
                 icon: "text-gold-400",
                 iconBg: "bg-gold-500/10",
-                button: "bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-400 hover:to-gold-500 text-slate-900 font-bold",
+                button: "bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-400 hover:to-gold-500 text-zinc-900 font-bold",
                 glow: "hover:glow-gold-soft",
                 priceColor: "text-gold-400",
               },
@@ -156,14 +156,14 @@ export function Pricing() {
                     <Icon className="w-7 h-7" />
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
-                  <p className="text-slate-400 text-sm mb-4">{plan.description}</p>
+                  <p className="text-zinc-400 text-sm mb-4">{plan.description}</p>
                   
                   <div className="flex items-baseline gap-2 mb-2">
                     <span className={`text-5xl font-bold ${colors.priceColor}`}>
                       €{plan.price}
                     </span>
                     {plan.price !== "0" && (
-                      <span className="text-slate-500 text-lg">/{plan.period}</span>
+                      <span className="text-zinc-500 text-lg">/{plan.period}</span>
                     )}
                   </div>
                   
@@ -181,7 +181,7 @@ export function Pricing() {
                       <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                         <Check className="w-3 h-3 text-emerald-400" />
                       </div>
-                      <span className="text-slate-300 text-sm">{feature}</span>
+                      <span className="text-zinc-300 text-sm">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -194,7 +194,7 @@ export function Pricing() {
                 </Link>
 
                 {plan.custom && (
-                  <p className="text-xs text-slate-500 text-center mt-4">
+                  <p className="text-xs text-zinc-500 text-center mt-4">
                     Alebo <Link href="/contact" className="text-emerald-400 hover:text-emerald-300">kontaktujte nás</Link> pre custom riešenie
                   </p>
                 )}
@@ -205,46 +205,46 @@ export function Pricing() {
 
         {/* FAQ Section */}
         <div className="mt-24 max-w-3xl mx-auto">
-          <h3 className="text-2xl font-bold text-slate-100 mb-8 text-center">
+          <h3 className="text-2xl font-bold text-zinc-100 mb-8 text-center">
             Často kladené otázky
           </h3>
           <div className="space-y-4">
-            <details className="group bg-slate-800/50 rounded-lg border border-slate-700 p-6">
-              <summary className="cursor-pointer text-slate-100 font-semibold flex items-center justify-between">
+            <details className="group bg-zinc-800/50 rounded-lg border border-zinc-700 p-6">
+              <summary className="cursor-pointer text-zinc-100 font-semibold flex items-center justify-between">
                 <span>Môžem zrušiť kedykoľvek?</span>
                 <span className="text-emerald-400 group-open:rotate-180 transition-transform">▼</span>
               </summary>
-              <p className="text-slate-300 mt-4">
+              <p className="text-zinc-300 mt-4">
                 Áno, môžete zrušiť svoj plán kedykoľvek bez akýchkoľvek poplatkov. Váš prístup zostane aktívny do konca fakturačného obdobia.
               </p>
             </details>
             
-            <details className="group bg-slate-800/50 rounded-lg border border-slate-700 p-6">
-              <summary className="cursor-pointer text-slate-100 font-semibold flex items-center justify-between">
+            <details className="group bg-zinc-800/50 rounded-lg border border-zinc-700 p-6">
+              <summary className="cursor-pointer text-zinc-100 font-semibold flex items-center justify-between">
                 <span>Čo zahŕňa 14-dňová skúšobná verzia?</span>
                 <span className="text-emerald-400 group-open:rotate-180 transition-transform">▼</span>
               </summary>
-              <p className="text-slate-300 mt-4">
+              <p className="text-zinc-300 mt-4">
                 Skúšobná verzia zahŕňa plný prístup ku všetkým funkciám vybraného plánu. Žiadna kreditná karta sa nevyžaduje. Môžete testovať všetko zdarma 14 dní.
               </p>
             </details>
             
-            <details className="group bg-slate-800/50 rounded-lg border border-slate-700 p-6">
-              <summary className="cursor-pointer text-slate-100 font-semibold flex items-center justify-between">
+            <details className="group bg-zinc-800/50 rounded-lg border border-zinc-700 p-6">
+              <summary className="cursor-pointer text-zinc-100 font-semibold flex items-center justify-between">
                 <span>Môžem upgradeovať alebo downgradeovať plán?</span>
                 <span className="text-emerald-400 group-open:rotate-180 transition-transform">▼</span>
               </summary>
-              <p className="text-slate-300 mt-4">
+              <p className="text-zinc-300 mt-4">
                 Áno, môžete zmeniť plán kedykoľvek. Pri upgrade sa vám príde prorated kredit, pri downgrade sa zmena prejaví od ďalšieho fakturačného obdobia.
               </p>
             </details>
             
-            <details className="group bg-slate-800/50 rounded-lg border border-slate-700 p-6">
-              <summary className="cursor-pointer text-slate-100 font-semibold flex items-center justify-between">
+            <details className="group bg-zinc-800/50 rounded-lg border border-zinc-700 p-6">
+              <summary className="cursor-pointer text-zinc-100 font-semibold flex items-center justify-between">
                 <span>Aké platobné metódy akceptujete?</span>
                 <span className="text-emerald-400 group-open:rotate-180 transition-transform">▼</span>
               </summary>
-              <p className="text-slate-300 mt-4">
+              <p className="text-zinc-300 mt-4">
                 Akceptujeme kreditné karty (Visa, Mastercard, Amex), bankové prevody a pre Enterprise zákazníkov aj faktúry.
               </p>
             </details>

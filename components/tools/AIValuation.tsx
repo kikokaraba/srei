@@ -127,25 +127,25 @@ export function AIValuation() {
           <Sparkles className="w-5 h-5 text-violet-400" />
           <span className="text-violet-400 font-medium">Powered by Claude AI</span>
         </div>
-        <h2 className="text-2xl font-bold text-slate-100">AI Ocenenie Nehnuteľnosti</h2>
-        <p className="text-slate-400 mt-2">
+        <h2 className="text-2xl font-bold text-zinc-100">AI Ocenenie Nehnuteľnosti</h2>
+        <p className="text-zinc-400 mt-2">
           Zadajte parametre a AI analyzuje podobné nehnuteľnosti v databáze
         </p>
       </div>
 
       {/* Form */}
-      <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
+      <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Mesto */}
           <div>
-            <label className="flex items-center gap-2 text-sm text-slate-300 mb-2">
+            <label className="flex items-center gap-2 text-sm text-zinc-300 mb-2">
               <MapPin className="w-4 h-4" />
               Mesto
             </label>
             <select
               value={formData.city}
               onChange={(e) => handleChange("city", e.target.value)}
-              className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-violet-500"
+              className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:border-violet-500"
             >
               {CITIES.map(city => (
                 <option key={city.value} value={city.value}>{city.label}</option>
@@ -155,7 +155,7 @@ export function AIValuation() {
 
           {/* Okres */}
           <div>
-            <label className="flex items-center gap-2 text-sm text-slate-300 mb-2">
+            <label className="flex items-center gap-2 text-sm text-zinc-300 mb-2">
               <Building2 className="w-4 h-4" />
               Mestská časť / Okres
             </label>
@@ -164,13 +164,13 @@ export function AIValuation() {
               value={formData.district}
               onChange={(e) => handleChange("district", e.target.value)}
               placeholder="napr. Staré Mesto, Petržalka..."
-              className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-violet-500"
+              className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:border-violet-500"
             />
           </div>
 
           {/* Plocha */}
           <div>
-            <label className="flex items-center gap-2 text-sm text-slate-300 mb-2">
+            <label className="flex items-center gap-2 text-sm text-zinc-300 mb-2">
               <Ruler className="w-4 h-4" />
               Plocha (m²)
             </label>
@@ -180,20 +180,20 @@ export function AIValuation() {
               onChange={(e) => handleChange("area_m2", parseFloat(e.target.value) || 0)}
               min="10"
               max="500"
-              className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-violet-500"
+              className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:border-violet-500"
             />
           </div>
 
           {/* Počet izieb */}
           <div>
-            <label className="flex items-center gap-2 text-sm text-slate-300 mb-2">
+            <label className="flex items-center gap-2 text-sm text-zinc-300 mb-2">
               <Home className="w-4 h-4" />
               Počet izieb
             </label>
             <select
               value={formData.rooms}
               onChange={(e) => handleChange("rooms", parseInt(e.target.value))}
-              className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-violet-500"
+              className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:border-violet-500"
             >
               {[1, 2, 3, 4, 5, 6].map(n => (
                 <option key={n} value={n}>{n} {n === 1 ? "izba" : n < 5 ? "izby" : "izieb"}</option>
@@ -203,14 +203,14 @@ export function AIValuation() {
 
           {/* Poschodie */}
           <div>
-            <label className="flex items-center gap-2 text-sm text-slate-300 mb-2">
+            <label className="flex items-center gap-2 text-sm text-zinc-300 mb-2">
               <Layers className="w-4 h-4" />
               Poschodie
             </label>
             <select
               value={formData.floor}
               onChange={(e) => handleChange("floor", parseInt(e.target.value))}
-              className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-violet-500"
+              className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:border-violet-500"
             >
               <option value={0}>Prízemie</option>
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => (
@@ -222,14 +222,14 @@ export function AIValuation() {
 
           {/* Stav */}
           <div>
-            <label className="flex items-center gap-2 text-sm text-slate-300 mb-2">
+            <label className="flex items-center gap-2 text-sm text-zinc-300 mb-2">
               <CheckCircle2 className="w-4 h-4" />
               Stav nehnuteľnosti
             </label>
             <select
               value={formData.condition}
               onChange={(e) => handleChange("condition", e.target.value)}
-              className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-violet-500"
+              className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:border-violet-500"
             >
               {CONDITIONS.map(cond => (
                 <option key={cond.value} value={cond.value}>{cond.label}</option>
@@ -239,39 +239,39 @@ export function AIValuation() {
         </div>
 
         {/* Checkboxes */}
-        <div className="flex flex-wrap gap-6 mt-6 pt-6 border-t border-slate-700">
+        <div className="flex flex-wrap gap-6 mt-6 pt-6 border-t border-zinc-700">
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
               checked={formData.hasBalcony}
               onChange={(e) => handleChange("hasBalcony", e.target.checked)}
-              className="w-5 h-5 rounded border-slate-600 bg-slate-900 text-violet-500 focus:ring-violet-500"
+              className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-violet-500 focus:ring-violet-500"
             />
-            <span className="text-slate-300">Balkón / Terasa</span>
+            <span className="text-zinc-300">Balkón / Terasa</span>
           </label>
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
               checked={formData.hasParking}
               onChange={(e) => handleChange("hasParking", e.target.checked)}
-              className="w-5 h-5 rounded border-slate-600 bg-slate-900 text-violet-500 focus:ring-violet-500"
+              className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-violet-500 focus:ring-violet-500"
             />
-            <span className="text-slate-300">Parkovanie</span>
+            <span className="text-zinc-300">Parkovanie</span>
           </label>
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
               checked={formData.isNewBuilding}
               onChange={(e) => handleChange("isNewBuilding", e.target.checked)}
-              className="w-5 h-5 rounded border-slate-600 bg-slate-900 text-violet-500 focus:ring-violet-500"
+              className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-violet-500 focus:ring-violet-500"
             />
-            <span className="text-slate-300">Novostavba</span>
+            <span className="text-zinc-300">Novostavba</span>
           </label>
         </div>
 
         {/* Additional Info */}
         <div className="mt-6">
-          <label className="flex items-center gap-2 text-sm text-slate-300 mb-2">
+          <label className="flex items-center gap-2 text-sm text-zinc-300 mb-2">
             <Info className="w-4 h-4" />
             Ďalšie informácie (voliteľné)
           </label>
@@ -280,7 +280,7 @@ export function AIValuation() {
             onChange={(e) => handleChange("additionalInfo", e.target.value)}
             placeholder="napr. výhľad na Dunaj, tichá ulica, blízko metra..."
             rows={2}
-            className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-violet-500 resize-none"
+            className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:border-violet-500 resize-none"
           />
         </div>
 
@@ -318,11 +318,11 @@ export function AIValuation() {
           {/* Main Result */}
           <div className="bg-gradient-to-br from-violet-900/30 to-purple-900/30 rounded-xl border border-violet-500/30 p-8">
             <div className="text-center mb-6">
-              <p className="text-slate-400 mb-2">Odhadovaná trhová hodnota</p>
+              <p className="text-zinc-400 mb-2">Odhadovaná trhová hodnota</p>
               <p className="text-5xl font-bold text-white">
                 €{result.estimatedPrice.toLocaleString()}
               </p>
-              <p className="text-slate-400 mt-2">
+              <p className="text-zinc-400 mt-2">
                 €{result.pricePerM2.toLocaleString()}/m²
               </p>
             </div>
@@ -330,13 +330,13 @@ export function AIValuation() {
             {/* Price Range */}
             <div className="flex items-center justify-center gap-8 mb-6">
               <div className="text-center">
-                <p className="text-sm text-slate-400">Dolná hranica</p>
-                <p className="text-xl font-semibold text-slate-200">€{result.priceRange.low.toLocaleString()}</p>
+                <p className="text-sm text-zinc-400">Dolná hranica</p>
+                <p className="text-xl font-semibold text-zinc-200">€{result.priceRange.low.toLocaleString()}</p>
               </div>
-              <div className="h-12 w-px bg-slate-700" />
+              <div className="h-12 w-px bg-zinc-700" />
               <div className="text-center">
-                <p className="text-sm text-slate-400">Horná hranica</p>
-                <p className="text-xl font-semibold text-slate-200">€{result.priceRange.high.toLocaleString()}</p>
+                <p className="text-sm text-zinc-400">Horná hranica</p>
+                <p className="text-xl font-semibold text-zinc-200">€{result.priceRange.high.toLocaleString()}</p>
               </div>
             </div>
 
@@ -347,7 +347,7 @@ export function AIValuation() {
                   {CONFIDENCE_STYLES[result.confidence].label}
                 </span>
                 {result.comparables.count > 0 && (
-                  <span className="text-slate-400 ml-2">
+                  <span className="text-zinc-400 ml-2">
                     (na základe {result.comparables.count} podobných nehnuteľností)
                   </span>
                 )}
@@ -356,39 +356,39 @@ export function AIValuation() {
           </div>
 
           {/* Analysis */}
-          <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
-            <h3 className="text-lg font-semibold text-slate-100 mb-4">Analýza</h3>
-            <p className="text-slate-300 leading-relaxed">{result.analysis}</p>
+          <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-6">
+            <h3 className="text-lg font-semibold text-zinc-100 mb-4">Analýza</h3>
+            <p className="text-zinc-300 leading-relaxed">{result.analysis}</p>
             
             {result.marketInsight && (
-              <div className="mt-4 pt-4 border-t border-slate-700">
-                <p className="text-sm text-slate-400">{result.marketInsight}</p>
+              <div className="mt-4 pt-4 border-t border-zinc-700">
+                <p className="text-sm text-zinc-400">{result.marketInsight}</p>
               </div>
             )}
           </div>
 
           {/* Factors */}
           {result.factors.length > 0 && (
-            <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
-              <h3 className="text-lg font-semibold text-slate-100 mb-4">Faktory ovplyvňujúce cenu</h3>
+            <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-6">
+              <h3 className="text-lg font-semibold text-zinc-100 mb-4">Faktory ovplyvňujúce cenu</h3>
               <div className="space-y-3">
                 {result.factors.map((factor, idx) => (
                   <div key={idx} className="flex items-start gap-3">
                     <div className={`p-1.5 rounded-full ${
                       factor.impact === "positive" ? "bg-emerald-500/20" :
-                      factor.impact === "negative" ? "bg-red-500/20" : "bg-slate-500/20"
+                      factor.impact === "negative" ? "bg-red-500/20" : "bg-zinc-500/20"
                     }`}>
                       {factor.impact === "positive" ? (
                         <TrendingUp className="w-4 h-4 text-emerald-400" />
                       ) : factor.impact === "negative" ? (
                         <TrendingDown className="w-4 h-4 text-red-400" />
                       ) : (
-                        <Minus className="w-4 h-4 text-slate-400" />
+                        <Minus className="w-4 h-4 text-zinc-400" />
                       )}
                     </div>
                     <div>
-                      <p className="font-medium text-slate-200">{factor.factor}</p>
-                      <p className="text-sm text-slate-400">{factor.description}</p>
+                      <p className="font-medium text-zinc-200">{factor.factor}</p>
+                      <p className="text-sm text-zinc-400">{factor.description}</p>
                     </div>
                   </div>
                 ))}
@@ -398,24 +398,24 @@ export function AIValuation() {
 
           {/* Comparables */}
           {result.comparables.count > 0 && (
-            <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
-              <h3 className="text-lg font-semibold text-slate-100 mb-4">Porovnateľné nehnuteľnosti</h3>
+            <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-6">
+              <h3 className="text-lg font-semibold text-zinc-100 mb-4">Porovnateľné nehnuteľnosti</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-slate-900/50 rounded-lg">
-                  <p className="text-2xl font-bold text-slate-100">{result.comparables.count}</p>
-                  <p className="text-sm text-slate-400">nehnuteľností</p>
+                <div className="text-center p-4 bg-zinc-900/50 rounded-lg">
+                  <p className="text-2xl font-bold text-zinc-100">{result.comparables.count}</p>
+                  <p className="text-sm text-zinc-400">nehnuteľností</p>
                 </div>
-                <div className="text-center p-4 bg-slate-900/50 rounded-lg">
-                  <p className="text-2xl font-bold text-slate-100">€{result.comparables.avgPricePerM2.toLocaleString()}</p>
-                  <p className="text-sm text-slate-400">priem. cena/m²</p>
+                <div className="text-center p-4 bg-zinc-900/50 rounded-lg">
+                  <p className="text-2xl font-bold text-zinc-100">€{result.comparables.avgPricePerM2.toLocaleString()}</p>
+                  <p className="text-sm text-zinc-400">priem. cena/m²</p>
                 </div>
-                <div className="text-center p-4 bg-slate-900/50 rounded-lg">
-                  <p className="text-2xl font-bold text-slate-100">€{(result.comparables.priceRange.min / 1000).toFixed(0)}k</p>
-                  <p className="text-sm text-slate-400">min. cena</p>
+                <div className="text-center p-4 bg-zinc-900/50 rounded-lg">
+                  <p className="text-2xl font-bold text-zinc-100">€{(result.comparables.priceRange.min / 1000).toFixed(0)}k</p>
+                  <p className="text-sm text-zinc-400">min. cena</p>
                 </div>
-                <div className="text-center p-4 bg-slate-900/50 rounded-lg">
-                  <p className="text-2xl font-bold text-slate-100">€{(result.comparables.priceRange.max / 1000).toFixed(0)}k</p>
-                  <p className="text-sm text-slate-400">max. cena</p>
+                <div className="text-center p-4 bg-zinc-900/50 rounded-lg">
+                  <p className="text-2xl font-bold text-zinc-100">€{(result.comparables.priceRange.max / 1000).toFixed(0)}k</p>
+                  <p className="text-sm text-zinc-400">max. cena</p>
                 </div>
               </div>
             </div>

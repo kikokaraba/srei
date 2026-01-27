@@ -103,7 +103,7 @@ export function PricePrediction() {
       case "falling":
         return <TrendingDown className="w-4 h-4 text-red-400" />;
       default:
-        return <Minus className="w-4 h-4 text-slate-400" />;
+        return <Minus className="w-4 h-4 text-zinc-400" />;
     }
   };
 
@@ -114,7 +114,7 @@ export function PricePrediction() {
       case "falling":
         return "text-red-400";
       default:
-        return "text-slate-400";
+        return "text-zinc-400";
     }
   };
 
@@ -135,12 +135,12 @@ export function PricePrediction() {
             <Brain className="w-6 h-6 text-purple-400" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-100">AI Predikcie cien</h2>
-            <p className="text-sm text-slate-400">Analýza trendov a predpovede vývoja trhu</p>
+            <h2 className="text-xl font-bold text-zinc-100">AI Predikcie cien</h2>
+            <p className="text-sm text-zinc-400">Analýza trendov a predpovede vývoja trhu</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500 bg-slate-800 px-2 py-1 rounded">
+          <span className="text-xs text-zinc-500 bg-zinc-800 px-2 py-1 rounded">
             <Sparkles className="w-3 h-3 inline mr-1" />
             AI Powered
           </span>
@@ -156,7 +156,7 @@ export function PricePrediction() {
             className={`px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg whitespace-nowrap transition-colors shrink-0 ${
               selectedCity === REGION_TO_CITY[code]
                 ? "bg-purple-500 text-white"
-                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
             }`}
           >
             {code}
@@ -168,21 +168,21 @@ export function PricePrediction() {
       {cityData && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
           {/* Current Stats */}
-          <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 lg:p-6">
-            <h3 className="font-semibold text-slate-100 mb-3 lg:mb-4 flex items-center gap-2 text-sm lg:text-base">
+          <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-4 lg:p-6">
+            <h3 className="font-semibold text-zinc-100 mb-3 lg:mb-4 flex items-center gap-2 text-sm lg:text-base">
               <BarChart3 className="w-4 h-4 lg:w-5 lg:h-5 text-blue-400" />
               <span className="truncate">Stav - {REGION_LABELS[CITY_TO_REGION[selectedCity]] || selectedCity}</span>
             </h3>
             <div className="grid grid-cols-2 gap-2 sm:gap-4">
-              <div className="p-3 lg:p-4 bg-slate-800/50 rounded-lg">
-                <div className="text-xs lg:text-sm text-slate-400">Cena/m²</div>
-                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-100">
+              <div className="p-3 lg:p-4 bg-zinc-800/50 rounded-lg">
+                <div className="text-xs lg:text-sm text-zinc-400">Cena/m²</div>
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-zinc-100">
                   €{cityData.stats.avgPricePerM2.toLocaleString()}
                 </div>
               </div>
-              <div className="p-3 lg:p-4 bg-slate-800/50 rounded-lg">
-                <div className="text-xs lg:text-sm text-slate-400">Nehnuteľností</div>
-                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-100">
+              <div className="p-3 lg:p-4 bg-zinc-800/50 rounded-lg">
+                <div className="text-xs lg:text-sm text-zinc-400">Nehnuteľností</div>
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-zinc-100">
                   {cityData.stats.totalProperties}
                 </div>
               </div>
@@ -190,8 +190,8 @@ export function PricePrediction() {
 
             {/* Trends */}
             <div className="mt-4 space-y-3">
-              <div className="flex items-center justify-between p-3 bg-slate-800/30 rounded-lg">
-                <span className="text-slate-400">Trend 3 mesiace</span>
+              <div className="flex items-center justify-between p-3 bg-zinc-800/30 rounded-lg">
+                <span className="text-zinc-400">Trend 3 mesiace</span>
                 <div className="flex items-center gap-2">
                   {getTrendIcon(cityData.trends["3m"].trend)}
                   <span className={`font-medium ${getTrendColor(cityData.trends["3m"].trend)}`}>
@@ -200,8 +200,8 @@ export function PricePrediction() {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center justify-between p-3 bg-slate-800/30 rounded-lg">
-                <span className="text-slate-400">Trend 1 rok</span>
+              <div className="flex items-center justify-between p-3 bg-zinc-800/30 rounded-lg">
+                <span className="text-zinc-400">Trend 1 rok</span>
                 <div className="flex items-center gap-2">
                   {getTrendIcon(cityData.trends["1y"].trend)}
                   <span className={`font-medium ${getTrendColor(cityData.trends["1y"].trend)}`}>
@@ -214,8 +214,8 @@ export function PricePrediction() {
           </div>
 
           {/* Predictions */}
-          <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-            <h3 className="font-semibold text-slate-100 mb-4 flex items-center gap-2">
+          <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
+            <h3 className="font-semibold text-zinc-100 mb-4 flex items-center gap-2">
               <Target className="w-5 h-5 text-purple-400" />
               Predikcie ceny/m²
             </h3>
@@ -223,15 +223,15 @@ export function PricePrediction() {
               {/* 6 month prediction */}
               <div className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-lg border border-purple-500/20">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-slate-400">Za 6 mesiacov</span>
+                  <span className="text-zinc-400">Za 6 mesiacov</span>
                   <span className="text-xs text-purple-400">
                     Spoľahlivosť: {cityData.predictions["6m"].confidence}%
                   </span>
                 </div>
-                <div className="text-3xl font-bold text-slate-100">
+                <div className="text-3xl font-bold text-zinc-100">
                   €{cityData.predictions["6m"].predictedPricePerM2.toLocaleString()}
                 </div>
-                <div className="mt-2 h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div className="mt-2 h-2 bg-zinc-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-purple-500 rounded-full"
                     style={{ width: `${cityData.predictions["6m"].confidence}%` }}
@@ -242,15 +242,15 @@ export function PricePrediction() {
               {/* 1 year prediction */}
               <div className="p-4 bg-gradient-to-r from-blue-500/10 to-emerald-500/10 rounded-lg border border-blue-500/20">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-slate-400">Za 1 rok</span>
+                  <span className="text-zinc-400">Za 1 rok</span>
                   <span className="text-xs text-blue-400">
                     Spoľahlivosť: {cityData.predictions["1y"].confidence}%
                   </span>
                 </div>
-                <div className="text-3xl font-bold text-slate-100">
+                <div className="text-3xl font-bold text-zinc-100">
                   €{cityData.predictions["1y"].predictedPricePerM2.toLocaleString()}
                 </div>
-                <div className="mt-2 h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div className="mt-2 h-2 bg-zinc-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-blue-500 rounded-full"
                     style={{ width: `${cityData.predictions["1y"].confidence}%` }}
@@ -275,30 +275,30 @@ export function PricePrediction() {
 
       {/* Market Insights */}
       {marketData && (
-        <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden">
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="w-full p-4 flex items-center justify-between hover:bg-slate-800/50 transition-colors"
+            className="w-full p-4 flex items-center justify-between hover:bg-zinc-800/50 transition-colors"
           >
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-emerald-400" />
-              <span className="font-semibold text-slate-100">Prehľad trhu SR</span>
+              <span className="font-semibold text-zinc-100">Prehľad trhu SR</span>
             </div>
             {showDetails ? (
-              <ChevronUp className="w-5 h-5 text-slate-400" />
+              <ChevronUp className="w-5 h-5 text-zinc-400" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-slate-400" />
+              <ChevronDown className="w-5 h-5 text-zinc-400" />
             )}
           </button>
 
           {showDetails && (
-            <div className="p-4 border-t border-slate-800">
+            <div className="p-4 border-t border-zinc-800">
               {/* Insights */}
               <div className="mb-4 space-y-2">
                 {marketData.insights.map((insight, i) => (
                   <div
                     key={i}
-                    className="flex items-start gap-2 text-sm text-slate-300"
+                    className="flex items-start gap-2 text-sm text-zinc-300"
                   >
                     <Sparkles className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                     {insight}
@@ -309,35 +309,35 @@ export function PricePrediction() {
               {/* Cities comparison */}
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-slate-800/50">
+                  <thead className="bg-zinc-800/50">
                     <tr>
-                      <th className="text-left py-2 px-3 text-sm font-medium text-slate-400">
+                      <th className="text-left py-2 px-3 text-sm font-medium text-zinc-400">
                         Región
                       </th>
-                      <th className="text-right py-2 px-3 text-sm font-medium text-slate-400">
+                      <th className="text-right py-2 px-3 text-sm font-medium text-zinc-400">
                         Cena/m²
                       </th>
-                      <th className="text-right py-2 px-3 text-sm font-medium text-slate-400">
+                      <th className="text-right py-2 px-3 text-sm font-medium text-zinc-400">
                         Výnos
                       </th>
-                      <th className="text-right py-2 px-3 text-sm font-medium text-slate-400">
+                      <th className="text-right py-2 px-3 text-sm font-medium text-zinc-400">
                         Počet
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800">
+                  <tbody className="divide-y divide-zinc-800">
                     {marketData.cities.map((city) => (
-                      <tr key={city.city} className="hover:bg-slate-800/30">
-                        <td className="py-2 px-3 text-slate-100">
+                      <tr key={city.city} className="hover:bg-zinc-800/30">
+                        <td className="py-2 px-3 text-zinc-100">
                           {REGION_LABELS[CITY_TO_REGION[city.city]] || city.city}
                         </td>
-                        <td className="py-2 px-3 text-right text-slate-300">
+                        <td className="py-2 px-3 text-right text-zinc-300">
                           €{city.avgPricePerM2.toLocaleString()}
                         </td>
                         <td className="py-2 px-3 text-right">
                           <span className="text-emerald-400">{city.avgYield}%</span>
                         </td>
-                        <td className="py-2 px-3 text-right text-slate-400">
+                        <td className="py-2 px-3 text-right text-zinc-400">
                           {city.propertyCount}
                         </td>
                       </tr>

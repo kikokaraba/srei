@@ -74,10 +74,10 @@ export function MarketGaps() {
 
   if (loading) {
     return (
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+      <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-slate-800 rounded w-1/3"></div>
-          <div className="h-32 bg-slate-800 rounded"></div>
+          <div className="h-6 bg-zinc-800 rounded w-1/3"></div>
+          <div className="h-32 bg-zinc-800 rounded"></div>
         </div>
       </div>
     );
@@ -85,7 +85,7 @@ export function MarketGaps() {
 
   if (error) {
     return (
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+      <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
         <div className="text-red-400 flex items-center gap-2">
           <AlertCircle className="w-5 h-5" />
           <span>{error}</span>
@@ -96,29 +96,29 @@ export function MarketGaps() {
 
   if (gaps.length === 0) {
     return (
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+      <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-emerald-500/10 rounded-lg">
             <TrendingDown className="w-6 h-6 text-emerald-400" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-slate-100">Index skrytého potenciálu</h3>
-            <p className="text-sm text-slate-400">Detekcia podhodnotených nehnuteľností</p>
+            <h3 className="text-xl font-bold text-zinc-100">Index skrytého potenciálu</h3>
+            <p className="text-sm text-zinc-400">Detekcia podhodnotených nehnuteľností</p>
           </div>
         </div>
         <div className="text-center py-8">
           {hasLocationPreferences ? (
             <>
-              <p className="text-slate-400">Momentálne nie sú detekované žiadne podhodnotené nehnuteľnosti vo vašich lokalitách.</p>
-              <p className="text-sm text-slate-500 mt-2">Systém automaticky skenuje trh a upozorní vás na príležitosti.</p>
+              <p className="text-zinc-400">Momentálne nie sú detekované žiadne podhodnotené nehnuteľnosti vo vašich lokalitách.</p>
+              <p className="text-sm text-zinc-500 mt-2">Systém automaticky skenuje trh a upozorní vás na príležitosti.</p>
             </>
           ) : (
             <>
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800/50 flex items-center justify-center">
-                <Settings className="w-8 h-8 text-slate-600" />
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-zinc-800/50 flex items-center justify-center">
+                <Settings className="w-8 h-8 text-zinc-600" />
               </div>
-              <p className="text-slate-400">Nastavte sledované lokality</p>
-              <p className="text-sm text-slate-500 mt-2">Pre zobrazenie podhodnotených nehnuteľností vo vašom regióne</p>
+              <p className="text-zinc-400">Nastavte sledované lokality</p>
+              <p className="text-sm text-zinc-500 mt-2">Pre zobrazenie podhodnotených nehnuteľností vo vašom regióne</p>
               <Link 
                 href="/dashboard/settings" 
                 className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-500/30 transition-colors"
@@ -134,22 +134,22 @@ export function MarketGaps() {
   }
 
   return (
-    <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+    <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-emerald-500/10 rounded-lg">
             <TrendingDown className="w-6 h-6 text-emerald-400" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-slate-100">Index skrytého potenciálu</h3>
-            <p className="text-sm text-slate-400">
+            <h3 className="text-xl font-bold text-zinc-100">Index skrytého potenciálu</h3>
+            <p className="text-sm text-zinc-400">
               {gaps.length} {gaps.length === 1 ? "podhodnotená nehnuteľnosť" : "podhodnotených nehnuteľností"}
             </p>
           </div>
         </div>
         <button
           onClick={fetchMarketGaps}
-          className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm transition-colors"
+          className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-sm transition-colors"
         >
           Obnoviť
         </button>
@@ -159,7 +159,7 @@ export function MarketGaps() {
         {gaps.map((gap) => (
           <div
             key={gap.id}
-            className="bg-slate-800/50 rounded-lg border border-emerald-500/20 p-5 hover:border-emerald-500/40 transition-all"
+            className="bg-zinc-800/50 rounded-lg border border-emerald-500/20 p-5 hover:border-emerald-500/40 transition-all"
           >
             {/* Push notification style header */}
             <div className="flex items-start justify-between mb-3">
@@ -168,14 +168,14 @@ export function MarketGaps() {
                   <div className="px-2 py-1 bg-emerald-500/20 rounded text-xs font-semibold text-emerald-400">
                     {gap.gap_percentage.toFixed(1)}% pod priemerom
                   </div>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-zinc-500">
                     {new Date(gap.detected_at).toLocaleDateString("sk-SK")}
                   </span>
                 </div>
-                <h4 className="text-lg font-bold text-slate-100 mb-1">
+                <h4 className="text-lg font-bold text-zinc-100 mb-1">
                   {gap.property.title}
                 </h4>
-                <div className="flex items-center gap-2 text-sm text-slate-400 mb-3">
+                <div className="flex items-center gap-2 text-sm text-zinc-400 mb-3">
                   <MapPin className="w-4 h-4" />
                   <span>{gap.property.address}</span>
                 </div>
@@ -185,39 +185,39 @@ export function MarketGaps() {
             {/* Key metrics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <div>
-                <p className="text-xs text-slate-500 mb-1">Cena</p>
-                <p className="text-base font-semibold text-slate-100">
+                <p className="text-xs text-zinc-500 mb-1">Cena</p>
+                <p className="text-base font-semibold text-zinc-100">
                   {gap.property.price.toLocaleString("sk-SK")} €
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-zinc-500">
                   {gap.property.price_per_m2.toLocaleString("sk-SK")} €/m²
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-500 mb-1">Priemer v ulici</p>
-                <p className="text-base font-semibold text-slate-300">
+                <p className="text-xs text-zinc-500 mb-1">Priemer v ulici</p>
+                <p className="text-base font-semibold text-zinc-300">
                   {gap.street_avg_price.toLocaleString("sk-SK")} €/m²
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-500 mb-1">Potenciálny zisk</p>
+                <p className="text-xs text-zinc-500 mb-1">Potenciálny zisk</p>
                 <p className="text-base font-semibold text-emerald-400">
                   {gap.potential_profit.toLocaleString("sk-SK")} €
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-500 mb-1">Plocha</p>
-                <p className="text-base font-semibold text-slate-100">
+                <p className="text-xs text-zinc-500 mb-1">Plocha</p>
+                <p className="text-base font-semibold text-zinc-100">
                   {gap.property.area_m2} m²
                 </p>
                 {gap.property.rooms && (
-                  <p className="text-xs text-slate-500">{gap.property.rooms} izieb</p>
+                  <p className="text-xs text-zinc-500">{gap.property.rooms} izieb</p>
                 )}
               </div>
             </div>
 
             {/* Action buttons */}
-            <div className="flex items-center gap-3 pt-4 border-t border-slate-700">
+            <div className="flex items-center gap-3 pt-4 border-t border-zinc-700">
               <Link
                 href={`/dashboard/properties/${gap.property.id}`}
                 className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors"
@@ -225,7 +225,7 @@ export function MarketGaps() {
                 <ExternalLink className="w-4 h-4" />
                 Zobraziť detail
               </Link>
-              <button className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg text-sm transition-colors">
+              <button className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-zinc-300 rounded-lg text-sm transition-colors">
                 Pridať do porovnania
               </button>
             </div>

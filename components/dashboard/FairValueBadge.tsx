@@ -52,9 +52,9 @@ const STATUS_CONFIG = {
     icon: TrendingUp,
   },
   insufficient_data: {
-    bg: "bg-slate-500/20",
-    border: "border-slate-500/50",
-    text: "text-slate-400",
+    bg: "bg-zinc-500/20",
+    border: "border-zinc-500/50",
+    text: "text-zinc-400",
     icon: Minus,
   },
 };
@@ -84,8 +84,8 @@ export const FairValueBadge = memo(function FairValueBadge({ propertyId, compact
 
   if (loading) {
     return (
-      <div className="inline-flex items-center gap-1 px-2 py-1 bg-slate-700/50 rounded text-xs">
-        <Loader2 className="w-3 h-3 animate-spin text-slate-400" />
+      <div className="inline-flex items-center gap-1 px-2 py-1 bg-zinc-700/50 rounded text-xs">
+        <Loader2 className="w-3 h-3 animate-spin text-zinc-400" />
       </div>
     );
   }
@@ -129,24 +129,24 @@ export const FairValueBadge = memo(function FairValueBadge({ propertyId, compact
       </button>
 
       {expanded && data.status !== "insufficient_data" && (
-        <div className="absolute top-full left-0 mt-2 z-50 w-64 bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-xl">
+        <div className="absolute top-full left-0 mt-2 z-50 w-64 bg-zinc-800 border border-zinc-700 rounded-xl p-4 shadow-xl">
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-slate-400 text-sm">Aktuálna cena</span>
-              <span className="text-slate-100 font-medium">€{data.currentPrice?.toLocaleString()}</span>
+              <span className="text-zinc-400 text-sm">Aktuálna cena</span>
+              <span className="text-zinc-100 font-medium">€{data.currentPrice?.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-slate-400 text-sm">Férová cena</span>
+              <span className="text-zinc-400 text-sm">Férová cena</span>
               <span className="text-violet-400 font-medium">€{data.fairValue?.toLocaleString()}</span>
             </div>
-            <div className="h-px bg-slate-700" />
+            <div className="h-px bg-zinc-700" />
             <div className="flex justify-between items-center">
-              <span className="text-slate-400 text-sm">Rozdiel</span>
+              <span className="text-zinc-400 text-sm">Rozdiel</span>
               <span className={`font-medium ${data.difference! > 0 ? "text-red-400" : "text-emerald-400"}`}>
                 {data.difference! > 0 ? "+" : ""}€{data.difference?.toLocaleString()}
               </span>
             </div>
-            <div className="text-xs text-slate-500 text-center pt-2">
+            <div className="text-xs text-zinc-500 text-center pt-2">
               Na základe {data.comparablesCount} podobných nehnuteľností
             </div>
           </div>
@@ -154,8 +154,8 @@ export const FairValueBadge = memo(function FairValueBadge({ propertyId, compact
       )}
 
       {expanded && data.status === "insufficient_data" && (
-        <div className="absolute top-full left-0 mt-2 z-50 w-48 bg-slate-800 border border-slate-700 rounded-xl p-3 shadow-xl">
-          <p className="text-sm text-slate-400">{data.message}</p>
+        <div className="absolute top-full left-0 mt-2 z-50 w-48 bg-zinc-800 border border-zinc-700 rounded-xl p-3 shadow-xl">
+          <p className="text-sm text-zinc-400">{data.message}</p>
         </div>
       )}
     </div>

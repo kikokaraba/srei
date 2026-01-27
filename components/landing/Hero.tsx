@@ -49,7 +49,7 @@ function LandingHeroComponent() {
             </span>
           </h1>
 
-          <p className="text-lg sm:text-xl lg:text-2xl text-slate-300 mb-4 sm:mb-6 max-w-3xl mx-auto leading-relaxed px-2">
+          <p className="text-lg sm:text-xl lg:text-2xl text-zinc-300 mb-4 sm:mb-6 max-w-3xl mx-auto leading-relaxed px-2">
             Jediná platforma, ktorá kombinuje{" "}
             <span className="text-emerald-400 font-semibold">AI predikcie</span>,{" "}
             <span className="text-gold-400 font-semibold">real-time dáta</span> a{" "}
@@ -57,7 +57,7 @@ function LandingHeroComponent() {
             pre maximálny výnos z investícií do nehnuteľností.
           </p>
           
-          <p className="text-base sm:text-lg text-slate-400 mb-10 sm:mb-14 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-zinc-400 mb-10 sm:mb-14 max-w-2xl mx-auto">
             {stats.totalProperties > 0 ? (
               <>
                 Sledujeme <span className="text-white font-semibold">{stats.totalProperties.toLocaleString()} nehnuteľností</span> na slovenskom trhu.
@@ -80,14 +80,14 @@ function LandingHeroComponent() {
             </Link>
             <Link
               href="#pricing"
-              className="w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-5 glass hover:bg-slate-800/80 text-white font-semibold rounded-2xl transition-all duration-300 border border-slate-600 hover:border-emerald-500/50 text-center hover:glow-emerald-soft"
+              className="w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-5 glass hover:bg-zinc-800/80 text-white font-semibold rounded-2xl transition-all duration-300 border border-zinc-600 hover:border-emerald-500/50 text-center hover:glow-emerald-soft"
             >
               Zobraziť cenník
             </Link>
           </div>
           
           {/* Trust indicators */}
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-8 text-sm text-slate-400 mb-16 sm:mb-20 px-4">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-8 text-sm text-zinc-400 mb-16 sm:mb-20 px-4">
             <span className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
               14 dní zdarma
@@ -111,7 +111,7 @@ function LandingHeroComponent() {
               <h3 className="text-white font-bold mb-2 text-lg">
                 Real-time analýzy
               </h3>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-zinc-400">
                 Aktuálne dáta zo všetkých slovenských regiónov, aktualizované každých 15 minút
               </p>
             </div>
@@ -123,19 +123,19 @@ function LandingHeroComponent() {
               <h3 className="text-white font-bold mb-2 text-lg">
                 AI predikcie
               </h3>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-zinc-400">
                 95% presnosť predikcií výnosov a vývoja cien nehnuteľností
               </p>
             </div>
 
-            <div className="glass-card rounded-2xl p-5 sm:p-6 text-left hover:border-slate-500/30 transition-all duration-300 shine-effect">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-500/20 to-slate-500/5 border border-slate-600 flex items-center justify-center mb-4">
-                <Shield className="w-6 h-6 text-slate-400" />
+            <div className="glass-card rounded-2xl p-5 sm:p-6 text-left hover:border-zinc-500/30 transition-all duration-300 shine-effect">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-zinc-500/20 to-zinc-500/5 border border-zinc-600 flex items-center justify-center mb-4">
+                <Shield className="w-6 h-6 text-zinc-400" />
               </div>
               <h3 className="text-white font-bold mb-2 text-lg">
                 Bezpečná platforma
               </h3>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-zinc-400">
                 Bank-level zabezpečenie, GDPR compliant, 99.9% uptime
               </p>
             </div>

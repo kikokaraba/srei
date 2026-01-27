@@ -78,7 +78,7 @@ export function LandingMap() {
   const maxProps = Math.max(...cities.map(c => c.properties), 1);
 
   return (
-    <section id="map" className="py-16 sm:py-24 bg-gradient-to-b from-slate-950 to-slate-900 relative overflow-hidden">
+    <section id="map" className="py-16 sm:py-24 bg-gradient-to-b from-zinc-950 to-zinc-900 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-grid-slate-800/[0.05] bg-[size:40px_40px]" />
       
@@ -100,7 +100,7 @@ export function LandingMap() {
             <span className="text-emerald-400">Slovensko</span>
             {" "}na dosah
           </h2>
-          <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+          <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
             {totals.cities > 0 
               ? `Sledujte ceny a investičné príležitosti v ${totals.cities} slovenských mestách`
               : "Sledujte ceny a investičné príležitosti po celom Slovensku"
@@ -114,24 +114,24 @@ export function LandingMap() {
             <div className="text-2xl sm:text-3xl font-bold text-white">
               {loading ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : totals.properties.toLocaleString()}
             </div>
-            <div className="text-sm text-slate-400">Nehnuteľností</div>
+            <div className="text-sm text-zinc-400">Nehnuteľností</div>
           </div>
           <div className="text-center">
             <div className="text-2xl sm:text-3xl font-bold text-emerald-400">
               {loading ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : totals.cities}
             </div>
-            <div className="text-sm text-slate-400">Miest</div>
+            <div className="text-sm text-zinc-400">Miest</div>
           </div>
           <div className="text-center">
             <div className="text-2xl sm:text-3xl font-bold text-amber-400">
               3×
             </div>
-            <div className="text-sm text-slate-400">Denne aktualizované</div>
+            <div className="text-sm text-zinc-400">Denne aktualizované</div>
           </div>
         </div>
 
         {/* Map container */}
-        <div className="relative rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+        <div className="relative rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
           <div className="h-[400px] sm:h-[500px] lg:h-[550px]">
             <MapContainer
               center={[48.7, 19.5]}
@@ -166,14 +166,14 @@ export function LandingMap() {
                 >
                   <Popup>
                     <div className="p-3 min-w-[180px]">
-                      <h3 className="font-bold text-slate-900 text-lg mb-3">{city.name}</h3>
+                      <h3 className="font-bold text-zinc-900 text-lg mb-3">{city.name}</h3>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-slate-600">Cena/m²:</span>
+                          <span className="text-zinc-600">Cena/m²:</span>
                           <span className="font-semibold">€{city.avgPrice.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-600">Ponuky:</span>
+                          <span className="text-zinc-600">Ponuky:</span>
                           <span className="font-semibold">{city.properties}</span>
                         </div>
                       </div>
@@ -186,10 +186,10 @@ export function LandingMap() {
 
           {/* Empty state overlay */}
           {!loading && cities.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 z-[1000]">
+            <div className="absolute inset-0 flex items-center justify-center bg-zinc-900/80 z-[1000]">
               <div className="text-center p-6">
-                <MapPin className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-400 mb-4">Zatiaľ nemáme dáta z trhu</p>
+                <MapPin className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
+                <p className="text-zinc-400 mb-4">Zatiaľ nemáme dáta z trhu</p>
                 <Link
                   href="/auth/signin"
                   className="inline-flex items-center gap-2 px-5 py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold rounded-xl"
@@ -217,14 +217,14 @@ export function LandingMap() {
 
         {/* Bottom CTA */}
         <div className="text-center mt-10">
-          <p className="text-slate-400 mb-4">
+          <p className="text-zinc-400 mb-4">
             Získajte prístup k <span className="text-emerald-400 font-semibold">AI predikciam</span>, 
             <span className="text-gold-400 font-semibold"> cenovým alertom</span> a 
             <span className="text-white font-semibold"> investorským nástrojom</span>
           </p>
           <Link
             href="/auth/signin"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl border border-slate-700 hover:border-emerald-500/50 transition-all"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl border border-zinc-700 hover:border-emerald-500/50 transition-all"
           >
             <Sparkles className="w-5 h-5 text-emerald-400" />
             Začať 14 dní zadarmo

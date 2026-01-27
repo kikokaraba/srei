@@ -112,7 +112,7 @@ export function ChatBot() {
         <span className="absolute -top-2 -right-2 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-xs font-bold animate-pulse">
           AI
         </span>
-        <div className="absolute bottom-full right-0 mb-2 px-3 py-1 bg-slate-800 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+        <div className="absolute bottom-full right-0 mb-2 px-3 py-1 bg-zinc-800 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
           Opýtaj sa AI asistenta
         </div>
       </button>
@@ -121,39 +121,39 @@ export function ChatBot() {
 
   return (
     <div
-      className={`fixed bottom-6 right-6 z-50 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl transition-all ${
+      className={`fixed bottom-6 right-6 z-50 bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl transition-all ${
         isMinimized ? "w-72 h-14" : "w-96 h-[600px]"
       }`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700 bg-gradient-to-r from-violet-900/50 to-purple-900/50 rounded-t-2xl">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-700 bg-gradient-to-r from-violet-900/50 to-purple-900/50 rounded-t-2xl">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-violet-500/20 rounded-lg">
             <Sparkles className="w-5 h-5 text-violet-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-slate-100">SRIA Asistent</h3>
+            <h3 className="font-semibold text-zinc-100">SRIA Asistent</h3>
             {!isMinimized && (
-              <p className="text-xs text-slate-400">AI expert na nehnuteľnosti</p>
+              <p className="text-xs text-zinc-400">AI expert na nehnuteľnosti</p>
             )}
           </div>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={() => setIsMinimized(!isMinimized)}
-            className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors"
+            className="p-2 hover:bg-zinc-700/50 rounded-lg transition-colors"
           >
             {isMinimized ? (
-              <Maximize2 className="w-4 h-4 text-slate-400" />
+              <Maximize2 className="w-4 h-4 text-zinc-400" />
             ) : (
-              <Minimize2 className="w-4 h-4 text-slate-400" />
+              <Minimize2 className="w-4 h-4 text-zinc-400" />
             )}
           </button>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors"
+            className="p-2 hover:bg-zinc-700/50 rounded-lg transition-colors"
           >
-            <X className="w-4 h-4 text-slate-400" />
+            <X className="w-4 h-4 text-zinc-400" />
           </button>
         </div>
       </div>
@@ -167,10 +167,10 @@ export function ChatBot() {
                 <div className="w-16 h-16 mx-auto mb-4 bg-violet-500/20 rounded-2xl flex items-center justify-center">
                   <Bot className="w-8 h-8 text-violet-400" />
                 </div>
-                <h4 className="text-lg font-semibold text-slate-100 mb-2">
+                <h4 className="text-lg font-semibold text-zinc-100 mb-2">
                   Ahoj! Som SRIA
                 </h4>
-                <p className="text-sm text-slate-400 mb-6">
+                <p className="text-sm text-zinc-400 mb-6">
                   Tvoj AI asistent pre slovenský realitný trh. Opýtaj sa ma čokoľvek!
                 </p>
                 <div className="space-y-2">
@@ -178,7 +178,7 @@ export function ChatBot() {
                     <button
                       key={i}
                       onClick={() => sendMessage(q)}
-                      className="w-full text-left px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm text-slate-300 transition-colors"
+                      className="w-full text-left px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm text-zinc-300 transition-colors"
                     >
                       {q}
                     </button>
@@ -200,7 +200,7 @@ export function ChatBot() {
                     className={`max-w-[80%] px-4 py-2 rounded-2xl ${
                       msg.role === "user"
                         ? "bg-violet-600 text-white rounded-br-md"
-                        : "bg-slate-800 text-slate-200 rounded-bl-md"
+                        : "bg-zinc-800 text-zinc-200 rounded-bl-md"
                     }`}
                   >
                     <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
@@ -224,10 +224,10 @@ export function ChatBot() {
                 <div className="flex-shrink-0 w-8 h-8 bg-violet-500/20 rounded-lg flex items-center justify-center">
                   <Bot className="w-4 h-4 text-violet-400" />
                 </div>
-                <div className="px-4 py-3 bg-slate-800 rounded-2xl rounded-bl-md">
+                <div className="px-4 py-3 bg-zinc-800 rounded-2xl rounded-bl-md">
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
-                    <span className="text-sm text-slate-400">Premýšľam...</span>
+                    <span className="text-sm text-zinc-400">Premýšľam...</span>
                   </div>
                 </div>
               </div>
@@ -236,7 +236,7 @@ export function ChatBot() {
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t border-slate-700">
+          <div className="p-4 border-t border-zinc-700">
             <div className="flex items-center gap-2">
               <input
                 type="text"
@@ -245,12 +245,12 @@ export function ChatBot() {
                 onKeyDown={handleKeyDown}
                 placeholder="Napíš správu..."
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500 disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-xl text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-violet-500 disabled:opacity-50"
               />
               <button
                 onClick={() => sendMessage()}
                 disabled={!input.trim() || loading}
-                className="p-2 bg-violet-600 hover:bg-violet-500 disabled:bg-slate-700 disabled:cursor-not-allowed rounded-xl transition-colors"
+                className="p-2 bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-700 disabled:cursor-not-allowed rounded-xl transition-colors"
               >
                 <Send className="w-5 h-5 text-white" />
               </button>

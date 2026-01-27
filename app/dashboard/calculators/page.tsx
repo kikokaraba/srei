@@ -66,9 +66,7 @@ export default function CalculatorsPage() {
       name: "Hypotekárna kalkulačka",
       description: "Výpočet mesačnej splátky, porovnanie bánk a amortizačný plán",
       icon: Banknote,
-      gradient: "from-blue-500 to-cyan-500",
-      bgGradient: "from-blue-500/10 to-cyan-500/10",
-      borderColor: "border-blue-500/20 hover:border-blue-500/40",
+      iconColor: "text-blue-400",
       metrics: ["Mesačná splátka", "LTV analýza", "Porovnanie 8 bánk"],
       popular: true,
     },
@@ -77,9 +75,7 @@ export default function CalculatorsPage() {
       name: "Výnosová analýza",
       description: "ROI, cash flow a 10-ročná projekcia investície",
       icon: TrendingUp,
-      gradient: "from-emerald-500 to-teal-500",
-      bgGradient: "from-emerald-500/10 to-teal-500/10",
-      borderColor: "border-emerald-500/20 hover:border-emerald-500/40",
+      iconColor: "text-emerald-400",
       metrics: ["Hrubý/čistý výnos", "Cash-on-Cash", "Break-even"],
       popular: false,
     },
@@ -88,9 +84,7 @@ export default function CalculatorsPage() {
       name: "BRRRR Stratégia",
       description: "Buy, Rehab, Rent, Refinance, Repeat - recyklácia kapitálu",
       icon: RefreshCw,
-      gradient: "from-violet-500 to-purple-500",
-      bgGradient: "from-violet-500/10 to-purple-500/10",
-      borderColor: "border-violet-500/20 hover:border-violet-500/40",
+      iconColor: "text-violet-400",
       metrics: ["Forced equity", "Cash recovery", "Infinite ROI"],
       popular: false,
     },
@@ -99,9 +93,7 @@ export default function CalculatorsPage() {
       name: "Daňový asistent",
       description: "Daň z predaja, 5-ročný test a zdravotné odvody",
       icon: Receipt,
-      gradient: "from-amber-500 to-orange-500",
-      bgGradient: "from-amber-500/10 to-orange-500/10",
-      borderColor: "border-amber-500/20 hover:border-amber-500/40",
+      iconColor: "text-amber-400",
       metrics: ["Oslobodenie od dane", "Výpočet ZP", "SK legislatíva 2026"],
       popular: false,
     },
@@ -113,38 +105,38 @@ export default function CalculatorsPage() {
     const Icon = calc.icon;
 
     return (
-      <div className="min-h-screen">
-        {/* Property Info Banner */}
+      <div>
+        {/* Property Info Banner - Premium */}
         {propertyData && propertyData.price > 0 && (
-          <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20">
+          <div className="mb-6 p-4 premium-card">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                 <Home className="w-5 h-5 text-emerald-400" />
               </div>
               <div className="flex-1">
-                <p className="text-sm text-emerald-400 font-medium">Kalkulácia pre nehnuteľnosť</p>
-                <p className="text-white font-semibold truncate">{propertyData.title || "Vybraná nehnuteľnosť"}</p>
+                <p className="text-xs text-emerald-400 font-medium">Kalkulácia pre nehnuteľnosť</p>
+                <p className="text-zinc-100 font-medium text-sm truncate">{propertyData.title || "Vybraná nehnuteľnosť"}</p>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold text-white">€{propertyData.price.toLocaleString()}</p>
+                <p className="text-xl font-semibold text-zinc-100 font-mono">€{propertyData.price.toLocaleString()}</p>
                 {propertyData.area > 0 && (
-                  <p className="text-sm text-slate-400">{propertyData.area} m²</p>
+                  <p className="text-xs text-zinc-500 font-mono">{propertyData.area} m²</p>
                 )}
               </div>
             </div>
           </div>
         )}
 
-        {/* Calculator Header */}
+        {/* Calculator Header - Premium */}
         <div className="mb-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${calc.gradient} flex items-center justify-center shadow-lg`}>
-                <Icon className="w-6 h-6 text-white" />
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center`}>
+                <Icon className={`w-5 h-5 ${calc.iconColor}`} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">{calc.name}</h1>
-                <p className="text-sm text-slate-400">{calc.description}</p>
+                <h1 className="text-lg font-medium text-zinc-100">{calc.name}</h1>
+                <p className="text-xs text-zinc-500">{calc.description}</p>
               </div>
             </div>
             <button
@@ -152,15 +144,15 @@ export default function CalculatorsPage() {
                 setOpenCalculator(null);
                 setPropertyData(null);
               }}
-              className="p-3 rounded-xl bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-slate-400 hover:text-white transition-all"
+              className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-zinc-200 hover:border-zinc-700 transition-all"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Calculator Content */}
-        <div className="bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-slate-800/50 p-6 md:p-8">
+        {/* Calculator Content - Premium */}
+        <div className="premium-card p-5 md:p-6">
           {calc.id === "mortgage" ? (
             <MortgageCalculator initialPrice={propertyData?.price} />
           ) : (
@@ -179,22 +171,16 @@ export default function CalculatorsPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Header */}
-      <div className="mb-10">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 flex items-center justify-center">
-            <Calculator className="w-6 h-6 text-slate-300" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white">Investičné kalkulačky</h1>
-            <p className="text-slate-400">Profesionálne nástroje pre slovenských investorov</p>
-          </div>
-        </div>
+    <div>
+      {/* Hero Header - Premium */}
+      <div className="mb-8">
+        <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-medium mb-1">NÁSTROJE</p>
+        <h1 className="text-2xl font-semibold text-zinc-100 tracking-tight mb-1">Investičné kalkulačky</h1>
+        <p className="text-zinc-500 text-sm">Profesionálne nástroje pre slovenských investorov</p>
       </div>
 
-      {/* Calculator Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Calculator Grid - Premium */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {calculators.map((calc) => {
           const Icon = calc.icon;
           
@@ -202,11 +188,11 @@ export default function CalculatorsPage() {
             <button
               key={calc.id}
               onClick={() => setOpenCalculator(calc.id)}
-              className={`group relative text-left p-6 rounded-3xl border bg-gradient-to-br ${calc.bgGradient} ${calc.borderColor} transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-slate-900/50`}
+              className="group relative text-left premium-card-interactive p-5"
             >
               {/* Popular Badge */}
               {calc.popular && (
-                <div className="absolute -top-2 -right-2 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-medium flex items-center gap-1 shadow-lg">
+                <div className="absolute -top-2 -right-2 px-2.5 py-1 rounded-lg bg-zinc-100 text-zinc-900 text-[10px] font-medium flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />
                   Populárne
                 </div>
@@ -214,36 +200,33 @@ export default function CalculatorsPage() {
 
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${calc.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                  <Icon className="w-7 h-7 text-white" />
+                <div className={`w-11 h-11 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center group-hover:border-zinc-700 transition-colors`}>
+                  <Icon className={`w-5 h-5 ${calc.iconColor}`} />
                 </div>
-                <div className="p-2 rounded-xl bg-white/5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
-                  <ArrowRight className="w-5 h-5 text-white" />
+                <div className="p-2 rounded-lg bg-zinc-800/50 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                  <ArrowRight className="w-4 h-4 text-zinc-300" />
                 </div>
               </div>
 
               {/* Title & Description */}
-              <h2 className="text-xl font-semibold text-white mb-2 group-hover:text-white/90">
+              <h2 className="text-base font-medium text-zinc-100 mb-1.5 group-hover:text-white transition-colors">
                 {calc.name}
               </h2>
-              <p className="text-sm text-slate-400 mb-5 line-clamp-2">
+              <p className="text-xs text-zinc-500 mb-4 line-clamp-2">
                 {calc.description}
               </p>
 
               {/* Metrics */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {calc.metrics.map((metric, idx) => (
                   <span 
                     key={idx}
-                    className="px-3 py-1.5 rounded-full bg-white/5 text-xs text-slate-300 border border-white/10"
+                    className="px-2.5 py-1 rounded-lg bg-zinc-900/50 text-[10px] text-zinc-400 border border-zinc-800/50"
                   >
                     {metric}
                   </span>
                 ))}
               </div>
-
-              {/* Bottom gradient line */}
-              <div className={`absolute bottom-0 left-6 right-6 h-1 rounded-full bg-gradient-to-r ${calc.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
             </button>
           );
         })}
@@ -258,8 +241,8 @@ export default function CalculatorsPage() {
       </div>
 
       {/* Footer */}
-      <div className="mt-8 pt-6 border-t border-slate-800/50 text-center">
-        <p className="text-xs text-slate-500">
+      <div className="mt-8 pt-6 border-t border-zinc-800/50 text-center">
+        <p className="text-xs text-zinc-600">
           Kalkulačky poskytujú orientačné výpočty podľa slovenskej legislatívy 2026.
           Pre presné výpočty kontaktujte finančného poradcu.
         </p>
@@ -272,12 +255,12 @@ function QuickStat({ label, value, trend }: { label: string; value: string; tren
   const isPositive = trend?.startsWith("+");
   
   return (
-    <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800/50">
-      <div className="text-xs text-slate-500 mb-1">{label}</div>
+    <div className="premium-card p-4">
+      <div className="text-[10px] text-zinc-500 uppercase tracking-wide mb-1.5">{label}</div>
       <div className="flex items-baseline gap-2">
-        <span className="text-lg font-semibold text-white">{value}</span>
+        <span className="text-lg font-semibold text-zinc-100 font-mono">{value}</span>
         {trend && (
-          <span className={`text-xs ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
+          <span className={`text-xs font-mono ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
             {trend}
           </span>
         )}

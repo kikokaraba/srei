@@ -255,7 +255,7 @@ export function SlovakiaHeatmap() {
 
   if (!mapReady) {
     return (
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-6 min-h-[600px] flex items-center justify-center">
+      <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 min-h-[600px] flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
       </div>
     );
@@ -264,19 +264,19 @@ export function SlovakiaHeatmap() {
   return (
     <div className="space-y-6">
       {/* Controls */}
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-4">
+      <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           {/* Metric Selection */}
           <div className="flex items-center gap-2">
-            <Layers className="w-5 h-5 text-slate-400" />
-            <span className="text-slate-400">Zobraziť:</span>
-            <div className="flex bg-slate-800 rounded-lg overflow-hidden">
+            <Layers className="w-5 h-5 text-zinc-400" />
+            <span className="text-zinc-400">Zobraziť:</span>
+            <div className="flex bg-zinc-800 rounded-lg overflow-hidden">
               <button
                 onClick={() => setMetric("price")}
                 className={`px-4 py-2 text-sm flex items-center gap-2 transition-colors ${
                   metric === "price"
                     ? "bg-emerald-500/20 text-emerald-400"
-                    : "text-slate-300 hover:bg-slate-700"
+                    : "text-zinc-300 hover:bg-zinc-700"
                 }`}
               >
                 <Euro className="w-4 h-4" />
@@ -287,7 +287,7 @@ export function SlovakiaHeatmap() {
                 className={`px-4 py-2 text-sm flex items-center gap-2 transition-colors ${
                   metric === "yield"
                     ? "bg-emerald-500/20 text-emerald-400"
-                    : "text-slate-300 hover:bg-slate-700"
+                    : "text-zinc-300 hover:bg-zinc-700"
                 }`}
               >
                 <TrendingUp className="w-4 h-4" />
@@ -298,7 +298,7 @@ export function SlovakiaHeatmap() {
                 className={`px-4 py-2 text-sm flex items-center gap-2 transition-colors ${
                   metric === "properties"
                     ? "bg-emerald-500/20 text-emerald-400"
-                    : "text-slate-300 hover:bg-slate-700"
+                    : "text-zinc-300 hover:bg-zinc-700"
                 }`}
               >
                 <Home className="w-4 h-4" />
@@ -314,7 +314,7 @@ export function SlovakiaHeatmap() {
                 className="w-4 h-4 rounded-full"
                 style={{ backgroundColor: metric === "yield" ? "hsl(120, 70%, 50%)" : "hsl(0, 70%, 50%)" }}
               />
-              <span className="text-sm text-slate-400">
+              <span className="text-sm text-zinc-400">
                 {metric === "yield" ? "Vysoký" : "Nízky"}: {legendData.min.toLocaleString()}{legendData.unit}
               </span>
             </div>
@@ -324,7 +324,7 @@ export function SlovakiaHeatmap() {
                 className="w-4 h-4 rounded-full"
                 style={{ backgroundColor: metric === "yield" ? "hsl(0, 70%, 50%)" : "hsl(120, 70%, 50%)" }}
               />
-              <span className="text-sm text-slate-400">
+              <span className="text-sm text-zinc-400">
                 {metric === "yield" ? "Nízky" : "Vysoký"}: {legendData.max.toLocaleString()}{legendData.unit}
               </span>
             </div>
@@ -334,7 +334,7 @@ export function SlovakiaHeatmap() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Map */}
-        <div className="lg:col-span-2 bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+        <div className="lg:col-span-2 bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden">
           <div className="h-[600px]">
             <MapContainer
               center={[48.7, 19.5]}
@@ -406,12 +406,12 @@ export function SlovakiaHeatmap() {
         <div className="space-y-4">
           {/* Selected City or Instructions */}
           {selectedCity ? (
-            <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+            <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-slate-100">{selectedCity.name}</h3>
+                <h3 className="text-xl font-bold text-zinc-100">{selectedCity.name}</h3>
                 <button
                   onClick={() => setSelectedCity(null)}
-                  className="text-slate-400 hover:text-slate-100"
+                  className="text-zinc-400 hover:text-zinc-100"
                 >
                   ×
                 </button>
@@ -419,41 +419,41 @@ export function SlovakiaHeatmap() {
 
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-slate-800/50 rounded-lg p-4">
-                    <div className="flex items-center gap-2 text-slate-400 mb-1">
+                  <div className="bg-zinc-800/50 rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-zinc-400 mb-1">
                       <Euro className="w-4 h-4" />
                       <span className="text-sm">Priem. cena</span>
                     </div>
-                    <div className="text-2xl font-bold text-slate-100">
+                    <div className="text-2xl font-bold text-zinc-100">
                       €{selectedCity.avgPrice.toLocaleString()}
                     </div>
-                    <div className="text-sm text-slate-400">za m²</div>
+                    <div className="text-sm text-zinc-400">za m²</div>
                   </div>
 
-                  <div className="bg-slate-800/50 rounded-lg p-4">
-                    <div className="flex items-center gap-2 text-slate-400 mb-1">
+                  <div className="bg-zinc-800/50 rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-zinc-400 mb-1">
                       <TrendingUp className="w-4 h-4" />
                       <span className="text-sm">Výnos</span>
                     </div>
                     <div className="text-2xl font-bold text-emerald-400">
                       {selectedCity.avgYield.toFixed(1)}%
                     </div>
-                    <div className="text-sm text-slate-400">hrubý ročný</div>
+                    <div className="text-sm text-zinc-400">hrubý ročný</div>
                   </div>
                 </div>
 
-                <div className="bg-slate-800/50 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-slate-400 mb-1">
+                <div className="bg-zinc-800/50 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-zinc-400 mb-1">
                     <Home className="w-4 h-4" />
                     <span className="text-sm">Nehnuteľností v ponuke</span>
                   </div>
-                  <div className="text-2xl font-bold text-slate-100">
+                  <div className="text-2xl font-bold text-zinc-100">
                     {selectedCity.properties}
                   </div>
                 </div>
 
-                <div className="bg-slate-800/50 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-slate-400 mb-1">
+                <div className="bg-zinc-800/50 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-zinc-400 mb-1">
                     <BarChart3 className="w-4 h-4" />
                     <span className="text-sm">Cenový trend (12 mesiacov)</span>
                   </div>
@@ -471,20 +471,20 @@ export function SlovakiaHeatmap() {
               </div>
             </div>
           ) : (
-            <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-              <div className="flex items-center gap-2 text-slate-400 mb-4">
+            <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
+              <div className="flex items-center gap-2 text-zinc-400 mb-4">
                 <Info className="w-5 h-5" />
                 <span>Vyberte lokalitu na mape</span>
               </div>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-zinc-500">
                 Kliknite na bod pre zobrazenie detailných štatistík regiónu.
               </p>
             </div>
           )}
 
           {/* City Rankings */}
-          <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-            <h3 className="font-bold text-slate-100 mb-4">
+          <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
+            <h3 className="font-bold text-zinc-100 mb-4">
               {metric === "price" && "Najdrahšie regióny"}
               {metric === "yield" && "Najvyšší výnos"}
               {metric === "properties" && "Najviac ponúk"}
@@ -500,18 +500,18 @@ export function SlovakiaHeatmap() {
                 .map((city, idx) => (
                   <div
                     key={city.slug}
-                    className="flex items-center gap-3 cursor-pointer hover:bg-slate-800/50 p-2 rounded-lg transition-colors"
+                    className="flex items-center gap-3 cursor-pointer hover:bg-zinc-800/50 p-2 rounded-lg transition-colors"
                     onClick={() => setSelectedCity(city)}
                   >
-                    <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-sm font-bold text-slate-300">
+                    <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-sm font-bold text-zinc-300">
                       {idx + 1}
                     </div>
                     <div className="flex-1">
-                      <div className="font-medium text-slate-100">{city.name}</div>
+                      <div className="font-medium text-zinc-100">{city.name}</div>
                     </div>
                     <div className="text-right">
                       {metric === "price" && (
-                        <span className="font-bold text-slate-100">€{city.avgPrice.toLocaleString()}</span>
+                        <span className="font-bold text-zinc-100">€{city.avgPrice.toLocaleString()}</span>
                       )}
                       {metric === "yield" && (
                         <span className="font-bold text-emerald-400">{city.avgYield.toFixed(1)}%</span>

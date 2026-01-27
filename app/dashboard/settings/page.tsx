@@ -145,15 +145,15 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 p-8">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800 p-8">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-slate-800 rounded-lg w-1/3" />
-            <div className="h-4 bg-slate-800 rounded w-1/2" />
+            <div className="h-8 bg-zinc-800 rounded-lg w-1/3" />
+            <div className="h-4 bg-zinc-800 rounded w-1/2" />
           </div>
         </div>
         <div className="grid gap-6">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-48 bg-slate-900 rounded-2xl animate-pulse" />
+            <div key={i} className="h-48 bg-zinc-900 rounded-2xl animate-pulse" />
           ))}
         </div>
       </div>
@@ -170,20 +170,20 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 p-6 lg:p-8">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800 p-6 lg:p-8">
         <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-10 bg-emerald-500" />
         
         <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center shadow-lg shrink-0">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-zinc-700 to-zinc-600 flex items-center justify-center shadow-lg shrink-0">
               <SettingsIcon className="w-7 h-7 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <h1 className="text-2xl lg:text-3xl font-bold text-white">Nastavenia</h1>
-                <Sparkles className="w-5 h-5 text-slate-400" />
+                <Sparkles className="w-5 h-5 text-zinc-400" />
               </div>
-              <p className="text-slate-400 text-sm lg:text-base">
+              <p className="text-zinc-400 text-sm lg:text-base">
                 Prispôsobte si dashboard a notifikácie
               </p>
             </div>
@@ -206,7 +206,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Lokalita - Full width */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/20 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-blue-950/20 p-6">
         <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-10 bg-blue-500" />
         
         <div className="relative">
@@ -216,7 +216,7 @@ export default function SettingsPage() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">Sledované lokality</h2>
-              <p className="text-sm text-slate-400">Vyberte kraje, okresy alebo konkrétne mestá</p>
+              <p className="text-sm text-zinc-400">Vyberte kraje, okresy alebo konkrétne mestá</p>
             </div>
           </div>
 
@@ -237,7 +237,7 @@ export default function SettingsPage() {
       <div className="grid lg:grid-cols-2 gap-6">
 
         {/* Typ investície */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/20 p-6">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-amber-950/20 p-6">
           <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-10 bg-amber-500" />
           
           <div className="relative">
@@ -248,7 +248,7 @@ export default function SettingsPage() {
               <h2 className="text-xl font-bold text-white">Typ investície</h2>
             </div>
 
-            <p className="text-xs text-slate-500 mb-3">Môžete vybrať viac možností</p>
+            <p className="text-xs text-zinc-500 mb-3">Môžete vybrať viac možností</p>
             <div className="space-y-2">
               {INVESTMENT_TYPES.map((type) => {
                 const isSelected = formData.investmentTypes.includes(type.id);
@@ -272,18 +272,18 @@ export default function SettingsPage() {
                     className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
                       isSelected
                         ? "bg-amber-500/20 border border-amber-500/50"
-                        : "bg-slate-800/30 border border-slate-700/50 hover:bg-slate-800/50"
+                        : "bg-zinc-800/30 border border-zinc-700/50 hover:bg-zinc-800/50"
                     }`}
                   >
                     <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
                       isSelected
                         ? "bg-amber-500 border-amber-500"
-                        : "border-slate-600 hover:border-slate-500"
+                        : "border-zinc-600 hover:border-zinc-500"
                     }`}>
                       {isSelected && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="text-xl">{type.icon}</span>
-                    <span className={isSelected ? "text-white font-medium" : "text-slate-300"}>
+                    <span className={isSelected ? "text-white font-medium" : "text-zinc-300"}>
                       {type.label}
                     </span>
                   </button>
@@ -293,26 +293,26 @@ export default function SettingsPage() {
 
             <div className="grid grid-cols-2 gap-3 mt-4">
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Min. výnos (%)</label>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Min. výnos (%)</label>
                 <input
                   type="number"
                   value={formData.minYield || ""}
                   onChange={(e) => setFormData({ ...formData, minYield: e.target.value ? parseFloat(e.target.value) : null })}
                   placeholder="5.0"
                   step="0.1"
-                  className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm
+                  className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white text-sm
                              focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Max. cena (€)</label>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Max. cena (€)</label>
                 <input
                   type="number"
                   value={formData.maxPrice || ""}
                   onChange={(e) => setFormData({ ...formData, maxPrice: e.target.value ? parseFloat(e.target.value) : null })}
                   placeholder="200000"
                   step="1000"
-                  className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm
+                  className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white text-sm
                              focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                 />
               </div>
@@ -325,7 +325,7 @@ export default function SettingsPage() {
       <TelegramSettings />
 
       {/* Notifikácie */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-violet-950/20 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-violet-950/20 p-6">
         <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-10 bg-violet-500" />
         
         <div className="relative">
@@ -345,18 +345,18 @@ export default function SettingsPage() {
                 className={`flex items-center gap-3 p-4 rounded-xl transition-all text-left ${
                   formData[notif.id as keyof typeof formData]
                     ? "bg-violet-500/20 border border-violet-500/50"
-                    : "bg-slate-800/30 border border-slate-700/50"
+                    : "bg-zinc-800/30 border border-zinc-700/50"
                 }`}
               >
                 <span className="text-2xl">{notif.icon}</span>
                 <div className="flex-1">
-                  <p className={`font-medium ${formData[notif.id as keyof typeof formData] ? "text-white" : "text-slate-400"}`}>
+                  <p className={`font-medium ${formData[notif.id as keyof typeof formData] ? "text-white" : "text-zinc-400"}`}>
                     {notif.title}
                   </p>
-                  <p className="text-xs text-slate-500">{notif.desc}</p>
+                  <p className="text-xs text-zinc-500">{notif.desc}</p>
                 </div>
                 <div className={`w-10 h-6 rounded-full transition-all ${
-                  formData[notif.id as keyof typeof formData] ? "bg-violet-500" : "bg-slate-700"
+                  formData[notif.id as keyof typeof formData] ? "bg-violet-500" : "bg-zinc-700"
                 }`}>
                   <div className={`w-5 h-5 rounded-full bg-white shadow transition-all mt-0.5 ${
                     formData[notif.id as keyof typeof formData] ? "ml-4.5 translate-x-0.5" : "ml-0.5"
@@ -369,15 +369,15 @@ export default function SettingsPage() {
       </div>
 
       {/* Pokročilé filtre */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800 p-6">
         <div className="relative">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-600 to-slate-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-600 to-zinc-500 flex items-center justify-center">
               <SettingsIcon className="w-5 h-5 text-white" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">Pokročilé filtre</h2>
-              <p className="text-sm text-slate-400">Presné vyhľadávanie nehnuteľností</p>
+              <p className="text-sm text-zinc-400">Presné vyhľadávanie nehnuteľností</p>
             </div>
           </div>
           

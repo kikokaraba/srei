@@ -128,23 +128,23 @@ function PopupContent({ regionName, data }: { regionName: string; data: { avgPri
   const hasData = data.avgPrice > 0 || data.avgYield > 0;
   
   return (
-    <div className="bg-slate-900 text-slate-100 p-4 rounded-lg border border-slate-800 min-w-[200px]">
+    <div className="bg-zinc-900 text-zinc-100 p-4 rounded-lg border border-zinc-800 min-w-[200px]">
       <h3 className="font-bold text-lg mb-3 text-emerald-400">{regionName}</h3>
       {hasData ? (
         <>
           <div className="mb-2">
-            <span className="text-slate-400 text-sm">Priemerný výnos: </span>
+            <span className="text-zinc-400 text-sm">Priemerný výnos: </span>
             <span className="text-emerald-400 font-semibold text-base">{data.avgYield}%</span>
           </div>
           <div>
-            <span className="text-slate-400 text-sm">Cena: </span>
-            <span className="text-slate-100 font-semibold text-base" suppressHydrationWarning>
+            <span className="text-zinc-400 text-sm">Cena: </span>
+            <span className="text-zinc-100 font-semibold text-base" suppressHydrationWarning>
               {data.avgPrice.toLocaleString("sk-SK")} €/m²
             </span>
           </div>
         </>
       ) : (
-        <div className="text-slate-400 text-sm">
+        <div className="text-zinc-400 text-sm">
           Prihláste sa pre detailné štatistiky
         </div>
       )}
@@ -314,24 +314,24 @@ export function HeroMap() {
   }, []);
 
   return (
-    <section className="py-24 bg-gradient-to-b from-slate-950 to-slate-900">
+    <section className="py-24 bg-gradient-to-b from-zinc-950 to-zinc-900">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bold text-slate-100 mb-4">
+          <h2 className="text-4xl lg:text-5xl font-bold text-zinc-100 mb-4">
             Investičné príležitosti
             <span className="block text-emerald-400">naprieč Slovenskom</span>
           </h2>
-          <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+          <p className="text-xl text-zinc-300 max-w-2xl mx-auto">
             Interaktívna mapa zobrazujúca investičnú atraktivitu a výnosy v
             slovenských krajoch
           </p>
         </div>
 
         <div className="relative max-w-6xl mx-auto">
-          <div className="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden" style={{ height: "600px" }}>
+          <div className="relative bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden" style={{ height: "600px" }}>
             {loading && (
-              <div className="absolute inset-0 flex items-center justify-center z-50 bg-slate-900/80">
-                <div className="text-slate-400">Načítavam mapu...</div>
+              <div className="absolute inset-0 flex items-center justify-center z-50 bg-zinc-900/80">
+                <div className="text-zinc-400">Načítavam mapu...</div>
               </div>
             )}
             

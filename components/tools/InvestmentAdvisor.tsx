@@ -122,7 +122,7 @@ export function InvestmentAdvisor() {
   const getScoreColor = (score: number) => {
     if (score >= 50) return "text-emerald-400";
     if (score >= 30) return "text-amber-400";
-    return "text-slate-400";
+    return "text-zinc-400";
   };
 
   return (
@@ -133,19 +133,19 @@ export function InvestmentAdvisor() {
           <Sparkles className="w-5 h-5 text-emerald-400" />
           <span className="text-emerald-400 font-medium">AI Investment Advisor</span>
         </div>
-        <h2 className="text-2xl font-bold text-slate-100">Investičný Asistent</h2>
-        <p className="text-slate-400 mt-2">
+        <h2 className="text-2xl font-bold text-zinc-100">Investičný Asistent</h2>
+        <p className="text-zinc-400 mt-2">
           AI analyzuje trh a nájde najlepšie investičné príležitosti pre váš profil
         </p>
       </div>
 
       {/* Criteria Form */}
-      <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
-        <h3 className="text-lg font-semibold text-slate-100 mb-6">Vaše investičné kritériá</h3>
+      <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-6">
+        <h3 className="text-lg font-semibold text-zinc-100 mb-6">Vaše investičné kritériá</h3>
 
         {/* Budget */}
         <div className="mb-6">
-          <label className="block text-sm text-slate-300 mb-2">
+          <label className="block text-sm text-zinc-300 mb-2">
             <Euro className="w-4 h-4 inline mr-2" />
             Rozpočet: €{criteria.budget.toLocaleString()}
           </label>
@@ -156,9 +156,9 @@ export function InvestmentAdvisor() {
             step="10000"
             value={criteria.budget}
             onChange={(e) => setCriteria(prev => ({ ...prev, budget: parseInt(e.target.value) }))}
-            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+            className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
           />
-          <div className="flex justify-between text-xs text-slate-500 mt-1">
+          <div className="flex justify-between text-xs text-zinc-500 mt-1">
             <span>€50k</span>
             <span>€500k</span>
           </div>
@@ -166,7 +166,7 @@ export function InvestmentAdvisor() {
 
         {/* Investment Type */}
         <div className="mb-6">
-          <label className="block text-sm text-slate-300 mb-3">Investičný cieľ</label>
+          <label className="block text-sm text-zinc-300 mb-3">Investičný cieľ</label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {INVESTMENT_TYPES.map(type => (
               <button
@@ -175,7 +175,7 @@ export function InvestmentAdvisor() {
                 className={`p-4 rounded-xl border transition-all text-left ${
                   criteria.investmentType === type.value
                     ? "bg-emerald-500/20 border-emerald-500 text-emerald-400"
-                    : "bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-600"
+                    : "bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-600"
                 }`}
               >
                 <type.icon className="w-6 h-6 mb-2" />
@@ -188,7 +188,7 @@ export function InvestmentAdvisor() {
 
         {/* Risk Tolerance */}
         <div className="mb-6">
-          <label className="block text-sm text-slate-300 mb-3">
+          <label className="block text-sm text-zinc-300 mb-3">
             <Shield className="w-4 h-4 inline mr-2" />
             Tolerancia rizika
           </label>
@@ -200,7 +200,7 @@ export function InvestmentAdvisor() {
                 className={`flex-1 py-3 rounded-lg border transition-all ${
                   criteria.riskTolerance === risk.value
                     ? `bg-${risk.color}-500/20 border-${risk.color}-500 text-${risk.color}-400`
-                    : "bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-600"
+                    : "bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-600"
                 }`}
               >
                 {risk.label}
@@ -211,7 +211,7 @@ export function InvestmentAdvisor() {
 
         {/* Preferred Cities */}
         <div className="mb-6">
-          <label className="block text-sm text-slate-300 mb-3">
+          <label className="block text-sm text-zinc-300 mb-3">
             <MapPin className="w-4 h-4 inline mr-2" />
             Preferované mestá (voliteľné)
           </label>
@@ -223,7 +223,7 @@ export function InvestmentAdvisor() {
                 className={`px-3 py-1.5 rounded-full text-sm transition-all ${
                   criteria.preferredCities.includes(city)
                     ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500"
-                    : "bg-slate-800 text-slate-400 border border-slate-700 hover:border-slate-600"
+                    : "bg-zinc-800 text-zinc-400 border border-zinc-700 hover:border-zinc-600"
                 }`}
               >
                 {city.replace("_", " ")}
@@ -268,17 +268,17 @@ export function InvestmentAdvisor() {
             <div className="bg-gradient-to-br from-emerald-900/30 to-teal-900/30 rounded-xl border border-emerald-500/30 p-6">
               <div className="flex items-center gap-3 mb-4">
                 <Sparkles className="w-6 h-6 text-emerald-400" />
-                <h3 className="text-lg font-semibold text-slate-100">AI Analýza</h3>
+                <h3 className="text-lg font-semibold text-zinc-100">AI Analýza</h3>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <p className="text-slate-300">{result.analysis.marketOverview}</p>
+                  <p className="text-zinc-300">{result.analysis.marketOverview}</p>
                 </div>
 
-                <div className="bg-slate-800/50 rounded-lg p-4">
-                  <p className="text-sm text-slate-400 mb-2">Odporúčaná stratégia:</p>
-                  <p className="text-slate-200">{result.analysis.investmentStrategy}</p>
+                <div className="bg-zinc-800/50 rounded-lg p-4">
+                  <p className="text-sm text-zinc-400 mb-2">Odporúčaná stratégia:</p>
+                  <p className="text-zinc-200">{result.analysis.investmentStrategy}</p>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
@@ -286,7 +286,7 @@ export function InvestmentAdvisor() {
                     <p className="text-sm text-emerald-400 font-medium mb-2">Príležitosti</p>
                     <ul className="space-y-1">
                       {result.analysis.opportunities.map((opp, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-slate-300">
+                        <li key={i} className="flex items-start gap-2 text-sm text-zinc-300">
                           <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                           {opp}
                         </li>
@@ -297,7 +297,7 @@ export function InvestmentAdvisor() {
                     <p className="text-sm text-amber-400 font-medium mb-2">Riziká</p>
                     <ul className="space-y-1">
                       {result.analysis.risks.map((risk, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-slate-300">
+                        <li key={i} className="flex items-start gap-2 text-sm text-zinc-300">
                           <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                           {risk}
                         </li>
@@ -310,12 +310,12 @@ export function InvestmentAdvisor() {
           )}
 
           {/* Recommendations */}
-          <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
+          <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-slate-100">
+              <h3 className="text-lg font-semibold text-zinc-100">
                 Top {result.recommendations.length} odporúčaní
               </h3>
-              <span className="text-sm text-slate-400">
+              <span className="text-sm text-zinc-400">
                 z {result.totalMatches} nehnuteľností
               </span>
             </div>
@@ -327,16 +327,16 @@ export function InvestmentAdvisor() {
                   className={`p-4 rounded-xl border transition-all ${
                     idx === 0 && result.analysis?.topPick.index === 1
                       ? "bg-emerald-500/10 border-emerald-500/50"
-                      : "bg-slate-900 border-slate-700 hover:border-slate-600"
+                      : "bg-zinc-900 border-zinc-700 hover:border-zinc-600"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="text-2xl font-bold text-slate-500">#{idx + 1}</span>
+                        <span className="text-2xl font-bold text-zinc-500">#{idx + 1}</span>
                         <div>
-                          <h4 className="font-semibold text-slate-100">{rec.title}</h4>
-                          <div className="flex items-center gap-2 text-sm text-slate-400">
+                          <h4 className="font-semibold text-zinc-100">{rec.title}</h4>
+                          <div className="flex items-center gap-2 text-sm text-zinc-400">
                             <MapPin className="w-3 h-3" />
                             {rec.district}, {rec.city}
                           </div>
@@ -369,10 +369,10 @@ export function InvestmentAdvisor() {
                     </div>
 
                     <div className="text-right">
-                      <p className="text-xl font-bold text-slate-100">
+                      <p className="text-xl font-bold text-zinc-100">
                         €{rec.price.toLocaleString()}
                       </p>
-                      <p className="text-sm text-slate-400">
+                      <p className="text-sm text-zinc-400">
                         €{rec.pricePerM2}/m² | {rec.area}m²
                       </p>
                       <div className="flex items-center justify-end gap-2 mt-2">
@@ -384,9 +384,9 @@ export function InvestmentAdvisor() {
                             href={rec.sourceUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+                            className="p-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
                           >
-                            <ExternalLink className="w-4 h-4 text-slate-400" />
+                            <ExternalLink className="w-4 h-4 text-zinc-400" />
                           </a>
                         )}
                       </div>

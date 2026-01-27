@@ -7,10 +7,10 @@ const LandingMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="py-24 bg-gradient-to-b from-slate-950 to-slate-900">
+      <div className="py-24 bg-gradient-to-b from-zinc-950 to-zinc-900">
         <div className="container mx-auto px-6">
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 p-16 min-h-[400px] flex items-center justify-center">
-            <div className="text-slate-400">Načítavam mapu...</div>
+          <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-16 min-h-[400px] flex items-center justify-center">
+            <div className="text-zinc-400">Načítavam mapu...</div>
           </div>
         </div>
       </div>

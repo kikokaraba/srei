@@ -87,7 +87,7 @@ export function Stats() {
   ];
 
   return (
-    <section id="stats" className="py-20 sm:py-24 bg-slate-950 relative overflow-hidden">
+    <section id="stats" className="py-20 sm:py-24 bg-zinc-950 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-grid-slate-800/[0.1] bg-[size:40px_40px]" />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
@@ -149,8 +149,8 @@ export function Stats() {
         </div>
 
         {/* Trust Badges */}
-        <div className="pt-10 border-t border-slate-800/50">
-          <p className="text-center text-sm text-slate-400 mb-8">
+        <div className="pt-10 border-t border-zinc-800/50">
+          <p className="text-center text-sm text-zinc-400 mb-8">
             Dôverujú nám stovky investorov
           </p>
           <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4">
@@ -159,14 +159,14 @@ export function Stats() {
               const colorClasses = {
                 emerald: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
                 gold: "text-gold-400 bg-gold-500/10 border-gold-500/20",
-                slate: "text-slate-400 bg-slate-800/50 border-slate-700",
+                slate: "text-zinc-400 bg-zinc-800/50 border-zinc-700",
               };
               const colors = colorClasses[badge.color as keyof typeof colorClasses];
 
               return (
                 <div
                   key={index}
-                  className="flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl glass border border-slate-700/50 hover:border-slate-600 transition-all"
+                  className="flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl glass border border-zinc-700/50 hover:border-zinc-600 transition-all"
                 >
                   <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg ${colors} border flex items-center justify-center`}>
                     <Icon className="w-4 h-4 sm:w-5 sm:h-5" />

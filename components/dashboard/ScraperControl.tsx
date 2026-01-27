@@ -111,7 +111,7 @@ export default function ScraperControl() {
   const isAnyRunning = bazosMutation.isPending || nehnutelnostiMutation.isPending || bothMutation.isPending;
 
   return (
-    <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
+    <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
@@ -120,14 +120,14 @@ export default function ScraperControl() {
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">Scraper Control</h2>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-zinc-400">
               Manuálne spustenie scrapera
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full ${isAnyRunning ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
-          <span className="text-sm text-slate-400">
+          <span className="text-sm text-zinc-400">
             {isAnyRunning ? "Beží..." : "Pripravený"}
           </span>
         </div>
@@ -139,7 +139,7 @@ export default function ScraperControl() {
         <button
           onClick={() => bazosMutation.mutate()}
           disabled={isAnyRunning}
-          className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-yellow-500/80 to-amber-500/80 hover:from-yellow-600 hover:to-amber-600 disabled:from-slate-600 disabled:to-slate-600 text-white font-bold rounded-xl transition-all disabled:cursor-not-allowed"
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-yellow-500/80 to-amber-500/80 hover:from-yellow-600 hover:to-amber-600 disabled:from-zinc-600 disabled:to-zinc-600 text-white font-bold rounded-xl transition-all disabled:cursor-not-allowed"
         >
           {bazosMutation.isPending ? (
             <>
@@ -158,7 +158,7 @@ export default function ScraperControl() {
         <button
           onClick={() => nehnutelnostiMutation.mutate()}
           disabled={isAnyRunning}
-          className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500/80 to-cyan-500/80 hover:from-blue-600 hover:to-cyan-600 disabled:from-slate-600 disabled:to-slate-600 text-white font-bold rounded-xl transition-all disabled:cursor-not-allowed"
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500/80 to-cyan-500/80 hover:from-blue-600 hover:to-cyan-600 disabled:from-zinc-600 disabled:to-zinc-600 text-white font-bold rounded-xl transition-all disabled:cursor-not-allowed"
         >
           {nehnutelnostiMutation.isPending ? (
             <>
@@ -178,7 +178,7 @@ export default function ScraperControl() {
       <button
         onClick={() => bothMutation.mutate()}
         disabled={isAnyRunning}
-        className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:from-slate-600 disabled:to-slate-600 text-white font-bold text-lg rounded-xl transition-all disabled:cursor-not-allowed shadow-lg shadow-emerald-500/25"
+        className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:from-zinc-600 disabled:to-zinc-600 text-white font-bold text-lg rounded-xl transition-all disabled:cursor-not-allowed shadow-lg shadow-emerald-500/25"
       >
         {bothMutation.isPending ? (
           <>
@@ -194,7 +194,7 @@ export default function ScraperControl() {
       </button>
 
       {/* Info */}
-      <p className="text-xs text-slate-500 mt-3 text-center">
+      <p className="text-xs text-zinc-500 mt-3 text-center">
         Bazoš: Byty, Domy, Pozemky | Nehnutelnosti.sk: Byty, Domy
       </p>
 
@@ -217,7 +217,7 @@ export default function ScraperControl() {
       )}
 
       {/* Info footer */}
-      <div className="mt-6 flex items-center justify-between text-xs text-slate-500">
+      <div className="mt-6 flex items-center justify-between text-xs text-zinc-500">
         <span>
           Automatický scraping: 6:00, 10:00, 14:00, 18:00, 22:00
         </span>
@@ -248,7 +248,7 @@ function ResultCard({ result, color }: { result: PortalResult; color: "yellow" |
         <span className={`font-bold ${textColor}`}>
           {result.portal}
         </span>
-        <span className="text-slate-400 text-sm">
+        <span className="text-zinc-400 text-sm">
           ({Math.round(result.duration / 1000)}s)
         </span>
       </div>
@@ -256,26 +256,26 @@ function ResultCard({ result, color }: { result: PortalResult; color: "yellow" |
       <div className="grid grid-cols-5 gap-2 text-center">
         <div>
           <div className="text-lg font-bold text-white">{result.found}</div>
-          <div className="text-xs text-slate-400">Nájdených</div>
+          <div className="text-xs text-zinc-400">Nájdených</div>
         </div>
         <div>
           <div className="text-lg font-bold text-emerald-400">+{result.new}</div>
-          <div className="text-xs text-slate-400">Nových</div>
+          <div className="text-xs text-zinc-400">Nových</div>
         </div>
         <div>
-          <div className="text-lg font-bold text-slate-500">{result.duplicates || 0}</div>
-          <div className="text-xs text-slate-400">Duplicít</div>
+          <div className="text-lg font-bold text-zinc-500">{result.duplicates || 0}</div>
+          <div className="text-xs text-zinc-400">Duplicít</div>
         </div>
         <div>
           <div className="text-lg font-bold text-blue-400">{result.updated}</div>
-          <div className="text-xs text-slate-400">Aktualizovaných</div>
+          <div className="text-xs text-zinc-400">Aktualizovaných</div>
         </div>
         <div>
-          <div className="text-lg font-bold text-slate-300 flex items-center justify-center gap-1">
+          <div className="text-lg font-bold text-zinc-300 flex items-center justify-center gap-1">
             <Database className="w-4 h-4" />
             {result.totalInDatabase}
           </div>
-          <div className="text-xs text-slate-400">V DB</div>
+          <div className="text-xs text-zinc-400">V DB</div>
         </div>
       </div>
       

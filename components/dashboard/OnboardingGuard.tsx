@@ -56,7 +56,7 @@ export function OnboardingGuard({ children }: { children: React.ReactNode }) {
   if (isChecking || onboardingCompleted === false) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-slate-400">Načítavam...</div>
+        <div className="text-zinc-400">Načítavam...</div>
       </div>
     );
   }

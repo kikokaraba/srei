@@ -19,11 +19,11 @@ import {
 import PremiumGate from "@/components/ui/PremiumGate";
 
 const SOURCE_COLORS: Record<string, string> = {
-  BAZOS: "bg-orange-500/20 text-orange-400 border-orange-500/30",
-  NEHNUTELNOSTI: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  REALITY: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-  TOPREALITY: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  MANUAL: "bg-slate-500/20 text-slate-400 border-slate-500/30",
+  BAZOS: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+  NEHNUTELNOSTI: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  REALITY: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+  TOPREALITY: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  MANUAL: "bg-zinc-800 text-zinc-400 border-zinc-700",
 };
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -148,46 +148,34 @@ function MatchesContent() {
 
   return (
     <div className="space-y-6">
-      {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-purple-950/30 p-6 lg:p-8">
-        <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 bg-purple-500" />
-        
-        <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/20 shrink-0">
-              <Scale className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-2xl lg:text-3xl font-bold text-white">
-                  Porovnanie cien
-                </h1>
-                <Sparkles className="w-5 h-5 text-purple-400" />
-              </div>
-              <p className="text-slate-400 text-sm lg:text-base">
-                Rovnaké nehnuteľnosti na rôznych portáloch
-              </p>
-            </div>
-          </div>
-          
-          <button
-            onClick={() => runMatchingMutation.mutate()}
-            disabled={runMatchingMutation.isPending}
-            className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold 
-                       rounded-xl transition-all hover:shadow-lg hover:shadow-purple-500/25 
-                       disabled:opacity-50 flex items-center gap-2"
-          >
-            <RefreshCw className={`w-4 h-4 ${runMatchingMutation.isPending ? "animate-spin" : ""}`} />
-            {runMatchingMutation.isPending ? "Hľadám..." : "Nájsť matches"}
-          </button>
+      {/* Hero Header - Premium */}
+      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-2">
+        <div>
+          <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-medium mb-1">NÁSTROJE</p>
+          <h1 className="text-2xl font-semibold text-zinc-100 tracking-tight mb-1">
+            Porovnanie cien
+          </h1>
+          <p className="text-zinc-500 text-sm">
+            Rovnaké nehnuteľnosti na rôznych portáloch
+          </p>
         </div>
+        
+        <button
+          onClick={() => runMatchingMutation.mutate()}
+          disabled={runMatchingMutation.isPending}
+          className="px-4 py-2.5 bg-zinc-100 hover:bg-white text-zinc-900 font-medium text-sm
+                     rounded-lg transition-all disabled:opacity-50 flex items-center gap-2"
+        >
+          <RefreshCw className={`w-4 h-4 ${runMatchingMutation.isPending ? "animate-spin" : ""}`} />
+          {runMatchingMutation.isPending ? "Hľadám..." : "Nájsť matches"}
+        </button>
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-900/50 border border-slate-800">
-        <Filter className="w-5 h-5 text-slate-400" />
+      <div className="flex items-center gap-4 p-4 premium-card">
+        <Filter className="w-5 h-5 text-zinc-400" />
         <div className="flex items-center gap-3">
-          <label className="text-sm text-slate-400">Min. zhoda:</label>
+          <label className="text-sm text-zinc-400">Min. zhoda:</label>
           <div className="flex gap-1">
             {[50, 60, 70, 80, 90].map((score) => (
               <button
@@ -196,7 +184,7 @@ function MatchesContent() {
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   minScore === score
                     ? "bg-purple-500 text-white"
-                    : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                    : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
                 }`}
               >
                 {score}%
@@ -204,7 +192,7 @@ function MatchesContent() {
             ))}
           </div>
         </div>
-        <div className="ml-auto text-sm text-slate-500">
+        <div className="ml-auto text-sm text-zinc-500">
           {matches?.length || 0} matches
         </div>
       </div>
@@ -230,7 +218,7 @@ function MatchesContent() {
                 className={`w-full text-left p-4 rounded-xl transition-all ${
                   selectedMatchId === match.id
                     ? "bg-purple-500/10 border-2 border-purple-500/50"
-                    : "bg-slate-800/30 border border-slate-700/50 hover:bg-slate-800/50"
+                    : "bg-zinc-800/30 border border-zinc-700/50 hover:bg-zinc-800/50"
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -240,12 +228,12 @@ function MatchesContent() {
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
                     match.score >= 90 ? "bg-emerald-500/20 text-emerald-400" :
                     match.score >= 70 ? "bg-amber-500/20 text-amber-400" :
-                    "bg-slate-700 text-slate-400"
+                    "bg-zinc-700 text-zinc-400"
                   }`}>
                     {match.score}%
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
+                <div className="flex items-center gap-2 text-xs text-zinc-500 mb-2">
                   <span>{match.properties[0].areaM2}m²</span>
                   <span>•</span>
                   <span>{match.properties[0].city}</span>
@@ -260,17 +248,17 @@ function MatchesContent() {
                 <div className="flex items-center gap-2 mt-2 text-sm">
                   <TrendingDown className="w-4 h-4 text-emerald-400" />
                   <span className="text-emerald-400 font-medium">-{match.priceDifferencePercent}%</span>
-                  <span className="text-slate-500">({match.priceDifference.toLocaleString()} €)</span>
+                  <span className="text-zinc-500">({match.priceDifference.toLocaleString()} €)</span>
                 </div>
               </button>
             ))
           ) : (
             <div className="text-center py-12">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800/50 flex items-center justify-center">
-                <Building className="w-8 h-8 text-slate-600" />
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-zinc-800/50 flex items-center justify-center">
+                <Building className="w-8 h-8 text-zinc-600" />
               </div>
-              <p className="text-slate-400">Žiadne matches</p>
-              <p className="text-sm text-slate-500 mt-1">Skús znížiť minimálnu zhodu</p>
+              <p className="text-zinc-400">Žiadne matches</p>
+              <p className="text-sm text-zinc-500 mt-1">Skús znížiť minimálnu zhodu</p>
             </div>
           )}
         </div>
@@ -279,18 +267,18 @@ function MatchesContent() {
         <div className="lg:col-span-2">
           {selectedMatchId ? (
             isLoadingDetail ? (
-              <div className="flex items-center justify-center py-24 rounded-2xl bg-slate-800/30 border border-slate-700/50">
+              <div className="flex items-center justify-center py-24 rounded-2xl bg-zinc-800/30 border border-zinc-700/50">
                 <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
               </div>
             ) : matchDetail ? (
-              <div className="rounded-2xl bg-slate-800/30 border border-slate-700/50 p-6">
+              <div className="rounded-2xl bg-zinc-800/30 border border-zinc-700/50 p-6">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <Scale className="w-6 h-6 text-purple-400" />
                     <div>
                       <h2 className="text-lg font-bold text-white">Detail porovnania</h2>
-                      <p className="text-sm text-slate-400">
+                      <p className="text-sm text-zinc-400">
                         Zhoda: {matchDetail.score}% • Úspora: {matchDetail.comparison.savings.toLocaleString()} €
                       </p>
                     </div>
@@ -323,7 +311,7 @@ function MatchesContent() {
                       className={`rounded-xl p-4 border ${
                         property.isCheaper
                           ? "bg-emerald-500/5 border-emerald-500/30"
-                          : "bg-slate-900/50 border-slate-700/50"
+                          : "bg-zinc-900/50 border-zinc-700/50"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-3">
@@ -340,17 +328,17 @@ function MatchesContent() {
                       <div className={`text-2xl font-bold mb-1 ${property.isCheaper ? "text-emerald-400" : "text-white"}`}>
                         {property.price.toLocaleString()} €
                       </div>
-                      <div className="text-sm text-slate-400 mb-3">{property.pricePerM2.toLocaleString()} €/m²</div>
+                      <div className="text-sm text-zinc-400 mb-3">{property.pricePerM2.toLocaleString()} €/m²</div>
                       
                       <div className="space-y-1 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-slate-500">Plocha</span>
-                          <span className="text-slate-300">{property.areaM2} m²</span>
+                          <span className="text-zinc-500">Plocha</span>
+                          <span className="text-zinc-300">{property.areaM2} m²</span>
                         </div>
                         {property.rooms && (
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Izby</span>
-                            <span className="text-slate-300">{property.rooms}</span>
+                            <span className="text-zinc-500">Izby</span>
+                            <span className="text-zinc-300">{property.rooms}</span>
                           </div>
                         )}
                       </div>
@@ -363,7 +351,7 @@ function MatchesContent() {
                           className={`flex items-center justify-center gap-2 mt-4 py-2 rounded-lg transition-colors ${
                             property.isCheaper
                               ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-                              : "bg-slate-700 hover:bg-slate-600 text-white"
+                              : "bg-zinc-700 hover:bg-zinc-600 text-white"
                           }`}
                         >
                           Otvoriť <ExternalLink className="w-4 h-4" />
@@ -378,7 +366,7 @@ function MatchesContent() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <TrendingDown className="w-5 h-5 text-emerald-400" />
-                      <span className="text-slate-300">Potenciálna úspora</span>
+                      <span className="text-zinc-300">Potenciálna úspora</span>
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-emerald-400">
@@ -393,13 +381,13 @@ function MatchesContent() {
               </div>
             ) : null
           ) : (
-            <div className="flex items-center justify-center py-24 rounded-2xl bg-slate-800/30 border border-slate-700/50">
+            <div className="flex items-center justify-center py-24 rounded-2xl bg-zinc-800/30 border border-zinc-700/50">
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800/50 flex items-center justify-center">
-                  <Scale className="w-8 h-8 text-slate-600" />
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-zinc-800/50 flex items-center justify-center">
+                  <Scale className="w-8 h-8 text-zinc-600" />
                 </div>
-                <p className="text-slate-400">Vyber match pre zobrazenie</p>
-                <ArrowRight className="w-5 h-5 text-slate-500 mx-auto mt-2" />
+                <p className="text-zinc-400">Vyber match pre zobrazenie</p>
+                <ArrowRight className="w-5 h-5 text-zinc-500 mx-auto mt-2" />
               </div>
             </div>
           )}

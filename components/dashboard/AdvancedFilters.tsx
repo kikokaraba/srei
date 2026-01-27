@@ -171,11 +171,11 @@ export function AdvancedFilters() {
   }
 
   return (
-    <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+    <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <Filter className="w-5 h-5 text-emerald-400" />
-          <h3 className="text-lg font-bold text-slate-100">Pokročilé filtre</h3>
+          <h3 className="text-lg font-bold text-zinc-100">Pokročilé filtre</h3>
           {countActiveFilters() > 0 && (
             <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-semibold rounded-full">
               {countActiveFilters()} aktívnych
@@ -186,31 +186,31 @@ export function AdvancedFilters() {
           {countActiveFilters() > 0 && (
             <button
               onClick={handleReset}
-              className="px-3 py-1.5 text-sm text-slate-400 hover:text-slate-100 transition-colors"
+              className="px-3 py-1.5 text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
             >
               Resetovať
             </button>
           )}
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
           >
             {isExpanded ? (
-              <ChevronUp className="w-4 h-4 text-slate-400" />
+              <ChevronUp className="w-4 h-4 text-zinc-400" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-slate-400" />
+              <ChevronDown className="w-4 h-4 text-zinc-400" />
             )}
           </button>
         </div>
       </div>
 
       {isExpanded && (
-        <div className="space-y-6 pt-4 border-t border-slate-800">
+        <div className="space-y-6 pt-4 border-t border-zinc-800">
           {/* Lokalita - Kraje */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <MapPin className="w-4 h-4 text-emerald-400" />
-              <label className="text-slate-300 font-medium">
+              <label className="text-zinc-300 font-medium">
                 Sledované kraje
               </label>
             </div>
@@ -230,7 +230,7 @@ export function AdvancedFilters() {
                     className={`relative p-3 rounded-xl border text-left transition-all ${
                       isSelected
                         ? "bg-emerald-500/10 border-emerald-500"
-                        : "bg-slate-800 border-slate-700 hover:border-slate-600"
+                        : "bg-zinc-800 border-zinc-700 hover:border-zinc-600"
                     }`}
                   >
                     {isSelected && (
@@ -238,10 +238,10 @@ export function AdvancedFilters() {
                         <Check className="w-2.5 h-2.5 text-white" />
                       </div>
                     )}
-                    <span className={`text-lg font-bold ${isSelected ? "text-emerald-400" : "text-slate-400"}`}>
+                    <span className={`text-lg font-bold ${isSelected ? "text-emerald-400" : "text-zinc-400"}`}>
                       {region.shortName}
                     </span>
-                    <span className={`block text-xs mt-0.5 ${isSelected ? "text-emerald-400/70" : "text-slate-500"}`}>
+                    <span className={`block text-xs mt-0.5 ${isSelected ? "text-emerald-400/70" : "text-zinc-500"}`}>
                       {region.name}
                     </span>
                   </button>
@@ -253,28 +253,28 @@ export function AdvancedFilters() {
               <button
                 type="button"
                 onClick={() => setFilters({ ...filters, trackedRegions: SLOVAK_REGIONS.map(r => r.id) })}
-                className="text-xs px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                className="text-xs px-3 py-1 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
               >
                 Celé Slovensko
               </button>
               <button
                 type="button"
                 onClick={() => setFilters({ ...filters, trackedRegions: ["BA", "TT", "NR"] })}
-                className="text-xs px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                className="text-xs px-3 py-1 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
               >
                 Západ
               </button>
               <button
                 type="button"
                 onClick={() => setFilters({ ...filters, trackedRegions: ["ZA", "BB", "TN"] })}
-                className="text-xs px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                className="text-xs px-3 py-1 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
               >
                 Stred
               </button>
               <button
                 type="button"
                 onClick={() => setFilters({ ...filters, trackedRegions: ["PO", "KE"] })}
-                className="text-xs px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                className="text-xs px-3 py-1 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
               >
                 Východ
               </button>
@@ -284,7 +284,7 @@ export function AdvancedFilters() {
           {/* Cena */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-slate-300 mb-2 font-medium text-sm">
+              <label className="block text-zinc-300 mb-2 font-medium text-sm">
                 Cena (€)
               </label>
               <div className="flex gap-2">
@@ -299,7 +299,7 @@ export function AdvancedFilters() {
                     });
                   }}
                   placeholder="Od"
-                  className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <input
                   type="number"
@@ -312,13 +312,13 @@ export function AdvancedFilters() {
                     });
                   }}
                   placeholder="Do"
-                  className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-slate-300 mb-2 font-medium text-sm">
+              <label className="block text-zinc-300 mb-2 font-medium text-sm">
                 Cena za m² (€/m²)
               </label>
               <div className="flex gap-2">
@@ -333,7 +333,7 @@ export function AdvancedFilters() {
                     });
                   }}
                   placeholder="Od"
-                  className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <input
                   type="number"
@@ -346,7 +346,7 @@ export function AdvancedFilters() {
                     });
                   }}
                   placeholder="Do"
-                  className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
             </div>
@@ -355,7 +355,7 @@ export function AdvancedFilters() {
           {/* Plocha a izby */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-slate-300 mb-2 font-medium text-sm">
+              <label className="block text-zinc-300 mb-2 font-medium text-sm">
                 Plocha (m²)
               </label>
               <div className="flex gap-2">
@@ -370,7 +370,7 @@ export function AdvancedFilters() {
                     });
                   }}
                   placeholder="Od"
-                  className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <input
                   type="number"
@@ -383,13 +383,13 @@ export function AdvancedFilters() {
                     });
                   }}
                   placeholder="Do"
-                  className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-slate-300 mb-2 font-medium text-sm">
+              <label className="block text-zinc-300 mb-2 font-medium text-sm">
                 Počet izieb
               </label>
               <div className="flex gap-2">
@@ -404,7 +404,7 @@ export function AdvancedFilters() {
                     });
                   }}
                   placeholder="Od"
-                  className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <input
                   type="number"
@@ -417,7 +417,7 @@ export function AdvancedFilters() {
                     });
                   }}
                   placeholder="Do"
-                  className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
             </div>
@@ -426,14 +426,14 @@ export function AdvancedFilters() {
           {/* Stav a energia */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-slate-300 mb-2 font-medium text-sm">
+              <label className="block text-zinc-300 mb-2 font-medium text-sm">
                 Stav nehnuteľnosti
               </label>
               <div className="flex flex-wrap gap-2">
                 {PROPERTY_CONDITIONS.map((cond) => (
                   <label
                     key={cond.value}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-slate-600 transition-colors"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-800 cursor-pointer hover:border-zinc-600 transition-colors"
                   >
                     <input
                       type="checkbox"
@@ -444,23 +444,23 @@ export function AdvancedFilters() {
                           : filters.condition.filter((c) => c !== cond.value);
                         setFilters({ ...filters, condition: conditions });
                       }}
-                      className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500"
+                      className="w-4 h-4 rounded border-zinc-600 bg-zinc-700 text-emerald-500 focus:ring-emerald-500"
                     />
-                    <span className="text-xs text-slate-300">{cond.label}</span>
+                    <span className="text-xs text-zinc-300">{cond.label}</span>
                   </label>
                 ))}
               </div>
             </div>
 
             <div>
-              <label className="block text-slate-300 mb-2 font-medium text-sm">
+              <label className="block text-zinc-300 mb-2 font-medium text-sm">
                 Energetický certifikát
               </label>
               <div className="flex flex-wrap gap-2">
                 {ENERGY_CERTIFICATES.map((cert) => (
                   <label
                     key={cert.value}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer hover:border-slate-600 transition-colors"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-800 cursor-pointer hover:border-zinc-600 transition-colors"
                   >
                     <input
                       type="checkbox"
@@ -471,9 +471,9 @@ export function AdvancedFilters() {
                           : filters.energyCertificates.filter((c) => c !== cert.value);
                         setFilters({ ...filters, energyCertificates: certs });
                       }}
-                      className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500"
+                      className="w-4 h-4 rounded border-zinc-600 bg-zinc-700 text-emerald-500 focus:ring-emerald-500"
                     />
-                    <span className="text-xs text-slate-300">{cert.label}</span>
+                    <span className="text-xs text-zinc-300">{cert.label}</span>
                   </label>
                 ))}
               </div>
@@ -483,7 +483,7 @@ export function AdvancedFilters() {
           {/* Výnos */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-slate-300 mb-2 font-medium text-sm">
+              <label className="block text-zinc-300 mb-2 font-medium text-sm">
                 Výnos (%)
               </label>
               <div className="flex gap-2">
@@ -499,7 +499,7 @@ export function AdvancedFilters() {
                   }}
                   placeholder="Od"
                   step="0.1"
-                  className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <input
                   type="number"
@@ -513,13 +513,13 @@ export function AdvancedFilters() {
                   }}
                   placeholder="Do"
                   step="0.1"
-                  className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-slate-300 mb-2 font-medium text-sm">
+              <label className="block text-zinc-300 mb-2 font-medium text-sm">
                 Hrubý výnos (%)
               </label>
               <div className="flex gap-2">
@@ -535,7 +535,7 @@ export function AdvancedFilters() {
                   }}
                   placeholder="Od"
                   step="0.1"
-                  className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <input
                   type="number"
@@ -549,13 +549,13 @@ export function AdvancedFilters() {
                   }}
                   placeholder="Do"
                   step="0.1"
-                  className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-slate-300 mb-2 font-medium text-sm">
+              <label className="block text-zinc-300 mb-2 font-medium text-sm">
                 Cash-on-Cash (%)
               </label>
               <div className="flex gap-2">
@@ -571,7 +571,7 @@ export function AdvancedFilters() {
                   }}
                   placeholder="Od"
                   step="0.1"
-                  className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
             </div>
@@ -580,7 +580,7 @@ export function AdvancedFilters() {
           {/* Pokročilé */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-slate-300 mb-2 font-medium text-sm">
+              <label className="block text-zinc-300 mb-2 font-medium text-sm">
                 Maximálne dni v ponuke
               </label>
               <input
@@ -594,12 +594,12 @@ export function AdvancedFilters() {
                   });
                 }}
                 placeholder="Napríklad 90"
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
 
             <div>
-              <label className="block text-slate-300 mb-2 font-medium text-sm">
+              <label className="block text-zinc-300 mb-2 font-medium text-sm">
                 Minimálny Market Gap (%)
               </label>
               <input
@@ -614,7 +614,7 @@ export function AdvancedFilters() {
                 }}
                 placeholder="Napríklad 10"
                 step="0.1"
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
 
@@ -629,14 +629,14 @@ export function AdvancedFilters() {
                 onChange={(e) =>
                   setFilters({ ...filters, onlyDistressed: e.target.checked })
                 }
-                className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500"
+                className="w-4 h-4 rounded border-zinc-600 bg-zinc-700 text-emerald-500 focus:ring-emerald-500"
               />
-              <span className="text-sm text-slate-300">Len nehnuteľnosti v núdzi</span>
+              <span className="text-sm text-zinc-300">Len nehnuteľnosti v núdzi</span>
             </label>
           </div>
 
           {/* Save button */}
-          <div className="pt-4 border-t border-slate-800">
+          <div className="pt-4 border-t border-zinc-800">
             <button
               onClick={handleSave}
               disabled={saveMutation.isPending}

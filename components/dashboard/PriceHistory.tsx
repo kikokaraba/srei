@@ -179,10 +179,10 @@ export function PriceHistory() {
 
   if (loading && !data) {
     return (
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800 p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-slate-800/50 rounded-lg w-2/3"></div>
-          <div className="h-64 bg-slate-800/30 rounded-xl"></div>
+          <div className="h-8 bg-zinc-800/50 rounded-lg w-2/3"></div>
+          <div className="h-64 bg-zinc-800/30 rounded-xl"></div>
         </div>
       </div>
     );
@@ -193,7 +193,7 @@ export function PriceHistory() {
   const isPositive = priceChange >= 0;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800">
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800">
       {/* Ambient glow */}
       <div 
         className={`absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 transition-colors duration-1000 ${
@@ -207,7 +207,7 @@ export function PriceHistory() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
                 Vývoj cien
               </span>
             </div>
@@ -220,7 +220,7 @@ export function PriceHistory() {
           <div className="text-right">
             <div className="text-3xl font-bold text-white tabular-nums">
               {currentPrice.toLocaleString()}
-              <span className="text-lg text-slate-400 ml-1">€/m²</span>
+              <span className="text-lg text-zinc-400 ml-1">€/m²</span>
             </div>
             <div className={`flex items-center justify-end gap-1 mt-1 ${
               isPositive ? "text-emerald-400" : "text-rose-400"
@@ -233,7 +233,7 @@ export function PriceHistory() {
               <span className="font-semibold tabular-nums">
                 {isPositive ? "+" : ""}{priceChange.toFixed(1)}%
               </span>
-              <span className="text-slate-500 text-sm">/ rok</span>
+              <span className="text-zinc-500 text-sm">/ rok</span>
             </div>
           </div>
         </div>
@@ -241,7 +241,7 @@ export function PriceHistory() {
         {/* Region pills - filtered by user preferences */}
         <div className="flex gap-1.5 mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
           {availableRegions.length === 1 && (
-            <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500">
+            <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-500">
               <MapPin className="w-3 h-3" />
               <span>Nastavte sledované lokality v Nastaveniach</span>
             </div>
@@ -253,7 +253,7 @@ export function PriceHistory() {
               className={`relative px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-300 whitespace-nowrap ${
                 selectedRegion === region.code
                   ? "text-white"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+                  : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
               }`}
             >
               {selectedRegion === region.code && (
@@ -268,7 +268,7 @@ export function PriceHistory() {
         {chartData && (
           <div className="relative h-56 mt-4">
             {/* Y-axis labels */}
-            <div className="absolute left-0 top-0 bottom-8 w-12 flex flex-col justify-between text-xs text-slate-500 font-medium">
+            <div className="absolute left-0 top-0 bottom-8 w-12 flex flex-col justify-between text-xs text-zinc-500 font-medium">
               <span>{formatPrice(chartData.maxPrice)} €</span>
               <span>{formatPrice(chartData.minPrice)} €</span>
             </div>
@@ -393,7 +393,7 @@ export function PriceHistory() {
                     transform: "translate(-50%, -120%)",
                   }}
                 >
-                  <div className="bg-slate-800/90 backdrop-blur-xl border border-slate-700/50 rounded-xl px-4 py-3 shadow-2xl">
+                  <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/50 rounded-xl px-4 py-3 shadow-2xl">
                     <div className="text-sm font-bold text-white mb-1">
                       {chartData.points[hoveredPoint].year}
                     </div>
@@ -401,10 +401,10 @@ export function PriceHistory() {
                       {chartData.points[hoveredPoint].avgPrice.toLocaleString()} €/m²
                     </div>
                     <div className="flex gap-3 mt-1 text-xs">
-                      <span className="text-slate-400">
+                      <span className="text-zinc-400">
                         Min: <span className="text-rose-400">{chartData.points[hoveredPoint].minPrice.toLocaleString()}</span>
                       </span>
-                      <span className="text-slate-400">
+                      <span className="text-zinc-400">
                         Max: <span className="text-emerald-400">{chartData.points[hoveredPoint].maxPrice.toLocaleString()}</span>
                       </span>
                     </div>
@@ -413,7 +413,7 @@ export function PriceHistory() {
               )}
               
               {/* X-axis labels */}
-              <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-slate-500 font-medium px-1">
+              <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-zinc-500 font-medium px-1">
                 {chartData.points
                   .filter((_, i) => i === 0 || i === chartData.points.length - 1 || (chartData.points.length > 10 ? i % 3 === 0 : i % 2 === 0))
                   .map((point) => (
@@ -433,7 +433,7 @@ export function PriceHistory() {
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
                 period === p
                   ? "bg-white/10 text-white backdrop-blur-sm"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
+                  : "text-zinc-400 hover:text-white hover:bg-white/5"
               }`}
             >
               {p} rokov
@@ -443,9 +443,9 @@ export function PriceHistory() {
 
         {/* Stats footer */}
         {data?.stats && (
-          <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-800/50">
+          <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-zinc-800/50">
             <div className="text-center">
-              <div className="text-xs text-slate-500 mb-1">5 rokov</div>
+              <div className="text-xs text-zinc-500 mb-1">5 rokov</div>
               <div className={`text-lg font-bold ${
                 (data.stats.priceChange5Y || 0) >= 0 ? "text-emerald-400" : "text-rose-400"
               }`}>
@@ -453,13 +453,13 @@ export function PriceHistory() {
               </div>
             </div>
             <div className="text-center">
-              <div className="text-xs text-slate-500 mb-1">Maximum</div>
+              <div className="text-xs text-zinc-500 mb-1">Maximum</div>
               <div className="text-lg font-bold text-white">
                 {data.stats.allTimeHigh?.toLocaleString()} €
               </div>
             </div>
             <div className="text-center">
-              <div className="text-xs text-slate-500 mb-1">10 rokov</div>
+              <div className="text-xs text-zinc-500 mb-1">10 rokov</div>
               <div className={`text-lg font-bold ${
                 (data.stats.priceChange10Y || 0) >= 0 ? "text-emerald-400" : "text-rose-400"
               }`}>
@@ -470,7 +470,7 @@ export function PriceHistory() {
         )}
 
         {/* Source tag */}
-        <div className="flex items-center justify-center gap-2 mt-4 text-xs text-slate-600">
+        <div className="flex items-center justify-center gap-2 mt-4 text-xs text-zinc-600">
           <span>Zdroj: NBS</span>
           <span>•</span>
           <span>Aktualizované Q3 2025</span>

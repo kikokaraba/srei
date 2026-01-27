@@ -234,46 +234,46 @@ export default function InteractiveMap() {
   }, [selectedCity, properties]);
 
   return (
-    <div className="h-full w-full flex flex-col lg:flex-row bg-slate-950">
+    <div className="h-full w-full flex flex-col lg:flex-row bg-zinc-950">
       {/* Sidebar */}
-      <div className="w-full lg:w-80 bg-slate-900 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col overflow-hidden">
+      <div className="w-full lg:w-80 bg-zinc-900 border-b lg:border-b-0 lg:border-r border-zinc-800 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="p-4 border-b border-slate-800">
+        <div className="p-4 border-b border-zinc-800">
           <h2 className="text-lg font-semibold text-white flex items-center gap-2">
             <MapPin className="w-5 h-5 text-emerald-400" />
             Mapa Slovenska
           </h2>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-zinc-400 mt-1">
             Klikni na mesto pre detail
           </p>
           
           {/* DB Status */}
           <div className="mt-3 flex items-center gap-2 text-xs">
             <div className={`w-2 h-2 rounded-full ${
-              loading ? "bg-slate-600 animate-pulse" :
+              loading ? "bg-zinc-600 animate-pulse" :
               dbConnected ? "bg-emerald-400" : "bg-amber-400"
             }`} />
-            <span className="text-slate-500">
+            <span className="text-zinc-500">
               {loading ? "Načítavam..." : dbConnected ? "Live dáta" : "Demo dáta"}
             </span>
           </div>
         </div>
 
         {/* Stats summary */}
-        <div className="p-4 border-b border-slate-800 grid grid-cols-3 gap-3">
+        <div className="p-4 border-b border-zinc-800 grid grid-cols-3 gap-3">
           <div className="text-center">
             <div className="text-xl font-bold text-white">{totals.properties.toLocaleString()}</div>
-            <div className="text-xs text-slate-500">Nehnuteľností</div>
+            <div className="text-xs text-zinc-500">Nehnuteľností</div>
           </div>
           <div className="text-center">
             <div className="text-xl font-bold text-red-400">{totals.hotDeals}</div>
-            <div className="text-xs text-slate-500">Hot Deals</div>
+            <div className="text-xs text-zinc-500">Hot Deals</div>
           </div>
           <div className="text-center">
             <div className="text-xl font-bold text-emerald-400">
               {totals.avgPrice > 0 ? `€${totals.avgPrice.toLocaleString()}` : "-"}
             </div>
-            <div className="text-xs text-slate-500">Priem. €/m²</div>
+            <div className="text-xs text-zinc-500">Priem. €/m²</div>
           </div>
         </div>
 
@@ -284,18 +284,18 @@ export default function InteractiveMap() {
             <div className="p-4">
               <button 
                 onClick={handleReset}
-                className="flex items-center gap-1 text-sm text-slate-400 hover:text-white mb-4 transition-colors"
+                className="flex items-center gap-1 text-sm text-zinc-400 hover:text-white mb-4 transition-colors"
               >
                 ← Späť na Slovensko
               </button>
               
               <h3 className="text-xl font-bold text-white mb-1">{selectedCity.name}</h3>
-              <p className="text-sm text-slate-500 mb-4">{selectedCity.region} kraj</p>
+              <p className="text-sm text-zinc-500 mb-4">{selectedCity.region} kraj</p>
               
               <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
+                <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 text-sm">Priemerná cena</span>
+                    <span className="text-zinc-400 text-sm">Priemerná cena</span>
                     <div className="flex items-center gap-2">
                       <span className="text-white font-semibold">
                         {selectedCity.avgPrice > 0 ? `€${selectedCity.avgPrice.toLocaleString()}/m²` : "-"}
@@ -310,17 +310,17 @@ export default function InteractiveMap() {
                   </div>
                 </div>
                 
-                <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
+                <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400 text-sm">Počet ponúk</span>
+                    <span className="text-zinc-400 text-sm">Počet ponúk</span>
                     <span className="text-white font-semibold">{selectedCity.properties.toLocaleString()}</span>
                   </div>
                 </div>
                 
                 {selectedCity.population && (
-                  <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
+                  <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-400 text-sm">Obyvateľov</span>
+                      <span className="text-zinc-400 text-sm">Obyvateľov</span>
                       <span className="text-white font-semibold">{selectedCity.population.toLocaleString()}</span>
                     </div>
                   </div>
@@ -359,8 +359,8 @@ export default function InteractiveMap() {
                     onMouseLeave={() => setHoveredCity(null)}
                     className={`w-full p-3 rounded-lg flex items-center justify-between transition-all ${
                       hoveredCity === city.name 
-                        ? "bg-slate-800 border border-slate-700" 
-                        : "hover:bg-slate-800/50 border border-transparent"
+                        ? "bg-zinc-800 border border-zinc-700" 
+                        : "hover:bg-zinc-800/50 border border-transparent"
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -370,14 +370,14 @@ export default function InteractiveMap() {
                       />
                       <div className="text-left">
                         <div className="text-white font-medium">{city.name}</div>
-                        <div className="text-xs text-slate-500">{city.properties.toLocaleString()} ponúk</div>
+                        <div className="text-xs text-zinc-500">{city.properties.toLocaleString()} ponúk</div>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="text-sm text-white">
                         {city.avgPrice > 0 ? `€${city.avgPrice.toLocaleString()}` : "-"}
                       </div>
-                      <div className="text-xs text-slate-500">/m²</div>
+                      <div className="text-xs text-zinc-500">/m²</div>
                     </div>
                   </button>
                 ))
@@ -386,7 +386,7 @@ export default function InteractiveMap() {
                   <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
                 </div>
               ) : (
-                <div className="text-center py-8 text-slate-500 text-sm">
+                <div className="text-center py-8 text-zinc-500 text-sm">
                   Žiadne nehnuteľnosti
                 </div>
               )}
@@ -395,24 +395,24 @@ export default function InteractiveMap() {
         </div>
 
         {/* Legend */}
-        <div className="p-4 border-t border-slate-800">
-          <div className="text-xs text-slate-500 mb-2">Cena za m²</div>
+        <div className="p-4 border-t border-zinc-800">
+          <div className="text-xs text-zinc-500 mb-2">Cena za m²</div>
           <div className="flex items-center gap-2 text-xs flex-wrap">
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded-full bg-green-500" />
-              <span className="text-slate-400">&lt;€1800</span>
+              <span className="text-zinc-400">&lt;€1800</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded-full bg-yellow-500" />
-              <span className="text-slate-400">€1800-2200</span>
+              <span className="text-zinc-400">€1800-2200</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded-full bg-orange-500" />
-              <span className="text-slate-400">€2200-3000</span>
+              <span className="text-zinc-400">€2200-3000</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded-full bg-red-500" />
-              <span className="text-slate-400">&gt;€3000</span>
+              <span className="text-zinc-400">&gt;€3000</span>
             </div>
           </div>
         </div>
@@ -454,16 +454,16 @@ export default function InteractiveMap() {
             >
               <Popup>
                 <div className="p-2 min-w-[180px]">
-                  <h3 className="font-bold text-slate-900 text-lg mb-2">{city.name}</h3>
+                  <h3 className="font-bold text-zinc-900 text-lg mb-2">{city.name}</h3>
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Cena/m²:</span>
+                      <span className="text-zinc-600">Cena/m²:</span>
                       <span className="font-semibold">
                         {city.avgPrice > 0 ? `€${city.avgPrice.toLocaleString()}` : "-"}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Ponúk:</span>
+                      <span className="text-zinc-600">Ponúk:</span>
                       <span className="font-semibold">{city.properties.toLocaleString()}</span>
                     </div>
                     {city.hotDeals > 0 && (
@@ -496,13 +496,13 @@ export default function InteractiveMap() {
             >
               <Popup>
                 <div className="p-2 min-w-[200px]">
-                  <h3 className="font-semibold text-slate-900 text-sm mb-2 line-clamp-2">
+                  <h3 className="font-semibold text-zinc-900 text-sm mb-2 line-clamp-2">
                     {property.title}
                   </h3>
-                  <div className="space-y-1 text-xs text-slate-600">
+                  <div className="space-y-1 text-xs text-zinc-600">
                     <div className="flex justify-between">
                       <span>Cena:</span>
-                      <span className="font-semibold text-slate-900">€{property.price.toLocaleString()}</span>
+                      <span className="font-semibold text-zinc-900">€{property.price.toLocaleString()}</span>
                     </div>
                     {property.area_m2 > 0 && (
                       <>
@@ -543,7 +543,7 @@ export default function InteractiveMap() {
         <div className="absolute top-4 right-4 flex flex-col gap-2 z-[1000]">
           <button
             onClick={handleReset}
-            className="p-2 bg-slate-900/90 hover:bg-slate-800 text-white rounded-lg border border-slate-700 transition-colors"
+            className="p-2 bg-zinc-900/90 hover:bg-zinc-800 text-white rounded-lg border border-zinc-700 transition-colors"
             title="Reset view"
           >
             <MapPin className="w-5 h-5" />
@@ -552,10 +552,10 @@ export default function InteractiveMap() {
 
         {/* Loading overlay */}
         {loading && (
-          <div className="absolute inset-0 bg-slate-950/80 flex items-center justify-center z-[1000]">
+          <div className="absolute inset-0 bg-zinc-950/80 flex items-center justify-center z-[1000]">
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
-              <span className="text-slate-400 text-sm">Načítavam mapu...</span>
+              <span className="text-zinc-400 text-sm">Načítavam mapu...</span>
             </div>
           </div>
         )}

@@ -19,7 +19,7 @@ export default function ValuationPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/30 p-6 lg:p-8">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-emerald-950/30 p-6 lg:p-8">
         <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 bg-emerald-500" />
         
         <div className="relative flex items-start gap-4">
@@ -30,7 +30,7 @@ export default function ValuationPage() {
             <h1 className="text-2xl lg:text-3xl font-bold text-white mb-1">
               Nacenenie nehnuteľnosti
             </h1>
-            <p className="text-slate-400">
+            <p className="text-zinc-400">
               AI-powered odhad trhovej hodnoty na základe aktuálnych dát
             </p>
           </div>

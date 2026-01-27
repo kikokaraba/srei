@@ -75,7 +75,7 @@ const SIGNAL_CONFIG: Record<string, { bg: string; text: string; label: string }>
   strong_buy: { bg: "bg-emerald-500/20", text: "text-emerald-400", label: "STRONG BUY" },
   buy: { bg: "bg-blue-500/20", text: "text-blue-400", label: "BUY" },
   hold: { bg: "bg-amber-500/20", text: "text-amber-400", label: "HOLD" },
-  caution: { bg: "bg-slate-700/50", text: "text-slate-400", label: "CAUTION" },
+  caution: { bg: "bg-zinc-700/50", text: "text-zinc-400", label: "CAUTION" },
 };
 
 export function UrbanImpactMap() {
@@ -90,11 +90,11 @@ export function UrbanImpactMap() {
 
   if (isLoading) {
     return (
-      <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6 animate-pulse">
-        <div className="h-6 bg-slate-700 rounded w-1/3 mb-4" />
+      <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-6 animate-pulse">
+        <div className="h-6 bg-zinc-700 rounded w-1/3 mb-4" />
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-24 bg-slate-700/50 rounded" />
+            <div key={i} className="h-24 bg-zinc-700/50 rounded" />
           ))}
         </div>
       </div>
@@ -106,7 +106,7 @@ export function UrbanImpactMap() {
   const summary = data?.data?.summary;
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/20 rounded-xl border border-slate-700/50 p-6">
+    <div className="bg-gradient-to-br from-zinc-900 via-zinc-900 to-cyan-950/20 rounded-xl border border-zinc-700/50 p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
@@ -115,7 +115,7 @@ export function UrbanImpactMap() {
           </div>
           <div>
             <h2 className="text-lg font-bold text-white">Urban Development</h2>
-            <p className="text-xs text-slate-400">Kde budú ceny rásť o 2 roky</p>
+            <p className="text-xs text-zinc-400">Kde budú ceny rásť o 2 roky</p>
           </div>
         </div>
         
@@ -137,7 +137,7 @@ export function UrbanImpactMap() {
           return (
             <div 
               key={`${hotspot.city}-${hotspot.district}`}
-              className={`${signalConfig.bg} border border-slate-700/50 rounded-lg p-3 hover:scale-105 transition-transform cursor-pointer`}
+              className={`${signalConfig.bg} border border-zinc-700/50 rounded-lg p-3 hover:scale-105 transition-transform cursor-pointer`}
             >
               <div className="flex items-center justify-between mb-2">
                 <span className={`text-xs font-bold ${signalConfig.text}`}>
@@ -147,12 +147,12 @@ export function UrbanImpactMap() {
               </div>
               <p className="text-white font-medium">{CITY_NAMES[hotspot.city]}</p>
               {hotspot.district && (
-                <p className="text-xs text-slate-400">{hotspot.district}</p>
+                <p className="text-xs text-zinc-400">{hotspot.district}</p>
               )}
               <p className={`text-lg font-bold ${signalConfig.text} mt-1`}>
                 +{hotspot.impact}%
               </p>
-              <p className="text-xs text-slate-500 truncate">{hotspot.topProject}</p>
+              <p className="text-xs text-zinc-500 truncate">{hotspot.topProject}</p>
             </div>
           );
         })}
@@ -160,7 +160,7 @@ export function UrbanImpactMap() {
 
       {/* Upcoming Projects */}
       <div>
-        <h3 className="text-sm font-medium text-slate-400 mb-3 flex items-center gap-2">
+        <h3 className="text-sm font-medium text-zinc-400 mb-3 flex items-center gap-2">
           <Clock className="w-4 h-4" />
           Nadchádzajúce projekty
         </h3>
@@ -175,33 +175,33 @@ export function UrbanImpactMap() {
             return (
               <div 
                 key={project.id}
-                className="flex items-center gap-3 p-3 bg-slate-800/30 hover:bg-slate-800/50 rounded-lg transition-all cursor-pointer group"
+                className="flex items-center gap-3 p-3 bg-zinc-800/30 hover:bg-zinc-800/50 rounded-lg transition-all cursor-pointer group"
               >
-                <div className="w-10 h-10 rounded-lg bg-slate-700/50 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-zinc-700/50 flex items-center justify-center shrink-0">
                   <Icon className="w-5 h-5 text-cyan-400" />
                 </div>
                 
                 <div className="flex-1 min-w-0">
                   <p className="text-white font-medium truncate">{project.name}</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-zinc-400">
                     {CITY_NAMES[project.city]} {project.district ? `• ${project.district}` : ""}
                   </p>
                 </div>
                 
                 <div className="text-right shrink-0">
                   <p className={`text-sm font-bold ${
-                    project.status === "in_progress" ? "text-amber-400" : "text-slate-400"
+                    project.status === "in_progress" ? "text-amber-400" : "text-zinc-400"
                   }`}>
                     {project.status === "in_progress" ? "Prebieha" : "Plánované"}
                   </p>
-                  <p className="text-xs text-slate-500">{completionDate}</p>
+                  <p className="text-xs text-zinc-500">{completionDate}</p>
                 </div>
                 
                 <div className="text-emerald-400 font-bold shrink-0">
                   +{project.estimatedImpact}%
                 </div>
                 
-                <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors shrink-0" />
+                <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400 transition-colors shrink-0" />
               </div>
             );
           })}

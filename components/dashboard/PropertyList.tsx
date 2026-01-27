@@ -892,11 +892,11 @@ export function PropertyList() {
               <div
                 key={property.id}
                 onClick={() => window.location.href = `/dashboard/property/${property.id}`}
-                className="group relative bg-slate-900/80 backdrop-blur rounded-xl border border-slate-800/50 overflow-hidden hover:border-emerald-500/30 transition-all cursor-pointer hover:shadow-lg hover:shadow-emerald-500/5"
+                className="group relative bg-zinc-900/80 backdrop-blur rounded-xl border border-zinc-800/50 overflow-hidden hover:border-emerald-500/30 transition-all cursor-pointer hover:shadow-lg hover:shadow-emerald-500/5"
               >
                 <div className="flex">
                   {/* Thumbnail */}
-                  <div className="relative w-40 h-28 flex-shrink-0 bg-slate-800/50">
+                  <div className="relative w-40 h-28 flex-shrink-0 bg-zinc-800/50">
                     {thumbnailUrl ? (
                       <Image
                         src={thumbnailUrl}
@@ -907,7 +907,7 @@ export function PropertyList() {
                         unoptimized
                       />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-slate-600">
+                      <div className="absolute inset-0 flex items-center justify-center text-zinc-600">
                         <ImageOff className="w-8 h-8" />
                       </div>
                     )}
@@ -940,7 +940,7 @@ export function PropertyList() {
                       <h3 className="font-semibold text-white truncate group-hover:text-emerald-400 transition-colors mb-1">
                         {property.title}
                       </h3>
-                      <div className="flex items-center gap-4 text-sm text-slate-400">
+                      <div className="flex items-center gap-4 text-sm text-zinc-400">
                         <span className="flex items-center gap-1">
                           <MapPin className="w-3.5 h-3.5" />
                           {property.district}, {getRegionLabel(property.city)}
@@ -969,7 +969,7 @@ export function PropertyList() {
                         <p className="text-2xl font-bold text-white">
                           €{property.price.toLocaleString()}
                         </p>
-                        <p className="text-sm text-slate-400">
+                        <p className="text-sm text-zinc-400">
                           €{property.price_per_m2.toLocaleString()}/m²
                         </p>
                       </div>
@@ -979,7 +979,7 @@ export function PropertyList() {
                         <div className={`text-center px-4 py-2 rounded-xl min-w-[80px] ${
                           property.investmentMetrics.gross_yield >= 6
                             ? "bg-emerald-500/20 text-emerald-400"
-                            : "bg-slate-800/50 text-slate-400"
+                            : "bg-zinc-800/50 text-zinc-400"
                         }`}>
                           <p className="text-xl font-bold flex items-center justify-center gap-1">
                             <TrendingUp className="w-4 h-4" />
@@ -997,7 +997,7 @@ export function PropertyList() {
                           className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                             isSaved
                               ? "bg-emerald-500 text-white"
-                              : "bg-slate-800 text-slate-400 hover:text-emerald-400"
+                              : "bg-zinc-800 text-zinc-400 hover:text-emerald-400"
                           }`}
                         >
                           {isSaving ? (
@@ -1014,7 +1014,7 @@ export function PropertyList() {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 hover:text-blue-400 transition-colors"
+                            className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-blue-400 transition-colors"
                           >
                             <ExternalLink className="w-4 h-4" />
                           </a>
