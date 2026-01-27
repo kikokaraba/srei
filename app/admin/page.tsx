@@ -54,7 +54,10 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 text-red-400 animate-spin" />
+        <div className="relative w-8 h-8">
+          <div className="w-8 h-8 border-2 border-zinc-800 rounded-full"></div>
+          <div className="absolute top-0 left-0 w-8 h-8 border-2 border-rose-500 rounded-full animate-spin border-t-transparent"></div>
+        </div>
       </div>
     );
   }
@@ -62,17 +65,17 @@ export default function AdminDashboard() {
   if (!stats) {
     return (
       <div className="text-center py-12">
-        <p className="text-slate-400">Nepodarilo sa načítať štatistiky</p>
+        <p className="text-zinc-500 text-sm">Nepodarilo sa načítať štatistiky</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <div className="space-y-6">
+      {/* Header - Premium */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-100 mb-2">Admin Dashboard</h1>
-        <p className="text-slate-400">Prehľad a správa SRIA platformy</p>
+        <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-medium mb-1">ADMIN</p>
+        <h1 className="text-2xl font-semibold text-zinc-100 tracking-tight">Dashboard</h1>
       </div>
 
       {/* Overview Cards */}
@@ -110,11 +113,11 @@ export default function AdminDashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Users by Role */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-          <h3 className="font-semibold text-slate-100 mb-4 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-red-400" />
+        <div className="premium-card p-5">
+          <h3 className="text-xs font-medium text-zinc-400 mb-4 flex items-center gap-2">
+            <Shield className="w-4 h-4 text-rose-400" />
             Používatelia podľa role
           </h3>
           <div className="space-y-3">
@@ -124,16 +127,16 @@ export default function AdminDashboard() {
               
               return (
                 <div key={item.role}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-slate-300">{ROLE_LABELS[item.role] || item.role}</span>
-                    <span className="text-slate-400">{item.count} ({percentage.toFixed(0)}%)</span>
+                  <div className="flex justify-between text-xs mb-1.5">
+                    <span className="text-zinc-300">{ROLE_LABELS[item.role] || item.role}</span>
+                    <span className="text-zinc-500 font-mono">{item.count}</span>
                   </div>
-                  <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-zinc-900 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full ${
-                        item.role === "ADMIN" ? "bg-red-500" :
-                        item.role === "PREMIUM_INVESTOR" ? "bg-yellow-500" :
-                        "bg-slate-600"
+                        item.role === "ADMIN" ? "bg-rose-500" :
+                        item.role === "PREMIUM_INVESTOR" ? "bg-amber-500" :
+                        "bg-zinc-700"
                       }`}
                       style={{ width: `${percentage}%` }}
                     />
@@ -145,9 +148,9 @@ export default function AdminDashboard() {
         </div>
 
         {/* Properties by City */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-          <h3 className="font-semibold text-slate-100 mb-4 flex items-center gap-2">
-            <Building className="w-5 h-5 text-emerald-400" />
+        <div className="premium-card p-5">
+          <h3 className="text-xs font-medium text-zinc-400 mb-4 flex items-center gap-2">
+            <Building className="w-4 h-4 text-emerald-400" />
             Nehnuteľnosti podľa mesta
           </h3>
           <div className="space-y-3">
@@ -160,11 +163,11 @@ export default function AdminDashboard() {
                 
                 return (
                   <div key={item.city}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-slate-300">{getCityRegionLabel(item.city)}</span>
-                      <span className="text-slate-400">{item.count}</span>
+                    <div className="flex justify-between text-xs mb-1.5">
+                      <span className="text-zinc-300">{getCityRegionLabel(item.city)}</span>
+                      <span className="text-zinc-500 font-mono">{item.count}</span>
                     </div>
-                    <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-zinc-900 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-emerald-500 rounded-full"
                         style={{ width: `${percentage}%` }}
@@ -177,81 +180,81 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-          <h3 className="font-semibold text-slate-100 mb-4">Rýchle akcie</h3>
-          <div className="space-y-3">
+        <div className="premium-card p-5">
+          <h3 className="text-xs font-medium text-zinc-400 mb-4">Rýchle akcie</h3>
+          <div className="space-y-2">
             <Link
               href="/admin/users"
-              className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition-colors"
+              className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-xl hover:bg-zinc-800/80 transition-colors border border-zinc-800/30"
             >
               <div className="flex items-center gap-3">
-                <Users className="w-5 h-5 text-blue-400" />
-                <span className="text-slate-100">Spravovať používateľov</span>
+                <Users className="w-4 h-4 text-blue-400" />
+                <span className="text-zinc-200 text-sm">Používatelia</span>
               </div>
-              <ArrowUpRight className="w-4 h-4 text-slate-400" />
+              <ArrowUpRight className="w-3.5 h-3.5 text-zinc-600" />
             </Link>
             <Link
               href="/admin/properties"
-              className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition-colors"
+              className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-xl hover:bg-zinc-800/80 transition-colors border border-zinc-800/30"
             >
               <div className="flex items-center gap-3">
-                <Building className="w-5 h-5 text-emerald-400" />
-                <span className="text-slate-100">Spravovať nehnuteľnosti</span>
+                <Building className="w-4 h-4 text-emerald-400" />
+                <span className="text-zinc-200 text-sm">Nehnuteľnosti</span>
               </div>
-              <ArrowUpRight className="w-4 h-4 text-slate-400" />
+              <ArrowUpRight className="w-3.5 h-3.5 text-zinc-600" />
             </Link>
             <Link
               href="/admin/stats"
-              className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition-colors"
+              className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-xl hover:bg-zinc-800/80 transition-colors border border-zinc-800/30"
             >
               <div className="flex items-center gap-3">
-                <TrendingUp className="w-5 h-5 text-yellow-400" />
-                <span className="text-slate-100">Detailné štatistiky</span>
+                <TrendingUp className="w-4 h-4 text-amber-400" />
+                <span className="text-zinc-200 text-sm">Štatistiky</span>
               </div>
-              <ArrowUpRight className="w-4 h-4 text-slate-400" />
+              <ArrowUpRight className="w-3.5 h-3.5 text-zinc-600" />
             </Link>
           </div>
         </div>
       </div>
 
       {/* Recent Users */}
-      <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-          <h3 className="font-semibold text-slate-100 flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-blue-400" />
+      <div className="premium-card overflow-hidden">
+        <div className="p-5 border-b border-zinc-800/30 flex items-center justify-between">
+          <h3 className="text-xs font-medium text-zinc-400 flex items-center gap-2">
+            <UserPlus className="w-4 h-4 text-blue-400" />
             Najnovší používatelia
           </h3>
-          <Link href="/admin/users" className="text-sm text-emerald-400 hover:underline">
+          <Link href="/admin/users" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
             Zobraziť všetkých →
           </Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-slate-800/50">
+            <thead className="bg-zinc-900/50">
               <tr>
-                <th className="text-left py-3 px-6 text-sm font-medium text-slate-400">Email</th>
-                <th className="text-left py-3 px-6 text-sm font-medium text-slate-400">Meno</th>
-                <th className="text-left py-3 px-6 text-sm font-medium text-slate-400">Rola</th>
-                <th className="text-left py-3 px-6 text-sm font-medium text-slate-400">Uložené</th>
-                <th className="text-left py-3 px-6 text-sm font-medium text-slate-400">Registrácia</th>
+                <th className="text-left py-3 px-5 text-[10px] font-medium text-zinc-600 uppercase tracking-widest">Email</th>
+                <th className="text-left py-3 px-5 text-[10px] font-medium text-zinc-600 uppercase tracking-widest">Meno</th>
+                <th className="text-left py-3 px-5 text-[10px] font-medium text-zinc-600 uppercase tracking-widest">Rola</th>
+                <th className="text-left py-3 px-5 text-[10px] font-medium text-zinc-600 uppercase tracking-widest">Uložené</th>
+                <th className="text-left py-3 px-5 text-[10px] font-medium text-zinc-600 uppercase tracking-widest">Registrácia</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-zinc-800/30">
               {stats.recentUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-slate-800/30">
-                  <td className="py-3 px-6 text-slate-100">{user.email}</td>
-                  <td className="py-3 px-6 text-slate-300">{user.name || "—"}</td>
-                  <td className="py-3 px-6">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      user.role === "ADMIN" ? "bg-red-500/20 text-red-400" :
-                      user.role === "PREMIUM_INVESTOR" ? "bg-yellow-500/20 text-yellow-400" :
-                      "bg-slate-700 text-slate-300"
+                <tr key={user.id} className="hover:bg-zinc-800/30 transition-colors">
+                  <td className="py-3 px-5 text-zinc-200 text-sm">{user.email}</td>
+                  <td className="py-3 px-5 text-zinc-400 text-sm">{user.name || "—"}</td>
+                  <td className="py-3 px-5">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${
+                      user.role === "ADMIN" ? "bg-rose-500/10 text-rose-400" :
+                      user.role === "PREMIUM_INVESTOR" ? "bg-amber-500/10 text-amber-400" :
+                      "bg-zinc-800 text-zinc-400"
                     }`}>
                       {ROLE_LABELS[user.role] || user.role}
                     </span>
                   </td>
-                  <td className="py-3 px-6 text-slate-400">{user._count.savedProperties}</td>
-                  <td className="py-3 px-6 text-slate-400">
+                  <td className="py-3 px-5 text-zinc-500 text-sm font-mono">{user._count.savedProperties}</td>
+                  <td className="py-3 px-5 text-zinc-500 text-sm font-mono">
                     {new Date(user.createdAt).toLocaleDateString("sk-SK")}
                   </td>
                 </tr>
@@ -277,30 +280,30 @@ function StatCard({
   color: "blue" | "emerald" | "purple" | "yellow" | "red";
   trend?: "up" | "down";
 }) {
-  const colorClasses = {
-    blue: "text-blue-400 bg-blue-500/10",
-    emerald: "text-emerald-400 bg-emerald-500/10",
-    purple: "text-purple-400 bg-purple-500/10",
-    yellow: "text-yellow-400 bg-yellow-500/10",
-    red: "text-red-400 bg-red-500/10",
+  const iconColorClasses = {
+    blue: "text-blue-400",
+    emerald: "text-emerald-400",
+    purple: "text-purple-400",
+    yellow: "text-amber-400",
+    red: "text-rose-400",
   };
 
   return (
-    <div className="bg-slate-900 rounded-xl border border-slate-800 p-5">
+    <div className="premium-card p-4 hover:border-zinc-700 transition-all">
       <div className="flex items-center justify-between mb-3">
-        <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
+        <div className={`${iconColorClasses[color]}`}>
           {icon}
         </div>
         {trend && (
-          <div className={`flex items-center gap-1 text-xs ${
-            trend === "up" ? "text-emerald-400" : "text-red-400"
+          <div className={`flex items-center gap-1 text-[10px] font-mono ${
+            trend === "up" ? "text-emerald-400" : "text-rose-400"
           }`}>
             {trend === "up" ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
           </div>
         )}
       </div>
-      <div className="text-3xl font-bold text-slate-100 mb-1">{value}</div>
-      <div className="text-sm text-slate-400">{label}</div>
+      <div className="text-2xl font-semibold text-zinc-100 font-mono tracking-tight mb-0.5">{value.toLocaleString()}</div>
+      <div className="text-[10px] text-zinc-600 uppercase tracking-widest">{label}</div>
     </div>
   );
 }

@@ -66,10 +66,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 text-emerald-400 animate-spin mx-auto mb-4" />
-          <p className="text-slate-400">Overujem prístup...</p>
+          <div className="relative w-10 h-10 mx-auto mb-4">
+            <div className="w-10 h-10 border-2 border-zinc-800 rounded-full"></div>
+            <div className="absolute top-0 left-0 w-10 h-10 border-2 border-rose-500 rounded-full animate-spin border-t-transparent"></div>
+          </div>
+          <p className="text-zinc-500 text-sm">Overujem prístup...</p>
         </div>
       </div>
     );
@@ -81,25 +84,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const SidebarContent = () => (
     <>
-      <div className="p-4 lg:p-6 border-b border-slate-800">
+      {/* Logo */}
+      <div className="p-4 lg:p-5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 lg:w-6 lg:h-6 text-red-400" />
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-rose-500/10 flex items-center justify-center">
+              <Shield className="w-4 h-4 text-rose-400" />
+            </div>
             <div>
-              <h2 className="text-lg lg:text-xl font-bold text-red-400">Admin</h2>
-              <p className="text-xs text-slate-500 hidden lg:block">SRIA Management</p>
+              <h2 className="text-base font-semibold text-zinc-100 tracking-tight">Admin</h2>
+              <p className="text-[10px] text-zinc-600 tracking-wide hidden lg:block">MANAGEMENT</p>
             </div>
           </div>
           <button
             onClick={() => setMobileMenuOpen(false)}
-            className="lg:hidden p-2 text-slate-400 hover:text-slate-100"
+            className="lg:hidden p-2 text-zinc-500 hover:text-zinc-200 rounded-lg hover:bg-zinc-800/50"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      <nav className="flex-1 p-3 lg:p-4 space-y-1">
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-2 space-y-0.5">
         {adminNav.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -109,65 +116,68 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-lg transition-colors ${
+              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
                 isActive
-                  ? isHighlight 
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "bg-red-500/10 text-red-400 border border-red-500/20"
-                  : isHighlight
-                    ? "text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20"
-                    : "text-slate-300 hover:bg-slate-800 hover:text-slate-100"
+                  ? "bg-zinc-800/80 text-zinc-100"
+                  : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
               }`}
             >
-              <Icon className="w-5 h-5" />
-              <span className="font-medium text-sm lg:text-base">{item.name}</span>
+              {/* Active indicator */}
+              {isActive && (
+                <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r ${isHighlight ? "bg-emerald-400" : "bg-rose-400"}`} />
+              )}
+              <Icon className={`w-[18px] h-[18px] ${isActive ? (isHighlight ? "text-emerald-400" : "text-rose-400") : ""}`} />
+              <span className="font-medium text-[13px] tracking-wide">{item.name}</span>
               {isHighlight && !isActive && (
-                <span className="ml-auto text-[10px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded">NEW</span>
+                <span className="ml-auto text-[9px] px-1.5 py-0.5 bg-emerald-500/10 text-emerald-400 rounded font-medium">NEW</span>
               )}
             </Link>
           );
         })}
       </nav>
 
-      <div className="p-3 lg:p-4 border-t border-slate-800 space-y-2">
+      {/* Footer */}
+      <div className="p-3 border-t border-zinc-800/30">
         <Link
           href="/dashboard"
-          className="flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 w-full rounded-lg text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+          className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-300 transition-all duration-200"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium text-sm lg:text-base">Späť do appky</span>
+          <ArrowLeft className="w-[18px] h-[18px]" />
+          <span className="font-medium text-[13px] tracking-wide">Späť do appky</span>
         </Link>
       </div>
     </>
   );
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+    <div className="min-h-screen bg-[#050505]">
+      {/* Mobile Header - Premium */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 glass-premium px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Shield className="w-5 h-5 text-red-400" />
-          <h2 className="text-lg font-bold text-red-400">Admin</h2>
+          <div className="w-7 h-7 rounded-lg bg-rose-500/10 flex items-center justify-center">
+            <Shield className="w-3.5 h-3.5 text-rose-400" />
+          </div>
+          <span className="text-sm font-semibold text-zinc-100">Admin</span>
         </div>
         <button
           onClick={() => setMobileMenuOpen(true)}
-          className="p-2 text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-800"
+          className="p-2 text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800/50"
         >
-          <Menu className="w-6 h-6" />
+          <Menu className="w-5 h-5" />
         </button>
       </div>
 
       {/* Mobile Sidebar Overlay */}
       {mobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-50 bg-black/50"
+          className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
       {/* Mobile Sidebar */}
       <aside
-        className={`lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-slate-900 border-r border-slate-800 flex flex-col transform transition-transform duration-300 ease-in-out ${
+        className={`lg:hidden fixed top-0 left-0 bottom-0 z-50 w-64 bg-[#0a0a0a] border-r border-zinc-800/30 flex flex-col transform transition-transform duration-300 ease-in-out ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -175,13 +185,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       <div className="flex">
-        {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex w-64 bg-slate-900 border-r border-slate-800 flex-col shrink-0 fixed top-0 left-0 bottom-0">
+        {/* Desktop Sidebar - Premium Glassmorphism */}
+        <aside className="hidden lg:flex w-56 glass-sidebar flex-col shrink-0 fixed top-0 left-0 bottom-0">
           <SidebarContent />
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 lg:ml-64 pt-14 lg:pt-0">
+        <main className="flex-1 lg:ml-56 pt-14 lg:pt-0">
           <div className="p-4 lg:p-8 max-w-7xl mx-auto">
             {children}
           </div>
