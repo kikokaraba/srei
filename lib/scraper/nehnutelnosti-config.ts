@@ -57,7 +57,7 @@ async function pageFunction(context) {
             building_material: null,
             description: null,
             images: [],
-            location: { full: null, city: null, district: null }
+            location: { full: null, city: null, district: null, street: null }
         };
 
         // =============================================
@@ -250,13 +250,117 @@ async function pageFunction(context) {
             }
         }
 
-        // Lokácia
-        const locEl = document.querySelector('[class*="location"], .adresa, [class*="address"]');
-        if (locEl) {
-            result.location.full = locEl.textContent.trim();
-            const parts = result.location.full.split(',').map(s => s.trim());
-            result.location.city = parts[0] || null;
-            result.location.district = parts[1] || null;
+        // Lokácia - viacero stratégií
+        // 1. Hľadaj v JSON-LD (najpresnejšie)
+        try {
+            const ldScripts = document.querySelectorAll('script[type="application/ld+json"]');
+            for (const script of ldScripts) {
+                const parsed = JSON.parse(script.textContent);
+                const items = Array.isArray(parsed) ? parsed : [parsed];
+                for (const item of items) {
+                    if (item.address) {
+                        if (typeof item.address === 'string') {
+                            result.location.full = item.address;
+                        } else {
+                            result.location.street = item.address.streetAddress || null;
+                            result.location.city = item.address.addressLocality || null;
+                            result.location.district = item.address.addressRegion || null;
+                            result.location.full = [
+                                item.address.streetAddress,
+                                item.address.addressLocality,
+                                item.address.addressRegion
+                            ].filter(Boolean).join(', ');
+                        }
+                    }
+                }
+            }
+        } catch(e) {}
+        
+        // 2. Hľadaj adresu v parametroch
+        if (!result.location.street) {
+            const streetLabels = ['Ulica', 'Adresa', 'Lokalita'];
+            for (const label of streetLabels) {
+                const row = Array.from(document.querySelectorAll('.parameter-row, .table-row, tr, li, dt, dd'))
+                    .find(el => el.textContent?.toLowerCase().includes(label.toLowerCase()));
+                if (row) {
+                    const val = row.querySelector('.value, .parameter-value, td:last-child, dd');
+                    if (val) {
+                        result.location.street = val.textContent.trim();
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // 3. Hľadaj v breadcrumbs alebo location elemente
+        const locSelectors = [
+            '.breadcrumb', 
+            '[class*="breadcrumb"]',
+            '[class*="location"]', 
+            '.adresa', 
+            '[class*="address"]',
+            '.lokalita',
+            '[itemprop="address"]'
+        ];
+        
+        for (const sel of locSelectors) {
+            if (result.location.full && result.location.city) break;
+            const el = document.querySelector(sel);
+            if (el) {
+                const text = el.textContent.trim();
+                if (text.length > 3 && text.length < 200) {
+                    if (!result.location.full) result.location.full = text;
+                    
+                    // Parsuj mesto a okres z textu
+                    const parts = text.split(/[,>\/]/).map(s => s.trim()).filter(Boolean);
+                    if (parts.length >= 1 && !result.location.city) {
+                        // Hľadaj známe mestá
+                        const cities = ['Bratislava', 'Košice', 'Prešov', 'Žilina', 'Nitra', 'Banská Bystrica', 'Trnava', 'Trenčín', 'Martin', 'Poprad'];
+                        for (const part of parts) {
+                            for (const city of cities) {
+                                if (part.toLowerCase().includes(city.toLowerCase())) {
+                                    result.location.city = city;
+                                    break;
+                                }
+                            }
+                            if (result.location.city) break;
+                        }
+                        // Ak sme nenašli známe mesto, vezmi prvú časť
+                        if (!result.location.city) {
+                            result.location.city = parts[0];
+                        }
+                    }
+                    if (parts.length >= 2 && !result.location.district) {
+                        result.location.district = parts[1];
+                    }
+                    if (parts.length >= 3 && !result.location.street) {
+                        result.location.street = parts[2];
+                    }
+                }
+            }
+        }
+        
+        // 4. Extrahuj z URL ako fallback
+        if (!result.location.city) {
+            const urlParts = window.location.pathname.split('/');
+            for (const part of urlParts) {
+                const cityMap = {
+                    'bratislava': 'Bratislava',
+                    'kosice': 'Košice',
+                    'zilina': 'Žilina',
+                    'presov': 'Prešov',
+                    'nitra': 'Nitra',
+                    'trnava': 'Trnava',
+                    'trencin': 'Trenčín',
+                    'banska-bystrica': 'Banská Bystrica',
+                    'martin': 'Martin',
+                    'poprad': 'Poprad'
+                };
+                if (cityMap[part]) {
+                    result.location.city = cityMap[part];
+                    break;
+                }
+            }
         }
 
         return result;
