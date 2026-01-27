@@ -71,7 +71,7 @@ export default function PremiumGate({
       <>
         <button
           onClick={() => setShowUpgradeModal(true)}
-          className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-lg hover:border-amber-500/40 transition-colors group w-full"
+          className="flex items-center gap-2 px-4 py-3 bg-amber-500/10 border border-amber-500/20 rounded-lg hover:border-amber-500/40 transition-colors group w-full"
         >
           <div className="p-2 bg-amber-500/20 rounded-lg">
             <Lock className="w-4 h-4 text-amber-500" />
@@ -102,7 +102,7 @@ export default function PremiumGate({
               {fallback}
             </div>
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-gray-800/50 to-gray-900/50" />
+            <div className="w-full h-full bg-zinc-900/50" />
           )}
         </div>
         
@@ -110,7 +110,7 @@ export default function PremiumGate({
         <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-[2px] rounded-xl flex items-center justify-center">
           <div className="text-center p-6 max-w-sm">
             {/* Icon */}
-            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center border border-amber-500/20">
+            <div className="w-16 h-16 mx-auto mb-4 bg-amber-500/15 rounded-2xl flex items-center justify-center border border-amber-500/20">
               <Lock className="w-8 h-8 text-amber-500" />
             </div>
             

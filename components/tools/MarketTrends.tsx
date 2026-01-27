@@ -206,7 +206,7 @@ export function MarketTrends() {
           {prediction && (
             <>
               {/* Current State */}
-              <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 rounded-xl border border-cyan-500/30 p-6">
+              <div className="bg-cyan-500/10 rounded-xl border border-cyan-500/30 p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <Sparkles className="w-6 h-6 text-cyan-400" />
                   <h3 className="text-lg font-semibold text-zinc-100">AI Analýza trhu</h3>
@@ -305,7 +305,7 @@ export function MarketTrends() {
                     {prediction.hotLocalities.map((loc, i) => (
                       <span
                         key={i}
-                        className="px-4 py-2 bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 rounded-lg text-orange-400"
+                        className="px-4 py-2 bg-orange-500/10 border border-orange-500/30 rounded-lg text-orange-400"
                       >
                         🔥 {loc}
                       </span>

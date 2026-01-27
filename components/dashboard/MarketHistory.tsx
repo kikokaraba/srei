@@ -228,7 +228,7 @@ export function MarketHistory() {
                   </div>
                   <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full"
+                      className="h-full bg-violet-500 rounded-full"
                       style={{ width: `${Math.min((month.count / (data.monthlyStats[0]?.count || 1)) * 100, 100)}%` }}
                     />
                   </div>

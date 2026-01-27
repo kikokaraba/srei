@@ -345,7 +345,7 @@ export function BRRRRCalculator({ initialPrice }: BRRRRCalculatorProps) {
             </div>
             <div className="h-3 bg-zinc-800 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-violet-500 to-violet-400 rounded-full"
+                className="h-full bg-violet-500 rounded-full"
                 style={{ width: `${(results.equityPosition / inputs.afterRepairValue) * 100}%` }}
               />
             </div>

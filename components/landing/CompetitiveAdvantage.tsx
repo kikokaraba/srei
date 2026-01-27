@@ -96,7 +96,7 @@ const investorFeatures = [
 
 export function CompetitiveAdvantage() {
   return (
-    <section id="why-sria" className="py-24 sm:py-32 bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950 relative overflow-hidden">
+    <section id="why-sria" className="py-24 sm:py-32 bg-[#0a0a0a] relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-grid-slate-800/[0.05] bg-[size:40px_40px]" />
       <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
@@ -206,7 +206,7 @@ export function CompetitiveAdvantage() {
             </p>
             <a
               href="/auth/signin"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold rounded-xl transition-all duration-300  shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-105"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl transition-all duration-300  shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-105"
             >
               Vyskúšať zadarmo
               <Sparkles className="w-5 h-5" />

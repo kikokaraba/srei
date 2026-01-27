@@ -236,7 +236,7 @@ export function InvestmentAdvisor() {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+          className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50"
         >
           {loading ? (
             <>
@@ -265,7 +265,7 @@ export function InvestmentAdvisor() {
         <div className="space-y-6">
           {/* AI Analysis */}
           {result.analysis && (
-            <div className="bg-gradient-to-br from-emerald-900/30 to-teal-900/30 rounded-xl border border-emerald-500/30 p-6">
+            <div className="bg-emerald-500/10 rounded-xl border border-emerald-500/30 p-6">
               <div className="flex items-center gap-3 mb-4">
                 <Sparkles className="w-6 h-6 text-emerald-400" />
                 <h3 className="text-lg font-semibold text-zinc-100">AI Analýza</h3>

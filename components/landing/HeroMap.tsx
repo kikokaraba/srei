@@ -314,7 +314,7 @@ export function HeroMap() {
   }, []);
 
   return (
-    <section className="py-24 bg-gradient-to-b from-zinc-950 to-zinc-900">
+    <section className="py-24 bg-[#0a0a0a]">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-bold text-zinc-100 mb-4">

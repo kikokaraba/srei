@@ -78,7 +78,7 @@ export function LandingMap() {
   const maxProps = Math.max(...cities.map(c => c.properties), 1);
 
   return (
-    <section id="map" className="py-16 sm:py-24 bg-gradient-to-b from-zinc-950 to-zinc-900 relative overflow-hidden">
+    <section id="map" className="py-16 sm:py-24 bg-[#0a0a0a] relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-grid-slate-800/[0.05] bg-[size:40px_40px]" />
       
@@ -205,7 +205,7 @@ export function LandingMap() {
             <div className="absolute bottom-4 right-4 z-[1000]">
               <Link
                 href="/auth/signin"
-                className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold rounded-xl  hover:shadow-emerald-500/50 transition-all hover:scale-105"
+                className="flex items-center gap-2 px-5 py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold rounded-xl  hover:shadow-emerald-500/50 transition-all hover:scale-105"
               >
                 <BarChart3 className="w-4 h-4" />
                 Otvoriť detailnú mapu

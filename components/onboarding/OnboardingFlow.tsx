@@ -118,7 +118,7 @@ export function OnboardingFlow() {
   // Show loading while checking authentication
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-emerald-950/20 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-zinc-400">Načítavam...</div>
       </div>
     );
@@ -245,7 +245,7 @@ export function OnboardingFlow() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-emerald-950/20 flex items-center justify-center p-4 md:p-6">
+    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 md:p-6">
       <div className="max-w-2xl w-full mx-auto">
         {/* Header s možnosťou preskočiť */}
         <div className="flex items-center justify-between mb-6">

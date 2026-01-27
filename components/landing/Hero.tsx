@@ -73,7 +73,7 @@ function LandingHeroComponent() {
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center items-center mb-8 sm:mb-12 px-4 sm:px-0">
             <Link
               href="/auth/signin"
-              className="group w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold text-base sm:text-lg rounded-2xl transition-all duration-300 flex items-center justify-center gap-3  hover:shadow-emerald-500/50 hover:scale-105 glow-emerald"
+              className="group w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-5 bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-base sm:text-lg rounded-2xl transition-all duration-300 flex items-center justify-center gap-3  hover:shadow-emerald-500/50 hover:scale-105 glow-emerald"
             >
               Začať 14 dní zdarma
               <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform" />
@@ -105,7 +105,7 @@ function LandingHeroComponent() {
           {/* Feature cards with glass effect */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto px-4 sm:px-0">
             <div className="glass-card rounded-2xl p-5 sm:p-6 text-left hover:border-emerald-500/30 transition-all duration-300 hover:glow-emerald-soft shine-effect">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border border-emerald-500/20 flex items-center justify-center mb-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4">
                 <BarChart3 className="w-6 h-6 text-emerald-400" />
               </div>
               <h3 className="text-white font-bold mb-2 text-lg">
@@ -117,7 +117,7 @@ function LandingHeroComponent() {
             </div>
 
             <div className="glass-card rounded-2xl p-5 sm:p-6 text-left hover:border-gold-500/30 transition-all duration-300 hover:glow-gold-soft shine-effect">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gold-500/20 to-gold-500/5 border border-gold-500/20 flex items-center justify-center mb-4">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-gold-500/20 flex items-center justify-center mb-4">
                 <TrendingUp className="w-6 h-6 text-gold-400" />
               </div>
               <h3 className="text-white font-bold mb-2 text-lg">
@@ -129,7 +129,7 @@ function LandingHeroComponent() {
             </div>
 
             <div className="glass-card rounded-2xl p-5 sm:p-6 text-left hover:border-zinc-500/30 transition-all duration-300 shine-effect">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-zinc-500/20 to-zinc-500/5 border border-zinc-600 flex items-center justify-center mb-4">
+              <div className="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-600 flex items-center justify-center mb-4">
                 <Shield className="w-6 h-6 text-zinc-400" />
               </div>
               <h3 className="text-white font-bold mb-2 text-lg">

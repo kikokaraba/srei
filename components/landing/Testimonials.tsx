@@ -67,7 +67,7 @@ export function Testimonials() {
                 glow: "hover:glow-emerald-soft",
               },
               gold: {
-                avatar: "bg-gradient-to-br from-gold-500 to-gold-600",
+                avatar: "bg-amber-500",
                 border: "hover:border-gold-500/30",
                 glow: "hover:glow-gold-soft",
               },

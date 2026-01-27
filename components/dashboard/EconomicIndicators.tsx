@@ -84,50 +84,45 @@ export function EconomicIndicators() {
       format: (v: number) => `€${v.toLocaleString()}`,
       change: summary.nationalPriceChange,
       icon: Home,
-      gradient: "from-emerald-500 to-teal-500",
-      bg: "from-emerald-500/10 to-teal-500/10",
+      iconColor: "text-emerald-400",
+      bg: "bg-emerald-500/5",
     },
     {
       label: "Výnos",
       value: summary.avgYield,
       format: (v: number) => `${v}%`,
       icon: Percent,
-      gradient: "from-amber-500 to-orange-500",
-      bg: "from-amber-500/10 to-orange-500/10",
+      iconColor: "text-amber-400",
+      bg: "bg-amber-500/5",
     },
     {
       label: "HDP",
       value: summary.economicIndicators.gdpGrowth,
       format: (v: number) => `${v > 0 ? "+" : ""}${v}%`,
       icon: TrendingUp,
-      gradient: summary.economicIndicators.gdpGrowth > 0 
-        ? "from-emerald-500 to-green-500" 
-        : "from-red-500 to-rose-500",
+      iconColor: summary.economicIndicators.gdpGrowth > 0 
+        ? "text-emerald-400" 
+        : "text-red-400",
       bg: summary.economicIndicators.gdpGrowth > 0 
-        ? "from-emerald-500/10 to-green-500/10" 
-        : "from-red-500/10 to-rose-500/10",
+        ? "bg-emerald-500/5" 
+        : "bg-red-500/5",
     },
     {
       label: "Inflácia",
       value: summary.economicIndicators.inflation,
       format: (v: number) => `${v}%`,
       icon: Banknote,
-      gradient: summary.economicIndicators.inflation > 5 
-        ? "from-red-500 to-rose-500" 
-        : "from-blue-500 to-cyan-500",
+      iconColor: summary.economicIndicators.inflation > 5 
+        ? "text-red-400" 
+        : "text-blue-400",
       bg: summary.economicIndicators.inflation > 5 
-        ? "from-red-500/10 to-rose-500/10" 
-        : "from-blue-500/10 to-cyan-500/10",
+        ? "bg-red-500/5" 
+        : "bg-blue-500/5",
     },
   ];
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-[#0f0f0f]">
-      {/* Ambient glow */}
-      <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 bg-amber-500" />
-      <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full blur-3xl opacity-10 bg-orange-500" />
-      
-      <div className="relative p-6">
+    <div className="premium-card p-5">
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
@@ -160,13 +155,12 @@ export function EconomicIndicators() {
             return (
               <div
                 key={index}
-                className={`relative overflow-hidden p-4 rounded-xl bg-gradient-to-br ${indicator.bg} 
-                            border border-zinc-700/50 hover:border-zinc-600/50 transition-all duration-300`}
+                className={`relative overflow-hidden p-4 rounded-xl ${indicator.bg} 
+                            border border-zinc-800/50 hover:border-zinc-700/50 transition-all duration-300`}
               >
                 {/* Icon */}
-                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${indicator.gradient} 
-                                flex items-center justify-center mb-3 shadow-lg`}>
-                  <Icon className="w-4 h-4 text-white" />
+                <div className={`${indicator.iconColor} mb-2`}>
+                  <Icon className="w-4 h-4" />
                 </div>
                 
                 {/* Value */}
@@ -193,7 +187,7 @@ export function EconomicIndicators() {
 
         {/* Hottest & Cheapest */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="p-4 rounded-xl bg-gradient-to-br from-orange-500/10 to-red-500/10 
+          <div className="p-4 rounded-xl bg-orange-500/10 
                           border border-orange-500/20 hover:border-orange-500/40 transition-colors">
             <div className="flex items-center gap-2 mb-2">
               <Flame className="w-4 h-4 text-orange-400" />
@@ -204,7 +198,7 @@ export function EconomicIndicators() {
             </p>
           </div>
           
-          <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-green-500/10 
+          <div className="p-4 rounded-xl bg-emerald-500/10 
                           border border-emerald-500/20 hover:border-emerald-500/40 transition-colors">
             <div className="flex items-center gap-2 mb-2">
               <Coins className="w-4 h-4 text-emerald-400" />
@@ -229,12 +223,11 @@ export function EconomicIndicators() {
           </div>
         </div>
         
-        {/* Source */}
-        <div className="flex items-center justify-center gap-2 mt-4 text-xs text-zinc-600">
-          <span>NBS + ŠÚ SR</span>
-          <span>•</span>
-          <span>Q3 2025</span>
-        </div>
+      {/* Source */}
+      <div className="flex items-center justify-center gap-2 mt-4 text-xs text-zinc-600">
+        <span>NBS + ŠÚ SR</span>
+        <span>•</span>
+        <span>Q3 2025</span>
       </div>
     </div>
   );

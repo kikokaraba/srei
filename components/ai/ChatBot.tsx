@@ -106,7 +106,7 @@ export function ChatBot() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white rounded-full shadow-lg transition-all hover:scale-110 group"
+        className="fixed bottom-6 right-6 z-50 p-4 bg-violet-500 hover:bg-violet-400 text-white rounded-full shadow-lg transition-all hover:scale-110 group"
       >
         <MessageCircle className="w-6 h-6" />
         <span className="absolute -top-2 -right-2 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-xs font-bold animate-pulse">
@@ -126,7 +126,7 @@ export function ChatBot() {
       }`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-700 bg-gradient-to-r from-violet-900/50 to-purple-900/50 rounded-t-2xl">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-700 bg-violet-500/10 rounded-t-2xl">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-violet-500/20 rounded-lg">
             <Sparkles className="w-5 h-5 text-violet-400" />

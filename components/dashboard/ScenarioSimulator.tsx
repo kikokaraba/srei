@@ -521,7 +521,7 @@ function ModernSlider({
       </div>
       <div className="relative h-1.5 bg-zinc-700/50 rounded-full overflow-hidden">
         <div 
-          className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500/80 to-emerald-400/80 rounded-full"
+          className="absolute inset-y-0 left-0 bg-emerald-500 rounded-full"
           style={{ width: `${percentage}%` }}
         />
         <input

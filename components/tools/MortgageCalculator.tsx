@@ -156,7 +156,7 @@ export default function MortgageCalculator({ initialPrice }: MortgageCalculatorP
         {/* Results - Right Side */}
         <div className="lg:col-span-3 space-y-6">
           {/* Hero Card */}
-          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-700 p-8">
+          <div className="relative overflow-hidden rounded-xl bg-blue-600 p-8">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             <div className="relative">
               <p className="text-blue-200 text-sm font-medium mb-2">Mesačná splátka</p>

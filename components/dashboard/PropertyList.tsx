@@ -671,7 +671,6 @@ export function PropertyList() {
               )}
             </div>
           )}
-        </div>
       </div>
 
       {/* Results Count */}

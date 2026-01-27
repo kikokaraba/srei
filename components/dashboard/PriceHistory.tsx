@@ -179,7 +179,7 @@ export function PriceHistory() {
 
   if (loading && !data) {
     return (
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-zinc-900/80 border border-zinc-800 p-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-zinc-800/50 rounded-lg w-2/3"></div>
           <div className="h-64 bg-zinc-800/30 rounded-xl"></div>
@@ -193,7 +193,7 @@ export function PriceHistory() {
   const isPositive = priceChange >= 0;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800">
+    <div className="relative overflow-hidden rounded-2xl bg-zinc-900/80 border border-zinc-800">
       {/* Ambient glow */}
       <div 
         className={`absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 transition-colors duration-1000 ${
@@ -257,7 +257,7 @@ export function PriceHistory() {
               }`}
             >
               {selectedRegion === region.code && (
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-violet-600 rounded-full" />
+                <div className="absolute inset-0 bg-violet-500 rounded-full" />
               )}
               <span className="relative z-10">{region.name}</span>
             </button>

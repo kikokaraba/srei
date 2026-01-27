@@ -288,7 +288,7 @@ export function AIValuation() {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full mt-6 px-6 py-4 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+          className="w-full mt-6 px-6 py-4 bg-violet-500 hover:bg-violet-400 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50"
         >
           {loading ? (
             <>
@@ -316,7 +316,7 @@ export function AIValuation() {
       {result && (
         <div className="space-y-6">
           {/* Main Result */}
-          <div className="bg-gradient-to-br from-violet-900/30 to-purple-900/30 rounded-xl border border-violet-500/30 p-8">
+          <div className="bg-violet-500/10 rounded-xl border border-violet-500/30 p-8">
             <div className="text-center mb-6">
               <p className="text-zinc-400 mb-2">Odhadovaná trhová hodnota</p>
               <p className="text-5xl font-bold text-white">

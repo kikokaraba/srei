@@ -115,7 +115,7 @@ export default function ScraperControl() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
             <Globe className="w-6 h-6 text-emerald-400" />
           </div>
           <div>
@@ -139,7 +139,7 @@ export default function ScraperControl() {
         <button
           onClick={() => bazosMutation.mutate()}
           disabled={isAnyRunning}
-          className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-yellow-500/80 to-amber-500/80 hover:from-yellow-600 hover:to-amber-600 disabled:from-zinc-600 disabled:to-zinc-600 text-white font-bold rounded-xl transition-all disabled:cursor-not-allowed"
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-amber-500 hover:from-yellow-600 hover:to-amber-600 disabled:from-zinc-600 disabled:to-zinc-600 text-white font-bold rounded-xl transition-all disabled:cursor-not-allowed"
         >
           {bazosMutation.isPending ? (
             <>
@@ -158,7 +158,7 @@ export default function ScraperControl() {
         <button
           onClick={() => nehnutelnostiMutation.mutate()}
           disabled={isAnyRunning}
-          className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500/80 to-cyan-500/80 hover:from-blue-600 hover:to-cyan-600 disabled:from-zinc-600 disabled:to-zinc-600 text-white font-bold rounded-xl transition-all disabled:cursor-not-allowed"
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-zinc-600 disabled:to-zinc-600 text-white font-bold rounded-xl transition-all disabled:cursor-not-allowed"
         >
           {nehnutelnostiMutation.isPending ? (
             <>

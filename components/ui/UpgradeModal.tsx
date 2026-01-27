@@ -56,7 +56,7 @@ export default function UpgradeModal({
         <div className="flex min-h-full items-center justify-center p-4">
           <div className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-gray-900 border border-gray-800  relative">
                 {/* Header */}
-                <div className="relative bg-gradient-to-r from-amber-500/20 to-orange-500/20 p-6 border-b border-gray-800">
+                <div className="relative bg-amber-500/10 p-6 border-b border-gray-800">
                   <button
                     onClick={onClose}
                     className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white transition-colors"
@@ -115,7 +115,7 @@ export default function UpgradeModal({
                     </div>
                     
                     {/* Yearly - recommended */}
-                    <div className="relative p-4 bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl">
+                    <div className="relative p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-amber-500 rounded-full text-xs font-medium text-white">
                         Ušetrite 17%
                       </div>

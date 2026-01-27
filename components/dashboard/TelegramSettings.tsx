@@ -255,7 +255,7 @@ export function TelegramSettings() {
                 href={status.connectLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500 
                            text-white font-medium rounded-lg hover:shadow-lg hover:shadow-blue-500/25 transition-all"
               >
                 <Link2 className="w-4 h-4" />

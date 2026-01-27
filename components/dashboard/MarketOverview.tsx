@@ -175,7 +175,7 @@ export function MarketOverview() {
                 <div className="flex items-center justify-between">
                   {/* Left - Region info */}
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-700 to-zinc-800 
+                    <div className="w-10 h-10 rounded-xl bg-zinc-800 
                                     flex items-center justify-center text-sm font-bold text-zinc-300
                                     group-hover:from-emerald-500/20 group-hover:to-emerald-600/20 
                                     group-hover:text-emerald-400 transition-all duration-300">

@@ -74,7 +74,7 @@ const plans = [
 
 export function Pricing() {
   return (
-    <section id="pricing" className="py-24 bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950 relative overflow-hidden">
+    <section id="pricing" className="py-24 bg-[#0a0a0a] relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-grid-slate-800/[0.1] bg-[size:40px_40px]" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-emerald-500/5 rounded-full blur-3xl" />
@@ -120,7 +120,7 @@ export function Pricing() {
                 border: "border-emerald-500/30 hover:border-emerald-500/50",
                 icon: "text-emerald-400",
                 iconBg: "bg-emerald-500/10",
-                button: "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white glow-emerald",
+                button: "bg-emerald-500 hover:bg-emerald-400 text-white glow-emerald",
                 glow: "glow-emerald-soft",
                 priceColor: "text-emerald-400",
               },
@@ -129,7 +129,7 @@ export function Pricing() {
                 border: "border-gold-500/30 hover:border-gold-500/50",
                 icon: "text-gold-400",
                 iconBg: "bg-gold-500/10",
-                button: "bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-400 hover:to-gold-500 text-zinc-900 font-bold",
+                button: "bg-amber-500 hover:bg-amber-400 text-zinc-900 font-bold",
                 glow: "hover:glow-gold-soft",
                 priceColor: "text-gold-400",
               },
@@ -144,7 +144,7 @@ export function Pricing() {
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="px-5 py-1.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-bold rounded-full  flex items-center gap-2">
+                    <span className="px-5 py-1.5 bg-emerald-500 text-white text-xs font-bold rounded-full  flex items-center gap-2">
                       <Sparkles className="w-3 h-3" />
                       NAJOBĽÚBENEJŠIE
                     </span>

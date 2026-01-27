@@ -38,7 +38,7 @@ export function CTA() {
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center items-center mb-12">
               <Link
                 href="/auth/signin"
-                className="group w-full sm:w-auto px-10 sm:px-14 py-5 sm:py-6 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold text-lg rounded-2xl transition-all duration-300 flex items-center justify-center gap-3  hover:shadow-emerald-500/50 hover:scale-105 glow-emerald"
+                className="group w-full sm:w-auto px-10 sm:px-14 py-5 sm:py-6 bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-lg rounded-2xl transition-all duration-300 flex items-center justify-center gap-3  hover:shadow-emerald-500/50 hover:scale-105 glow-emerald"
               >
                 Začať 14 dní zdarma
                 <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />

@@ -90,13 +90,13 @@ export function Features() {
             const colorClasses = {
               emerald: {
                 icon: "text-emerald-400",
-                iconBg: "bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border-emerald-500/20",
+                iconBg: "bg-emerald-500/10 border-emerald-500/20",
                 stat: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
                 glow: "hover:glow-emerald-soft hover:border-emerald-500/30",
               },
               gold: {
                 icon: "text-gold-400",
-                iconBg: "bg-gradient-to-br from-gold-500/20 to-gold-500/5 border-gold-500/20",
+                iconBg: "bg-amber-500/10 border-gold-500/20",
                 stat: "text-gold-400 bg-gold-500/10 border-gold-500/20",
                 glow: "hover:glow-gold-soft hover:border-gold-500/30",
               },

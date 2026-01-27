@@ -221,7 +221,7 @@ export function PricePrediction() {
             </h3>
             <div className="space-y-4">
               {/* 6 month prediction */}
-              <div className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-lg border border-purple-500/20">
+              <div className="p-4 bg-violet-500/10 rounded-lg border border-purple-500/20">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-zinc-400">Za 6 mesiacov</span>
                   <span className="text-xs text-purple-400">
@@ -240,7 +240,7 @@ export function PricePrediction() {
               </div>
 
               {/* 1 year prediction */}
-              <div className="p-4 bg-gradient-to-r from-blue-500/10 to-emerald-500/10 rounded-lg border border-blue-500/20">
+              <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-zinc-400">Za 1 rok</span>
                   <span className="text-xs text-blue-400">
