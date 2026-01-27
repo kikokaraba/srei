@@ -102,29 +102,29 @@ export function SortableWidget({
       ref={setNodeRef}
       style={style}
       className={`relative group ${
-        isEditMode ? "ring-2 ring-slate-700 rounded-xl" : ""
+        isEditMode ? "ring-1 ring-zinc-800 rounded-xl" : ""
       }`}
     >
       {isEditMode && (
-        <div className="absolute -left-2 top-1/2 -translate-y-1/2 z-10 flex items-center gap-2">
+        <div className="absolute -left-2 top-1/2 -translate-y-1/2 z-10 flex items-center gap-1.5">
           <button
             {...attributes}
             {...listeners}
-            className="p-2 bg-slate-800 border border-slate-700 rounded-lg cursor-grab active:cursor-grabbing hover:bg-slate-700 transition-colors"
+            className="p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg cursor-grab active:cursor-grabbing hover:bg-zinc-800 hover:border-zinc-700 transition-colors"
             aria-label="Presunúť widget"
           >
-            <GripVertical className="w-4 h-4 text-slate-400" />
+            <GripVertical className="w-3.5 h-3.5 text-zinc-500" />
           </button>
           <button
             onClick={onRemove}
-            className="p-2 bg-rose-500/10 border border-rose-500/30 rounded-lg hover:bg-rose-500/20 transition-colors"
+            className="p-1.5 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-rose-500/10 hover:border-rose-500/30 transition-colors group/btn"
             aria-label="Odstrániť widget"
           >
-            <X className="w-4 h-4 text-rose-400" />
+            <X className="w-3.5 h-3.5 text-zinc-500 group-hover/btn:text-rose-400" />
           </button>
         </div>
       )}
-      <div className={isEditMode ? "ml-12" : ""}>
+      <div className={isEditMode ? "ml-10" : ""}>
         {renderContent()}
       </div>
     </div>

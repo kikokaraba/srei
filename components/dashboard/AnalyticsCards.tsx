@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, Building2, MapPin, Percent, ArrowUp, ArrowDown, Sparkles } from "lucide-react";
+import { TrendingUp, Building2, MapPin, Percent, ArrowUp, ArrowDown } from "lucide-react";
 
 interface AnalyticsData {
   region: string;
@@ -37,7 +37,7 @@ export function AnalyticsCards() {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-28 rounded-2xl bg-slate-800/30 animate-pulse" />
+          <div key={i} className="h-24 rounded-xl bg-zinc-900/50 animate-pulse" />
         ))}
       </div>
     );
@@ -57,36 +57,33 @@ export function AnalyticsCards() {
 
   const cards = [
     {
-      title: "Priem. výnos SK",
-      value: `${avgYield.toFixed(1)}%`,
+      label: "PRIEM. VÝNOS",
+      value: avgYield.toFixed(1),
+      suffix: "%",
       change: 0.3,
-      gradient: "from-emerald-500 to-teal-500",
-      bgGlow: "bg-emerald-500",
       icon: Percent,
+      positive: true,
     },
     {
-      title: "Nehnuteľností",
+      label: "NEHNUTEĽNOSTÍ",
       value: totalProperties.toLocaleString(),
       change: 127,
       isCount: true,
-      gradient: "from-violet-500 to-purple-500",
-      bgGlow: "bg-violet-500",
       icon: Building2,
+      positive: true,
     },
     {
-      title: "BA kraj cena/m²",
-      value: `€${(bratislava?.avg_price_m2 || 0).toLocaleString()}`,
-      gradient: "from-blue-500 to-cyan-500",
-      bgGlow: "bg-blue-500",
+      label: "BA CENA/M²",
+      value: (bratislava?.avg_price_m2 || 0).toLocaleString(),
+      prefix: "€",
       icon: MapPin,
     },
     {
-      title: "Top výnos",
+      label: "TOP VÝNOS",
       value: bestYield?.region || "N/A",
-      subtitle: `${bestYield?.yield_benchmark?.toFixed(1) || 0}%`,
-      gradient: "from-amber-500 to-orange-500",
-      bgGlow: "bg-amber-500",
+      suffix: ` ${bestYield?.yield_benchmark?.toFixed(1) || 0}%`,
       icon: TrendingUp,
+      highlight: true,
     },
   ];
 
@@ -98,41 +95,39 @@ export function AnalyticsCards() {
         return (
           <div
             key={index}
-            className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 p-4"
+            className="premium-card p-4 hover:border-zinc-700 transition-all"
           >
-            {/* Ambient glow */}
-            <div className={`absolute -top-12 -right-12 w-24 h-24 rounded-full blur-2xl opacity-20 ${card.bgGlow}`} />
+            {/* Header */}
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[9px] text-zinc-600 font-medium tracking-widest">{card.label}</span>
+              <Icon className="w-3.5 h-3.5 text-zinc-600" />
+            </div>
             
-            <div className="relative">
-              {/* Icon */}
-              <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center mb-3 shadow-lg`}>
-                <Icon className="w-4 h-4 text-white" />
-              </div>
-              
-              {/* Value */}
-              <p className="text-2xl font-bold text-white tabular-nums mb-0.5">
+            {/* Value */}
+            <div className="flex items-baseline gap-1">
+              {card.prefix && <span className="text-zinc-500 text-sm">{card.prefix}</span>}
+              <p className="text-xl font-semibold text-zinc-100 font-mono tracking-tight">
                 {card.value}
               </p>
-              
-              {/* Title & Change */}
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-400">{card.title}</span>
-                {card.change !== undefined && (
-                  <span className={`flex items-center gap-0.5 text-xs font-medium ${
-                    card.change > 0 ? "text-emerald-400" : "text-red-400"
-                  }`}>
-                    {card.change > 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
-                    {card.isCount ? `+${card.change}` : `${card.change}%`}
-                  </span>
-                )}
-                {card.subtitle && (
-                  <span className="flex items-center gap-1 text-xs font-medium text-amber-400">
-                    <Sparkles className="w-3 h-3" />
-                    {card.subtitle}
-                  </span>
-                )}
-              </div>
+              {card.suffix && (
+                <span className={`text-sm font-mono ${card.highlight ? "text-emerald-400" : "text-zinc-500"}`}>
+                  {card.suffix}
+                </span>
+              )}
             </div>
+            
+            {/* Change indicator */}
+            {card.change !== undefined && (
+              <div className="flex items-center gap-1 mt-2">
+                <span className={`flex items-center gap-0.5 text-[10px] font-mono ${
+                  card.positive ? "text-emerald-400" : "text-rose-400"
+                }`}>
+                  {card.positive ? <ArrowUp className="w-2.5 h-2.5" /> : <ArrowDown className="w-2.5 h-2.5" />}
+                  {card.isCount ? `+${card.change}` : `${card.change}%`}
+                </span>
+                <span className="text-[10px] text-zinc-600">vs minulý týždeň</span>
+              </div>
+            )}
           </div>
         );
       })}

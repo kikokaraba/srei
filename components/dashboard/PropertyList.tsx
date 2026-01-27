@@ -489,143 +489,141 @@ export function PropertyList() {
 
   return (
     <div className="space-y-6">
-      {/* Modern Search Bar */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-transparent to-blue-500/10 rounded-2xl blur-xl"></div>
-        <div className="relative bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-slate-800/50 p-5">
-          {/* Main Search Row */}
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search Input */}
-            <div className="flex-1 relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
-              <input
-                type="text"
-                placeholder="Hľadať nehnuteľnosti..."
-                value={filters.search}
-                onChange={(e) => handleFilterChange("search", e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:bg-slate-800 transition-all"
-              />
-            </div>
+      {/* Premium Search Bar */}
+      <div className="premium-card p-4 lg:p-5">
+        {/* Main Search Row */}
+        <div className="flex flex-col lg:flex-row gap-3">
+          {/* Search Input */}
+          <div className="flex-1 relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 group-focus-within:text-emerald-400 transition-colors" />
+            <input
+              type="text"
+              placeholder="Hľadať nehnuteľnosti..."
+              value={filters.search}
+              onChange={(e) => handleFilterChange("search", e.target.value)}
+              className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-700 focus:bg-zinc-900 transition-all text-sm"
+            />
+          </div>
 
-            {/* Quick Filters */}
-            <div className="flex flex-wrap gap-2 items-center">
-              {/* Region */}
+          {/* Quick Filters */}
+          <div className="flex flex-wrap gap-2 items-center">
+            {/* Region */}
+            <select
+              value={filters.region}
+              onChange={(e) => handleFilterChange("region", e.target.value)}
+              className="px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-zinc-300 text-sm focus:outline-none focus:border-zinc-700 min-w-[150px] cursor-pointer"
+            >
+              <option value="">Celé Slovensko</option>
+              {REGIONS.map((region) => (
+                <option key={region.value} value={region.value}>
+                  {region.label}
+                </option>
+              ))}
+            </select>
+
+            {/* Sort */}
+            <div className="flex items-center bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden">
               <select
-                value={filters.region}
-                onChange={(e) => handleFilterChange("region", e.target.value)}
-                className="px-4 py-3.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white focus:outline-none focus:border-emerald-500/50 min-w-[160px] cursor-pointer"
+                value={filters.sortBy}
+                onChange={(e) => handleFilterChange("sortBy", e.target.value)}
+                className="px-4 py-3 bg-transparent text-zinc-300 text-sm focus:outline-none cursor-pointer border-r border-zinc-800"
               >
-                <option value="">Celé Slovensko</option>
-                {REGIONS.map((region) => (
-                  <option key={region.value} value={region.value}>
-                    {region.label}
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </select>
-
-              {/* Sort */}
-              <div className="flex items-center bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
-                <select
-                  value={filters.sortBy}
-                  onChange={(e) => handleFilterChange("sortBy", e.target.value)}
-                  className="px-4 py-3.5 bg-transparent text-white focus:outline-none cursor-pointer border-r border-slate-700/50"
-                >
-                  {SORT_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  onClick={() => handleFilterChange("sortOrder", filters.sortOrder === "asc" ? "desc" : "asc")}
-                  className="px-4 py-3.5 text-slate-400 hover:text-white transition-colors"
-                >
-                  {filters.sortOrder === "asc" ? "↑" : "↓"}
-                </button>
-              </div>
-
-              {/* Advanced Filters Toggle */}
               <button
-                onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-3.5 rounded-xl border transition-all ${
-                  showFilters || activeFiltersCount > 0
-                    ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400"
-                    : "bg-slate-800/50 border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-600"
-                }`}
+                onClick={() => handleFilterChange("sortOrder", filters.sortOrder === "asc" ? "desc" : "asc")}
+                className="px-3 py-3 text-zinc-500 hover:text-zinc-200 transition-colors"
               >
-                <SlidersHorizontal className="w-4 h-4" />
-                <span className="hidden sm:inline">Filtre</span>
-                {activeFiltersCount > 0 && (
-                  <span className="w-5 h-5 flex items-center justify-center bg-emerald-500 text-white text-xs rounded-full">
-                    {activeFiltersCount}
-                  </span>
-                )}
+                {filters.sortOrder === "asc" ? "↑" : "↓"}
               </button>
+            </div>
 
-              {/* View Mode */}
-              <div className="flex bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`p-3.5 transition-all ${viewMode === "grid" ? "bg-emerald-500/20 text-emerald-400" : "text-slate-400 hover:text-white"}`}
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-3.5 transition-all ${viewMode === "list" ? "bg-emerald-500/20 text-emerald-400" : "text-slate-400 hover:text-white"}`}
-                >
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
+            {/* Advanced Filters Toggle */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all text-sm ${
+                showFilters || activeFiltersCount > 0
+                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                  : "bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-700"
+              }`}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              <span className="hidden sm:inline">Filtre</span>
+              {activeFiltersCount > 0 && (
+                <span className="w-5 h-5 flex items-center justify-center bg-emerald-500 text-white text-xs rounded-full font-medium">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </button>
+
+            {/* View Mode */}
+            <div className="flex bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden">
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`p-3 transition-all ${viewMode === "grid" ? "bg-zinc-800 text-zinc-100" : "text-zinc-600 hover:text-zinc-300"}`}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-3 transition-all ${viewMode === "list" ? "bg-zinc-800 text-zinc-100" : "text-zinc-600 hover:text-zinc-300"}`}
+              >
+                <List className="w-4 h-4" />
+              </button>
             </div>
           </div>
+        </div>
 
           {/* Expanded Filters */}
           {showFilters && (
-            <div className="mt-5 pt-5 border-t border-slate-700/50">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="mt-4 pt-4 border-t border-zinc-800/50">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 <div>
-                  <label className="block text-xs text-slate-500 mb-2 uppercase tracking-wider">Min. cena</label>
+                  <label className="block text-[10px] text-zinc-600 mb-1.5 uppercase tracking-widest font-medium">Min. cena</label>
                   <input
                     type="number"
                     placeholder="€0"
                     value={filters.minPrice}
                     onChange={(e) => handleFilterChange("minPrice", e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500/50"
+                    className="w-full px-3 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-200 text-sm focus:outline-none focus:border-zinc-700 font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-500 mb-2 uppercase tracking-wider">Max. cena</label>
+                  <label className="block text-[10px] text-zinc-600 mb-1.5 uppercase tracking-widest font-medium">Max. cena</label>
                   <input
                     type="number"
                     placeholder="€∞"
                     value={filters.maxPrice}
                     onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500/50"
+                    className="w-full px-3 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-200 text-sm focus:outline-none focus:border-zinc-700 font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-500 mb-2 uppercase tracking-wider">Min. plocha</label>
+                  <label className="block text-[10px] text-zinc-600 mb-1.5 uppercase tracking-widest font-medium">Min. plocha</label>
                   <input
                     type="number"
                     placeholder="0 m²"
                     value={filters.minArea}
                     onChange={(e) => handleFilterChange("minArea", e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500/50"
+                    className="w-full px-3 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-200 text-sm focus:outline-none focus:border-zinc-700 font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-500 mb-2 uppercase tracking-wider">Max. plocha</label>
+                  <label className="block text-[10px] text-zinc-600 mb-1.5 uppercase tracking-widest font-medium">Max. plocha</label>
                   <input
                     type="number"
                     placeholder="∞ m²"
                     value={filters.maxArea}
                     onChange={(e) => handleFilterChange("maxArea", e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500/50"
+                    className="w-full px-3 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-200 text-sm focus:outline-none focus:border-zinc-700 font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-500 mb-2 uppercase tracking-wider">Izby</label>
+                  <label className="block text-[10px] text-zinc-600 mb-1.5 uppercase tracking-widest font-medium">Izby</label>
                   <div className="flex gap-2">
                     <input
                       type="number"
@@ -633,7 +631,7 @@ export function PropertyList() {
                       min="1"
                       value={filters.minRooms}
                       onChange={(e) => handleFilterChange("minRooms", e.target.value)}
-                      className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500/50"
+                      className="w-full px-3 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-200 text-sm focus:outline-none focus:border-zinc-700 font-mono"
                     />
                     <input
                       type="number"
@@ -641,16 +639,16 @@ export function PropertyList() {
                       min="1"
                       value={filters.maxRooms}
                       onChange={(e) => handleFilterChange("maxRooms", e.target.value)}
-                      className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500/50"
+                      className="w-full px-3 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-200 text-sm focus:outline-none focus:border-zinc-700 font-mono"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-500 mb-2 uppercase tracking-wider">Stav</label>
+                  <label className="block text-[10px] text-zinc-600 mb-1.5 uppercase tracking-widest font-medium">Stav</label>
                   <select
                     value={filters.condition}
                     onChange={(e) => handleFilterChange("condition", e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500/50 cursor-pointer"
+                    className="w-full px-3 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-200 text-sm focus:outline-none focus:border-zinc-700 cursor-pointer"
                   >
                     <option value="">Všetky</option>
                     {CONDITIONS.map((cond) => (
@@ -661,12 +659,12 @@ export function PropertyList() {
               </div>
 
               {activeFiltersCount > 0 && (
-                <div className="mt-4 flex justify-end">
+                <div className="mt-3 flex justify-end">
                   <button
                     onClick={clearFilters}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors"
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-500 hover:text-zinc-200 transition-colors"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5" />
                     Vymazať filtre
                   </button>
                 </div>
@@ -678,15 +676,15 @@ export function PropertyList() {
 
       {/* Results Count */}
       <div className="flex items-center justify-between px-1">
-        <p className="text-slate-400">
+        <p className="text-zinc-500 text-sm">
           {loading ? (
             <span className="flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Načítavam...
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <span>Načítavam...</span>
             </span>
           ) : (
             <>
-              Nájdených <span className="text-white font-semibold">{pagination.totalCount.toLocaleString()}</span> nehnuteľností
+              Nájdených <span className="text-zinc-200 font-mono font-medium">{pagination.totalCount.toLocaleString()}</span> nehnuteľností
             </>
           )}
         </p>
@@ -697,35 +695,32 @@ export function PropertyList() {
         <div className="flex items-center justify-center py-20">
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
-              <div className="w-16 h-16 border-4 border-slate-700 rounded-full"></div>
-              <div className="absolute top-0 left-0 w-16 h-16 border-4 border-emerald-500 rounded-full animate-spin border-t-transparent"></div>
+              <div className="w-12 h-12 border-2 border-zinc-800 rounded-full"></div>
+              <div className="absolute top-0 left-0 w-12 h-12 border-2 border-emerald-500 rounded-full animate-spin border-t-transparent"></div>
             </div>
-            <p className="text-slate-400">Hľadám nehnuteľnosti...</p>
+            <p className="text-zinc-500 text-sm">Hľadám nehnuteľnosti...</p>
           </div>
         </div>
       ) : properties.length === 0 ? (
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-800/50 to-transparent rounded-2xl"></div>
-          <div className="relative bg-slate-900/50 backdrop-blur rounded-2xl border border-slate-800/50 p-16 text-center">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-slate-800/50 flex items-center justify-center">
-              <Building2 className="w-10 h-10 text-slate-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-white mb-2">Žiadne nehnuteľnosti</h3>
-            <p className="text-slate-400 max-w-md mx-auto">
-              Skúste upraviť vyhľadávacie kritériá alebo odstrániť niektoré filtre
-            </p>
-            {activeFiltersCount > 0 && (
-              <button
-                onClick={clearFilters}
-                className="mt-6 px-6 py-3 bg-emerald-500/20 text-emerald-400 rounded-xl hover:bg-emerald-500/30 transition-colors"
-              >
-                Vymazať filtre
-              </button>
-            )}
+        <div className="premium-card p-16 text-center">
+          <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-zinc-900 flex items-center justify-center">
+            <Building2 className="w-8 h-8 text-zinc-700" />
           </div>
+          <h3 className="text-lg font-medium text-zinc-200 mb-2">Žiadne nehnuteľnosti</h3>
+          <p className="text-zinc-500 text-sm max-w-md mx-auto">
+            Skúste upraviť vyhľadávacie kritériá alebo odstrániť niektoré filtre
+          </p>
+          {activeFiltersCount > 0 && (
+            <button
+              onClick={clearFilters}
+              className="mt-5 px-5 py-2.5 bg-zinc-800 text-zinc-300 rounded-xl hover:bg-zinc-700 transition-colors text-sm"
+            >
+              Vymazať filtre
+            </button>
+          )}
         </div>
       ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           {properties.map((property) => {
             const isSaved = savedIds.has(property.id);
             const isSaving = savingId === property.id;
@@ -737,42 +732,42 @@ export function PropertyList() {
               <div
                 key={property.id}
                 onClick={() => window.location.href = `/dashboard/property/${property.id}`}
-                className="group relative bg-slate-900/80 backdrop-blur rounded-xl sm:rounded-2xl border border-slate-800/50 overflow-hidden hover:border-emerald-500/30 transition-all duration-300 cursor-pointer hover:shadow-lg hover:shadow-emerald-500/5 active:scale-[0.98]"
+                className="group premium-card-interactive overflow-hidden"
               >
-                {/* Photo Section - menšia výška na mobile */}
-                <div className="relative h-40 sm:h-48 bg-slate-800/50 overflow-hidden">
+                {/* Photo Section */}
+                <div className="relative h-44 bg-zinc-900 overflow-hidden">
                   {thumbnailUrl ? (
                     <Image
                       src={thumbnailUrl}
                       alt={property.title}
                       fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      unoptimized // Použijeme external images
+                      unoptimized
                     />
                   ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600">
-                      <ImageOff className="w-12 h-12 mb-2" />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-700">
+                      <ImageOff className="w-10 h-10 mb-2" />
                       <span className="text-xs">Bez fotky</span>
                     </div>
                   )}
                   
                   {/* Photo Count Badge */}
                   {property.photo_count && property.photo_count > 1 && (
-                    <div className="absolute bottom-3 right-3 flex items-center gap-1 px-2 py-1 bg-black/60 backdrop-blur rounded-lg text-xs text-white">
+                    <div className="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-1 bg-black/70 backdrop-blur-sm rounded-md text-[10px] text-zinc-300 font-medium">
                       <Camera className="w-3 h-3" />
                       {property.photo_count}
                     </div>
                   )}
                   
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+                  {/* Subtle Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent opacity-80" />
                   
-                  {/* Top Badges */}
+                  {/* Top Badges - Redesigned */}
                   {badges.length > 0 && (
-                    <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-2">
+                    <div className="absolute top-2.5 left-2.5 z-10 flex flex-wrap gap-1.5">
                       {badges.map((badge, i) => (
-                        <span key={i} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium shadow-lg ${badge.color}`}>
+                        <span key={i} className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-wide ${badge.color}`}>
                           {badge.icon}
                           {badge.label}
                         </span>
@@ -780,108 +775,91 @@ export function PropertyList() {
                     </div>
                   )}
 
-                  {/* Save Button */}
+                  {/* Save Button - Minimal */}
                   <button
                     onClick={(e) => toggleSave(property.id, e)}
                     disabled={isSaving}
-                    className={`absolute top-3 right-3 z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg ${
+                    className={`absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
                       isSaved
-                        ? "bg-emerald-500 text-white shadow-emerald-500/25"
-                        : "bg-black/50 backdrop-blur text-white hover:bg-black/70"
+                        ? "bg-emerald-500 text-white"
+                        : "bg-black/50 backdrop-blur-sm text-zinc-300 hover:bg-black/70 hover:text-white"
                     }`}
                   >
                     {isSaving ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     ) : isSaved ? (
-                      <BookmarkCheck className="w-4 h-4" />
+                      <BookmarkCheck className="w-3.5 h-3.5" />
                     ) : (
-                      <Bookmark className="w-4 h-4" />
+                      <Bookmark className="w-3.5 h-3.5" />
                     )}
                   </button>
                 </div>
 
-                {/* Card Content - menší padding na mobile */}
-                <div className="p-3 sm:p-5">
+                {/* Card Content */}
+                <div className="p-4">
                   {/* Location */}
-                  <div className="flex items-center gap-1.5 text-slate-400 text-xs sm:text-sm mb-2 sm:mb-3">
-                    <MapPin className="w-3 sm:w-3.5 h-3 sm:h-3.5 flex-shrink-0" />
+                  <div className="flex items-center gap-1.5 text-zinc-500 text-xs mb-2">
+                    <MapPin className="w-3 h-3 flex-shrink-0" />
                     <span className="truncate">{property.district}, {getRegionLabel(property.city)}</span>
                   </div>
 
                   {/* Title */}
-                  <h3 className="font-semibold text-white text-base sm:text-lg leading-tight mb-3 sm:mb-4 line-clamp-2 group-hover:text-emerald-400 transition-colors min-h-[2.5rem] sm:min-h-[3.5rem]">
+                  <h3 className="font-medium text-zinc-100 text-sm leading-snug mb-3 line-clamp-2 group-hover:text-emerald-400 transition-colors min-h-[2.5rem]">
                     {property.title}
                   </h3>
 
-                  {/* Key Metrics - horizontálne scrollovateľné na mobile */}
-                  <div className="flex sm:grid sm:grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-5 overflow-x-auto pb-1 sm:pb-0 -mx-1 px-1 sm:mx-0 sm:px-0 scrollbar-hide">
-                    <div className="flex-shrink-0 bg-slate-800/50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center min-w-[70px] sm:min-w-0">
-                      <div className="flex items-center justify-center gap-1 text-slate-400 text-[10px] sm:text-xs mb-0.5 sm:mb-1">
-                        <Maximize2 className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
-                        <span>Plocha</span>
-                      </div>
-                      <p className="text-white font-semibold text-sm sm:text-base">{property.area_m2} m²</p>
+                  {/* Key Metrics - Minimal Grid */}
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    <div className="bg-zinc-900/50 rounded-lg p-2 text-center">
+                      <p className="text-zinc-500 text-[9px] uppercase tracking-wider mb-0.5">Plocha</p>
+                      <p className="text-zinc-200 font-mono text-sm font-medium">{property.area_m2}</p>
                     </div>
-                    <div className="flex-shrink-0 bg-slate-800/50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center min-w-[60px] sm:min-w-0">
-                      <div className="flex items-center justify-center gap-1 text-slate-400 text-[10px] sm:text-xs mb-0.5 sm:mb-1">
-                        <DoorOpen className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
-                        <span>Izby</span>
-                      </div>
-                      <p className="text-white font-semibold text-sm sm:text-base">{property.rooms || "–"}</p>
+                    <div className="bg-zinc-900/50 rounded-lg p-2 text-center">
+                      <p className="text-zinc-500 text-[9px] uppercase tracking-wider mb-0.5">Izby</p>
+                      <p className="text-zinc-200 font-mono text-sm font-medium">{property.rooms || "–"}</p>
                     </div>
-                    <div className="flex-shrink-0 bg-slate-800/50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center min-w-[70px] sm:min-w-0">
-                      <div className="flex items-center justify-center gap-1 text-slate-400 text-[10px] sm:text-xs mb-0.5 sm:mb-1">
-                        <Home className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
-                        <span>Stav</span>
-                      </div>
-                      <p className="text-white font-semibold text-[10px] sm:text-xs">{getConditionLabel(property.condition).split(" ")[0]}</p>
+                    <div className="bg-zinc-900/50 rounded-lg p-2 text-center">
+                      <p className="text-zinc-500 text-[9px] uppercase tracking-wider mb-0.5">€/m²</p>
+                      <p className="text-zinc-200 font-mono text-sm font-medium">{property.price_per_m2.toLocaleString()}</p>
                     </div>
                   </div>
 
-                  {/* Price Section - kompaktnejšie na mobile */}
-                  <div className="flex items-end justify-between pt-3 sm:pt-4 border-t border-slate-800/50">
+                  {/* Price Section - Clean */}
+                  <div className="flex items-end justify-between pt-3 border-t border-zinc-800/50">
                     <div>
-                      <p className="text-2xl sm:text-3xl font-bold text-white">
+                      <p className="text-xl font-semibold text-zinc-100 font-mono tracking-tight">
                         €{property.price.toLocaleString()}
                       </p>
-                      <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1">
-                        <span className="text-xs sm:text-sm text-slate-400">
-                          €{property.price_per_m2.toLocaleString()}/m²
+                      {/* Price History Mini */}
+                      {metrics?.priceStory?.totalChangePercent && metrics.priceStory.totalChangePercent < 0 && (
+                        <span className="flex items-center gap-1 text-[10px] text-emerald-400 mt-0.5">
+                          <TrendingDown className="w-2.5 h-2.5" />
+                          -{Math.abs(metrics.priceStory.totalChangePercent)}% zľava
                         </span>
-                        {/* Price History Mini */}
-                        {metrics?.priceStory?.totalChangePercent && metrics.priceStory.totalChangePercent < 0 && (
-                          <span className="flex items-center gap-0.5 text-[10px] sm:text-xs text-emerald-400">
-                            <TrendingDown className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
-                            {Math.abs(metrics.priceStory.totalChangePercent)}%
-                          </span>
-                        )}
-                      </div>
+                      )}
                     </div>
 
-                    {/* Yield Badge */}
+                    {/* Yield Badge - Clean */}
                     {property.investmentMetrics && property.investmentMetrics.gross_yield > 0 && (
-                      <div className="text-right">
-                        <div className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg ${
-                          property.investmentMetrics.gross_yield >= 6
-                            ? "bg-emerald-500/20 text-emerald-400"
-                            : property.investmentMetrics.gross_yield >= 4
-                            ? "bg-blue-500/20 text-blue-400"
-                            : "bg-slate-700/50 text-slate-400"
-                        }`}>
-                          <TrendingUp className="w-3.5 h-3.5" />
-                          <span className="font-bold">{property.investmentMetrics.gross_yield.toFixed(1)}%</span>
-                        </div>
-                        <p className="text-xs text-slate-500 mt-1">výnos</p>
+                      <div className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-mono font-semibold ${
+                        property.investmentMetrics.gross_yield >= 6
+                          ? "bg-emerald-500/10 text-emerald-400"
+                          : property.investmentMetrics.gross_yield >= 4
+                          ? "bg-blue-500/10 text-blue-400"
+                          : "bg-zinc-800 text-zinc-400"
+                      }`}>
+                        <TrendingUp className="w-3 h-3" />
+                        {property.investmentMetrics.gross_yield.toFixed(1)}%
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Quick Actions Footer */}
-                <div className="px-5 py-3 bg-slate-800/30 border-t border-slate-800/50 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                {/* Footer - Subtle */}
+                <div className="px-4 py-2.5 bg-zinc-950/50 border-t border-zinc-800/30 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-[10px] text-zinc-600">
                     <Clock className="w-3 h-3" />
-                    <span>{property.days_on_market} dní v ponuke</span>
+                    <span>{property.days_on_market}d na trhu</span>
                   </div>
                   {property.source_url && (
                     <a
@@ -889,10 +867,10 @@ export function PropertyList() {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-blue-400 transition-colors"
+                      className="flex items-center gap-1 text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors"
                     >
                       <ExternalLink className="w-3 h-3" />
-                      Originál
+                      Zdroj
                     </a>
                   )}
                 </div>
@@ -1051,13 +1029,13 @@ export function PropertyList() {
         </div>
       )}
 
-      {/* Pagination */}
+      {/* Pagination - Premium */}
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-6">
+        <div className="flex items-center justify-center gap-1.5 pt-8">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="flex items-center gap-2 px-5 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed hover:border-emerald-500/50 transition-all"
+            className="flex items-center gap-1.5 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-300 text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-zinc-800 hover:border-zinc-700 transition-all"
           >
             <ChevronLeft className="w-4 h-4" />
             <span className="hidden sm:inline">Späť</span>
@@ -1080,10 +1058,10 @@ export function PropertyList() {
                 <button
                   key={pageNum}
                   onClick={() => setPage(pageNum)}
-                  className={`w-10 h-10 rounded-xl transition-all ${
+                  className={`w-9 h-9 rounded-lg text-sm font-mono font-medium transition-all ${
                     page === pageNum
-                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25"
-                      : "bg-slate-800/50 text-slate-400 hover:bg-slate-700 hover:text-white"
+                      ? "bg-zinc-100 text-zinc-900"
+                      : "bg-zinc-900 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
                   }`}
                 >
                   {pageNum}
@@ -1095,7 +1073,7 @@ export function PropertyList() {
           <button
             onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
             disabled={page === pagination.totalPages}
-            className="flex items-center gap-2 px-5 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed hover:border-emerald-500/50 transition-all"
+            className="flex items-center gap-1.5 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-300 text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-zinc-800 hover:border-zinc-700 transition-all"
           >
             <span className="hidden sm:inline">Ďalej</span>
             <ChevronRight className="w-4 h-4" />

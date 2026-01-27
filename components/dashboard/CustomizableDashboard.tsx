@@ -194,7 +194,7 @@ export function CustomizableDashboard() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-slate-400">Načítavam dashboard...</div>
+        <div className="text-zinc-500 text-sm">Načítavam dashboard...</div>
       </div>
     );
   }
@@ -209,30 +209,28 @@ export function CustomizableDashboard() {
   );
 
   return (
-    <div className="space-y-4 lg:space-y-6">
-      {/* Header s edit mode toggle */}
+    <div className="space-y-6">
+      {/* Header - Premium Minimal */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-100 mb-1 sm:mb-2">
-            Investičný Dashboard
-          </h1>
-          <p className="text-sm lg:text-base text-slate-400">
-            Real-time trhová inteligencia pre slovenské nehnuteľnosti
-          </p>
+          <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-medium mb-1">WIDGETY</p>
+          <h2 className="text-lg font-medium text-zinc-200 tracking-tight">
+            Analytické moduly
+          </h2>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2">
           {isEditMode && (
             <>
               <button
                 onClick={handleReset}
-                className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm text-slate-300 hover:text-slate-100 transition-colors"
+                className="px-3 py-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
               >
                 Zrušiť
               </button>
               <button
                 onClick={handleSave}
                 disabled={saveMutation.isPending}
-                className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors disabled:opacity-50"
+                className="px-4 py-1.5 text-xs bg-zinc-100 hover:bg-white text-zinc-900 font-medium rounded-lg transition-colors disabled:opacity-50"
               >
                 {saveMutation.isPending ? "Ukladám..." : "Uložiť"}
               </button>
@@ -240,25 +238,25 @@ export function CustomizableDashboard() {
           )}
           <button
             onClick={() => setIsEditMode(!isEditMode)}
-            className={`px-3 py-1.5 sm:px-4 sm:py-2 text-sm rounded-lg transition-colors flex items-center gap-2 ${
+            className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-2 ${
               isEditMode
-                ? "bg-slate-700 text-slate-100"
-                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                ? "bg-zinc-800 text-zinc-100"
+                : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700"
             }`}
           >
-            <Settings className="w-4 h-4" />
-            <span className="hidden sm:inline">{isEditMode ? "Ukončiť úpravy" : "Prispôsobiť"}</span>
+            <Settings className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{isEditMode ? "Hotovo" : "Upraviť"}</span>
           </button>
         </div>
       </div>
 
-      {/* Edit mode - Widget selector */}
+      {/* Edit mode - Widget selector - Premium */}
       {isEditMode && (
-        <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-4 lg:p-6">
-          <h3 className="text-base lg:text-lg font-semibold text-slate-100 mb-3 lg:mb-4">
-            Dostupné widgety
-          </h3>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+        <div className="premium-card p-4 lg:p-5">
+          <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-medium mb-3">
+            Dostupné moduly
+          </p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
             {availableWidgets.map((widgetId) => {
               const widget = WIDGET_REGISTRY[widgetId];
               const isVisible = localWidgets.includes(widgetId);
@@ -266,21 +264,21 @@ export function CustomizableDashboard() {
                 <button
                   key={widgetId}
                   onClick={() => handleToggleWidget(widgetId)}
-                  className={`p-3 lg:p-4 rounded-lg border transition-all text-left ${
+                  className={`p-3 rounded-xl border transition-all text-left ${
                     isVisible
-                      ? "bg-emerald-500/10 border-emerald-500/30 text-slate-100"
-                      : "bg-slate-900/50 border-slate-700 text-slate-400 hover:border-slate-600"
+                      ? "bg-zinc-900 border-zinc-700 text-zinc-100"
+                      : "bg-zinc-950/50 border-zinc-800/50 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-1 sm:mb-2">
-                    <span className="text-xs sm:text-sm font-semibold line-clamp-1">{widget.title}</span>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium line-clamp-1">{widget.title}</span>
                     {isVisible ? (
-                      <div className="w-2 h-2 bg-emerald-400 rounded-full shrink-0" />
+                      <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full shrink-0" />
                     ) : (
-                      <X className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+                      <X className="w-3 h-3 shrink-0 opacity-50" />
                     )}
                   </div>
-                  <p className="text-xs text-slate-500 line-clamp-2 hidden sm:block">{widget.description}</p>
+                  <p className="text-[10px] text-zinc-600 line-clamp-1 hidden sm:block">{widget.description}</p>
                 </button>
               );
             })}
@@ -298,7 +296,7 @@ export function CustomizableDashboard() {
           items={localWidgets}
           strategy={verticalListSortingStrategy}
         >
-          <div className="space-y-6">
+          <div className="space-y-5">
             {localWidgets.map((widgetId) => (
               <SortableWidget
                 key={widgetId}
@@ -313,13 +311,13 @@ export function CustomizableDashboard() {
       </DndContext>
 
       {localWidgets.length === 0 && (
-        <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-12 text-center">
-          <p className="text-slate-400 mb-4">
+        <div className="premium-card p-12 text-center">
+          <p className="text-zinc-500 text-sm mb-2">
             Žiadne widgety nie sú zobrazené
           </p>
           {isEditMode && (
-            <p className="text-sm text-slate-500">
-              Vyberte widgety vyššie, ktoré chcete zobraziť
+            <p className="text-xs text-zinc-600">
+              Vyberte moduly vyššie
             </p>
           )}
         </div>
