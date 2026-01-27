@@ -42,7 +42,7 @@ async function scrapeBazos(target: ScrapingTarget) {
   
   try {
     // Použij existujúci stealth scraper ktorý už funguje
-    const result = await scrapeBazosCategory(target.url, { maxPages: 3 });
+    const result = await scrapeBazosCategory(target.url, undefined, {}, { maxPages: 3 });
     
     listingsFound = result.total;
     newListings = result.new;
