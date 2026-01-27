@@ -276,7 +276,52 @@ async function pageFunction(context) {
             }
         } catch(e) {}
         
-        // 2. Hľadaj adresu v parametroch
+        // 2. PRIORITA: Zelený link s adresou pod titulkom (napr. "Zelená Stráň, Košice-Košická Nová Ves, okres Košice III")
+        // Tento element je typicky link s ikonou mapy vedľa titulku
+        const addressLinkSelectors = [
+            'a[href*="/mapa"]',
+            'a[href*="maps"]', 
+            'a[href*="location"]',
+            '.detail-location a',
+            '.advertisement-location a',
+            '[class*="location"] a',
+            'h1 + div a',  // Link hneď za titulkom
+            'h1 ~ a',
+            '.detail-header a[href*="okres"]',
+            'a[title*="mapa"]'
+        ];
+        
+        for (const sel of addressLinkSelectors) {
+            const addressLink = document.querySelector(sel);
+            if (addressLink && addressLink.textContent) {
+                const text = addressLink.textContent.trim();
+                // Musí obsahovať čiarku (typický formát adresy) alebo "okres"
+                if ((text.includes(',') || text.includes('okres')) && text.length > 5 && text.length < 150) {
+                    result.location.full = text;
+                    
+                    // Parsuj: "Zelená Stráň, Košice-Košická Nová Ves, okres Košice III"
+                    const parts = text.split(',').map(s => s.trim());
+                    if (parts.length >= 1) {
+                        result.location.street = parts[0]; // Zelená Stráň
+                    }
+                    if (parts.length >= 2) {
+                        // Druhá časť môže byť "Košice-Košická Nová Ves"
+                        const cityPart = parts[1];
+                        // Extrahuj hlavné mesto (pred pomlčkou)
+                        const mainCity = cityPart.split('-')[0].trim();
+                        result.location.city = mainCity; // Košice
+                        result.location.district = cityPart; // Košice-Košická Nová Ves
+                    }
+                    if (parts.length >= 3) {
+                        // Tretia časť je okres
+                        result.location.district = parts[2].replace('okres', '').trim(); // Košice III
+                    }
+                    break;
+                }
+            }
+        }
+        
+        // 3. Hľadaj adresu v parametroch ak ešte nemáme
         if (!result.location.street) {
             const streetLabels = ['Ulica', 'Adresa', 'Lokalita'];
             for (const label of streetLabels) {
@@ -292,7 +337,7 @@ async function pageFunction(context) {
             }
         }
         
-        // 3. Hľadaj v breadcrumbs alebo location elemente
+        // 4. Hľadaj v breadcrumbs alebo location elemente
         const locSelectors = [
             '.breadcrumb', 
             '[class*="breadcrumb"]',
