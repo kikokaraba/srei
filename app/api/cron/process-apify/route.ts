@@ -93,6 +93,103 @@ function mapCondition(condition: string | undefined | null): "POVODNY" | "REKONS
   return "POVODNY";
 }
 
+// Slovenské mestá pre extrakciu
+const SLOVAK_CITIES = [
+  "Bratislava", "Košice", "Prešov", "Žilina", "Nitra", "Banská Bystrica", 
+  "Trnava", "Trenčín", "Martin", "Poprad", "Zvolen", "Považská Bystrica",
+  "Michalovce", "Spišská Nová Ves", "Komárno", "Levice", "Humenné",
+  "Bardejov", "Liptovský Mikuláš", "Ružomberok", "Piešťany", "Topoľčany",
+  "Dubnica nad Váhom", "Čadca", "Dunajská Streda", "Skalica", "Pezinok",
+  "Senec", "Malacky", "Galanta", "Šaľa", "Nové Zámky", "Partizánske",
+  "Hlohovec", "Senica", "Myjava", "Nové Mesto nad Váhom", "Púchov",
+  "Prievidza", "Handlová", "Žiar nad Hronom", "Brezno", "Lučenec",
+  "Rimavská Sobota", "Veľký Krtíš", "Kežmarok", "Stará Ľubovňa",
+  "Svidník", "Snina", "Vranov nad Topľou", "Trebišov", "Rožňava",
+  "Sobrance", "Dolný Kubín", "Námestovo", "Tvrdošín"
+];
+
+function parseLocationString(locationStr: string): { city: string; district: string; street: string } {
+  const result = { city: "", district: "", street: "" };
+  if (!locationStr) return result;
+  
+  // Rozdeľ podľa čiarky
+  const parts = locationStr.split(",").map(s => s.trim());
+  
+  // Hľadaj známe mestá v častiach
+  for (const part of parts) {
+    for (const city of SLOVAK_CITIES) {
+      if (part.toLowerCase().includes(city.toLowerCase())) {
+        result.city = city;
+        break;
+      }
+    }
+    if (result.city) break;
+  }
+  
+  // Prvá časť je často ulica
+  if (parts[0] && !SLOVAK_CITIES.some(c => parts[0].toLowerCase().includes(c.toLowerCase()))) {
+    result.street = parts[0];
+  }
+  
+  // Hľadaj okres
+  const okresMatch = locationStr.match(/okres\s+([^,]+)/i);
+  if (okresMatch) {
+    result.district = okresMatch[1].trim();
+  } else if (parts.length >= 2) {
+    // Druhá časť môže byť mestská časť
+    result.district = parts[1];
+  }
+  
+  return result;
+}
+
+function extractCityFromUrl(url: string): string {
+  const cityMap: Record<string, string> = {
+    "bratislava": "Bratislava",
+    "kosice": "Košice", 
+    "zilina": "Žilina",
+    "presov": "Prešov",
+    "nitra": "Nitra",
+    "trnava": "Trnava",
+    "trencin": "Trenčín",
+    "banska-bystrica": "Banská Bystrica",
+    "martin": "Martin",
+    "poprad": "Poprad",
+    "zvolen": "Zvolen",
+    "michalovce": "Michalovce",
+    "humenne": "Humenné",
+    "bardejov": "Bardejov",
+    "liptovsky-mikulas": "Liptovský Mikuláš",
+    "ruzomberok": "Ružomberok",
+    "piestany": "Piešťany",
+    "komarno": "Komárno",
+    "levice": "Levice",
+    "dunajska-streda": "Dunajská Streda",
+    "pezinok": "Pezinok",
+    "senec": "Senec",
+    "malacky": "Malacky"
+  };
+  
+  const lower = url.toLowerCase();
+  for (const [key, value] of Object.entries(cityMap)) {
+    if (lower.includes(`/${key}/`) || lower.includes(`/${key}-`) || lower.includes(`-${key}/`)) {
+      return value;
+    }
+  }
+  
+  return "Slovensko";
+}
+
+function extractCityFromText(text: string): string | null {
+  const lower = text.toLowerCase();
+  for (const city of SLOVAK_CITIES) {
+    if (lower.includes(city.toLowerCase())) {
+      return city;
+    }
+  }
+  return null;
+}
+
 // ============================================================================
 // API HANDLER
 // ============================================================================
@@ -142,37 +239,45 @@ export async function POST(request: NextRequest) {
         // Extrahuj mesto z location (môže byť string alebo objekt)
         let city = "Slovensko";
         let district = "";
+        let street = "";
         
         const loc = item.location as string | { city?: string; district?: string; full?: string; street?: string } | undefined;
+        
+        console.log(`🏠 [ProcessApify] Location raw:`, JSON.stringify(loc));
         
         if (typeof loc === "string") {
           // Bazoš vracia location ako string
           const parts = loc.split(",").map((s: string) => s.trim());
           city = parts[0] || "Slovensko";
           district = parts[1] || "";
-        } else if (loc?.city) {
-          city = loc.city;
-          district = loc.district || "";
+          street = parts[2] || "";
+        } else if (loc) {
+          // Nehnutelnosti vracia objekt
+          if (loc.city) city = loc.city;
+          if (loc.district) district = loc.district;
+          if (loc.street) street = loc.street;
+          
+          // Ak nemáme city, skús parsovať z full
+          if (city === "Slovensko" && loc.full) {
+            const parsed = parseLocationString(loc.full);
+            if (parsed.city) city = parsed.city;
+            if (parsed.district && !district) district = parsed.district;
+            if (parsed.street && !street) street = parsed.street;
+          }
         }
         
         // Extrahuj mesto z URL ak stále nemáme
         if (city === "Slovensko" && item.url) {
-          const urlMatch = item.url.match(/\/(?:bratislava|kosice|zilina|presov|nitra|trnava|trencin|banska-bystrica)[-\/]/i);
-          if (urlMatch) {
-            const cityMap: Record<string, string> = {
-              "bratislava": "Bratislava",
-              "kosice": "Košice", 
-              "zilina": "Žilina",
-              "presov": "Prešov",
-              "nitra": "Nitra",
-              "trnava": "Trnava",
-              "trencin": "Trenčín",
-              "banska-bystrica": "Banská Bystrica"
-            };
-            const matched = urlMatch[0].replace(/[\/-]/g, "").toLowerCase();
-            city = cityMap[matched] || city;
-          }
+          city = extractCityFromUrl(item.url);
         }
+        
+        // Ak stále nemáme, skús z titulku
+        if (city === "Slovensko" && item.title) {
+          const titleCity = extractCityFromText(item.title);
+          if (titleCity) city = titleCity;
+        }
+        
+        console.log(`📍 [ProcessApify] Parsed: city=${city}, district=${district}, street=${street}`);
         
         // Základná validácia - musí mať aspoň titulok
         if (!item.title) {
@@ -205,7 +310,7 @@ export async function POST(request: NextRequest) {
           energy_certificate: "NONE" as const,
           city,
           district,
-          street: (typeof loc === "object" && loc ? loc.street : null) || null,
+          street: street || null,
           address: (typeof loc === "string" ? loc : (loc?.full || city)),
           photos: JSON.stringify(item.images || []),
           photo_count: (item.images || []).length,
