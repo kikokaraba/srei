@@ -16,10 +16,12 @@ import {
   X,
   Database,
   Brain,
+  Rocket,
 } from "lucide-react";
 
 const adminNav = [
   { name: "Prehľad", href: "/admin", icon: LayoutDashboard },
+  { name: "Growth Analytics", href: "/admin/growth", icon: Rocket, highlight: true },
   { name: "AI Brain", href: "/admin/ai-brain", icon: Brain },
   { name: "Používatelia", href: "/admin/users", icon: Users },
   { name: "Nehnuteľnosti", href: "/admin/properties", icon: Building },
@@ -101,6 +103,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {adminNav.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
+          const isHighlight = 'highlight' in item && item.highlight;
 
           return (
             <Link
@@ -108,12 +111,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               href={item.href}
               className={`flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-lg transition-colors ${
                 isActive
-                  ? "bg-red-500/10 text-red-400 border border-red-500/20"
-                  : "text-slate-300 hover:bg-slate-800 hover:text-slate-100"
+                  ? isHighlight 
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    : "bg-red-500/10 text-red-400 border border-red-500/20"
+                  : isHighlight
+                    ? "text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20"
+                    : "text-slate-300 hover:bg-slate-800 hover:text-slate-100"
               }`}
             >
               <Icon className="w-5 h-5" />
               <span className="font-medium text-sm lg:text-base">{item.name}</span>
+              {isHighlight && !isActive && (
+                <span className="ml-auto text-[10px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded">NEW</span>
+              )}
             </Link>
           );
         })}
