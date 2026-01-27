@@ -100,3 +100,11 @@ export {
   type ScrapingProgress,
   type ScrapingResult,
 } from "./slovakia-scraper";
+
+// Apify Scraper (Professional infrastructure)
+export {
+  runApifyWebScraper,
+  runApifyPlaywrightScraper,
+  scrapeNehnutelnostiApify,
+  scrapeBazosApify,
+} from "./apify-scraper";

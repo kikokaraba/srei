@@ -20,6 +20,10 @@ import {
   humanDelay,
   closeStealthBrowser 
 } from "@/lib/scraper/stealth-scraper";
+import {
+  scrapeNehnutelnostiApify,
+  scrapeBazosApify,
+} from "@/lib/scraper/apify-scraper";
 import { 
   scrapeBazosCategory,
   runStealthScrape 
@@ -37,28 +41,33 @@ async function scrapeNehnutelnosti(target: ScrapingTarget) {
   let updatedListings = 0;
   const errors: string[] = [];
   
+  // Použi Apify ak je dostupný
+  const useApify = !!process.env.APIFY_API_KEY;
+  
   try {
-    // Scrapuj zoznam
-    const { listings, errors: listErrors } = await scrapeNehnutelnostiList(target.url);
-    listingsFound = listings.length;
+    let listings;
     
-    if (listErrors.length > 0) {
-      errors.push(...listErrors.map(e => e.message));
+    if (useApify) {
+      console.log("🚀 Using Apify for Nehnutelnosti.sk...");
+      const result = await scrapeNehnutelnostiApify([target.url]);
+      listings = result.listings;
+      if (result.errors.length > 0) {
+        errors.push(...result.errors.map(e => e.message));
+      }
+    } else {
+      // Fallback na lokálny stealth scraper
+      const result = await scrapeNehnutelnostiList(target.url);
+      listings = result.listings;
+      if (result.errors.length > 0) {
+        errors.push(...result.errors.map(e => e.message));
+      }
     }
     
+    listingsFound = listings.length;
+    
     // Spracuj každý listing
-    for (const listing of listings.slice(0, 50)) { // Max 50 per page
+    for (const listing of listings.slice(0, 100)) { // Max 100 per page
       try {
-        await humanDelay(2000, 4000);
-        
-        // Získaj detail s obrázkami
-        const { data: detail } = await scrapeNehnutelnostiDetail(listing.sourceUrl);
-        
-        if (detail) {
-          listing.description = detail.description || listing.description;
-          listing.imageUrls = detail.imageUrls?.length ? detail.imageUrls : listing.imageUrls;
-        }
-        
         // Ingestuj do DB
         const result = await ingestProperty({
           ...listing,
@@ -90,15 +99,48 @@ async function scrapeBazos(target: ScrapingTarget) {
   let updatedListings = 0;
   const errors: string[] = [];
   
+  // Použi Apify ak je dostupný
+  const useApify = !!process.env.APIFY_API_KEY;
+  
   try {
-    const result = await scrapeBazosCategory(target.url, { maxPages: 3 });
-    
-    listingsFound = result.total;
-    newListings = result.new;
-    updatedListings = result.updated;
-    
-    if (result.errors > 0) {
-      errors.push(`${result.errors} listings failed to process`);
+    if (useApify) {
+      console.log("🚀 Using Apify for Bazoš...");
+      const result = await scrapeBazosApify([target.url]);
+      
+      listingsFound = result.listings.length;
+      
+      for (const listing of result.listings) {
+        try {
+          const ingested = await ingestProperty({
+            ...listing,
+            source: "bazos.sk",
+            propertyType: target.propertyType === "byty" ? "BYT" : 
+                          target.propertyType === "domy" ? "DOM" : 
+                          target.propertyType === "pozemky" ? "POZEMOK" : "KOMERCNE",
+            transactionType: "PREDAJ",
+          });
+          
+          if (ingested.isNew) newListings++;
+          else updatedListings++;
+        } catch (err) {
+          errors.push(`Failed to process ${listing.sourceUrl}: ${err}`);
+        }
+      }
+      
+      if (result.errors.length > 0) {
+        errors.push(...result.errors.map(e => e.message));
+      }
+    } else {
+      // Fallback na lokálny scraper
+      const result = await scrapeBazosCategory(target.url, { maxPages: 3 });
+      
+      listingsFound = result.total;
+      newListings = result.new;
+      updatedListings = result.updated;
+      
+      if (result.errors > 0) {
+        errors.push(`${result.errors} listings failed to process`);
+      }
     }
     
   } catch (err) {
