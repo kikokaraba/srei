@@ -308,13 +308,11 @@ export function validateProperty(prop: ScrapedProperty): ValidationResult {
     skipReason = skipReason || "VALIDATION_ERROR";
   }
 
-  // Kontrola price_per_m2 konzistencie
+  // VŽDY prepočítaj price_per_m2 - nikdy neveríme hodnote zo scrapera
   if (prop.areaM2 > 0 && prop.price > 0) {
     const calculatedPricePerM2 = Math.round(prop.price / prop.areaM2);
-    if (Math.abs(calculatedPricePerM2 - prop.pricePerM2) > 100) {
-      // Opravi nesprávnu hodnotu
-      prop.pricePerM2 = calculatedPricePerM2;
-    }
+    // Vždy použij prepočítanú hodnotu
+    prop.pricePerM2 = calculatedPricePerM2;
   }
 
   return {
