@@ -2,7 +2,7 @@
 
 import { CustomizableDashboard } from "@/components/dashboard/CustomizableDashboard";
 import { UrbanImpactAlert } from "@/components/dashboard/UrbanImpactAlert";
-import { LayoutGrid, Sparkles, Zap, TrendingUp } from "lucide-react";
+import { Zap, TrendingUp, Activity } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 export default function DashboardPage() {
@@ -10,46 +10,42 @@ export default function DashboardPage() {
   const userName = session?.user?.name?.split(" ")[0] || "Investor";
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/30 p-6 lg:p-8">
-        {/* Ambient glow */}
-        <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 bg-emerald-500" />
-        <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full blur-3xl opacity-10 bg-teal-500" />
+    <div className="space-y-8">
+      {/* Premium Header - Minimal */}
+      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+        {/* Welcome Text */}
+        <div>
+          <p className="text-zinc-500 text-sm font-medium tracking-wide mb-1">
+            INVESTIČNÝ DASHBOARD
+          </p>
+          <h1 className="text-2xl lg:text-3xl font-semibold text-zinc-100 tracking-tight">
+            Vitaj späť, {userName}
+          </h1>
+        </div>
         
-        <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
-              <LayoutGrid className="w-7 h-7 text-white" />
+        {/* Live Market Ticker - Premium */}
+        <div className="flex items-center gap-2 px-4 py-2 premium-card">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[11px] text-zinc-500 font-medium tracking-wide">LIVE</span>
             </div>
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-2xl lg:text-3xl font-bold text-white">
-                  Ahoj, {userName}
-                </h1>
-                <Sparkles className="w-5 h-5 text-emerald-400" />
-              </div>
-              <p className="text-slate-400 text-sm lg:text-base">
-                Váš investičný dashboard je pripravený
-              </p>
+            <div className="flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
+              <span className="font-mono text-sm text-zinc-300">2,847</span>
+              <span className="text-[10px] text-zinc-600">ponúk</span>
             </div>
-          </div>
-          
-          {/* Quick insights */}
-          <div className="flex gap-3">
-            <div className="px-4 py-2 rounded-xl bg-slate-800/50 border border-slate-700/50">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-400" />
-                <span className="text-sm text-slate-400">Live</span>
-              </div>
-              <p className="text-lg font-bold text-white">2,847</p>
+            <div className="w-px h-4 bg-zinc-800" />
+            <div className="flex items-center gap-1.5">
+              <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="font-mono text-sm text-emerald-400">+2.4%</span>
+              <span className="text-[10px] text-zinc-600">týždeň</span>
             </div>
-            <div className="px-4 py-2 rounded-xl bg-slate-800/50 border border-slate-700/50">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-400" />
-                <span className="text-sm text-slate-400">Trh</span>
-              </div>
-              <p className="text-lg font-bold text-emerald-400">+2.4%</p>
+            <div className="w-px h-4 bg-zinc-800" />
+            <div className="flex items-center gap-1.5">
+              <Activity className="w-3.5 h-3.5 text-blue-400" />
+              <span className="font-mono text-sm text-zinc-300">€2,431</span>
+              <span className="text-[10px] text-zinc-600">/m² BA</span>
             </div>
           </div>
         </div>

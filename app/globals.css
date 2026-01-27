@@ -1,14 +1,48 @@
 @import "tailwindcss";
 
+/* Premium 2M€ Design System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 :root {
-  --background: #020617;
-  --foreground: #f8fafc;
+  /* Deep Onyx Base */
+  --background: #050505;
+  --background-surface: #0f0f0f;
+  --background-elevated: #141414;
+  --foreground: #fafafa;
+  --foreground-muted: #a1a1aa;
+  
+  /* Accent Colors */
+  --accent-primary: #10b981;
+  --accent-secondary: #3b82f6;
+  --accent-success: #22c55e;
+  --accent-danger: #ef4444;
+  
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-emphasis: rgba(255, 255, 255, 0.12);
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-feature-settings: "rlig" 1, "calt" 1;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Premium Typography Classes */
+.font-mono-numbers {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Financial data should always use mono font */
+.price, .metric, .percentage, [data-metric] {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 @layer utilities {
@@ -39,62 +73,161 @@ body {
     padding-top: env(safe-area-inset-top);
   }
   
-  /* Glassmorphism effects - subtle blur to keep text sharp */
+  /* ========================================
+     PREMIUM 2M€ DESIGN SYSTEM
+     ======================================== */
+  
+  /* Premium Card - The Core Component */
+  .premium-card {
+    background: #0f0f0f;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 1rem;
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
+    transition: all 0.2s ease;
+  }
+  
+  .premium-card:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+  }
+  
+  /* Premium Card Variants */
+  .premium-card-elevated {
+    background: #141414;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    box-shadow: 
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+      0 4px 24px rgba(0, 0, 0, 0.4);
+  }
+  
+  .premium-card-interactive {
+    background: #0f0f0f;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 1rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .premium-card-interactive:hover {
+    background: #141414;
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    transform: scale(1.01);
+  }
+  
+  /* Glassmorphism - Premium */
+  .glass-premium {
+    background: rgba(15, 15, 15, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  
+  .glass-sidebar {
+    background: rgba(10, 10, 10, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+  }
+  
+  /* Legacy glass effects - kept for compatibility */
   .glass {
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    border: 1px solid rgba(148, 163, 184, 0.1);
+    background: rgba(15, 15, 15, 0.9);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
   }
   
   .glass-card {
-    background: rgba(15, 23, 42, 0.9);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    border: 1px solid rgba(148, 163, 184, 0.15);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    background: rgba(15, 15, 15, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   }
   
   .glass-light {
-    background: rgba(30, 41, 59, 0.8);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-    border: 1px solid rgba(148, 163, 184, 0.1);
+    background: rgba(20, 20, 20, 0.8);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
   }
   
-  /* Glow effects */
+  /* Subtle Glow Effects */
   .glow-emerald {
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3),
-                0 0 40px rgba(16, 185, 129, 0.1);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+  }
+  
+  .glow-blue {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
   }
   
   .glow-gold {
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3),
-                0 0 40px rgba(251, 191, 36, 0.1);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.15);
   }
   
   .glow-emerald-soft {
-    box-shadow: 0 0 60px rgba(16, 185, 129, 0.15);
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.1);
   }
   
   .glow-gold-soft {
-    box-shadow: 0 0 60px rgba(251, 191, 36, 0.1);
+    box-shadow: 0 0 40px rgba(251, 191, 36, 0.08);
   }
   
+  /* Inner glow for depth */
+  .inner-glow {
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+  }
   
-  /* Premium gradient backgrounds */
+  .inner-glow-emerald {
+    box-shadow: inset 0 1px 0 0 rgba(16, 185, 129, 0.1);
+  }
+  
+  /* Premium Backgrounds - NO gradients */
   .bg-premium-dark {
-    background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e1b4b 100%);
+    background: #050505;
   }
   
+  .bg-premium-surface {
+    background: #0f0f0f;
+  }
+  
+  .bg-premium-elevated {
+    background: #141414;
+  }
+  
+  /* Subtle gradient for special sections only */
+  .bg-premium-accent {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.03) 100%);
+  }
+  
+  /* Remove old premium card - replaced above */
   .bg-premium-card {
-    background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+    background: #0f0f0f;
   }
   
-  /* Animated gradient border */
+  /* Active/Selected states */
+  .active-indicator {
+    position: relative;
+  }
+  
+  .active-indicator::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: #10b981;
+    border-radius: 0 2px 2px 0;
+  }
+  
+  /* Animated gradient border - subtle */
   .gradient-border {
     position: relative;
-    background: linear-gradient(145deg, #0f172a, #1e293b);
+    background: #0f0f0f;
     border-radius: 1rem;
   }
   
@@ -104,14 +237,20 @@ body {
     inset: -1px;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(135deg, #10b981, #fbbf24, #10b981);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(59, 130, 246, 0.2));
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
   }
   
-  /* Shine effect on hover */
+  .gradient-border:hover::before {
+    opacity: 1;
+  }
+  
+  /* Shine effect on hover - more subtle */
   .shine-effect {
     position: relative;
     overflow: hidden;
@@ -127,35 +266,49 @@ body {
     background: linear-gradient(
       to right,
       rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.03) 50%,
+      rgba(255, 255, 255, 0.02) 50%,
       rgba(255, 255, 255, 0) 100%
     );
-    transform: rotate(30deg);
-    transition: transform 0.5s;
+    transform: rotate(30deg) translateX(-100%);
+    transition: transform 0.6s ease;
   }
   
   .shine-effect:hover::after {
     transform: rotate(30deg) translateX(100%);
   }
+  
+  /* Data visualization colors - Use ONLY for data */
+  .text-profit { color: #22c55e; }
+  .text-loss { color: #ef4444; }
+  .text-neutral { color: #a1a1aa; }
+  
+  .bg-profit { background: rgba(34, 197, 94, 0.1); }
+  .bg-loss { background: rgba(239, 68, 68, 0.1); }
 }
 
-/* Custom scrollbar for dark theme */
+/* Premium Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
 /* Grid pattern background */

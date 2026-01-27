@@ -85,31 +85,38 @@ export function Sidebar() {
 
   const SidebarContent = () => (
     <>
-      <div className="p-4 lg:p-6 border-b border-slate-800 flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-emerald-400">SRIA</h2>
-          <p className="text-xs text-slate-500 mt-1 hidden sm:block">
-            Slovenská Realitná Investičná Aplikácia
-          </p>
+      {/* Logo Section */}
+      <div className="p-4 lg:p-5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+            <span className="text-emerald-400 font-bold text-lg">S</span>
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-zinc-100 tracking-tight">SRIA</h2>
+            <p className="text-[10px] text-zinc-500 tracking-wide hidden sm:block">
+              REAL ESTATE INTELLIGENCE
+            </p>
+          </div>
         </div>
         {/* Close button for mobile */}
         <button
           onClick={() => setMobileMenuOpen(false)}
-          className="lg:hidden p-2 text-slate-400 hover:text-slate-100"
+          className="lg:hidden p-2 text-zinc-500 hover:text-zinc-100 rounded-lg hover:bg-zinc-800/50"
         >
           <X className="w-5 h-5" />
         </button>
       </div>
 
-      <nav className="flex-1 p-3 lg:p-4 space-y-4 overflow-y-auto">
+      {/* Navigation */}
+      <nav className="flex-1 px-3 lg:px-3 py-2 space-y-5 overflow-y-auto">
         {navigationGroups.map((group, groupIndex) => (
           <div key={groupIndex}>
             {group.title && (
-              <p className="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <p className="px-3 mb-2 text-[10px] font-medium text-zinc-600 uppercase tracking-widest">
                 {group.title}
               </p>
             )}
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {group.items.map((item) => {
                 const isActive = pathname === item.href;
                 const Icon = item.icon;
@@ -118,14 +125,18 @@ export function Sidebar() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`flex items-center gap-3 px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg transition-colors ${
+                    className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
                       isActive
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                        : "text-slate-300 hover:bg-slate-800 hover:text-slate-100"
+                        ? "bg-zinc-800/80 text-zinc-100"
+                        : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
                     }`}
                   >
-                    <Icon className="w-5 h-5 shrink-0" />
-                    <span className="font-medium text-sm">{item.name}</span>
+                    {/* Active indicator */}
+                    {isActive && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-emerald-400 rounded-r" />
+                    )}
+                    <Icon className={`w-[18px] h-[18px] shrink-0 ${isActive ? "text-emerald-400" : ""}`} />
+                    <span className="font-medium text-[13px] tracking-wide">{item.name}</span>
                   </Link>
                 );
               })}
@@ -135,25 +146,26 @@ export function Sidebar() {
 
         {/* Admin Link */}
         {isAdmin && (
-          <div className="pt-2 mt-2 border-t border-slate-800">
+          <div className="pt-3 mt-2 border-t border-zinc-800/50">
             <Link
               href="/admin"
-              className="flex items-center gap-3 px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg transition-colors bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-rose-400 hover:bg-rose-500/10"
             >
-              <Shield className="w-5 h-5 shrink-0" />
-              <span className="font-medium text-sm">Admin Panel</span>
+              <Shield className="w-[18px] h-[18px] shrink-0" />
+              <span className="font-medium text-[13px] tracking-wide">Admin Panel</span>
             </Link>
           </div>
         )}
       </nav>
 
-      <div className="p-3 lg:p-4 border-t border-slate-800">
+      {/* Logout */}
+      <div className="p-3 lg:p-3 border-t border-zinc-800/30">
         <button
           onClick={() => signOut({ callbackUrl: "/auth/signin" })}
-          className="flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 w-full rounded-lg text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+          className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-300 transition-all duration-200"
         >
-          <LogOut className="w-5 h-5 shrink-0" />
-          <span className="font-medium text-sm lg:text-base">Odhlásiť sa</span>
+          <LogOut className="w-[18px] h-[18px] shrink-0" />
+          <span className="font-medium text-[13px] tracking-wide">Odhlásiť sa</span>
         </button>
       </div>
     </>
@@ -161,36 +173,41 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-emerald-400">SRIA</h2>
+      {/* Mobile Header - Premium */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 glass-premium px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+            <span className="text-emerald-400 font-bold text-sm">S</span>
+          </div>
+          <span className="text-base font-semibold text-zinc-100 tracking-tight">SRIA</span>
+        </div>
         <button
           onClick={() => setMobileMenuOpen(true)}
-          className="p-2 text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-800"
+          className="p-2 text-zinc-400 hover:text-zinc-100 rounded-lg hover:bg-zinc-800/50"
         >
-          <Menu className="w-6 h-6" />
+          <Menu className="w-5 h-5" />
         </button>
       </div>
 
       {/* Mobile Sidebar Overlay */}
       {mobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-50 bg-black/50"
+          className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar - Premium */}
       <aside
-        className={`lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-slate-900 border-r border-slate-800 flex flex-col transform transition-transform duration-300 ease-in-out ${
+        className={`lg:hidden fixed top-0 left-0 bottom-0 z-50 w-64 bg-[#0a0a0a] border-r border-zinc-800/30 flex flex-col transform transition-transform duration-300 ease-in-out ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <SidebarContent />
       </aside>
 
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-64 bg-slate-900 border-r border-slate-800 flex-col shrink-0">
+      {/* Desktop Sidebar - Premium Glassmorphism */}
+      <aside className="hidden lg:flex w-56 glass-sidebar flex-col shrink-0 sticky top-0 h-screen">
         <SidebarContent />
       </aside>
     </>
