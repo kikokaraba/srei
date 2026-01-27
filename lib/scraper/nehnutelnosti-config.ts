@@ -90,19 +90,17 @@ async function pageFunction(context) {
         const priceEl = document.querySelector('[class*="price-value"], [class*="price-main"], .cena');
         if (priceEl) result.price_raw = priceEl.textContent.trim();
 
-        // Parametre - hľadáme v tabuľkách a zoznamoch
+        // Parametre - hľadáme v konkrétnych riadkoch parametrov
         const findParam = (keywords) => {
-            const allText = document.body.innerText;
-            for (const kw of keywords) {
-                // Hľadáme vzor "Label: hodnota" alebo "Label hodnota"
-                const patterns = [
-                    new RegExp(kw + '\\\\s*:\\\\s*([0-9,.]+)', 'i'),
-                    new RegExp(kw + '\\\\s+([0-9,.]+)', 'i')
-                ];
-                for (const pattern of patterns) {
-                    const match = allText.match(pattern);
-                    if (match && match[1]) {
-                        return match[1].replace(',', '.').trim();
+            // Cielime na konkrétne kontajnery parametrov
+            const rows = Array.from(document.querySelectorAll('.parameter-row, .table-row, tr, li, dl dt, dl dd'));
+            for (const row of rows) {
+                const rowText = row.innerText || row.textContent || '';
+                if (keywords.some(kw => rowText.toLowerCase().includes(kw.toLowerCase()))) {
+                    // Vytiahneme len číselnú hodnotu
+                    const match = rowText.match(/(\\d+[\\d\\s,.]*)/);
+                    if (match) {
+                        return match[1].replace(/\\s/g, '').replace(',', '.');
                     }
                 }
             }
