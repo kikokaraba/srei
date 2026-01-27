@@ -514,7 +514,7 @@ export async function findBestMatch(
   });
   
   if (exactMatch) {
-    const wasInactive = exactMatch.status === "REMOVED" || exactMatch.status === "INACTIVE" || exactMatch.status === "EXPIRED";
+    const wasInactive = exactMatch.status === "REMOVED" || exactMatch.status === "EXPIRED" || exactMatch.status === "WITHDRAWN";
     const daysSinceLastSeen = exactMatch.last_seen_at 
       ? Math.floor((Date.now() - exactMatch.last_seen_at.getTime()) / (1000 * 60 * 60 * 24))
       : 0;
