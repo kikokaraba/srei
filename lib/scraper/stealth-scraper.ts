@@ -527,7 +527,6 @@ export async function scrapeNehnutelnostiDetail(
       data: {
         description,
         imageUrls,
-        paramsRaw: paramsText,
         sellerName: contactInfo,
       },
       errors,
