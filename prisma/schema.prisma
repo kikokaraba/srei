@@ -804,6 +804,65 @@ model ScrapeProgress {
   @@index([source, isComplete])
 }
 
+// ==========================================
+// SCRAPER RUN LOG - Detailné sledovanie každého behu
+// ==========================================
+
+// Dôvod prečo nebol záznam uložený
+enum IngestionSkipReason {
+  DUPLICATE           // Už existuje v DB (rovnaké external_id)
+  INVALID_PRICE       // Cena je 0 alebo nevalidná
+  INVALID_AREA        // Plocha je 0 alebo nevalidná
+  MISSING_CITY        // Chýba mesto
+  MISSING_TITLE       // Chýba názov
+  BLOCKED_CONTENT     // Captcha alebo "Ste robot" stránka
+  VALIDATION_ERROR    // Iná validačná chyba
+  DATABASE_ERROR      // Chyba pri zápise do DB
+  SLUG_CONFLICT       // Konflikt slugov
+}
+
+// Jeden beh scrapera
+model ScraperRun {
+  id              String   @id @default(cuid())
+  source          String   // "BAZOS", "NEHNUTELNOSTI", "ALL"
+  
+  // Časy
+  startedAt       DateTime @default(now())
+  finishedAt      DateTime?
+  durationMs      Int?
+  
+  // Počty - čo sa našlo
+  foundCount      Int      @default(0)      // Koľko inzerátov sa našlo v HTML
+  
+  // Počty - čo sa uložilo
+  savedNew        Int      @default(0)      // Nové nehnuteľnosti
+  savedUpdated    Int      @default(0)      // Aktualizované (cena sa zmenila)
+  savedRelisted   Int      @default(0)      // Re-listingy (vrátené po INACTIVE)
+  
+  // Počty - čo sa preskočilo (rozdelené podľa dôvodu)
+  skippedDuplicate    Int  @default(0)      // Už existuje, bez zmeny
+  skippedInvalidPrice Int  @default(0)      // Nevalidná cena
+  skippedInvalidArea  Int  @default(0)      // Nevalidná plocha
+  skippedMissingCity  Int  @default(0)      // Chýba mesto
+  skippedBlocked      Int  @default(0)      // Captcha/blokovaný obsah
+  skippedValidation   Int  @default(0)      // Iná validačná chyba
+  skippedDbError      Int  @default(0)      // Chyba databázy
+  
+  // Chyby - detaily
+  errors          String?  @db.Text         // JSON array s detailmi chýb
+  
+  // Stránky
+  pagesScraped    Int      @default(0)
+  
+  // Stav
+  status          String   @default("running") // "running", "success", "partial", "failed"
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([source, startedAt])
+  @@index([status, startedAt])
+}
+
 // Životný cyklus inzerátu - sledovanie vymazaných/ukončených inzerátov
 model PropertyLifecycle {
   id              String   @id @default(cuid())

@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useUserPreferences } from "@/lib/hooks/useUserPreferences";
 import {
   Search,
-  Filter,
   SlidersHorizontal,
   MapPin,
   Home,
@@ -18,17 +17,8 @@ import {
   LayoutGrid,
   List,
   X,
-  History,
-  Layers,
-  Shield,
   TrendingDown,
-  Copy,
-  Target,
-  AlertTriangle,
-  Clock,
-  Construction,
 } from "lucide-react";
-import { UrbanBadge } from "./UrbanImpactAlert";
 import { normalizeCityName, getCityInfo } from "@/lib/constants/cities";
 
 // Slovenské kraje - mestá zodpovedajú formátu v databáze
@@ -155,50 +145,6 @@ const defaultFilters: Filters = {
   sortBy: "createdAt",
   sortOrder: "desc",
 };
-
-// Calculate investment score (0-100) based on multiple factors
-function calculateInvestorScore(property: Property): number {
-  let score = 50; // Base score
-  
-  // Yield factor (max +30)
-  if (property.investmentMetrics) {
-    const yieldBonus = Math.min(property.investmentMetrics.gross_yield * 5, 30);
-    score += yieldBonus;
-  }
-  
-  // Price per m2 factor - lower is better for investment (max +15)
-  if (property.price_per_m2 < 1500) score += 15;
-  else if (property.price_per_m2 < 2000) score += 10;
-  else if (property.price_per_m2 < 2500) score += 5;
-  else if (property.price_per_m2 > 3500) score -= 5;
-  
-  // Hot deal bonus (+10)
-  if (property.is_distressed) score += 10;
-  
-  // Days on market - longer might mean motivated seller (max +5)
-  if (property.days_on_market > 60) score += 5;
-  else if (property.days_on_market > 30) score += 3;
-  
-  // Condition bonus
-  if (property.condition === "REKONSTRUKCIA") score += 3;
-  if (property.condition === "NOVOSTAVBA") score += 5;
-  
-  return Math.min(Math.max(score, 0), 100);
-}
-
-function getScoreColor(score: number): string {
-  if (score >= 80) return "text-emerald-400 bg-emerald-500/20 border-emerald-500/30";
-  if (score >= 65) return "text-gold-400 bg-gold-500/20 border-gold-500/30";
-  if (score >= 50) return "text-blue-400 bg-blue-500/20 border-blue-500/30";
-  return "text-slate-400 bg-slate-500/20 border-slate-500/30";
-}
-
-function getScoreLabel(score: number): string {
-  if (score >= 80) return "Výborná";
-  if (score >= 65) return "Dobrá";
-  if (score >= 50) return "Priemerná";
-  return "Nízka";
-}
 
 // Štýly pre zdroje
 function getSourceStyle(source: string): { label: string; bg: string; text: string } {
@@ -807,109 +753,6 @@ export function PropertyList() {
                     )}
                   </div>
 
-                  {/* Investor Insights - automatické badge */}
-                  {(() => {
-                    const metrics = batchMetrics[property.id];
-                    const score = calculateInvestorScore(property);
-                    const scoreConfig = score >= 80 
-                      ? { color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30", icon: Shield }
-                      : score >= 50 
-                      ? { color: "bg-blue-500/20 text-blue-400 border-blue-500/30", icon: Shield }
-                      : { color: "bg-slate-500/20 text-slate-400 border-slate-500/30", icon: Shield };
-                    const Icon = scoreConfig.icon;
-                    
-                    return (
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {/* Investment Score */}
-                        <div 
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${scoreConfig.color}`}
-                          title={`Investičné skóre: ${score}/100\n${getScoreLabel(score)} príležitosť`}
-                        >
-                          <Icon className="w-3 h-3" />
-                          <span>{score}</span>
-                        </div>
-                        
-                        {/* Duplicates Badge - z batch API */}
-                        {metrics?.duplicateCount > 1 && (
-                          <div 
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                            title={`Rovnaká nehnuteľnosť na ${metrics.duplicateCount} portáloch${metrics.savingsPercent ? `. Ušetri ${metrics.savingsPercent}%!` : ""}`}
-                          >
-                            <Copy className="w-3 h-3" />
-                            <span>{metrics.duplicateCount}x</span>
-                            {metrics.savingsPercent && metrics.savingsPercent > 0 && (
-                              <span className="text-emerald-400">-{metrics.savingsPercent}%</span>
-                            )}
-                          </div>
-                        )}
-                        
-                        {/* Price Drops Badge - z batch API */}
-                        {metrics?.priceDrops > 0 && (
-                          <div 
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                            title={`${metrics.priceDrops}x zníženie ceny - motivovaný predajca`}
-                          >
-                            <TrendingDown className="w-3 h-3" />
-                            <span>{metrics.priceDrops}x↓</span>
-                          </div>
-                        )}
-                        
-                        {/* Hot Deal */}
-                        {property.is_distressed && (
-                          <div 
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30"
-                            title="15%+ pod trhovou cenou"
-                          >
-                            <TrendingDown className="w-3 h-3" />
-                            <span>Hot</span>
-                          </div>
-                        )}
-                        
-                        {/* Days on market - motivated seller indicator */}
-                        {property.days_on_market > 60 && (
-                          <div 
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-600/30 text-slate-300 border border-slate-500/30"
-                            title={`${property.days_on_market} dní na trhu - motivovaný predajca`}
-                          >
-                            <Clock className="w-3 h-3" />
-                            <span>{property.days_on_market}d</span>
-                          </div>
-                        )}
-                        
-                        {/* Negotiation opportunity */}
-                        {property.days_on_market > 90 && (
-                          <div 
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                            title="Dlho na trhu - navrhni zľavu 10-15%"
-                          >
-                            <Target className="w-3 h-3" />
-                            <span>-10%</span>
-                          </div>
-                        )}
-                        
-                        {/* Fresh listing indicator */}
-                        {property.days_on_market < 3 && property.days_on_market >= 0 && (
-                          <div 
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-violet-500/20 text-violet-400 border border-violet-500/30"
-                            title="Čerstvý inzerát - buď prvý!"
-                          >
-                            <span>🆕</span>
-                          </div>
-                        )}
-                        
-                        {/* Urban Impact Badge - infraštruktúrny rast */}
-                        <UrbanBadge city={property.city} district={property.district} />
-                      </div>
-                    );
-                  })()}
-                  
-                  {/* Days on market text */}
-                  {property.days_on_market > 0 && property.days_on_market <= 60 && (
-                    <div className="flex items-center gap-1 text-xs text-slate-500">
-                      <History className="w-3 h-3" />
-                      <span>{property.days_on_market} dní v ponuke</span>
-                    </div>
-                  )}
                 </div>
               </div>
             );
@@ -952,45 +795,6 @@ export function PropertyList() {
                       <h3 className="font-semibold text-slate-100 truncate">
                         {property.title}
                       </h3>
-                      {/* Investor Badges */}
-                      {(() => {
-                        const score = calculateInvestorScore(property);
-                        const metrics = batchMetrics[property.id];
-                        return (
-                          <>
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${getScoreColor(score)}`}>
-                              <Shield className="w-3 h-3" />
-                              {score}
-                            </span>
-                            {/* Duplicates */}
-                            {metrics?.duplicateCount > 1 && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-500/20 text-amber-400 text-xs rounded-full border border-amber-500/30">
-                                <Copy className="w-3 h-3" />
-                                {metrics.duplicateCount}x
-                              </span>
-                            )}
-                            {/* Price Drops */}
-                            {metrics?.priceDrops > 0 && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded-full border border-emerald-500/30">
-                                <TrendingDown className="w-3 h-3" />
-                                {metrics.priceDrops}x↓
-                              </span>
-                            )}
-                          </>
-                        );
-                      })()}
-                      {property.is_distressed && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded-full border border-red-500/30">
-                          <TrendingDown className="w-3 h-3" />
-                          Hot
-                        </span>
-                      )}
-                      {property.days_on_market > 90 && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-cyan-500/20 text-cyan-400 text-xs rounded-full border border-cyan-500/30">
-                          <Target className="w-3 h-3" />
-                          -10%
-                        </span>
-                      )}
                     </div>
                     <div className="flex items-center gap-4 text-sm text-slate-400">
                       <div className="flex items-center gap-1">
