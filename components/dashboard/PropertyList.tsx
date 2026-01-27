@@ -422,7 +422,7 @@ export function PropertyList() {
       badges.push({
         icon: <Zap className="w-3 h-3" />,
         label: freshness.text === "Práve teraz" ? "LIVE" : freshness.text.toUpperCase(),
-        color: "bg-gradient-to-r from-green-400 to-emerald-500 text-white animate-pulse",
+        color: "bg-emerald-500 text-white",
         priority: 0, // Najvyššia priorita
       });
     } else if (freshness.isRecent) {
@@ -439,7 +439,7 @@ export function PropertyList() {
       badges.push({
         icon: <Flame className="w-3 h-3" />,
         label: `${Math.abs(metrics.priceStory.totalChangePercent)}% zľava`,
-        color: "bg-gradient-to-r from-orange-500 to-red-500 text-white",
+        color: "bg-orange-500 text-white",
         priority: 2,
       });
     }
@@ -449,7 +449,7 @@ export function PropertyList() {
       badges.push({
         icon: <Sparkles className="w-3 h-3" />,
         label: "Novinka",
-        color: "bg-gradient-to-r from-violet-500 to-purple-500 text-white",
+        color: "bg-violet-500 text-white",
         priority: 3,
       });
     }
@@ -459,7 +459,7 @@ export function PropertyList() {
       badges.push({
         icon: <TrendingUp className="w-3 h-3" />,
         label: `${property.investmentMetrics.gross_yield.toFixed(1)}% výnos`,
-        color: "bg-gradient-to-r from-emerald-500 to-teal-500 text-white",
+        color: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
         priority: 4,
       });
     }
@@ -965,27 +965,27 @@ export function PropertyList() {
                     {/* Right: Price + Yield */}
                     <div className="flex items-center gap-6">
                       {/* Price */}
-                      <div className="text-right min-w-[140px]">
-                        <p className="text-2xl font-bold text-white">
+                      <div className="text-right min-w-[120px]">
+                        <p className="text-lg font-semibold text-zinc-100 font-mono">
                           €{property.price.toLocaleString()}
                         </p>
-                        <p className="text-sm text-zinc-400">
+                        <p className="text-xs text-zinc-500 font-mono">
                           €{property.price_per_m2.toLocaleString()}/m²
                         </p>
                       </div>
 
                       {/* Yield */}
                       {property.investmentMetrics && (
-                        <div className={`text-center px-4 py-2 rounded-xl min-w-[80px] ${
+                        <div className={`text-center px-3 py-1.5 rounded-lg min-w-[70px] ${
                           property.investmentMetrics.gross_yield >= 6
-                            ? "bg-emerald-500/20 text-emerald-400"
-                            : "bg-zinc-800/50 text-zinc-400"
+                            ? "bg-emerald-500/10 text-emerald-400"
+                            : "bg-zinc-800/50 text-zinc-500"
                         }`}>
-                          <p className="text-xl font-bold flex items-center justify-center gap-1">
-                            <TrendingUp className="w-4 h-4" />
+                          <p className="text-base font-semibold font-mono flex items-center justify-center gap-1">
+                            <TrendingUp className="w-3.5 h-3.5" />
                             {property.investmentMetrics.gross_yield.toFixed(1)}%
                           </p>
-                          <p className="text-xs opacity-70">výnos</p>
+                          <p className="text-[10px] opacity-70">výnos</p>
                         </div>
                       )}
 

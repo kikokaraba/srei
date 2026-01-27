@@ -250,7 +250,7 @@ export function OnboardingFlow() {
         {/* Header s možnosťou preskočiť */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-100 mb-1">
+            <h1 className="text-lg font-semibold text-zinc-100 mb-1">
               Vitajte v SRIA
             </h1>
             <p className="text-sm text-zinc-400">
@@ -289,7 +289,7 @@ export function OnboardingFlow() {
           {step === 1 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-3xl font-bold text-zinc-100 mb-2">
+                <h2 className="text-xl font-semibold text-zinc-100 mb-2">
                   Kde hľadáte investície?
                 </h2>
                 <p className="text-zinc-400">
@@ -376,7 +376,7 @@ export function OnboardingFlow() {
           {step === 2 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-3xl font-bold text-zinc-100 mb-2">
+                <h2 className="text-xl font-semibold text-zinc-100 mb-2">
                   Aký typ investícií vás zaujíma?
                 </h2>
                 <p className="text-zinc-400">
@@ -445,7 +445,7 @@ export function OnboardingFlow() {
           {step === 3 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-3xl font-bold text-zinc-100 mb-2">
+                <h2 className="text-xl font-semibold text-zinc-100 mb-2">
                   Základné kritériá
                 </h2>
                 <p className="text-zinc-400">
@@ -544,7 +544,7 @@ export function OnboardingFlow() {
           {step === 4 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-3xl font-bold text-zinc-100 mb-2">
+                <h2 className="text-xl font-semibold text-zinc-100 mb-2">
                   Pokročilé kritériá
                 </h2>
                 <p className="text-zinc-400">
@@ -672,7 +672,7 @@ export function OnboardingFlow() {
           {step === 5 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-3xl font-bold text-zinc-100 mb-2">
+                <h2 className="text-xl font-semibold text-zinc-100 mb-2">
                   Notifikácie
                 </h2>
                 <p className="text-zinc-400">

@@ -121,7 +121,7 @@ export function ChatBot() {
 
   return (
     <div
-      className={`fixed bottom-6 right-6 z-50 bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl transition-all ${
+      className={`fixed bottom-6 right-6 z-50 bg-zinc-900 border border-zinc-700 rounded-2xl shadow-lg transition-all ${
         isMinimized ? "w-72 h-14" : "w-96 h-[600px]"
       }`}
     >

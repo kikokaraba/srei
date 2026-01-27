@@ -177,7 +177,7 @@ export function AnalyticsDashboard() {
             <Home className="w-5 h-5" />
             <span className="text-sm">Celkom nehnuteľností</span>
           </div>
-          <div className="text-3xl font-bold text-zinc-100">
+          <div className="text-xl font-semibold text-zinc-100">
             {totalStats.totalProperties}
           </div>
         </div>
@@ -187,7 +187,7 @@ export function AnalyticsDashboard() {
             <Euro className="w-5 h-5" />
             <span className="text-sm">Priem. cena</span>
           </div>
-          <div className="text-3xl font-bold text-zinc-100">
+          <div className="text-xl font-semibold text-zinc-100">
             €{totalStats.avgPrice.toLocaleString()}
           </div>
         </div>
@@ -197,7 +197,7 @@ export function AnalyticsDashboard() {
             <BarChart3 className="w-5 h-5" />
             <span className="text-sm">Priem. €/m²</span>
           </div>
-          <div className="text-3xl font-bold text-zinc-100">
+          <div className="text-xl font-semibold text-zinc-100">
             €{totalStats.avgPricePerM2.toLocaleString()}
           </div>
         </div>
@@ -207,7 +207,7 @@ export function AnalyticsDashboard() {
             <TrendingUp className="w-5 h-5" />
             <span className="text-sm">Priem. výnos</span>
           </div>
-          <div className="text-3xl font-bold text-emerald-400">
+          <div className="text-xl font-semibold text-emerald-400">
             {totalStats.avgYield.toFixed(1)}%
           </div>
         </div>
@@ -217,7 +217,7 @@ export function AnalyticsDashboard() {
             <Calendar className="w-5 h-5" />
             <span className="text-sm">Priem. dní v ponuke</span>
           </div>
-          <div className="text-3xl font-bold text-zinc-100">
+          <div className="text-xl font-semibold text-zinc-100">
             {totalStats.avgDaysOnMarket}
           </div>
         </div>

@@ -156,7 +156,7 @@ export default function MortgageCalculator({ initialPrice }: MortgageCalculatorP
         {/* Results - Right Side */}
         <div className="lg:col-span-3 space-y-6">
           {/* Hero Card */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-700 p-8">
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-700 p-8">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             <div className="relative">
               <p className="text-blue-200 text-sm font-medium mb-2">Mesačná splátka</p>
@@ -198,7 +198,7 @@ export default function MortgageCalculator({ initialPrice }: MortgageCalculatorP
       </div>
 
       {/* Bank Comparison */}
-      <div className="rounded-3xl border border-zinc-800/50 overflow-hidden bg-zinc-900/30">
+      <div className="rounded-xl border border-zinc-800/50 overflow-hidden bg-zinc-900/30">
         <button
           onClick={() => setShowBanks(!showBanks)}
           className="w-full px-6 py-5 flex items-center justify-between hover:bg-zinc-800/30 transition-colors"
@@ -252,7 +252,7 @@ export default function MortgageCalculator({ initialPrice }: MortgageCalculatorP
       </div>
 
       {/* Amortization Schedule */}
-      <div className="rounded-3xl border border-zinc-800/50 overflow-hidden bg-zinc-900/30">
+      <div className="rounded-xl border border-zinc-800/50 overflow-hidden bg-zinc-900/30">
         <button
           onClick={() => setShowSchedule(!showSchedule)}
           className="w-full px-6 py-5 flex items-center justify-between hover:bg-zinc-800/30 transition-colors"
@@ -399,7 +399,7 @@ function MetricCard({
         <p className="text-sm text-zinc-400">{label}</p>
         {Icon && <Icon className="w-4 h-4 text-zinc-500" />}
       </div>
-      <p className={`text-2xl font-bold ${
+      <p className={`text-lg font-semibold ${
         status === "good" ? "text-emerald-400" : 
         status === "warning" ? "text-amber-400" : 
         "text-white"

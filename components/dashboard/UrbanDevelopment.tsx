@@ -108,7 +108,7 @@ export function UrbanDevelopment() {
             <MapPin className="w-6 h-6 text-purple-400" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-zinc-100">Urbanistický rozvoj</h3>
+            <h3 className="text-base font-semibold text-zinc-100">Urbanistický rozvoj</h3>
             <p className="text-sm text-zinc-400">Plánovaná infraštruktúra a jej vplyv na ceny</p>
           </div>
         </div>
@@ -130,7 +130,7 @@ export function UrbanDevelopment() {
             <MapPin className="w-6 h-6 text-purple-400" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-zinc-100">Urbanistický rozvoj</h3>
+            <h3 className="text-base font-semibold text-zinc-100">Urbanistický rozvoj</h3>
             <p className="text-sm text-zinc-400">
               {developments.length} {developments.length === 1 ? "projekt" : "projektov"} v databáze
             </p>

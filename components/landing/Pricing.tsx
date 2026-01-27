@@ -144,7 +144,7 @@ export function Pricing() {
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="px-5 py-1.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-bold rounded-full shadow-lg shadow-emerald-500/30 flex items-center gap-2">
+                    <span className="px-5 py-1.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-bold rounded-full  flex items-center gap-2">
                       <Sparkles className="w-3 h-3" />
                       NAJOBĽÚBENEJŠIE
                     </span>
@@ -155,7 +155,7 @@ export function Pricing() {
                   <div className={`w-14 h-14 rounded-xl ${colors.iconBg} ${colors.icon} border border-current/20 flex items-center justify-center mb-4`}>
                     <Icon className="w-7 h-7" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
+                  <h3 className="text-lg font-semibold text-white mb-2">{plan.name}</h3>
                   <p className="text-zinc-400 text-sm mb-4">{plan.description}</p>
                   
                   <div className="flex items-baseline gap-2 mb-2">
@@ -188,7 +188,7 @@ export function Pricing() {
 
                 <Link
                   href={plan.ctaLink}
-                  className={`block w-full text-center px-6 py-4 rounded-xl font-semibold transition-all duration-300 ${colors.button} shadow-lg hover:shadow-xl hover:scale-[1.02]`}
+                  className={`block w-full text-center px-6 py-4 rounded-xl font-semibold transition-all duration-300 ${colors.button}  hover: hover:scale-[1.02]`}
                 >
                   {plan.cta}
                 </Link>
@@ -205,7 +205,7 @@ export function Pricing() {
 
         {/* FAQ Section */}
         <div className="mt-24 max-w-3xl mx-auto">
-          <h3 className="text-2xl font-bold text-zinc-100 mb-8 text-center">
+          <h3 className="text-lg font-semibold text-zinc-100 mb-8 text-center">
             Často kladené otázky
           </h3>
           <div className="space-y-4">

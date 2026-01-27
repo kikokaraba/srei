@@ -106,7 +106,7 @@ export function UrbanImpactMap() {
   const summary = data?.data?.summary;
 
   return (
-    <div className="bg-gradient-to-br from-zinc-900 via-zinc-900 to-cyan-950/20 rounded-xl border border-zinc-700/50 p-6">
+    <div className="bg-[#0f0f0f] rounded-xl border border-zinc-700/50 p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">

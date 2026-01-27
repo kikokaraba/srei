@@ -408,7 +408,7 @@ export function SlovakiaHeatmap() {
           {selectedCity ? (
             <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-zinc-100">{selectedCity.name}</h3>
+                <h3 className="text-base font-semibold text-zinc-100">{selectedCity.name}</h3>
                 <button
                   onClick={() => setSelectedCity(null)}
                   className="text-zinc-400 hover:text-zinc-100"
@@ -424,7 +424,7 @@ export function SlovakiaHeatmap() {
                       <Euro className="w-4 h-4" />
                       <span className="text-sm">Priem. cena</span>
                     </div>
-                    <div className="text-2xl font-bold text-zinc-100">
+                    <div className="text-lg font-semibold text-zinc-100">
                       €{selectedCity.avgPrice.toLocaleString()}
                     </div>
                     <div className="text-sm text-zinc-400">za m²</div>
@@ -435,7 +435,7 @@ export function SlovakiaHeatmap() {
                       <TrendingUp className="w-4 h-4" />
                       <span className="text-sm">Výnos</span>
                     </div>
-                    <div className="text-2xl font-bold text-emerald-400">
+                    <div className="text-lg font-semibold text-emerald-400">
                       {selectedCity.avgYield.toFixed(1)}%
                     </div>
                     <div className="text-sm text-zinc-400">hrubý ročný</div>
@@ -447,7 +447,7 @@ export function SlovakiaHeatmap() {
                     <Home className="w-4 h-4" />
                     <span className="text-sm">Nehnuteľností v ponuke</span>
                   </div>
-                  <div className="text-2xl font-bold text-zinc-100">
+                  <div className="text-lg font-semibold text-zinc-100">
                     {selectedCity.properties}
                   </div>
                 </div>
@@ -457,7 +457,7 @@ export function SlovakiaHeatmap() {
                     <BarChart3 className="w-4 h-4" />
                     <span className="text-sm">Cenový trend (12 mesiacov)</span>
                   </div>
-                  <div className={`text-2xl font-bold ${selectedCity.trend > 0 ? "text-emerald-400" : "text-red-400"}`}>
+                  <div className={`text-lg font-semibold ${selectedCity.trend > 0 ? "text-emerald-400" : "text-red-400"}`}>
                     {selectedCity.trend > 0 ? "+" : ""}{selectedCity.trend.toFixed(1)}%
                   </div>
                 </div>

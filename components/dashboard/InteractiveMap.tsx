@@ -262,15 +262,15 @@ export default function InteractiveMap() {
         {/* Stats summary */}
         <div className="p-4 border-b border-zinc-800 grid grid-cols-3 gap-3">
           <div className="text-center">
-            <div className="text-xl font-bold text-white">{totals.properties.toLocaleString()}</div>
+            <div className="text-base font-semibold text-white">{totals.properties.toLocaleString()}</div>
             <div className="text-xs text-zinc-500">Nehnuteľností</div>
           </div>
           <div className="text-center">
-            <div className="text-xl font-bold text-red-400">{totals.hotDeals}</div>
+            <div className="text-base font-semibold text-red-400">{totals.hotDeals}</div>
             <div className="text-xs text-zinc-500">Hot Deals</div>
           </div>
           <div className="text-center">
-            <div className="text-xl font-bold text-emerald-400">
+            <div className="text-base font-semibold text-emerald-400">
               {totals.avgPrice > 0 ? `€${totals.avgPrice.toLocaleString()}` : "-"}
             </div>
             <div className="text-xs text-zinc-500">Priem. €/m²</div>
@@ -289,7 +289,7 @@ export default function InteractiveMap() {
                 ← Späť na Slovensko
               </button>
               
-              <h3 className="text-xl font-bold text-white mb-1">{selectedCity.name}</h3>
+              <h3 className="text-base font-semibold text-white mb-1">{selectedCity.name}</h3>
               <p className="text-sm text-zinc-500 mb-4">{selectedCity.region} kraj</p>
               
               <div className="space-y-3">

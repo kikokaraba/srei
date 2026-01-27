@@ -124,7 +124,7 @@ export function Features() {
                     </span>
                   )}
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">
+                <h3 className="text-base font-semibold text-white mb-3">
                   {feature.title}
                 </h3>
                 <p className="text-zinc-400 leading-relaxed">

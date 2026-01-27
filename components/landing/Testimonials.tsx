@@ -62,7 +62,7 @@ export function Testimonials() {
           {testimonials.map((testimonial, index) => {
             const colorClasses = {
               emerald: {
-                avatar: "bg-gradient-to-br from-emerald-500 to-emerald-600",
+                avatar: "bg-emerald-500",
                 border: "hover:border-emerald-500/30",
                 glow: "hover:glow-emerald-soft",
               },
@@ -95,7 +95,7 @@ export function Testimonials() {
                 </p>
 
                 <div className="flex items-center gap-4 pt-5 border-t border-zinc-700/50">
-                  <div className={`w-12 h-12 rounded-xl ${colors.avatar} flex items-center justify-center text-white font-bold text-sm shadow-lg`}>
+                  <div className={`w-12 h-12 rounded-xl ${colors.avatar} flex items-center justify-center text-white font-bold text-sm `}>
                     {testimonial.initials}
                   </div>
                   <div className="flex-1">

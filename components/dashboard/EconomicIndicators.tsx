@@ -61,7 +61,7 @@ export function EconomicIndicators() {
 
   if (isLoading) {
     return (
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-amber-950/20 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-[#0f0f0f] p-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-zinc-800/50 rounded-lg w-2/3"></div>
           <div className="grid grid-cols-2 gap-3">
@@ -122,7 +122,7 @@ export function EconomicIndicators() {
   ];
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-amber-950/20">
+    <div className="relative overflow-hidden rounded-2xl bg-[#0f0f0f]">
       {/* Ambient glow */}
       <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 bg-amber-500" />
       <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full blur-3xl opacity-10 bg-orange-500" />
@@ -137,7 +137,7 @@ export function EconomicIndicators() {
                 Ekonomika
               </span>
             </div>
-            <h3 className="text-2xl font-bold text-white">
+            <h3 className="text-lg font-semibold text-white">
               Ukazovatele
             </h3>
           </div>
@@ -145,7 +145,7 @@ export function EconomicIndicators() {
           {/* Mortgage rate highlight */}
           <div className="text-right">
             <p className="text-xs text-zinc-500 mb-0.5">Hypotéka</p>
-            <p className="text-2xl font-bold text-amber-400 tabular-nums">
+            <p className="text-lg font-semibold text-amber-400 tabular-nums">
               {summary.economicIndicators.mortgageRate}%
             </p>
           </div>
@@ -170,7 +170,7 @@ export function EconomicIndicators() {
                 </div>
                 
                 {/* Value */}
-                <p className="text-2xl font-bold text-white tabular-nums">
+                <p className="text-lg font-semibold text-white tabular-nums">
                   {indicator.format(indicator.value)}
                 </p>
                 

@@ -211,14 +211,14 @@ export function PriceHistory() {
                 Vývoj cien
               </span>
             </div>
-            <h3 className="text-2xl font-bold text-white">
+            <h3 className="text-lg font-semibold text-white">
               {REGION_FULL_NAMES[selectedRegion]}
             </h3>
           </div>
           
           {/* Current price badge */}
           <div className="text-right">
-            <div className="text-3xl font-bold text-white tabular-nums">
+            <div className="text-xl font-semibold text-white tabular-nums">
               {currentPrice.toLocaleString()}
               <span className="text-lg text-zinc-400 ml-1">€/m²</span>
             </div>
@@ -393,7 +393,7 @@ export function PriceHistory() {
                     transform: "translate(-50%, -120%)",
                   }}
                 >
-                  <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/50 rounded-xl px-4 py-3 shadow-2xl">
+                  <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/50 rounded-xl px-4 py-3 shadow-lg">
                     <div className="text-sm font-bold text-white mb-1">
                       {chartData.points[hoveredPoint].year}
                     </div>

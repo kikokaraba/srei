@@ -119,7 +119,7 @@ export default function ScraperControl() {
             <Globe className="w-6 h-6 text-emerald-400" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Scraper Control</h2>
+            <h2 className="text-base font-semibold text-white">Scraper Control</h2>
             <p className="text-sm text-zinc-400">
               Manuálne spustenie scrapera
             </p>
@@ -178,7 +178,7 @@ export default function ScraperControl() {
       <button
         onClick={() => bothMutation.mutate()}
         disabled={isAnyRunning}
-        className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:from-zinc-600 disabled:to-zinc-600 text-white font-bold text-lg rounded-xl transition-all disabled:cursor-not-allowed shadow-lg shadow-emerald-500/25"
+        className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-emerald-500 hover:from-emerald-600 hover:to-teal-600 disabled:from-zinc-600 disabled:to-zinc-600 text-white font-bold text-lg rounded-xl transition-all disabled:cursor-not-allowed "
       >
         {bothMutation.isPending ? (
           <>

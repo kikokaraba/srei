@@ -209,12 +209,12 @@ export function AIBrainDashboard() {
         
         <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+            <div className="w-14 h-14 rounded-2xl bg-violet-500 flex items-center justify-center shadow-lg">
               <Brain className="w-7 h-7 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-2xl lg:text-3xl font-bold text-white">AI Brain</h1>
+                <h1 className="text-2xl lg:text-xl font-semibold text-white">AI Brain</h1>
                 <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs">
                   <Activity className="w-3 h-3" />
                   Active
@@ -229,7 +229,7 @@ export function AIBrainDashboard() {
           <button
             onClick={() => runMutation.mutate(undefined)}
             disabled={runMutation.isPending}
-            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl
+            className="px-6 py-3 bg-violet-500 text-white font-semibold rounded-xl
                        hover:shadow-lg hover:shadow-purple-500/25 transition-all flex items-center gap-2
                        disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -246,19 +246,19 @@ export function AIBrainDashboard() {
         {brainData?.stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
             <div className="bg-zinc-800/50 rounded-xl p-4">
-              <p className="text-2xl font-bold text-white">{brainData.stats.total || 0}</p>
+              <p className="text-lg font-semibold text-white">{brainData.stats.total || 0}</p>
               <p className="text-sm text-zinc-400">Celkom insights</p>
             </div>
             <div className="bg-zinc-800/50 rounded-xl p-4">
-              <p className="text-2xl font-bold text-emerald-400">{brainData.stats.byStatus?.new || 0}</p>
+              <p className="text-lg font-semibold text-emerald-400">{brainData.stats.byStatus?.new || 0}</p>
               <p className="text-sm text-zinc-400">Nové</p>
             </div>
             <div className="bg-zinc-800/50 rounded-xl p-4">
-              <p className="text-2xl font-bold text-orange-400">{brainData.stats.byPriority?.high || 0}</p>
+              <p className="text-lg font-semibold text-orange-400">{brainData.stats.byPriority?.high || 0}</p>
               <p className="text-sm text-zinc-400">Vysoká priorita</p>
             </div>
             <div className="bg-zinc-800/50 rounded-xl p-4">
-              <p className="text-2xl font-bold text-red-400">{brainData.stats.byPriority?.critical || 0}</p>
+              <p className="text-lg font-semibold text-red-400">{brainData.stats.byPriority?.critical || 0}</p>
               <p className="text-sm text-zinc-400">Kritické</p>
             </div>
           </div>
@@ -559,7 +559,7 @@ function InsightActions({
               onApprove(selectedAction || undefined);
             }}
             disabled={isPending || executing}
-            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg
+            className="flex-1 px-4 py-2.5 bg-emerald-500 text-white rounded-lg
                        hover:shadow-lg hover:shadow-emerald-500/25 transition-all flex items-center justify-center gap-2
                        disabled:opacity-50"
           >

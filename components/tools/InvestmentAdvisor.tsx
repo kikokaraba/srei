@@ -133,7 +133,7 @@ export function InvestmentAdvisor() {
           <Sparkles className="w-5 h-5 text-emerald-400" />
           <span className="text-emerald-400 font-medium">AI Investment Advisor</span>
         </div>
-        <h2 className="text-2xl font-bold text-zinc-100">Investičný Asistent</h2>
+        <h2 className="text-lg font-semibold text-zinc-100">Investičný Asistent</h2>
         <p className="text-zinc-400 mt-2">
           AI analyzuje trh a nájde najlepšie investičné príležitosti pre váš profil
         </p>
@@ -333,7 +333,7 @@ export function InvestmentAdvisor() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="text-2xl font-bold text-zinc-500">#{idx + 1}</span>
+                        <span className="text-lg font-semibold text-zinc-500">#{idx + 1}</span>
                         <div>
                           <h4 className="font-semibold text-zinc-100">{rec.title}</h4>
                           <div className="flex items-center gap-2 text-sm text-zinc-400">
@@ -369,7 +369,7 @@ export function InvestmentAdvisor() {
                     </div>
 
                     <div className="text-right">
-                      <p className="text-xl font-bold text-zinc-100">
+                      <p className="text-base font-semibold text-zinc-100">
                         €{rec.price.toLocaleString()}
                       </p>
                       <p className="text-sm text-zinc-400">

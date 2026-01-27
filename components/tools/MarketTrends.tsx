@@ -140,7 +140,7 @@ export function MarketTrends() {
           <Activity className="w-5 h-5 text-cyan-400" />
           <span className="text-cyan-400 font-medium">AI Market Analysis</span>
         </div>
-        <h2 className="text-2xl font-bold text-zinc-100">Trhové Trendy & Predikcie</h2>
+        <h2 className="text-lg font-semibold text-zinc-100">Trhové Trendy & Predikcie</h2>
         <p className="text-zinc-400 mt-2">
           AI analyzuje trh a predikuje kam smerujú ceny nehnuteľností
         </p>
@@ -185,19 +185,19 @@ export function MarketTrends() {
           {/* Market Overview */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-4 text-center">
-              <p className="text-3xl font-bold text-zinc-100">{market.totalListings}</p>
+              <p className="text-xl font-semibold text-zinc-100">{market.totalListings}</p>
               <p className="text-sm text-zinc-400">Aktívnych inzerátov</p>
             </div>
             <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-4 text-center">
-              <p className="text-3xl font-bold text-cyan-400">€{market.avgPricePerM2}</p>
+              <p className="text-xl font-semibold text-cyan-400">€{market.avgPricePerM2}</p>
               <p className="text-sm text-zinc-400">Priem. cena/m²</p>
             </div>
             <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-4 text-center">
-              <p className="text-3xl font-bold text-emerald-400">{market.hotDealsRatio}%</p>
+              <p className="text-xl font-semibold text-emerald-400">{market.hotDealsRatio}%</p>
               <p className="text-sm text-zinc-400">Hot deals</p>
             </div>
             <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-4 text-center">
-              <p className="text-3xl font-bold text-amber-400">{market.newListingsWeek}</p>
+              <p className="text-xl font-semibold text-amber-400">{market.newListingsWeek}</p>
               <p className="text-sm text-zinc-400">Nových (7 dní)</p>
             </div>
           </div>
@@ -234,7 +234,7 @@ export function MarketTrends() {
                       {getTrendIcon(prediction.shortTermTrend.direction)}
                     </div>
                     <div>
-                      <p className={`text-2xl font-bold ${getTrendColor(prediction.shortTermTrend.direction)}`}>
+                      <p className={`text-lg font-semibold ${getTrendColor(prediction.shortTermTrend.direction)}`}>
                         {prediction.shortTermTrend.percentage > 0 ? "+" : ""}
                         {prediction.shortTermTrend.percentage}%
                       </p>
@@ -258,7 +258,7 @@ export function MarketTrends() {
                       {getTrendIcon(prediction.longTermTrend.direction)}
                     </div>
                     <div>
-                      <p className={`text-2xl font-bold ${getTrendColor(prediction.longTermTrend.direction)}`}>
+                      <p className={`text-lg font-semibold ${getTrendColor(prediction.longTermTrend.direction)}`}>
                         {prediction.longTermTrend.percentage > 0 ? "+" : ""}
                         {prediction.longTermTrend.percentage}%
                       </p>
@@ -352,7 +352,7 @@ export function MarketTrends() {
               {market.byCondition.map(item => (
                 <div key={item.condition} className="p-4 bg-zinc-900 rounded-lg">
                   <p className="text-sm text-zinc-400">{CONDITION_LABELS[item.condition] || item.condition}</p>
-                  <p className="text-2xl font-bold text-zinc-100">€{item.avgPricePerM2}/m²</p>
+                  <p className="text-lg font-semibold text-zinc-100">€{item.avgPricePerM2}/m²</p>
                   <p className="text-xs text-zinc-500">{item.count} nehnuteľností</p>
                 </div>
               ))}

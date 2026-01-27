@@ -78,7 +78,7 @@ export function MarketOverview() {
 
   if (isLoading) {
     return (
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-emerald-950/20 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-[#0f0f0f] p-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-zinc-800/50 rounded-lg w-2/3"></div>
           <div className="space-y-3">
@@ -101,7 +101,7 @@ export function MarketOverview() {
     : allRegions;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-emerald-950/20">
+    <div className="relative overflow-hidden rounded-2xl bg-[#0f0f0f]">
       {/* Ambient glow */}
       <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 bg-emerald-500" />
       
@@ -115,7 +115,7 @@ export function MarketOverview() {
                 Prehľad trhu
               </span>
             </div>
-            <h3 className="text-2xl font-bold text-white">
+            <h3 className="text-lg font-semibold text-white">
               Slovensko
             </h3>
             {overview && (

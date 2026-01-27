@@ -214,7 +214,7 @@ export function WatchdogSettings() {
     return (
       <div className="bg-amber-900/20 border border-amber-800 rounded-xl p-6 text-center">
         <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
-        <h3 className="text-xl font-bold text-zinc-100 mb-2">Prihlás sa</h3>
+        <h3 className="text-base font-semibold text-zinc-100 mb-2">Prihlás sa</h3>
         <p className="text-zinc-400">
           Pre používanie strážneho psa sa musíš prihlásiť.
         </p>

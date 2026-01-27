@@ -73,7 +73,7 @@ function LandingHeroComponent() {
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center items-center mb-8 sm:mb-12 px-4 sm:px-0">
             <Link
               href="/auth/signin"
-              className="group w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold text-base sm:text-lg rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 glow-emerald"
+              className="group w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold text-base sm:text-lg rounded-2xl transition-all duration-300 flex items-center justify-center gap-3  hover:shadow-emerald-500/50 hover:scale-105 glow-emerald"
             >
               Začať 14 dní zdarma
               <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform" />

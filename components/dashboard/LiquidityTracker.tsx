@@ -67,7 +67,7 @@ export function LiquidityTracker() {
 
   if (loading) {
     return (
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-rose-950/20 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-[#0f0f0f] p-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-zinc-800/50 rounded-lg w-2/3"></div>
           <div className="space-y-3">
@@ -82,7 +82,7 @@ export function LiquidityTracker() {
 
   if (properties.length === 0) {
     return (
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-rose-950/20 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-[#0f0f0f] p-6">
         <div className="text-center py-8">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
             <Clock className="w-8 h-8 text-emerald-400" />
@@ -100,7 +100,7 @@ export function LiquidityTracker() {
   }
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-rose-950/20">
+    <div className="relative overflow-hidden rounded-2xl bg-[#0f0f0f]">
       {/* Ambient glow */}
       <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 bg-rose-500" />
       
@@ -114,7 +114,7 @@ export function LiquidityTracker() {
                 Čas na trhu
               </span>
             </div>
-            <h3 className="text-2xl font-bold text-white">
+            <h3 className="text-lg font-semibold text-white">
               Dlhodobé ponuky
             </h3>
           </div>

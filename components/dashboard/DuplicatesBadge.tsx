@@ -84,7 +84,7 @@ export const DuplicatesBadge = memo(function DuplicatesBadge({ propertyId, curre
 
         {/* Dropdown */}
         {isOpen && (
-          <div className="absolute top-full left-0 mt-2 z-50 w-72 bg-zinc-800 rounded-lg border border-zinc-700 shadow-xl p-3">
+          <div className="absolute top-full left-0 mt-2 z-50 w-72 bg-zinc-800 rounded-lg border border-zinc-700  p-3">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-semibold text-zinc-200">
                 Dostupné na {data.totalSources} portáloch

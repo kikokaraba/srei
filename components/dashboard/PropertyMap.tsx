@@ -217,7 +217,7 @@ function ClusterIndicator({
     >
       <Popup>
         <div className="text-center p-2">
-          <div className="text-2xl font-bold text-zinc-900">{count}</div>
+          <div className="text-lg font-semibold text-zinc-900">{count}</div>
           <div className="text-sm text-zinc-600">nehnuteľností</div>
           {hasHotDeals && (
             <div className="text-xs text-red-600 mt-1">

@@ -135,7 +135,7 @@ export function CompetitiveAdvantage() {
                 <div className={`w-14 h-14 rounded-xl bg-zinc-900/80 border ${feature.color === "emerald" ? "border-emerald-500/30" : "border-gold-500/30"} flex items-center justify-center mb-5`}>
                   <Icon className={`w-7 h-7 ${feature.color === "emerald" ? "text-emerald-400" : "text-gold-400"}`} />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
+                <h3 className="text-base font-semibold text-white mb-3">{feature.title}</h3>
                 <p className="text-zinc-400">{feature.description}</p>
               </div>
             );
@@ -145,7 +145,7 @@ export function CompetitiveAdvantage() {
         {/* Comparison Table */}
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-white mb-2">Porovnanie funkcií</h3>
+            <h3 className="text-lg font-semibold text-white mb-2">Porovnanie funkcií</h3>
             <p className="text-zinc-400">SRIA vs. bežné realitné portály</p>
           </div>
           
@@ -206,7 +206,7 @@ export function CompetitiveAdvantage() {
             </p>
             <a
               href="/auth/signin"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold rounded-xl transition-all duration-300 shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-105"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold rounded-xl transition-all duration-300  shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-105"
             >
               Vyskúšať zadarmo
               <Sparkles className="w-5 h-5" />

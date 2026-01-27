@@ -21,7 +21,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2">
             <Building2 className="w-6 h-6 text-emerald-400" />
-            <span className="text-xl font-bold text-zinc-100">SRIA</span>
+            <span className="text-base font-semibold text-zinc-100">SRIA</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -58,7 +58,7 @@ export function Navbar() {
             </Link>
             <Link
               href="/auth/signup"
-              className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40"
+              className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-all duration-200  hover:shadow-emerald-500/40"
             >
               Začať zdarma
             </Link>
@@ -121,7 +121,7 @@ export function Navbar() {
                 </Link>
                 <Link
                   href="/auth/signup"
-                  className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-all duration-200 text-center shadow-lg shadow-emerald-500/25"
+                  className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-all duration-200 text-center "
                   onClick={closeMobileMenu}
                 >
                   Začať zdarma

@@ -650,7 +650,7 @@ export default function UnifiedMap() {
         {selectedCity && (
           <div className="w-80 flex-none bg-zinc-900 border-l border-zinc-800 p-4 overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-white">{selectedCity.name}</h3>
+              <h3 className="text-base font-semibold text-white">{selectedCity.name}</h3>
               <button onClick={() => setSelectedCity(null)} className="text-zinc-400 hover:text-white text-xl">×</button>
             </div>
             
@@ -661,7 +661,7 @@ export default function UnifiedMap() {
                     <Euro className="w-4 h-4" />
                     <span className="text-xs">Priem. cena</span>
                   </div>
-                  <div className="text-xl font-bold text-white">€{selectedCity.avgPrice.toLocaleString()}</div>
+                  <div className="text-base font-semibold text-white">€{selectedCity.avgPrice.toLocaleString()}</div>
                   <div className="text-xs text-zinc-500">za m²</div>
                 </div>
                 
@@ -670,7 +670,7 @@ export default function UnifiedMap() {
                     <TrendingUp className="w-4 h-4" />
                     <span className="text-xs">Výnos</span>
                   </div>
-                  <div className="text-xl font-bold text-emerald-400">{selectedCity.avgYield.toFixed(1)}%</div>
+                  <div className="text-base font-semibold text-emerald-400">{selectedCity.avgYield.toFixed(1)}%</div>
                   <div className="text-xs text-zinc-500">hrubý ročný</div>
                 </div>
               </div>
@@ -681,7 +681,7 @@ export default function UnifiedMap() {
                   <span className="text-xs">Nehnuteľností</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="text-xl font-bold text-white">{selectedCity.properties}</div>
+                  <div className="text-base font-semibold text-white">{selectedCity.properties}</div>
                   {selectedCity.hotDeals > 0 && (
                     <div className="flex items-center gap-1 text-red-400 text-sm">
                       <Flame className="w-4 h-4" />
@@ -696,7 +696,7 @@ export default function UnifiedMap() {
                   <BarChart3 className="w-4 h-4" />
                   <span className="text-xs">Cenový trend (12 mes.)</span>
                 </div>
-                <div className={`text-xl font-bold ${selectedCity.trend > 0 ? "text-emerald-400" : "text-red-400"}`}>
+                <div className={`text-base font-semibold ${selectedCity.trend > 0 ? "text-emerald-400" : "text-red-400"}`}>
                   {selectedCity.trend > 0 ? "+" : ""}{selectedCity.trend.toFixed(1)}%
                 </div>
               </div>

@@ -46,7 +46,7 @@ export function LiveDataIndicator() {
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 hidden md:block">
-      <div className="bg-zinc-900/95 backdrop-blur-lg border border-emerald-500/20 rounded-full px-6 py-3 shadow-2xl flex items-center gap-3">
+      <div className="bg-zinc-900/95 backdrop-blur-lg border border-emerald-500/20 rounded-full px-6 py-3  flex items-center gap-3">
         <div className="flex items-center gap-2">
           <div className="relative">
             <Radio className="w-4 h-4 text-emerald-400" />

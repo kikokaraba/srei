@@ -184,7 +184,7 @@ function MatchCard({ match }: { match: PropertyMatch }) {
             </span>
             <TrendingDown className="w-4 h-4 text-emerald-400" />
           </div>
-          <div className="text-xl font-bold text-emerald-400">
+          <div className="text-base font-semibold text-emerald-400">
             {cheaper.price.toLocaleString("sk-SK")} €
           </div>
           <div className="text-xs text-zinc-400 mt-1">
@@ -210,7 +210,7 @@ function MatchCard({ match }: { match: PropertyMatch }) {
               {SOURCE_LABELS[moreExpensive.source]}
             </span>
           </div>
-          <div className="text-xl font-bold text-zinc-300">
+          <div className="text-base font-semibold text-zinc-300">
             {moreExpensive.price.toLocaleString("sk-SK")} €
           </div>
           <div className="text-xs text-zinc-400 mt-1">

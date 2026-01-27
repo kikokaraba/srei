@@ -388,7 +388,7 @@ export default function PropertyValuator() {
               <Euro className="w-4 h-4" />
               Cena za m²
             </div>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-lg font-semibold text-white">
               {formatCurrency(valuation.pricePerM2)}
             </div>
             <div className={`flex items-center gap-1 text-sm mt-1 ${
@@ -409,7 +409,7 @@ export default function PropertyValuator() {
               <BarChart3 className="w-4 h-4" />
               Trhový priemer v {city.replace(/_/g, " ")}
             </div>
-            <div className="text-xl font-bold text-white">
+            <div className="text-base font-semibold text-white">
               {formatCurrency(MARKET_DATA[city][propertyType])}/m²
             </div>
             <div className="flex items-center gap-1 text-sm text-emerald-400 mt-1">

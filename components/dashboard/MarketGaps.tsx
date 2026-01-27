@@ -102,7 +102,7 @@ export function MarketGaps() {
             <TrendingDown className="w-6 h-6 text-emerald-400" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-zinc-100">Index skrytého potenciálu</h3>
+            <h3 className="text-base font-semibold text-zinc-100">Index skrytého potenciálu</h3>
             <p className="text-sm text-zinc-400">Detekcia podhodnotených nehnuteľností</p>
           </div>
         </div>
@@ -141,7 +141,7 @@ export function MarketGaps() {
             <TrendingDown className="w-6 h-6 text-emerald-400" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-zinc-100">Index skrytého potenciálu</h3>
+            <h3 className="text-base font-semibold text-zinc-100">Index skrytého potenciálu</h3>
             <p className="text-sm text-zinc-400">
               {gaps.length} {gaps.length === 1 ? "podhodnotená nehnuteľnosť" : "podhodnotených nehnuteľností"}
             </p>

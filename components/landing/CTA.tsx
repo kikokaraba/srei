@@ -14,7 +14,7 @@ export function CTA() {
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
         <div className="max-w-5xl mx-auto">
           {/* Glass card container */}
-          <div className="glass-card rounded-3xl p-8 sm:p-12 lg:p-16 text-center glow-emerald-soft">
+          <div className="glass-card rounded-xl p-8 sm:p-12 lg:p-16 text-center glow-emerald-soft">
             <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass border border-emerald-500/30 text-emerald-400 text-sm font-medium mb-8">
               <Sparkles className="w-4 h-4" />
               <span>Začnite ešte dnes</span>
@@ -38,7 +38,7 @@ export function CTA() {
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center items-center mb-12">
               <Link
                 href="/auth/signin"
-                className="group w-full sm:w-auto px-10 sm:px-14 py-5 sm:py-6 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold text-lg rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 glow-emerald"
+                className="group w-full sm:w-auto px-10 sm:px-14 py-5 sm:py-6 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold text-lg rounded-2xl transition-all duration-300 flex items-center justify-center gap-3  hover:shadow-emerald-500/50 hover:scale-105 glow-emerald"
               >
                 Začať 14 dní zdarma
                 <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />

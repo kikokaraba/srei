@@ -127,7 +127,7 @@ export function AIValuation() {
           <Sparkles className="w-5 h-5 text-violet-400" />
           <span className="text-violet-400 font-medium">Powered by Claude AI</span>
         </div>
-        <h2 className="text-2xl font-bold text-zinc-100">AI Ocenenie Nehnuteľnosti</h2>
+        <h2 className="text-lg font-semibold text-zinc-100">AI Ocenenie Nehnuteľnosti</h2>
         <p className="text-zinc-400 mt-2">
           Zadajte parametre a AI analyzuje podobné nehnuteľnosti v databáze
         </p>
@@ -402,19 +402,19 @@ export function AIValuation() {
               <h3 className="text-lg font-semibold text-zinc-100 mb-4">Porovnateľné nehnuteľnosti</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 bg-zinc-900/50 rounded-lg">
-                  <p className="text-2xl font-bold text-zinc-100">{result.comparables.count}</p>
+                  <p className="text-lg font-semibold text-zinc-100">{result.comparables.count}</p>
                   <p className="text-sm text-zinc-400">nehnuteľností</p>
                 </div>
                 <div className="text-center p-4 bg-zinc-900/50 rounded-lg">
-                  <p className="text-2xl font-bold text-zinc-100">€{result.comparables.avgPricePerM2.toLocaleString()}</p>
+                  <p className="text-lg font-semibold text-zinc-100">€{result.comparables.avgPricePerM2.toLocaleString()}</p>
                   <p className="text-sm text-zinc-400">priem. cena/m²</p>
                 </div>
                 <div className="text-center p-4 bg-zinc-900/50 rounded-lg">
-                  <p className="text-2xl font-bold text-zinc-100">€{(result.comparables.priceRange.min / 1000).toFixed(0)}k</p>
+                  <p className="text-lg font-semibold text-zinc-100">€{(result.comparables.priceRange.min / 1000).toFixed(0)}k</p>
                   <p className="text-sm text-zinc-400">min. cena</p>
                 </div>
                 <div className="text-center p-4 bg-zinc-900/50 rounded-lg">
-                  <p className="text-2xl font-bold text-zinc-100">€{(result.comparables.priceRange.max / 1000).toFixed(0)}k</p>
+                  <p className="text-lg font-semibold text-zinc-100">€{(result.comparables.priceRange.max / 1000).toFixed(0)}k</p>
                   <p className="text-sm text-zinc-400">max. cena</p>
                 </div>
               </div>

@@ -125,7 +125,7 @@ export default function PremiumGate({
             {/* CTA Button */}
             <button
               onClick={() => setShowUpgradeModal(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg shadow-amber-500/25"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 text-white font-medium rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all "
             >
               <Sparkles className="w-4 h-4" />
               Upgradovať na Premium

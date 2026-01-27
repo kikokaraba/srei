@@ -125,7 +125,7 @@ export function RecentProperties() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Home className="w-5 h-5 text-emerald-400" />
-          <h2 className="text-xl font-bold text-zinc-100">Nedávne nehnuteľnosti</h2>
+          <h2 className="text-base font-semibold text-zinc-100">Nedávne nehnuteľnosti</h2>
         </div>
         <button className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors">
           Zobraziť všetko →

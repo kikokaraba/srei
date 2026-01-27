@@ -111,19 +111,19 @@ export function LandingMap() {
         {/* Stats bar */}
         <div className="flex flex-wrap justify-center gap-6 sm:gap-10 mb-8">
           <div className="text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-white">
+            <div className="text-2xl sm:text-xl font-semibold text-white">
               {loading ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : totals.properties.toLocaleString()}
             </div>
             <div className="text-sm text-zinc-400">Nehnuteľností</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-emerald-400">
+            <div className="text-2xl sm:text-xl font-semibold text-emerald-400">
               {loading ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : totals.cities}
             </div>
             <div className="text-sm text-zinc-400">Miest</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-amber-400">
+            <div className="text-2xl sm:text-xl font-semibold text-amber-400">
               3×
             </div>
             <div className="text-sm text-zinc-400">Denne aktualizované</div>
@@ -131,7 +131,7 @@ export function LandingMap() {
         </div>
 
         {/* Map container */}
-        <div className="relative rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
+        <div className="relative rounded-2xl overflow-hidden border border-zinc-800 ">
           <div className="h-[400px] sm:h-[500px] lg:h-[550px]">
             <MapContainer
               center={[48.7, 19.5]}
@@ -205,7 +205,7 @@ export function LandingMap() {
             <div className="absolute bottom-4 right-4 z-[1000]">
               <Link
                 href="/auth/signin"
-                className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all hover:scale-105"
+                className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold rounded-xl  hover:shadow-emerald-500/50 transition-all hover:scale-105"
               >
                 <BarChart3 className="w-4 h-4" />
                 Otvoriť detailnú mapu

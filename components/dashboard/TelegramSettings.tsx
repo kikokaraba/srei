@@ -96,7 +96,7 @@ export function TelegramSettings() {
 
   if (isLoading) {
     return (
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-blue-950/20 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-[#0f0f0f] p-6">
         <div className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
         </div>
@@ -107,16 +107,16 @@ export function TelegramSettings() {
   // Not Pro - show upgrade prompt
   if (!status?.isPro) {
     return (
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-amber-950/20 p-6">
+      <div className="relative overflow-hidden rounded-2xl bg-[#0f0f0f] p-6">
         <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-10 bg-amber-500" />
         
         <div className="relative">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center">
               <Send className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <h2 className="text-base font-semibold text-white flex items-center gap-2">
                 Telegram Bot
                 <Crown className="w-5 h-5 text-amber-500" />
               </h2>
@@ -126,7 +126,7 @@ export function TelegramSettings() {
 
           <div className="bg-zinc-800/50 rounded-xl p-6 border border-zinc-700/50">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center shrink-0">
                 <Zap className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
@@ -157,7 +157,7 @@ export function TelegramSettings() {
                 </ul>
                 <a
                   href="/pricing"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 
                              text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-amber-500/25 transition-all"
                 >
                   <Crown className="w-5 h-5" />
@@ -173,16 +173,16 @@ export function TelegramSettings() {
 
   // Pro user - show Telegram settings
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-blue-950/20 p-6">
+    <div className="relative overflow-hidden rounded-2xl bg-[#0f0f0f] p-6">
       <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-10 bg-blue-500" />
       
       <div className="relative">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center">
             <Send className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <h2 className="text-base font-semibold text-white flex items-center gap-2">
               Telegram Bot
               <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs font-medium rounded-full">
                 Pro

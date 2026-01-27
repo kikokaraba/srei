@@ -155,7 +155,7 @@ export function SavedProperties({ onSelectProperty }: SavedPropertiesProps) {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Bookmark className="w-5 h-5 text-emerald-400" />
-          <h2 className="text-xl font-bold text-zinc-100">Sledované nehnuteľnosti</h2>
+          <h2 className="text-base font-semibold text-zinc-100">Sledované nehnuteľnosti</h2>
         </div>
         <span className="text-sm text-zinc-400">{savedProperties.length} uložených</span>
       </div>

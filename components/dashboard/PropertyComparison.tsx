@@ -154,7 +154,7 @@ export function PropertyComparison() {
                 <MapPin className="w-4 h-4" />
                 <span>{property.district}, {getCityRegionLabel(property.city)}</span>
               </div>
-              <div className="text-2xl font-bold text-zinc-100">
+              <div className="text-lg font-semibold text-zinc-100">
                 €{property.price.toLocaleString()}
               </div>
             </div>

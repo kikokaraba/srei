@@ -129,7 +129,7 @@ export const FairValueBadge = memo(function FairValueBadge({ propertyId, compact
       </button>
 
       {expanded && data.status !== "insufficient_data" && (
-        <div className="absolute top-full left-0 mt-2 z-50 w-64 bg-zinc-800 border border-zinc-700 rounded-xl p-4 shadow-xl">
+        <div className="absolute top-full left-0 mt-2 z-50 w-64 bg-zinc-800 border border-zinc-700 rounded-xl p-4 ">
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-zinc-400 text-sm">Aktuálna cena</span>
@@ -154,7 +154,7 @@ export const FairValueBadge = memo(function FairValueBadge({ propertyId, compact
       )}
 
       {expanded && data.status === "insufficient_data" && (
-        <div className="absolute top-full left-0 mt-2 z-50 w-48 bg-zinc-800 border border-zinc-700 rounded-xl p-3 shadow-xl">
+        <div className="absolute top-full left-0 mt-2 z-50 w-48 bg-zinc-800 border border-zinc-700 rounded-xl p-3 ">
           <p className="text-sm text-zinc-400">{data.message}</p>
         </div>
       )}

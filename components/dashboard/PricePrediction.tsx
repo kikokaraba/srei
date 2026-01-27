@@ -135,7 +135,7 @@ export function PricePrediction() {
             <Brain className="w-6 h-6 text-purple-400" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-zinc-100">AI Predikcie cien</h2>
+            <h2 className="text-base font-semibold text-zinc-100">AI Predikcie cien</h2>
             <p className="text-sm text-zinc-400">Analýza trendov a predpovede vývoja trhu</p>
           </div>
         </div>
@@ -176,13 +176,13 @@ export function PricePrediction() {
             <div className="grid grid-cols-2 gap-2 sm:gap-4">
               <div className="p-3 lg:p-4 bg-zinc-800/50 rounded-lg">
                 <div className="text-xs lg:text-sm text-zinc-400">Cena/m²</div>
-                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-zinc-100">
+                <div className="text-lg sm:text-xl lg:text-lg font-semibold text-zinc-100">
                   €{cityData.stats.avgPricePerM2.toLocaleString()}
                 </div>
               </div>
               <div className="p-3 lg:p-4 bg-zinc-800/50 rounded-lg">
                 <div className="text-xs lg:text-sm text-zinc-400">Nehnuteľností</div>
-                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-zinc-100">
+                <div className="text-lg sm:text-xl lg:text-lg font-semibold text-zinc-100">
                   {cityData.stats.totalProperties}
                 </div>
               </div>
@@ -228,7 +228,7 @@ export function PricePrediction() {
                     Spoľahlivosť: {cityData.predictions["6m"].confidence}%
                   </span>
                 </div>
-                <div className="text-3xl font-bold text-zinc-100">
+                <div className="text-xl font-semibold text-zinc-100">
                   €{cityData.predictions["6m"].predictedPricePerM2.toLocaleString()}
                 </div>
                 <div className="mt-2 h-2 bg-zinc-800 rounded-full overflow-hidden">
@@ -247,7 +247,7 @@ export function PricePrediction() {
                     Spoľahlivosť: {cityData.predictions["1y"].confidence}%
                   </span>
                 </div>
-                <div className="text-3xl font-bold text-zinc-100">
+                <div className="text-xl font-semibold text-zinc-100">
                   €{cityData.predictions["1y"].predictedPricePerM2.toLocaleString()}
                 </div>
                 <div className="mt-2 h-2 bg-zinc-800 rounded-full overflow-hidden">

@@ -155,7 +155,7 @@ export function PropertyTimeline({ propertyId, onClose }: PropertyTimelineProps)
       <div className="p-6 border-b border-zinc-800">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-xl font-bold text-zinc-100 mb-1">
+            <h2 className="text-base font-semibold text-zinc-100 mb-1">
               {data.property.title}
             </h2>
             <p className="text-zinc-400">

@@ -109,7 +109,7 @@ export function MarketHistory() {
     return (
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center">
         <Clock className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-        <h3 className="text-xl font-bold text-zinc-300 mb-2">Zatiaľ žiadne historické dáta</h3>
+        <h3 className="text-base font-semibold text-zinc-300 mb-2">Zatiaľ žiadne historické dáta</h3>
         <p className="text-zinc-400">
           Historické dáta sa zobrazia po tom, čo začneme sledovať nehnuteľnosti a niektoré sa predajú alebo odstránia z trhu.
         </p>
@@ -126,7 +126,7 @@ export function MarketHistory() {
             <Home className="w-5 h-5" />
             <span className="text-sm">Predaných/Odstránených</span>
           </div>
-          <div className="text-3xl font-bold text-zinc-100">
+          <div className="text-xl font-semibold text-zinc-100">
             {data.totalSold}
           </div>
         </div>
@@ -136,7 +136,7 @@ export function MarketHistory() {
             <Clock className="w-5 h-5" />
             <span className="text-sm">Priem. dní na trhu</span>
           </div>
-          <div className="text-3xl font-bold text-purple-400">
+          <div className="text-xl font-semibold text-purple-400">
             {data.avgDaysOnMarket}
           </div>
         </div>
@@ -146,7 +146,7 @@ export function MarketHistory() {
             <Euro className="w-5 h-5" />
             <span className="text-sm">Priem. zmena ceny</span>
           </div>
-          <div className={`text-3xl font-bold flex items-center gap-1 ${
+          <div className={`text-xl font-semibold flex items-center gap-1 ${
             data.avgPriceChange < 0 ? "text-emerald-400" : data.avgPriceChange > 0 ? "text-red-400" : "text-zinc-400"
           }`}>
             {data.avgPriceChange < 0 ? (
@@ -167,7 +167,7 @@ export function MarketHistory() {
             )}
             <span className="text-sm">Priem. zmena %</span>
           </div>
-          <div className={`text-3xl font-bold ${
+          <div className={`text-xl font-semibold ${
             data.avgPriceChangePercent < 0 ? "text-emerald-400" : data.avgPriceChangePercent > 0 ? "text-red-400" : "text-zinc-400"
           }`}>
             {data.avgPriceChangePercent > 0 ? "+" : ""}{data.avgPriceChangePercent.toFixed(1)}%
