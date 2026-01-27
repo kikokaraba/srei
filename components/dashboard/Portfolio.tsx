@@ -103,6 +103,7 @@ export function Portfolio() {
   const [metrics, setMetrics] = useState<PortfolioMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<PortfolioProperty | null>(null);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
 
@@ -302,13 +303,26 @@ export function Portfolio() {
       )}
 
       {/* Property Detail Modal */}
-      {selectedProperty && (
+      {selectedProperty && !showEditModal && (
         <PropertyDetailModal
           property={selectedProperty}
           onClose={() => setSelectedProperty(null)}
           onUpdate={fetchPortfolio}
           onDelete={() => handleDeleteProperty(selectedProperty.id)}
+          onEdit={() => setShowEditModal(true)}
           onAddTransaction={() => setShowTransactionModal(true)}
+        />
+      )}
+
+      {/* Edit Property Modal */}
+      {showEditModal && selectedProperty && (
+        <EditPropertyModal
+          property={selectedProperty}
+          onClose={() => setShowEditModal(false)}
+          onSuccess={() => {
+            setShowEditModal(false);
+            fetchPortfolio();
+          }}
         />
       )}
 
@@ -737,17 +751,324 @@ function AddPropertyModal({
   );
 }
 
+function EditPropertyModal({
+  property,
+  onClose,
+  onSuccess,
+}: {
+  property: PortfolioProperty;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: property.name,
+    address: property.address,
+    city: property.city,
+    district: property.district || "",
+    propertyType: property.propertyType,
+    area_m2: property.area_m2.toString(),
+    rooms: property.rooms?.toString() || "",
+    purchaseDate: property.purchaseDate.split("T")[0],
+    purchasePrice: property.purchasePrice.toString(),
+    purchaseCosts: property.purchaseCosts.toString(),
+    currentValue: property.currentValue.toString(),
+    hasMortgage: property.hasMortgage,
+    mortgageAmount: property.mortgageAmount?.toString() || "",
+    mortgageRate: property.mortgageRate?.toString() || "",
+    mortgagePayment: property.mortgagePayment?.toString() || "",
+    isRented: property.isRented,
+    monthlyRent: property.monthlyRent?.toString() || "",
+    monthlyExpenses: property.monthlyExpenses.toString(),
+    notes: property.notes || "",
+    status: property.status,
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await fetch(`/api/v1/portfolio/${property.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          area_m2: parseFloat(formData.area_m2) || 0,
+          rooms: formData.rooms ? parseInt(formData.rooms) : null,
+          purchasePrice: parseFloat(formData.purchasePrice) || 0,
+          purchaseCosts: parseFloat(formData.purchaseCosts) || 0,
+          currentValue: parseFloat(formData.currentValue) || 0,
+          mortgageAmount: formData.hasMortgage ? parseFloat(formData.mortgageAmount) || null : null,
+          mortgageRate: formData.hasMortgage ? parseFloat(formData.mortgageRate) || null : null,
+          mortgagePayment: formData.hasMortgage ? parseFloat(formData.mortgagePayment) || null : null,
+          monthlyRent: formData.isRented ? parseFloat(formData.monthlyRent) || null : null,
+          monthlyExpenses: parseFloat(formData.monthlyExpenses) || 0,
+        }),
+      });
+
+      if (res.ok) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error("Error updating property:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-[#0f0f0f] rounded-xl border border-zinc-800/50 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="p-5 border-b border-zinc-800/50 flex items-center justify-between sticky top-0 bg-[#0f0f0f]">
+          <h3 className="text-base font-medium text-zinc-100">Upraviť nehnuteľnosť</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-500 hover:text-zinc-200 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-5 space-y-5">
+          {/* Status */}
+          <div>
+            <label className="block text-sm text-zinc-400 mb-1">Stav</label>
+            <select
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
+            >
+              <option value="OWNED">Vlastním</option>
+              <option value="SOLD">Predané</option>
+              <option value="PENDING">Čakajúce</option>
+            </select>
+          </div>
+
+          {/* Basic Info */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-medium text-zinc-400 uppercase tracking-wide flex items-center gap-2">
+              <Home className="w-3.5 h-3.5 text-emerald-400" />
+              Základné údaje
+            </h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <label className="block text-sm text-zinc-400 mb-1">Názov *</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm text-zinc-400 mb-1">Adresa *</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">Región</label>
+                <select
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
+                >
+                  {REGION_OPTIONS.map((region) => (
+                    <option key={region.value} value={region.value}>{region.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">Typ</label>
+                <select
+                  value={formData.propertyType}
+                  onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
+                >
+                  {Object.entries(PROPERTY_TYPE_LABELS).map(([key, label]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">Plocha (m²)</label>
+                <input
+                  type="number"
+                  value={formData.area_m2}
+                  onChange={(e) => setFormData({ ...formData, area_m2: e.target.value })}
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">Počet izieb</label>
+                <input
+                  type="number"
+                  value={formData.rooms}
+                  onChange={(e) => setFormData({ ...formData, rooms: e.target.value })}
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Financial Info */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-medium text-zinc-400 uppercase tracking-wide flex items-center gap-2">
+              <Euro className="w-3.5 h-3.5 text-emerald-400" />
+              Financie
+            </h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">Kúpna cena (€)</label>
+                <input
+                  type="number"
+                  value={formData.purchasePrice}
+                  onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value })}
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">Aktuálna hodnota (€)</label>
+                <input
+                  type="number"
+                  value={formData.currentValue}
+                  onChange={(e) => setFormData({ ...formData, currentValue: e.target.value })}
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Mortgage */}
+          <div className="space-y-4">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.hasMortgage}
+                onChange={(e) => setFormData({ ...formData, hasMortgage: e.target.checked })}
+                className="w-5 h-5 rounded border-zinc-600 bg-zinc-700 text-emerald-500"
+              />
+              <span className="font-medium text-zinc-100">Mám hypotéku</span>
+            </label>
+            {formData.hasMortgage && (
+              <div className="grid grid-cols-3 gap-4 pl-8">
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-1">Zostatok (€)</label>
+                  <input
+                    type="number"
+                    value={formData.mortgageAmount}
+                    onChange={(e) => setFormData({ ...formData, mortgageAmount: e.target.value })}
+                    className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-1">Úrok (%)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.mortgageRate}
+                    onChange={(e) => setFormData({ ...formData, mortgageRate: e.target.value })}
+                    className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-1">Splátka (€/mes)</label>
+                  <input
+                    type="number"
+                    value={formData.mortgagePayment}
+                    onChange={(e) => setFormData({ ...formData, mortgagePayment: e.target.value })}
+                    className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Rental */}
+          <div className="space-y-4">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.isRented}
+                onChange={(e) => setFormData({ ...formData, isRented: e.target.checked })}
+                className="w-5 h-5 rounded border-zinc-600 bg-zinc-700 text-emerald-500"
+              />
+              <span className="font-medium text-zinc-100">Prenajímam</span>
+            </label>
+            {formData.isRented && (
+              <div className="grid grid-cols-2 gap-4 pl-8">
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-1">Mesačný nájom (€)</label>
+                  <input
+                    type="number"
+                    value={formData.monthlyRent}
+                    onChange={(e) => setFormData({ ...formData, monthlyRent: e.target.value })}
+                    className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-1">Mesačné náklady (€)</label>
+                  <input
+                    type="number"
+                    value={formData.monthlyExpenses}
+                    onChange={(e) => setFormData({ ...formData, monthlyExpenses: e.target.value })}
+                    className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="block text-sm text-zinc-400 mb-1">Poznámky</label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              rows={3}
+              className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-zinc-700 transition-colors"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4 border-t border-zinc-800/50">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-200 rounded-lg hover:bg-zinc-800/50 transition-colors"
+            >
+              Zrušiť
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              Uložiť zmeny
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function PropertyDetailModal({
   property,
   onClose,
   onUpdate,
   onDelete,
+  onEdit,
   onAddTransaction,
 }: {
   property: PortfolioProperty;
   onClose: () => void;
   onUpdate: () => void;
   onDelete: () => void;
+  onEdit: () => void;
   onAddTransaction: () => void;
 }) {
   const appreciation = property.currentValue - property.purchasePrice;
@@ -925,12 +1246,21 @@ function PropertyDetailModal({
               <Trash2 className="w-3.5 h-3.5" />
               Vymazať
             </button>
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-200 rounded-lg hover:bg-zinc-800/50 transition-colors"
-            >
-              Zavrieť
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={onEdit}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-100 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
+              >
+                <Edit className="w-3.5 h-3.5" />
+                Upraviť
+              </button>
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-200 rounded-lg hover:bg-zinc-800/50 transition-colors"
+              >
+                Zavrieť
+              </button>
+            </div>
           </div>
         </div>
       </div>
