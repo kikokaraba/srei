@@ -91,17 +91,28 @@ export default function DataManagementPage() {
       });
       const startData = await startRes.json();
 
-      if (!startData.success || !startData.runId) {
+      if (!startData.success) {
         throw new Error(startData.error || "Nepodarilo sa spustiť scraping");
       }
 
-      const runId = startData.runId;
-      addLog(`✅ Apify run spustený: ${runId}`);
+      // API vracia runs ako array
+      const runs = startData.runs || [];
+      if (runs.length === 0) {
+        throw new Error("Žiadne Apify runs neboli spustené");
+      }
+
+      const firstRun = runs[0];
+      const runId = firstRun.runId;
+      addLog(`✅ Apify run spustený: ${runId} (${firstRun.urlCount} URL)`);
+      
+      if (runs.length > 1) {
+        addLog(`📋 Spustených ${runs.length} runov celkovo`);
+      }
       
       setCurrentRun({
         runId,
         status: "running",
-        portal: "nehnutelnosti",
+        portal: firstRun.portal || "nehnutelnosti",
         startedAt: new Date().toISOString()
       });
 
