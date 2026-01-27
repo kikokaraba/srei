@@ -176,6 +176,7 @@ interface BatchMetrics {
 interface Filters {
   search: string;
   region: string;
+  city: string;
   listingType: string;
   source: string;
   minPrice: string;
@@ -190,9 +191,19 @@ interface Filters {
   sortOrder: string;
 }
 
+// Hlavné mestá pre filter
+const CITIES = [
+  "Bratislava", "Košice", "Prešov", "Žilina", "Nitra", "Banská Bystrica",
+  "Trnava", "Trenčín", "Martin", "Poprad", "Zvolen", "Považská Bystrica",
+  "Michalovce", "Spišská Nová Ves", "Komárno", "Levice", "Humenné",
+  "Bardejov", "Liptovský Mikuláš", "Ružomberok", "Piešťany", "Topoľčany",
+  "Dubnica nad Váhom", "Čadca", "Dunajská Streda", "Pezinok", "Senec"
+];
+
 const defaultFilters: Filters = {
   search: "",
   region: "",
+  city: "",
   listingType: "PREDAJ",
   source: "",
   minPrice: "",
@@ -248,7 +259,10 @@ export function PropertyList() {
       if (filters.listingType) params.append("listingType", filters.listingType);
       if (filters.source) params.append("source", filters.source);
       
-      if (filters.region) {
+      // City má prednosť pred region
+      if (filters.city) {
+        params.append("city", filters.city);
+      } else if (filters.region) {
         const region = REGIONS.find(r => r.value === filters.region);
         if (region) {
           params.append("cities", region.cities.join(","));
@@ -367,6 +381,7 @@ export function PropertyList() {
     let count = 0;
     if (filters.search) count++;
     if (filters.region) count++;
+    if (filters.city) count++;
     if (filters.source) count++;
     if (filters.minPrice) count++;
     if (filters.maxPrice) count++;
@@ -517,6 +532,24 @@ export function PropertyList() {
               {REGIONS.map((region) => (
                 <option key={region.value} value={region.value}>
                   {region.label}
+                </option>
+              ))}
+            </select>
+
+            {/* City */}
+            <select
+              value={filters.city}
+              onChange={(e) => {
+                handleFilterChange("city", e.target.value);
+                // Reset region keď vyberieme mesto
+                if (e.target.value) handleFilterChange("region", "");
+              }}
+              className="px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-zinc-300 text-sm focus:outline-none focus:border-zinc-700 min-w-[140px] cursor-pointer"
+            >
+              <option value="">Všetky mestá</option>
+              {CITIES.map((city) => (
+                <option key={city} value={city}>
+                  {city}
                 </option>
               ))}
             </select>
