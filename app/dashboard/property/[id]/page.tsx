@@ -617,93 +617,152 @@ export default function PropertyDetailPage() {
             </div>
           )}
 
-          {/* Duplicates & Cross-Portal Analysis */}
+          {/* Cross-Portal Price Comparison - "Dostupné u partnerov" */}
           {duplicates && duplicates.count > 1 && (
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-6">
-              <h2 className="text-lg font-bold text-amber-400 mb-4 flex items-center gap-2">
-                <Copy className="w-5 h-5" />
-                Nájdené na {duplicates.count} portáloch
-              </h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+              {/* Header s potenciálnou úsporou */}
+              <div className="p-4 sm:p-6 border-b border-slate-700/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <p className="text-sm text-slate-400 mb-2">Portály:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {duplicates.sources.map((source) => (
-                      <span key={source} className="px-3 py-1 bg-slate-800 rounded-lg text-sm text-white">
-                        {source}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-400 mb-2">Cenové rozpätie:</p>
-                  <p className="text-white">
-                    €{duplicates.priceRange.min.toLocaleString()} – €{duplicates.priceRange.max.toLocaleString()}
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Users className="w-5 h-5 text-blue-400" />
+                    Dostupné u partnerov
+                  </h2>
+                  <p className="text-sm text-slate-400 mt-1">
+                    Rovnaká nehnuteľnosť na {duplicates.count} portáloch
                   </p>
-                  {duplicates.savings && duplicates.savings > 0 && (
-                    <p className="text-emerald-400 text-sm mt-1">
-                      Potenciálna úspora: €{duplicates.savings.toLocaleString()}
-                    </p>
-                  )}
                 </div>
+                {duplicates.savings && duplicates.savings > 0 && (
+                  <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 border border-emerald-500/30 rounded-xl">
+                    <PiggyBank className="w-5 h-5 text-emerald-400" />
+                    <div>
+                      <p className="text-xs text-emerald-300">Ušetri až</p>
+                      <p className="text-lg font-bold text-emerald-400">
+                        €{duplicates.savings.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
-
-              {/* List of duplicate listings with links */}
-              <div className="mb-4">
-                <p className="text-sm text-slate-400 mb-3">Podobné inzeráty:</p>
-                <div className="space-y-2">
-                  {duplicates.duplicates.map((dup) => (
-                    <div 
-                      key={dup.id} 
-                      className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition-colors"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 bg-slate-700 rounded text-xs text-slate-300">
-                            {dup.source}
-                          </span>
-                          <span className="text-white font-medium truncate">
-                            €{dup.price.toLocaleString()}
-                          </span>
-                          {dup.price === duplicates.priceRange.min && dup.price < property.price && (
-                            <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded text-xs">
-                              Najlacnejší
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-slate-400 truncate mt-1">{dup.title}</p>
+              
+              {/* Porovnanie cien - karty */}
+              <div className="p-4 sm:p-6">
+                <div className="space-y-3">
+                  {/* Aktuálny inzerát */}
+                  <div className="flex items-center justify-between p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                        <Home className="w-5 h-5 text-blue-400" />
                       </div>
-                      <div className="flex items-center gap-2 ml-4">
-                        <Link
-                          href={`/dashboard/property/${dup.id}`}
-                          className="p-2 rounded-lg bg-slate-700 text-slate-300 hover:text-white hover:bg-slate-600 transition-colors"
-                          title="Zobraziť v aplikácii"
-                        >
-                          <Home className="w-4 h-4" />
-                        </Link>
-                        {dup.source_url && (
-                          <a
-                            href={dup.source_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                            title="Otvoriť originálny inzerát"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
-                        )}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-blue-500/30 rounded text-xs text-blue-300 font-medium">
+                            {property.source}
+                          </span>
+                          <span className="text-xs text-blue-400">Práve prezeráte</span>
+                        </div>
+                        <p className="text-xl font-bold text-white mt-1">
+                          €{property.price.toLocaleString()}
+                        </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
 
-              <div className="p-3 bg-amber-500/10 rounded-lg">
-                <p className="text-sm text-amber-200">
-                  💡 <strong>Tip:</strong> Táto nehnuteľnosť je inzerovaná na viacerých portáloch. 
-                  Porovnaj ceny a kontaktuj predajcu cez portál s najnižšou cenou.
-                </p>
+                  {/* Ostatné portály */}
+                  {[...duplicates.duplicates]
+                    .sort((a, b) => a.price - b.price)
+                    .map((dup, index) => {
+                      const isLowest = dup.price === duplicates.priceRange.min;
+                      const priceDiff = property.price - dup.price;
+                      const priceDiffPercent = ((priceDiff / property.price) * 100).toFixed(1);
+                      
+                      return (
+                        <div 
+                          key={dup.id}
+                          className={`flex items-center justify-between p-4 rounded-xl transition-all ${
+                            isLowest 
+                              ? "bg-emerald-500/10 border-2 border-emerald-500/50 shadow-lg shadow-emerald-500/10" 
+                              : "bg-slate-800/50 border border-slate-700/50 hover:border-slate-600"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                              isLowest ? "bg-emerald-500/20" : "bg-slate-700"
+                            }`}>
+                              <span className="text-lg font-bold text-white">
+                                {index + 1}
+                              </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                  isLowest 
+                                    ? "bg-emerald-500/30 text-emerald-300" 
+                                    : "bg-slate-700 text-slate-300"
+                                }`}>
+                                  {dup.source}
+                                </span>
+                                {isLowest && (
+                                  <span className="px-2 py-0.5 bg-emerald-500 text-white rounded text-xs font-bold animate-pulse">
+                                    🏆 NAJLEPŠIA CENA
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xl font-bold text-white mt-1">
+                                €{dup.price.toLocaleString()}
+                                {priceDiff > 0 && (
+                                  <span className="text-sm font-normal text-emerald-400 ml-2">
+                                    -{priceDiffPercent}%
+                                  </span>
+                                )}
+                                {priceDiff < 0 && (
+                                  <span className="text-sm font-normal text-red-400 ml-2">
+                                    +{Math.abs(priceDiff).toLocaleString()}€
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 ml-3">
+                            <Link
+                              href={`/dashboard/property/${dup.id}`}
+                              className="p-2.5 rounded-lg bg-slate-700 text-slate-300 hover:text-white hover:bg-slate-600 transition-colors"
+                              title="Detail v SRIA"
+                            >
+                              <Home className="w-4 h-4" />
+                            </Link>
+                            {dup.source_url && (
+                              <a
+                                href={dup.source_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`p-2.5 rounded-lg transition-colors ${
+                                  isLowest 
+                                    ? "bg-emerald-500 text-white hover:bg-emerald-600" 
+                                    : "bg-blue-600 text-white hover:bg-blue-700"
+                                }`}
+                                title="Otvoriť na portáli"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+
+                {/* Insight */}
+                <div className="mt-4 p-4 bg-gradient-to-r from-blue-500/10 to-emerald-500/10 border border-blue-500/20 rounded-xl">
+                  <p className="text-sm text-slate-300">
+                    <strong className="text-white">💡 Investorský tip:</strong> Tá istá nehnuteľnosť môže mať rôzne ceny 
+                    podľa toho, či ju predáva majiteľ (Bazoš) alebo realitka (Reality.sk). 
+                    {duplicates.savings && duplicates.savings > 1000 && (
+                      <span className="text-emerald-400 font-medium">
+                        {" "}Tu môžete ušetriť €{duplicates.savings.toLocaleString()} ak pôjdete cez lacnejší portál!
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
             </div>
           )}

@@ -207,6 +207,16 @@ model Property {
   days_on_market    Int              @default(0) // Počet dní v ponuke
   first_listed_at   DateTime?        // Kedy bol prvýkrát zverejnený
   
+  // Fotky a médiá
+  photos            String           @db.Text @default("[]") // JSON array of photo URLs
+  thumbnail_url     String?          // Hlavná fotka pre rýchle načítanie
+  photo_count       Int              @default(0) // Počet fotiek pre matching
+  
+  // Kontaktné údaje pre matching duplicít
+  seller_name       String?          // Meno predávajúceho
+  seller_phone      String?          // Telefón (normalizovaný)
+  seller_type       String?          // "owner", "agency", "developer"
+  
   // Monitoring fields for smart refresh system
   last_seen_at      DateTime         @default(now()) // Kedy bol naposledy videný pri scrapingu
   status            ListingStatus    @default(ACTIVE) // Stav inzerátu
@@ -861,6 +871,45 @@ model ScraperRun {
   
   @@index([source, startedAt])
   @@index([status, startedAt])
+}
+
+// Dead Letter Queue - zlyhaní záznamy pre analýzu
+model FailedScrape {
+  id              String   @id @default(cuid())
+  scraperRunId    String?  // Prepojenie na ScraperRun
+  
+  // Identifikácia
+  externalId      String   // ID z portálu
+  source          String   // "BAZOS", "NEHNUTELNOSTI"
+  sourceUrl       String   @db.Text
+  
+  // Dôvod zlyhania
+  failReason      String   // "INVALID_PRICE", "MISSING_CITY", "DATABASE_ERROR", etc.
+  errorMessage    String   @db.Text
+  errorCode       String?  // Špecifický kód chyby (napr. "P2002" pre Prisma unique constraint)
+  
+  // Surové dáta pre analýzu
+  rawData         String   @db.Text  // JSON - celý ScrapedProperty objekt
+  
+  // Metadata
+  title           String?
+  price           Float?
+  areaM2          Float?
+  city            String?
+  
+  // Pre opätovné spracovanie
+  retryCount      Int      @default(0)
+  lastRetryAt     DateTime?
+  resolved        Boolean  @default(false)  // Bol problém vyriešený?
+  resolvedAt      DateTime?
+  resolvedBy      String?  // "auto_retry", "schema_fix", "manual"
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([failReason, createdAt])
+  @@index([source, createdAt])
+  @@index([resolved, createdAt])
+  @@index([scraperRunId])
 }
 
 // Životný cyklus inzerátu - sledovanie vymazaných/ukončených inzerátov

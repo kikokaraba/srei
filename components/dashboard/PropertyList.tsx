@@ -26,7 +26,10 @@ import {
   Maximize2,
   DoorOpen,
   Zap,
+  ImageOff,
+  Camera,
 } from "lucide-react";
+import Image from "next/image";
 import { normalizeCityName, getCityInfo } from "@/lib/constants/cities";
 
 // Slovenské kraje
@@ -73,12 +76,73 @@ interface Property {
   is_distressed: boolean;
   days_on_market: number;
   listing_type: "PREDAJ";
-  source: "NEHNUTELNOSTI";
+  source: "NEHNUTELNOSTI" | "BAZOS" | "REALITY" | "TOPREALITY";
+  // Fotky
+  photos?: string;
+  thumbnail_url?: string | null;
+  photo_count?: number;
+  // Kontakt
+  seller_name?: string | null;
+  seller_phone?: string | null;
+  // Časové polia pre freshness
+  createdAt?: string;
+  updatedAt?: string;
+  last_seen_at?: string;
   investmentMetrics: {
     gross_yield: number;
     net_yield: number;
     cash_on_cash: number;
   } | null;
+}
+
+// Helper pre formatovanie relatívneho času
+function getRelativeTime(dateString: string | undefined): { text: string; isRecent: boolean; isVeryRecent: boolean } {
+  if (!dateString) return { text: "", isRecent: false, isVeryRecent: false };
+  
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  
+  // Veľmi čerstvé (do 30 minút)
+  if (diffMins < 30) {
+    return { 
+      text: diffMins <= 1 ? "Práve teraz" : `pred ${diffMins} min`, 
+      isRecent: true, 
+      isVeryRecent: true 
+    };
+  }
+  
+  // Čerstvé (do 2 hodín)
+  if (diffHours < 2) {
+    return { 
+      text: `pred ${diffMins} min`, 
+      isRecent: true, 
+      isVeryRecent: false 
+    };
+  }
+  
+  // Dnes
+  if (diffHours < 24) {
+    return { 
+      text: `pred ${diffHours} hod`, 
+      isRecent: diffHours < 6, 
+      isVeryRecent: false 
+    };
+  }
+  
+  // Včera alebo starší
+  if (diffDays === 1) {
+    return { text: "včera", isRecent: false, isVeryRecent: false };
+  }
+  
+  if (diffDays < 7) {
+    return { text: `pred ${diffDays} dňami`, isRecent: false, isVeryRecent: false };
+  }
+  
+  return { text: "", isRecent: false, isVeryRecent: false };
 }
 
 interface PriceHistoryPoint {
@@ -325,9 +389,50 @@ export function PropertyList() {
     return CONDITIONS.find((c) => c.value === condition)?.label || condition;
   };
 
+  // Helper pre získanie thumbnail URL
+  const getThumbnailUrl = (property: Property): string | null => {
+    // Prioritne thumbnail_url
+    if (property.thumbnail_url) {
+      return property.thumbnail_url;
+    }
+    // Fallback na prvú fotku z JSON poľa
+    if (property.photos) {
+      try {
+        const photosArray = JSON.parse(property.photos);
+        if (Array.isArray(photosArray) && photosArray.length > 0) {
+          return photosArray[0];
+        }
+      } catch {
+        // Ak photos nie je validné JSON, skús či to nie je samotná URL
+        if (property.photos.startsWith("http")) {
+          return property.photos;
+        }
+      }
+    }
+    return null;
+  };
+
   // Investor-focused badges
   const getPropertyBadges = (property: Property, metrics?: BatchMetrics) => {
     const badges: { icon: React.ReactNode; label: string; color: string; priority: number }[] = [];
+    
+    // Freshness Indicator - veľmi čerstvé (PRÁVE PRIDANÉ)
+    const freshness = getRelativeTime(property.last_seen_at || property.updatedAt);
+    if (freshness.isVeryRecent) {
+      badges.push({
+        icon: <Zap className="w-3 h-3" />,
+        label: freshness.text === "Práve teraz" ? "LIVE" : freshness.text.toUpperCase(),
+        color: "bg-gradient-to-r from-green-400 to-emerald-500 text-white animate-pulse",
+        priority: 0, // Najvyššia priorita
+      });
+    } else if (freshness.isRecent) {
+      badges.push({
+        icon: <Clock className="w-3 h-3" />,
+        label: freshness.text,
+        color: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
+        priority: 1,
+      });
+    }
     
     // Hot deal - significant price drop
     if (metrics?.priceStory?.totalChangePercent && metrics.priceStory.totalChangePercent <= -10) {
@@ -335,27 +440,27 @@ export function PropertyList() {
         icon: <Flame className="w-3 h-3" />,
         label: `${Math.abs(metrics.priceStory.totalChangePercent)}% zľava`,
         color: "bg-gradient-to-r from-orange-500 to-red-500 text-white",
-        priority: 1,
+        priority: 2,
       });
     }
     
-    // Fresh listing
-    if (property.days_on_market <= 3) {
+    // Fresh listing (fallback ak nemáme presný čas)
+    if (!freshness.isRecent && !freshness.isVeryRecent && property.days_on_market <= 1) {
       badges.push({
         icon: <Sparkles className="w-3 h-3" />,
         label: "Novinka",
         color: "bg-gradient-to-r from-violet-500 to-purple-500 text-white",
-        priority: 2,
+        priority: 3,
       });
     }
     
     // High yield
     if (property.investmentMetrics && property.investmentMetrics.gross_yield >= 6) {
       badges.push({
-        icon: <Zap className="w-3 h-3" />,
+        icon: <TrendingUp className="w-3 h-3" />,
         label: `${property.investmentMetrics.gross_yield.toFixed(1)}% výnos`,
         color: "bg-gradient-to-r from-emerald-500 to-teal-500 text-white",
-        priority: 3,
+        priority: 4,
       });
     }
     
@@ -363,9 +468,9 @@ export function PropertyList() {
     if (property.days_on_market >= 60) {
       badges.push({
         icon: <Clock className="w-3 h-3" />,
-        label: `${property.days_on_market}d`,
+        label: `${property.days_on_market}d v ponuke`,
         color: "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30",
-        priority: 4,
+        priority: 5,
       });
     }
     
@@ -375,7 +480,7 @@ export function PropertyList() {
         icon: <ArrowDownRight className="w-3 h-3" />,
         label: `${metrics.priceDrops}x znížené`,
         color: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
-        priority: 5,
+        priority: 6,
       });
     }
     
@@ -620,102 +725,133 @@ export function PropertyList() {
           </div>
         </div>
       ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5">
           {properties.map((property) => {
             const isSaved = savedIds.has(property.id);
             const isSaving = savingId === property.id;
             const metrics = batchMetrics[property.id];
             const badges = getPropertyBadges(property, metrics);
+            const thumbnailUrl = getThumbnailUrl(property);
 
             return (
               <div
                 key={property.id}
                 onClick={() => window.location.href = `/dashboard/property/${property.id}`}
-                className="group relative bg-slate-900/80 backdrop-blur rounded-2xl border border-slate-800/50 overflow-hidden hover:border-emerald-500/30 transition-all duration-300 cursor-pointer hover:shadow-lg hover:shadow-emerald-500/5"
+                className="group relative bg-slate-900/80 backdrop-blur rounded-xl sm:rounded-2xl border border-slate-800/50 overflow-hidden hover:border-emerald-500/30 transition-all duration-300 cursor-pointer hover:shadow-lg hover:shadow-emerald-500/5 active:scale-[0.98]"
               >
-                {/* Top Badges */}
-                {badges.length > 0 && (
-                  <div className="absolute top-3 left-3 z-10 flex gap-2">
-                    {badges.map((badge, i) => (
-                      <span key={i} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${badge.color}`}>
-                        {badge.icon}
-                        {badge.label}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Save Button */}
-                <button
-                  onClick={(e) => toggleSave(property.id, e)}
-                  disabled={isSaving}
-                  className={`absolute top-3 right-3 z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all ${
-                    isSaved
-                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25"
-                      : "bg-slate-800/80 backdrop-blur text-slate-400 hover:text-white hover:bg-slate-700"
-                  }`}
-                >
-                  {isSaving ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : isSaved ? (
-                    <BookmarkCheck className="w-4 h-4" />
+                {/* Photo Section - menšia výška na mobile */}
+                <div className="relative h-40 sm:h-48 bg-slate-800/50 overflow-hidden">
+                  {thumbnailUrl ? (
+                    <Image
+                      src={thumbnailUrl}
+                      alt={property.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      unoptimized // Použijeme external images
+                    />
                   ) : (
-                    <Bookmark className="w-4 h-4" />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600">
+                      <ImageOff className="w-12 h-12 mb-2" />
+                      <span className="text-xs">Bez fotky</span>
+                    </div>
                   )}
-                </button>
+                  
+                  {/* Photo Count Badge */}
+                  {property.photo_count && property.photo_count > 1 && (
+                    <div className="absolute bottom-3 right-3 flex items-center gap-1 px-2 py-1 bg-black/60 backdrop-blur rounded-lg text-xs text-white">
+                      <Camera className="w-3 h-3" />
+                      {property.photo_count}
+                    </div>
+                  )}
+                  
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+                  
+                  {/* Top Badges */}
+                  {badges.length > 0 && (
+                    <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-2">
+                      {badges.map((badge, i) => (
+                        <span key={i} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium shadow-lg ${badge.color}`}>
+                          {badge.icon}
+                          {badge.label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
-                {/* Card Content */}
-                <div className="p-5">
+                  {/* Save Button */}
+                  <button
+                    onClick={(e) => toggleSave(property.id, e)}
+                    disabled={isSaving}
+                    className={`absolute top-3 right-3 z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg ${
+                      isSaved
+                        ? "bg-emerald-500 text-white shadow-emerald-500/25"
+                        : "bg-black/50 backdrop-blur text-white hover:bg-black/70"
+                    }`}
+                  >
+                    {isSaving ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : isSaved ? (
+                      <BookmarkCheck className="w-4 h-4" />
+                    ) : (
+                      <Bookmark className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+
+                {/* Card Content - menší padding na mobile */}
+                <div className="p-3 sm:p-5">
                   {/* Location */}
-                  <div className="flex items-center gap-1.5 text-slate-400 text-sm mb-3">
-                    <MapPin className="w-3.5 h-3.5" />
+                  <div className="flex items-center gap-1.5 text-slate-400 text-xs sm:text-sm mb-2 sm:mb-3">
+                    <MapPin className="w-3 sm:w-3.5 h-3 sm:h-3.5 flex-shrink-0" />
                     <span className="truncate">{property.district}, {getRegionLabel(property.city)}</span>
                   </div>
 
                   {/* Title */}
-                  <h3 className="font-semibold text-white text-lg leading-tight mb-4 line-clamp-2 group-hover:text-emerald-400 transition-colors min-h-[3.5rem]">
+                  <h3 className="font-semibold text-white text-base sm:text-lg leading-tight mb-3 sm:mb-4 line-clamp-2 group-hover:text-emerald-400 transition-colors min-h-[2.5rem] sm:min-h-[3.5rem]">
                     {property.title}
                   </h3>
 
-                  {/* Key Metrics */}
-                  <div className="grid grid-cols-3 gap-3 mb-5">
-                    <div className="bg-slate-800/50 rounded-xl p-3 text-center">
-                      <div className="flex items-center justify-center gap-1 text-slate-400 text-xs mb-1">
-                        <Maximize2 className="w-3 h-3" />
+                  {/* Key Metrics - horizontálne scrollovateľné na mobile */}
+                  <div className="flex sm:grid sm:grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-5 overflow-x-auto pb-1 sm:pb-0 -mx-1 px-1 sm:mx-0 sm:px-0 scrollbar-hide">
+                    <div className="flex-shrink-0 bg-slate-800/50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center min-w-[70px] sm:min-w-0">
+                      <div className="flex items-center justify-center gap-1 text-slate-400 text-[10px] sm:text-xs mb-0.5 sm:mb-1">
+                        <Maximize2 className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
                         <span>Plocha</span>
                       </div>
-                      <p className="text-white font-semibold">{property.area_m2} m²</p>
+                      <p className="text-white font-semibold text-sm sm:text-base">{property.area_m2} m²</p>
                     </div>
-                    <div className="bg-slate-800/50 rounded-xl p-3 text-center">
-                      <div className="flex items-center justify-center gap-1 text-slate-400 text-xs mb-1">
-                        <DoorOpen className="w-3 h-3" />
+                    <div className="flex-shrink-0 bg-slate-800/50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center min-w-[60px] sm:min-w-0">
+                      <div className="flex items-center justify-center gap-1 text-slate-400 text-[10px] sm:text-xs mb-0.5 sm:mb-1">
+                        <DoorOpen className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
                         <span>Izby</span>
                       </div>
-                      <p className="text-white font-semibold">{property.rooms || "–"}</p>
+                      <p className="text-white font-semibold text-sm sm:text-base">{property.rooms || "–"}</p>
                     </div>
-                    <div className="bg-slate-800/50 rounded-xl p-3 text-center">
-                      <div className="flex items-center justify-center gap-1 text-slate-400 text-xs mb-1">
-                        <Home className="w-3 h-3" />
+                    <div className="flex-shrink-0 bg-slate-800/50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center min-w-[70px] sm:min-w-0">
+                      <div className="flex items-center justify-center gap-1 text-slate-400 text-[10px] sm:text-xs mb-0.5 sm:mb-1">
+                        <Home className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
                         <span>Stav</span>
                       </div>
-                      <p className="text-white font-semibold text-xs">{getConditionLabel(property.condition).split(" ")[0]}</p>
+                      <p className="text-white font-semibold text-[10px] sm:text-xs">{getConditionLabel(property.condition).split(" ")[0]}</p>
                     </div>
                   </div>
 
-                  {/* Price Section */}
-                  <div className="flex items-end justify-between pt-4 border-t border-slate-800/50">
+                  {/* Price Section - kompaktnejšie na mobile */}
+                  <div className="flex items-end justify-between pt-3 sm:pt-4 border-t border-slate-800/50">
                     <div>
-                      <p className="text-3xl font-bold text-white">
+                      <p className="text-2xl sm:text-3xl font-bold text-white">
                         €{property.price.toLocaleString()}
                       </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-sm text-slate-400">
+                      <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1">
+                        <span className="text-xs sm:text-sm text-slate-400">
                           €{property.price_per_m2.toLocaleString()}/m²
                         </span>
                         {/* Price History Mini */}
                         {metrics?.priceStory?.totalChangePercent && metrics.priceStory.totalChangePercent < 0 && (
-                          <span className="flex items-center gap-0.5 text-xs text-emerald-400">
-                            <TrendingDown className="w-3 h-3" />
+                          <span className="flex items-center gap-0.5 text-[10px] sm:text-xs text-emerald-400">
+                            <TrendingDown className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
                             {Math.abs(metrics.priceStory.totalChangePercent)}%
                           </span>
                         )}
@@ -772,111 +908,140 @@ export function PropertyList() {
             const isSaving = savingId === property.id;
             const metrics = batchMetrics[property.id];
             const badges = getPropertyBadges(property, metrics);
+            const thumbnailUrl = getThumbnailUrl(property);
 
             return (
               <div
                 key={property.id}
                 onClick={() => window.location.href = `/dashboard/property/${property.id}`}
-                className="group relative bg-slate-900/80 backdrop-blur rounded-xl border border-slate-800/50 p-5 hover:border-emerald-500/30 transition-all cursor-pointer hover:shadow-lg hover:shadow-emerald-500/5"
+                className="group relative bg-slate-900/80 backdrop-blur rounded-xl border border-slate-800/50 overflow-hidden hover:border-emerald-500/30 transition-all cursor-pointer hover:shadow-lg hover:shadow-emerald-500/5"
               >
-                <div className="flex items-center gap-6">
-                  {/* Left: Badges + Info */}
-                  <div className="flex-1 min-w-0">
-                    {/* Badges */}
-                    {badges.length > 0 && (
-                      <div className="flex gap-2 mb-2">
-                        {badges.map((badge, i) => (
-                          <span key={i} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${badge.color}`}>
-                            {badge.icon}
-                            {badge.label}
-                          </span>
-                        ))}
+                <div className="flex">
+                  {/* Thumbnail */}
+                  <div className="relative w-40 h-28 flex-shrink-0 bg-slate-800/50">
+                    {thumbnailUrl ? (
+                      <Image
+                        src={thumbnailUrl}
+                        alt={property.title}
+                        fill
+                        className="object-cover"
+                        sizes="160px"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-slate-600">
+                        <ImageOff className="w-8 h-8" />
                       </div>
                     )}
-                    
-                    {/* Title & Location */}
-                    <h3 className="font-semibold text-white truncate group-hover:text-emerald-400 transition-colors mb-1">
-                      {property.title}
-                    </h3>
-                    <div className="flex items-center gap-4 text-sm text-slate-400">
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5" />
-                        {property.district}, {getRegionLabel(property.city)}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Maximize2 className="w-3.5 h-3.5" />
-                        {property.area_m2} m²
-                      </span>
-                      {property.rooms && (
-                        <span className="flex items-center gap-1">
-                          <DoorOpen className="w-3.5 h-3.5" />
-                          {property.rooms} izby
-                        </span>
-                      )}
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        {property.days_on_market}d
-                      </span>
-                    </div>
+                    {/* Photo Count */}
+                    {property.photo_count && property.photo_count > 1 && (
+                      <div className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 bg-black/60 backdrop-blur rounded text-xs text-white">
+                        <Camera className="w-3 h-3" />
+                        {property.photo_count}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Right: Price + Yield */}
-                  <div className="flex items-center gap-6">
-                    {/* Price */}
-                    <div className="text-right min-w-[140px]">
-                      <p className="text-2xl font-bold text-white">
-                        €{property.price.toLocaleString()}
-                      </p>
-                      <p className="text-sm text-slate-400">
-                        €{property.price_per_m2.toLocaleString()}/m²
-                      </p>
+                  {/* Content */}
+                  <div className="flex-1 p-4 flex items-center gap-6 min-w-0">
+                    {/* Left: Badges + Info */}
+                    <div className="flex-1 min-w-0">
+                      {/* Badges */}
+                      {badges.length > 0 && (
+                        <div className="flex gap-2 mb-2">
+                          {badges.map((badge, i) => (
+                            <span key={i} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${badge.color}`}>
+                              {badge.icon}
+                              {badge.label}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* Title & Location */}
+                      <h3 className="font-semibold text-white truncate group-hover:text-emerald-400 transition-colors mb-1">
+                        {property.title}
+                      </h3>
+                      <div className="flex items-center gap-4 text-sm text-slate-400">
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5" />
+                          {property.district}, {getRegionLabel(property.city)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Maximize2 className="w-3.5 h-3.5" />
+                          {property.area_m2} m²
+                        </span>
+                        {property.rooms && (
+                          <span className="flex items-center gap-1">
+                            <DoorOpen className="w-3.5 h-3.5" />
+                            {property.rooms} izby
+                          </span>
+                        )}
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5" />
+                          {property.days_on_market}d
+                        </span>
+                      </div>
                     </div>
 
-                    {/* Yield */}
-                    {property.investmentMetrics && (
-                      <div className={`text-center px-4 py-2 rounded-xl min-w-[80px] ${
-                        property.investmentMetrics.gross_yield >= 6
-                          ? "bg-emerald-500/20 text-emerald-400"
-                          : "bg-slate-800/50 text-slate-400"
-                      }`}>
-                        <p className="text-xl font-bold flex items-center justify-center gap-1">
-                          <TrendingUp className="w-4 h-4" />
-                          {property.investmentMetrics.gross_yield.toFixed(1)}%
+                    {/* Right: Price + Yield */}
+                    <div className="flex items-center gap-6">
+                      {/* Price */}
+                      <div className="text-right min-w-[140px]">
+                        <p className="text-2xl font-bold text-white">
+                          €{property.price.toLocaleString()}
                         </p>
-                        <p className="text-xs opacity-70">výnos</p>
+                        <p className="text-sm text-slate-400">
+                          €{property.price_per_m2.toLocaleString()}/m²
+                        </p>
                       </div>
-                    )}
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={(e) => toggleSave(property.id, e)}
-                        disabled={isSaving}
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
-                          isSaved
-                            ? "bg-emerald-500 text-white"
-                            : "bg-slate-800 text-slate-400 hover:text-emerald-400"
-                        }`}
-                      >
-                        {isSaving ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : isSaved ? (
-                          <BookmarkCheck className="w-4 h-4" />
-                        ) : (
-                          <Bookmark className="w-4 h-4" />
-                        )}
-                      </button>
-                      {property.source_url && (
-                        <a
-                          href={property.source_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 hover:text-blue-400 transition-colors"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
+                      {/* Yield */}
+                      {property.investmentMetrics && (
+                        <div className={`text-center px-4 py-2 rounded-xl min-w-[80px] ${
+                          property.investmentMetrics.gross_yield >= 6
+                            ? "bg-emerald-500/20 text-emerald-400"
+                            : "bg-slate-800/50 text-slate-400"
+                        }`}>
+                          <p className="text-xl font-bold flex items-center justify-center gap-1">
+                            <TrendingUp className="w-4 h-4" />
+                            {property.investmentMetrics.gross_yield.toFixed(1)}%
+                          </p>
+                          <p className="text-xs opacity-70">výnos</p>
+                        </div>
                       )}
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => toggleSave(property.id, e)}
+                          disabled={isSaving}
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                            isSaved
+                              ? "bg-emerald-500 text-white"
+                              : "bg-slate-800 text-slate-400 hover:text-emerald-400"
+                          }`}
+                        >
+                          {isSaving ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : isSaved ? (
+                            <BookmarkCheck className="w-4 h-4" />
+                          ) : (
+                            <Bookmark className="w-4 h-4" />
+                          )}
+                        </button>
+                        {property.source_url && (
+                          <a
+                            href={property.source_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 hover:text-blue-400 transition-colors"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

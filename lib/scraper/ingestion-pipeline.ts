@@ -32,9 +32,19 @@ export interface ScrapedProperty {
   areaM2: number;
   city: string;
   district: string;
+  street?: string;
   rooms?: number;
+  floor?: number;
+  condition?: string;
   listingType: ListingType;
   sourceUrl: string;
+  
+  // Fotky
+  imageUrls?: string[];
+  
+  // Kontaktné údaje pre matching
+  sellerName?: string;
+  sellerPhone?: string;
 }
 
 export interface ValidationResult {
@@ -74,6 +84,168 @@ export interface IngestionError {
   sourceUrl: string;
   reason: SkipReason;
   message: string;
+  errorCode?: string;
+}
+
+// ==========================================
+// DEAD LETTER QUEUE
+// ==========================================
+
+/**
+ * Uloží zlyhaný záznam do Dead Letter Queue pre neskoršiu analýzu
+ */
+async function saveToDeadLetterQueue(
+  prop: ScrapedProperty,
+  reason: SkipReason,
+  message: string,
+  scraperRunId?: string,
+  errorCode?: string
+): Promise<void> {
+  try {
+    await prisma.failedScrape.create({
+      data: {
+        scraperRunId,
+        externalId: prop.externalId,
+        source: prop.source,
+        sourceUrl: prop.sourceUrl,
+        failReason: reason,
+        errorMessage: message,
+        errorCode,
+        rawData: JSON.stringify(prop),
+        title: prop.title?.substring(0, 200),
+        price: prop.price,
+        areaM2: prop.areaM2,
+        city: prop.city,
+      },
+    });
+  } catch (dlqError) {
+    // Ak zlyhá aj DLQ, aspoň logni do konzoly
+    console.error(`  ⚠️ DLQ save failed for ${prop.externalId}:`, dlqError);
+  }
+}
+
+/**
+ * Získa štatistiky z Dead Letter Queue
+ */
+export async function getDeadLetterQueueStats() {
+  const [total, byReason, unresolved, recentFailures] = await Promise.all([
+    prisma.failedScrape.count(),
+    prisma.failedScrape.groupBy({
+      by: ["failReason"],
+      _count: true,
+      orderBy: { _count: { failReason: "desc" } },
+    }),
+    prisma.failedScrape.count({ where: { resolved: false } }),
+    prisma.failedScrape.findMany({
+      where: { resolved: false },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        externalId: true,
+        source: true,
+        failReason: true,
+        errorMessage: true,
+        title: true,
+        price: true,
+        city: true,
+        createdAt: true,
+      },
+    }),
+  ]);
+
+  return {
+    total,
+    unresolved,
+    byReason: byReason.map((r) => ({
+      reason: r.failReason,
+      count: r._count,
+    })),
+    recentFailures,
+  };
+}
+
+/**
+ * Opätovne spracuje zlyhaní záznamy
+ */
+export async function retryFailedScrapes(limit = 50): Promise<{
+  attempted: number;
+  succeeded: number;
+  stillFailing: number;
+}> {
+  const failedScrapes = await prisma.failedScrape.findMany({
+    where: {
+      resolved: false,
+      retryCount: { lt: 3 }, // Max 3 pokusy
+    },
+    orderBy: { createdAt: "asc" },
+    take: limit,
+  });
+
+  let succeeded = 0;
+  let stillFailing = 0;
+
+  for (const failed of failedScrapes) {
+    try {
+      const prop: ScrapedProperty = JSON.parse(failed.rawData);
+      const dummyStats: IngestionStats = {
+        found: 0,
+        savedNew: 0,
+        savedUpdated: 0,
+        savedRelisted: 0,
+        skippedDuplicate: 0,
+        skippedInvalidPrice: 0,
+        skippedInvalidArea: 0,
+        skippedMissingCity: 0,
+        skippedBlocked: 0,
+        skippedValidation: 0,
+        skippedDbError: 0,
+        errors: [],
+      };
+
+      const result = await saveProperty(prop, dummyStats, undefined, true);
+      
+      if (result === "new" || result === "updated" || result === "duplicate" || result === "relisted") {
+        // Úspech!
+        await prisma.failedScrape.update({
+          where: { id: failed.id },
+          data: {
+            resolved: true,
+            resolvedAt: new Date(),
+            resolvedBy: "auto_retry",
+            retryCount: failed.retryCount + 1,
+            lastRetryAt: new Date(),
+          },
+        });
+        succeeded++;
+      } else {
+        // Stále zlyháva
+        await prisma.failedScrape.update({
+          where: { id: failed.id },
+          data: {
+            retryCount: failed.retryCount + 1,
+            lastRetryAt: new Date(),
+          },
+        });
+        stillFailing++;
+      }
+    } catch {
+      stillFailing++;
+      await prisma.failedScrape.update({
+        where: { id: failed.id },
+        data: {
+          retryCount: failed.retryCount + 1,
+          lastRetryAt: new Date(),
+        },
+      });
+    }
+  }
+
+  return {
+    attempted: failedScrapes.length,
+    succeeded,
+    stillFailing,
+  };
 }
 
 // ==========================================
@@ -229,19 +401,29 @@ function generateSlug(prop: ScrapedProperty): string {
  */
 async function saveProperty(
   prop: ScrapedProperty,
-  stats: IngestionStats
+  stats: IngestionStats,
+  scraperRunId?: string,
+  skipDLQ = false // Pri retry nechceme znovu ukladať do DLQ
 ): Promise<"new" | "updated" | "duplicate" | "relisted" | SkipReason> {
   try {
     // 1. Validácia
     const validation = validateProperty(prop);
     if (!validation.isValid) {
       const reason = validation.skipReason || "VALIDATION_ERROR";
+      const message = validation.errors.join("; ");
+      
       stats.errors.push({
         externalId: prop.externalId,
         sourceUrl: prop.sourceUrl,
         reason,
-        message: validation.errors.join("; "),
+        message,
       });
+      
+      // Uložiť do Dead Letter Queue (okrem duplicít - tie nie sú chyby)
+      if (!skipDLQ && reason !== "DUPLICATE") {
+        await saveToDeadLetterQueue(prop, reason, message, scraperRunId);
+      }
+      
       return reason;
     }
 
@@ -285,6 +467,10 @@ async function saveProperty(
         // Zaznamenaj re-listing
         await recordReListing(existingProperty.id, prop.price, existingProperty.status);
         
+        // Priprav fotky pre update
+        const photos = prop.imageUrls || [];
+        const thumbnailUrl = photos.length > 0 ? photos[0] : null;
+        
         // Aktualizuj nehnuteľnosť
         await prisma.$transaction([
           prisma.property.update({
@@ -297,6 +483,12 @@ async function saveProperty(
               external_id: prop.externalId, // Aktualizuj na nové ID
               source_url: prop.sourceUrl,
               updatedAt: new Date(),
+              // Aktualizuj fotky
+              ...(photos.length > 0 && {
+                photos: JSON.stringify(photos),
+                thumbnail_url: thumbnailUrl,
+                photo_count: photos.length,
+              }),
             },
           }),
           // Zaznamenaj novú cenu
@@ -312,6 +504,10 @@ async function saveProperty(
         return "relisted";
       }
 
+      // Priprav fotky pre update
+      const updatePhotos = prop.imageUrls || [];
+      const updateThumbnail = updatePhotos.length > 0 ? updatePhotos[0] : null;
+      
       // Štandardný update alebo duplicate
       if (existingProperty.price !== prop.price) {
         // Cena sa zmenila - aktualizuj a zaznamenaj históriu
@@ -324,6 +520,12 @@ async function saveProperty(
               last_seen_at: new Date(),
               status: "ACTIVE",
               updatedAt: new Date(),
+              // Aktualizuj fotky ak sú nové
+              ...(updatePhotos.length > 0 && {
+                photos: JSON.stringify(updatePhotos),
+                thumbnail_url: updateThumbnail,
+                photo_count: updatePhotos.length,
+              }),
             },
           }),
           prisma.priceHistory.create({
@@ -336,12 +538,18 @@ async function saveProperty(
         ]);
         return "updated";
       } else {
-        // Cena sa nezmenila - len aktualizuj last_seen_at a status
+        // Cena sa nezmenila - len aktualizuj last_seen_at, status a prípadne fotky
         await prisma.property.update({
           where: { id: existingProperty.id },
           data: { 
             last_seen_at: new Date(),
             status: "ACTIVE",
+            // Aktualizuj fotky ak existujúce nemá a nové má
+            ...(updatePhotos.length > 0 && {
+              photos: JSON.stringify(updatePhotos),
+              thumbnail_url: updateThumbnail,
+              photo_count: updatePhotos.length,
+            }),
           },
         });
         return "duplicate";
@@ -349,10 +557,11 @@ async function saveProperty(
     }
 
     // 3. Nová nehnuteľnosť
-    return await createNewProperty(prop, stats);
+    return await createNewProperty(prop, stats, scraperRunId, skipDLQ);
 
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown database error";
+    const errorCode = (error as { code?: string })?.code;
     
     let reason: SkipReason = "DATABASE_ERROR";
     if (message.includes("Unique constraint") && message.includes("slug")) {
@@ -364,7 +573,13 @@ async function saveProperty(
       sourceUrl: prop.sourceUrl,
       reason,
       message,
+      errorCode,
     });
+    
+    // Uložiť do Dead Letter Queue
+    if (!skipDLQ) {
+      await saveToDeadLetterQueue(prop, reason, message, scraperRunId, errorCode);
+    }
     
     return reason;
   }
@@ -375,7 +590,9 @@ async function saveProperty(
  */
 async function createNewProperty(
   prop: ScrapedProperty,
-  stats: IngestionStats
+  stats: IngestionStats,
+  scraperRunId?: string,
+  skipDLQ = false
 ): Promise<"new" | SkipReason> {
   try {
     const slug = generateSlug(prop);
@@ -388,6 +605,15 @@ async function createNewProperty(
     });
     
     const finalSlug = slugExists ? `${slug}-${Date.now().toString(36)}` : slug;
+    
+    // Priprav fotky
+    const photos = prop.imageUrls || [];
+    const thumbnailUrl = photos.length > 0 ? photos[0] : null;
+    
+    // Normalizuj telefón (odstráň medzery, pomlčky)
+    const normalizedPhone = prop.sellerPhone
+      ? prop.sellerPhone.replace(/[\s\-\(\)]/g, "").replace(/^\+421/, "0")
+      : null;
     
     // Vytvor nehnuteľnosť
     const newProperty = await prisma.property.create({
@@ -402,15 +628,24 @@ async function createNewProperty(
         area_m2: prop.areaM2,
         city: prop.city,
         district: prop.district || "",
+        street: prop.street,
         address,
         rooms: prop.rooms,
+        floor: prop.floor,
         listing_type: prop.listingType,
-        condition: "POVODNY",
+        condition: (prop.condition as "POVODNY" | "REKONSTRUKCIA" | "NOVOSTAVBA") || "POVODNY",
         energy_certificate: "NONE",
         source_url: prop.sourceUrl,
         last_seen_at: new Date(),
         first_listed_at: new Date(),
         status: "ACTIVE",
+        // Fotky
+        photos: JSON.stringify(photos),
+        thumbnail_url: thumbnailUrl,
+        photo_count: photos.length,
+        // Kontakt
+        seller_name: prop.sellerName?.substring(0, 100),
+        seller_phone: normalizedPhone,
       },
     });
     
@@ -441,6 +676,7 @@ async function createNewProperty(
     
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown database error";
+    const errorCode = (error as { code?: string })?.code;
     
     let reason: SkipReason = "DATABASE_ERROR";
     if (message.includes("Unique constraint") && message.includes("slug")) {
@@ -452,7 +688,13 @@ async function createNewProperty(
       sourceUrl: prop.sourceUrl,
       reason,
       message,
+      errorCode,
     });
+    
+    // Uložiť do Dead Letter Queue
+    if (!skipDLQ) {
+      await saveToDeadLetterQueue(prop, reason, message, scraperRunId, errorCode);
+    }
     
     return reason;
   }
@@ -543,7 +785,7 @@ export async function ingestProperties(
     
     // Spracuj dávku sekvenčne (pre stabilitu)
     for (const prop of batch) {
-      const result = await saveProperty(prop, stats);
+      const result = await saveProperty(prop, stats, run.id);
       
       switch (result) {
         case "new":

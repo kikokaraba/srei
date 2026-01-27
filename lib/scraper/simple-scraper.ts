@@ -18,9 +18,17 @@ export interface ScrapedProperty {
   areaM2: number;
   city: string;
   district: string;
+  street?: string;
   rooms?: number;
+  floor?: number;
+  condition?: string;
   listingType: ListingType;
   sourceUrl: string;
+  // Fotky
+  imageUrls?: string[];
+  // Kontakt
+  sellerName?: string;
+  sellerPhone?: string;
 }
 
 export interface ScrapeResult {
@@ -384,6 +392,20 @@ export async function scrapeBazos(options: {
           const roomsMatch = title.match(/(\d)\s*[-\s]?izb/i);
           const rooms = roomsMatch ? parseInt(roomsMatch[1], 10) : undefined;
           
+          // Fotky - hľadaj obrázky v containeri
+          const imageUrls: string[] = [];
+          $container.find("img").each((_, img) => {
+            const src = $(img).attr("src") || $(img).attr("data-src") || "";
+            // Filtruj len fotky inzerátov (nie ikony, loga)
+            if (src && (src.includes("img.bazos") || src.includes("reality.bazos")) && !src.includes("logo")) {
+              // Konvertuj thumbnail na väčšiu verziu ak je to možné
+              const fullSrc = src.replace("/thm/", "/img/").replace("_t.", ".");
+              if (!imageUrls.includes(fullSrc)) {
+                imageUrls.push(fullSrc);
+              }
+            }
+          });
+          
           foundOnPage++;
           
           properties.push({
@@ -399,6 +421,7 @@ export async function scrapeBazos(options: {
             rooms,
             listingType: category.listingType,
             sourceUrl: href.startsWith("http") ? href : `https://reality.bazos.sk${href}`,
+            imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
           });
           
         } catch (e) {
@@ -549,6 +572,25 @@ export async function scrapeNehnutelnosti(options: {
           const roomsMatch = containerText.match(/(\d)\s*[-\s]?izb/i);
           const rooms = roomsMatch ? parseInt(roomsMatch[1], 10) : undefined;
           
+          // Fotky - hľadaj obrázky v containeri
+          const imageUrls: string[] = [];
+          $container.find("img").each((_, img) => {
+            const src = $(img).attr("src") || $(img).attr("data-src") || "";
+            // Filtruj len fotky inzerátov (nie ikony, loga, placeholdery)
+            if (src && 
+                (src.includes("nehnutelnosti.sk") || src.includes("cdn.") || src.includes("images.")) && 
+                !src.includes("logo") && 
+                !src.includes("icon") &&
+                !src.includes("placeholder") &&
+                src.length > 30) {
+              // Skús získať väčšiu verziu ak je thumbnail
+              const fullSrc = src.replace("/thumb/", "/").replace("_thumb", "").replace("_small", "");
+              if (!imageUrls.includes(fullSrc)) {
+                imageUrls.push(fullSrc);
+              }
+            }
+          });
+          
           foundOnPage++;
           
           properties.push({
@@ -564,6 +606,7 @@ export async function scrapeNehnutelnosti(options: {
             rooms,
             listingType: "PREDAJ",
             sourceUrl: href.startsWith("http") ? href : `https://www.nehnutelnosti.sk${href}`,
+            imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
           });
           
         } catch (e) {
