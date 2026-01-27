@@ -171,7 +171,7 @@ async function pageFunction(context) {
         document.querySelectorAll('img[src*="img.nehnutelnosti.sk"]').forEach(img => {
             let src = img.src;
             // Upgrade na full quality
-            src = src.replace(/_thumb|_small|_medium|\/thumb\/|\/small\/|\/medium\//g, '/full/');
+            src = src.replace(/_thumb|_small|_medium/g, '_full');
             if (src && !photoUrls.includes(src) && !src.includes('logo') && !src.includes('icon')) {
                 photoUrls.push(src);
             }
