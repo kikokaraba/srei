@@ -12,35 +12,36 @@ import { Eye, ArrowRight, Bell } from "lucide-react";
  */
 export default function HotDeals() {
   return (
-    <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="premium-card p-5">
+      <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-amber-500/10">
-            <Eye className="w-5 h-5 text-amber-400" />
+          <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center">
+            <Eye className="w-4 h-4 text-amber-400" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-100">Strážny pes</h3>
-            <p className="text-sm text-slate-400">Vlastné kritériá pre výhodné ponuky</p>
+            <h3 className="text-sm font-medium text-zinc-100">Strážny pes</h3>
+            <p className="text-xs text-zinc-500">Vlastné kritériá pre výhodné ponuky</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-slate-800/50 rounded-lg p-6 text-center">
-        <Bell className="w-12 h-12 text-amber-400 mx-auto mb-4" />
-        <h4 className="text-lg font-bold text-slate-100 mb-2">
+      <div className="bg-zinc-900/50 rounded-xl p-6 text-center border border-zinc-800/50">
+        <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
+          <Bell className="w-6 h-6 text-amber-400" />
+        </div>
+        <h4 className="text-base font-medium text-zinc-100 mb-2">
           Nastav si vlastné kritériá
         </h4>
-        <p className="text-slate-400 mb-6">
-          Urči si, čo je pre teba výhodná ponuka - cenu, výnos, lokalitu a ďalšie parametre.
-          Upozorníme ťa, keď sa objaví niečo zaujímavé.
+        <p className="text-zinc-500 text-sm mb-5 max-w-sm mx-auto">
+          Urči si, čo je pre teba výhodná ponuka. Upozorníme ťa, keď sa objaví niečo zaujímavé.
         </p>
         
         <Link
           href="/dashboard/watchdog"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-xl transition-colors"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-medium rounded-lg transition-colors"
         >
           Nastaviť strážneho psa
-          <ArrowRight className="w-4 h-4" />
+          <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
     </div>

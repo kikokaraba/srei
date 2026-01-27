@@ -225,10 +225,10 @@ export default function PropertyDetailPage() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-emerald-400 bg-emerald-500/20 border-emerald-500";
-    if (score >= 65) return "text-amber-400 bg-amber-500/20 border-amber-500";
-    if (score >= 50) return "text-blue-400 bg-blue-500/20 border-blue-500";
-    return "text-slate-400 bg-slate-500/20 border-slate-500";
+    if (score >= 80) return "text-emerald-400 bg-emerald-500/10 border-emerald-500/30";
+    if (score >= 65) return "text-amber-400 bg-amber-500/10 border-amber-500/30";
+    if (score >= 50) return "text-blue-400 bg-blue-500/10 border-blue-500/30";
+    return "text-zinc-400 bg-zinc-800 border-zinc-700";
   };
 
   const getScoreLabel = (score: number) => {
@@ -241,16 +241,19 @@ export default function PropertyDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+        <div className="relative">
+          <div className="w-10 h-10 border-2 border-zinc-800 rounded-full"></div>
+          <div className="absolute top-0 left-0 w-10 h-10 border-2 border-emerald-500 rounded-full animate-spin border-t-transparent"></div>
+        </div>
       </div>
     );
   }
 
   if (!property) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-xl text-slate-300">Nehnuteľnosť nenájdená</h2>
-        <Link href="/dashboard/properties" className="text-emerald-400 hover:underline mt-4 inline-block">
+      <div className="text-center py-16">
+        <h2 className="text-base text-zinc-400 mb-4">Nehnuteľnosť nenájdená</h2>
+        <Link href="/dashboard/properties" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
           ← Späť na vyhľadávanie
         </Link>
       </div>
@@ -264,89 +267,92 @@ export default function PropertyDetailPage() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-4">
+      {/* Header - Premium */}
+      <div className="flex items-start gap-4">
         <button
           onClick={() => router.back()}
-          className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+          className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-zinc-200 hover:border-zinc-700 transition-all"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4" />
         </button>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold text-white">{property.title}</h1>
-          <div className="flex items-center gap-2 text-slate-400 mt-1">
-            <MapPin className="w-4 h-4" />
-            <span>{property.address}</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-medium mb-1">DETAIL NEHNUTEĽNOSTI</p>
+          <h1 className="text-xl font-medium text-zinc-100 leading-tight mb-2 truncate">{property.title}</h1>
+          <div className="flex items-center gap-1.5 text-zinc-500 text-sm">
+            <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="truncate">{property.address}</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={() => setIsSaved(!isSaved)}
-            className={`p-3 rounded-xl transition-colors ${
-              isSaved ? "bg-emerald-500/20 text-emerald-400" : "bg-slate-800 text-slate-400 hover:text-emerald-400"
+            className={`p-2.5 rounded-lg border transition-all ${
+              isSaved 
+                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" 
+                : "bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-200 hover:border-zinc-700"
             }`}
           >
-            {isSaved ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
+            {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
           </button>
           {property.source_url && (
             <a
               href={property.source_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-medium rounded-lg transition-colors"
             >
-              <ExternalLink className="w-4 h-4" />
-              Otvoriť inzerát
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Otvoriť</span>
             </a>
           )}
         </div>
       </div>
 
       {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Left Column - Main Info */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Price & Key Stats */}
-          <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-            <div className="flex items-start justify-between mb-6">
+        <div className="lg:col-span-2 space-y-5">
+          {/* Price & Key Stats - Premium */}
+          <div className="premium-card p-5">
+            <div className="flex items-start justify-between mb-5">
               <div>
-                <p className="text-4xl font-bold text-white">€{property.price.toLocaleString()}</p>
-                <p className="text-lg text-slate-400">€{property.price_per_m2.toLocaleString()}/m²</p>
+                <p className="text-3xl font-semibold text-zinc-100 font-mono tracking-tight">€{property.price.toLocaleString()}</p>
+                <p className="text-sm text-zinc-500 font-mono mt-1">€{property.price_per_m2.toLocaleString()}/m²</p>
                 {priceChange !== null && priceChange !== 0 && (
-                  <div className={`flex items-center gap-1 mt-2 ${priceChange < 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                    {priceChange < 0 ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
+                  <div className={`flex items-center gap-1 mt-2 text-xs font-mono ${priceChange < 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                    {priceChange < 0 ? <TrendingDown className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />}
                     <span>{Math.abs(priceChange).toFixed(1)}% od pôvodnej ceny</span>
                   </div>
                 )}
               </div>
-              <div className={`px-4 py-2 rounded-xl border ${getScoreColor(score)}`}>
-                <div className="flex items-center gap-2">
-                  <Shield className="w-5 h-5" />
-                  <span className="text-2xl font-bold">{score}</span>
+              <div className={`px-3 py-2 rounded-lg border ${getScoreColor(score).replace('text-', 'text-').replace('bg-', 'bg-').replace('border-', 'border-')}`}>
+                <div className="flex items-center gap-1.5">
+                  <Shield className="w-4 h-4" />
+                  <span className="text-lg font-semibold font-mono">{score}</span>
                 </div>
-                <p className="text-xs mt-1">{getScoreLabel(score)}</p>
+                <p className="text-[10px] mt-0.5 opacity-80">{getScoreLabel(score)}</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-slate-800/50 rounded-lg p-3 text-center">
-                <Home className="w-5 h-5 text-slate-400 mx-auto mb-1" />
-                <p className="text-lg font-bold text-white">{property.rooms || "–"}</p>
-                <p className="text-xs text-slate-400">Izby</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-zinc-900/50 rounded-xl p-3 text-center border border-zinc-800/30">
+                <Home className="w-4 h-4 text-zinc-600 mx-auto mb-1.5" />
+                <p className="text-base font-semibold text-zinc-200 font-mono">{property.rooms || "–"}</p>
+                <p className="text-[10px] text-zinc-600 uppercase tracking-wider">Izby</p>
               </div>
-              <div className="bg-slate-800/50 rounded-lg p-3 text-center">
-                <Building2 className="w-5 h-5 text-slate-400 mx-auto mb-1" />
-                <p className="text-lg font-bold text-white">{property.area_m2} m²</p>
-                <p className="text-xs text-slate-400">Plocha</p>
+              <div className="bg-zinc-900/50 rounded-xl p-3 text-center border border-zinc-800/30">
+                <Building2 className="w-4 h-4 text-zinc-600 mx-auto mb-1.5" />
+                <p className="text-base font-semibold text-zinc-200 font-mono">{property.area_m2}</p>
+                <p className="text-[10px] text-zinc-600 uppercase tracking-wider">m²</p>
               </div>
-              <div className="bg-slate-800/50 rounded-lg p-3 text-center">
-                <Clock className="w-5 h-5 text-slate-400 mx-auto mb-1" />
-                <p className="text-lg font-bold text-white">{property.days_on_market}</p>
-                <p className="text-xs text-slate-400">Dní v ponuke</p>
+              <div className="bg-zinc-900/50 rounded-xl p-3 text-center border border-zinc-800/30">
+                <Clock className="w-4 h-4 text-zinc-600 mx-auto mb-1.5" />
+                <p className="text-base font-semibold text-zinc-200 font-mono">{property.days_on_market}</p>
+                <p className="text-[10px] text-zinc-600 uppercase tracking-wider">Dní</p>
               </div>
-              <div className="bg-slate-800/50 rounded-lg p-3 text-center">
-                <Calendar className="w-5 h-5 text-slate-400 mx-auto mb-1" />
-                <p className="text-lg font-bold text-white">
+              <div className="bg-zinc-900/50 rounded-xl p-3 text-center border border-zinc-800/30">
+                <Calendar className="w-4 h-4 text-zinc-600 mx-auto mb-1.5" />
+                <p className="text-base font-semibold text-zinc-200 font-mono">
                   {new Date(property.createdAt).toLocaleDateString("sk-SK")}
                 </p>
                 <p className="text-xs text-slate-400">Pridané</p>
