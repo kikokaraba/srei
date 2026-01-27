@@ -12,249 +12,181 @@ export const NEHNUTELNOSTI_PAGE_FUNCTION = `
 async function pageFunction(context) {
     const { page, request, log } = context;
     
-    // Čakáme na kompletné načítanie + extra čas pre JS
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2500); 
+    await page.waitForTimeout(3000);
 
+    // LISTING PAGE - zbierame linky na detaily
     if (!request.url.includes('/detail/')) {
         const links = await page.evaluate(() => {
             return Array.from(document.querySelectorAll('a[href*="/detail/"]'))
                 .map(a => a.href)
                 .filter((v, i, s) => s.indexOf(v) === i);
         });
-        log.info('Nájdených ' + links.length + ' detailov na stránke');
+        log.info('Nájdených ' + links.length + ' detailov');
         for (const link of links) {
-            await context.enqueueRequest({ url: link, userData: { label: 'DETAIL' } });
+            await context.enqueueRequest({ url: link });
         }
         return; 
     }
 
-    log.info('Hĺbková analýza detailu: ' + request.url);
+    log.info('Extrahujem dáta z: ' + request.url);
 
-    // Scroll pre aktiváciu lazy-loaded obsahu
+    // Scroll pre lazy-loading
     await page.evaluate(async () => {
-        for(let i = 0; i < 5; i++) {
-            window.scrollBy(0, 500);
+        for (let i = 0; i < 5; i++) {
+            window.scrollBy(0, 400);
             await new Promise(r => setTimeout(r, 300));
         }
-        window.scrollTo(0, 0); // Späť hore
     });
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(2000);
 
     const data = await page.evaluate(() => {
-        // ============================================================
-        // METÓDA 1: JSON-LD PARSER (Najspoľahlivejšie!)
-        // ============================================================
-        let jsonLdData = null;
-        try {
-            const ldScript = document.querySelector('script[type="application/ld+json"]');
-            if (ldScript) {
-                const parsed = JSON.parse(ldScript.textContent);
-                // Môže byť pole alebo objekt
-                const item = Array.isArray(parsed) ? parsed.find(p => p['@type'] === 'Product' || p['@type'] === 'Offer' || p['@type'] === 'RealEstateListing') : parsed;
-                if (item) {
-                    jsonLdData = {
-                        title: item.name,
-                        price: item.offers?.price || item.price,
-                        description: item.description,
-                        images: item.image ? (Array.isArray(item.image) ? item.image : [item.image]) : [],
-                        address: item.address?.streetAddress || item.address,
-                        area: item.floorSize?.value,
-                    };
-                }
-            }
-        } catch (e) {
-            // JSON-LD parsing failed, continue with other methods
-        }
+        const result = {
+            title: null,
+            price_raw: null,
+            area_m2: null,
+            rooms: null,
+            floor: null,
+            condition: null,
+            building_material: null,
+            description: null,
+            images: [],
+            location: { full: null, city: null, district: null }
+        };
 
-        // ============================================================
-        // METÓDA 2: WINDOW STATE PARSER
-        // ============================================================
-        let stateData = null;
+        // =============================================
+        // 1. JSON-LD PARSER
+        // =============================================
         try {
-            const scripts = Array.from(document.querySelectorAll('script'));
-            for (const script of scripts) {
-                const content = script.textContent || '';
-                // Hľadáme __INITIAL_STATE__, __NUXT__, __NEXT_DATA__, window.DATA
-                const patterns = [
-                    /window\.__INITIAL_STATE__\s*=\s*({.+?});/s,
-                    /window\.__NUXT__\s*=\s*({.+?});/s,
-                    /__NEXT_DATA__.*?({.+})/s,
-                ];
-                for (const pattern of patterns) {
-                    const match = content.match(pattern);
-                    if (match) {
-                        try {
-                            const data = JSON.parse(match[1]);
-                            if (data.property || data.listing || data.advert) {
-                                stateData = data.property || data.listing || data.advert;
-                                break;
-                            }
-                        } catch (e) {}
+            const ldScripts = document.querySelectorAll('script[type="application/ld+json"]');
+            for (const script of ldScripts) {
+                const parsed = JSON.parse(script.textContent);
+                const items = Array.isArray(parsed) ? parsed : [parsed];
+                for (const item of items) {
+                    if (item.name) result.title = item.name;
+                    if (item.description) result.description = item.description;
+                    if (item.floorSize && item.floorSize.value) {
+                        result.area_m2 = String(item.floorSize.value);
+                    }
+                    if (item.image) {
+                        const imgs = Array.isArray(item.image) ? item.image : [item.image];
+                        result.images = imgs.filter(i => typeof i === 'string');
                     }
                 }
             }
         } catch (e) {}
 
-        // ============================================================
-        // METÓDA 3: LABEL-BASED EXTRAKCIA (Hľadá presný text)
-        // ============================================================
-        const getValByLabel = (labels) => {
-            const allElements = Array.from(document.querySelectorAll('*'));
-            for (const label of labels) {
-                for (const el of allElements) {
-                    // Hľadáme element s presným textom labelu
-                    if (el.childNodes.length === 1 && el.textContent?.trim().toLowerCase() === label.toLowerCase()) {
-                        // Skúsime rôzne stratégie nájdenia hodnoty
-                        const sibling = el.nextElementSibling;
-                        if (sibling) return sibling.textContent?.trim();
-                        
-                        const parent = el.parentElement;
-                        if (parent) {
-                            const lastChild = parent.lastElementChild;
-                            if (lastChild && lastChild !== el) return lastChild.textContent?.trim();
-                        }
+        // =============================================
+        // 2. PRIAMA EXTRAKCIA Z HTML (pre Nehnutelnosti.sk)
+        // =============================================
+        
+        // Titulok
+        if (!result.title) {
+            const h1 = document.querySelector('h1');
+            if (h1) result.title = h1.textContent.trim();
+        }
+
+        // Cena
+        const priceEl = document.querySelector('[class*="price-value"], [class*="price-main"], .cena');
+        if (priceEl) result.price_raw = priceEl.textContent.trim();
+
+        // Parametre - hľadáme v tabuľkách a zoznamoch
+        const findParam = (keywords) => {
+            const allText = document.body.innerText;
+            for (const kw of keywords) {
+                // Hľadáme vzor "Label: hodnota" alebo "Label hodnota"
+                const patterns = [
+                    new RegExp(kw + '\\\\s*:\\\\s*([0-9,.]+)', 'i'),
+                    new RegExp(kw + '\\\\s+([0-9,.]+)', 'i')
+                ];
+                for (const pattern of patterns) {
+                    const match = allText.match(pattern);
+                    if (match && match[1]) {
+                        return match[1].replace(',', '.').trim();
                     }
                 }
             }
+            return null;
+        };
+
+        // Ak JSON-LD nemal plochu, hľadáme v texte
+        if (!result.area_m2) {
+            result.area_m2 = findParam(['Úžitková plocha', 'Plocha', 'Rozloha', 'Výmera']);
+        }
+
+        // Izby
+        result.rooms = findParam(['Počet izieb', 'Izby']);
+
+        // Poschodie  
+        result.floor = findParam(['Poschodie', 'Podlažie']);
+
+        // Stav
+        const stavRow = Array.from(document.querySelectorAll('li, tr, div')).find(
+            el => el.textContent && el.textContent.toLowerCase().includes('stav objektu')
+        );
+        if (stavRow) {
+            const text = stavRow.textContent;
+            const colonIdx = text.indexOf(':');
+            if (colonIdx > -1) {
+                result.condition = text.substring(colonIdx + 1).trim();
+            }
+        }
+
+        // Konštrukcia
+        const konstrukciaRow = Array.from(document.querySelectorAll('li, tr, div')).find(
+            el => el.textContent && el.textContent.toLowerCase().includes('konštrukcia')
+        );
+        if (konstrukciaRow) {
+            const text = konstrukciaRow.textContent;
+            const colonIdx = text.indexOf(':');
+            if (colonIdx > -1) {
+                result.building_material = text.substring(colonIdx + 1).trim();
+            }
+        }
+
+        // Popis
+        if (!result.description) {
+            const descEl = document.querySelector('[class*="description"], .popis, #popis');
+            if (descEl) result.description = descEl.textContent.trim().substring(0, 2000);
+        }
+
+        // Obrázky - ak JSON-LD nemal
+        if (result.images.length === 0) {
+            // PhotoSwipe
+            document.querySelectorAll('a[data-pswp-src]').forEach(a => {
+                const src = a.getAttribute('data-pswp-src');
+                if (src && !result.images.includes(src)) result.images.push(src);
+            });
             
-            // Fallback: Hľadáme v celom texte elementu
-            const rows = Array.from(document.querySelectorAll('tr, li, div, span'));
-            for (const label of labels) {
-                for (const row of rows) {
-                    const text = row.textContent?.toLowerCase() || '';
-                    if (text.includes(label.toLowerCase())) {
-                        // Extrahuj číslo z textu
-                        const numMatch = row.textContent?.match(/(\d+[\s,.]?\d*)\s*(m²|m2)?/);
-                        if (numMatch) return numMatch[1].replace(/\s/g, '');
-                        
-                        // Alebo vezmi text za dvojbodkou
-                        const parts = row.textContent?.split(':');
-                        if (parts && parts.length > 1) return parts.pop()?.trim();
+            // Štandardné obrázky
+            if (result.images.length === 0) {
+                document.querySelectorAll('img[src*="img.nehnutelnosti.sk"]').forEach(img => {
+                    const src = img.src;
+                    if (src && !src.includes('logo') && !src.includes('icon') && !result.images.includes(src)) {
+                        result.images.push(src);
                     }
-                }
+                });
             }
-            return null;
-        };
-
-        // ============================================================
-        // METÓDA 4: CSS SELECTOR FALLBACK
-        // ============================================================
-        const getBySelectors = (selectors) => {
-            for (const sel of selectors) {
-                try {
-                    const el = document.querySelector(sel);
-                    if (el?.textContent?.trim()) return el.textContent.trim();
-                } catch (e) {}
-            }
-            return null;
-        };
-
-        // ============================================================
-        // OBRÁZKY - Multi-stratégia
-        // ============================================================
-        const photoUrls = [];
-        
-        // 1. PhotoSwipe galéria
-        document.querySelectorAll('a[data-pswp-src]').forEach(a => {
-            const src = a.getAttribute('data-pswp-src');
-            if (src) photoUrls.push(src);
-        });
-        
-        // 2. Data-src atribúty
-        document.querySelectorAll('[data-src*="img.nehnutelnosti.sk"]').forEach(el => {
-            const src = el.getAttribute('data-src');
-            if (src && !photoUrls.includes(src)) photoUrls.push(src);
-        });
-        
-        // 3. Štandardné img elementy
-        document.querySelectorAll('img[src*="img.nehnutelnosti.sk"]').forEach(img => {
-            let src = img.src;
-            // Upgrade na full quality
-            src = src.replace(/_thumb|_small|_medium/g, '_full');
-            if (src && !photoUrls.includes(src) && !src.includes('logo') && !src.includes('icon')) {
-                photoUrls.push(src);
-            }
-        });
-
-        // ============================================================
-        // FINÁLNA EXTRAKCIA
-        // ============================================================
-        const title = jsonLdData?.title || 
-                     document.querySelector('h1')?.textContent?.trim();
-        
-        const price_raw = getBySelectors([
-            '[class*="price-value"]', '[class*="detail-price"]', 
-            '.price-main', '.cena', '[data-testid="price"]'
-        ]) || jsonLdData?.price?.toString();
-
-        const area_m2 = jsonLdData?.area ||
-                       stateData?.area || stateData?.usableArea ||
-                       getValByLabel(['Úžitková plocha', 'Plocha', 'Rozloha', 'Výmera', 'Celková plocha']) ||
-                       getBySelectors(['[data-testid="area"]', '[class*="area-value"]']);
-
-        const rooms = getValByLabel(['Počet izieb', 'Izby', 'Izbový', 'Rooms']) ||
-                     stateData?.rooms;
-
-        const floor = getValByLabel(['Poschodie', 'Podlažie', 'Podlaží', 'Floor']) ||
-                     stateData?.floor;
-
-        const condition = getValByLabel(['Stav objektu', 'Stav nehnuteľnosti', 'Stav']) ||
-                         stateData?.condition;
-
-        const building_material = getValByLabel(['Konštrukcia', 'Materiál', 'Typ budovy', 'Druh']) ||
-                                 stateData?.buildingType;
-
-        const description = document.querySelector('[class*="description"], #description, .popis, [data-testid="description"]')?.textContent?.trim() ||
-                           jsonLdData?.description;
+        }
 
         // Lokácia
-        const locationEl = document.querySelector('[class*="location"], .address, [class*="address"], [data-testid="location"]');
-        const locationText = locationEl?.textContent?.trim() || jsonLdData?.address || '';
-        const locationParts = locationText.split(',').map(s => s.trim());
+        const locEl = document.querySelector('[class*="location"], .adresa, [class*="address"]');
+        if (locEl) {
+            result.location.full = locEl.textContent.trim();
+            const parts = result.location.full.split(',').map(s => s.trim());
+            result.location.city = parts[0] || null;
+            result.location.district = parts[1] || null;
+        }
 
-        return {
-            title,
-            price_raw,
-            area_m2,
-            rooms,
-            floor,
-            building_material,
-            condition,
-            elevator: getValByLabel(['Výťah', 'Elevator']),
-            balcony: getValByLabel(['Balkón', 'Loggia', 'Terasa']),
-            parking: getValByLabel(['Parkovanie', 'Garáž', 'Parking']),
-            heating: getValByLabel(['Vykurovanie', 'Kúrenie']),
-            year_built: getValByLabel(['Rok výstavby', 'Rok kolaudácie']),
-            energy_certificate: getValByLabel(['Energetická trieda', 'Energetický certifikát']),
-            description,
-            images: photoUrls.length > 0 ? photoUrls : (jsonLdData?.images || []),
-            location: {
-                full: locationText,
-                city: locationParts[0] || null,
-                district: locationParts[1] || null,
-                street: locationParts[2] || null
-            },
-            seller: {
-                name: document.querySelector('[class*="contact-name"], [class*="agent"], [class*="seller"]')?.textContent?.trim(),
-                phone: document.querySelector('a[href^="tel:"]')?.href?.replace('tel:', ''),
-                agency: document.querySelector('[class*="agency"], [class*="realitka"]')?.textContent?.trim()
-            },
-            _debug: {
-                jsonLdFound: !!jsonLdData,
-                stateDataFound: !!stateData,
-                photosCount: photoUrls.length
-            }
-        };
+        return result;
     });
 
-    log.info('Extrahované: area=' + data.area_m2 + ', rooms=' + data.rooms + ', images=' + (data.images?.length || 0) + ', debug=' + JSON.stringify(data._debug));
+    log.info('Výsledok: area=' + data.area_m2 + ', rooms=' + data.rooms + ', images=' + data.images.length);
 
     return { 
         ...data, 
         url: request.url, 
         portal: 'nehnutelnosti',
-        success: !!(data.area_m2 || data.price_raw || data.images?.length > 0),
         scraped_at: new Date().toISOString()
     };
 }
