@@ -68,7 +68,20 @@ export {
   runStealthScrape,
   DEFAULT_CONFIG as STEALTH_CONFIG,
   USER_AGENTS,
-  type StealthConfig,
   type ScraperStats,
   type ParsedListing,
 } from "./stealth-engine";
+
+// Professional Stealth Scraper (Nehnutelnosti.sk)
+export {
+  scrapeNehnutelnostiList,
+  scrapeNehnutelnostiDetail,
+  autoScroll,
+  extractHighQualityImages,
+  humanDelay,
+  getRandomUserAgent,
+  closeStealthBrowser,
+  stealthManager,
+  NEHNUTELNOSTI_SELECTORS,
+  type StealthConfig,
+} from "./stealth-scraper";
