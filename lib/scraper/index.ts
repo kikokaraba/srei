@@ -85,3 +85,18 @@ export {
   NEHNUTELNOSTI_SELECTORS,
   type StealthConfig,
 } from "./stealth-scraper";
+
+// Slovakia-Wide Scraper
+export {
+  getAllScrapingTargets,
+  getTargetsByPortal,
+  getTargetsByRegion,
+  getTargetsByPropertyType,
+  batchTargets,
+  getScrapingStats,
+  slovakiaScraper,
+  SlovakiaScraper,
+  type ScrapingTarget,
+  type ScrapingProgress,
+  type ScrapingResult,
+} from "./slovakia-scraper";

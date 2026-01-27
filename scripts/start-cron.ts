@@ -16,6 +16,16 @@ const JOBS = [
     endpoint: "/api/cron/batch-refresh",
     intervalMs: 15 * 60 * 1000, // 15 minutes
   },
+  {
+    name: "scrape-slovakia",
+    endpoint: "/api/cron/scrape-slovakia?portal=nehnutelnosti",
+    intervalMs: 60 * 60 * 1000, // 1 hour - Nehnutelnosti.sk
+  },
+  {
+    name: "scrape-slovakia-bazos",
+    endpoint: "/api/cron/scrape-slovakia?portal=bazos",
+    intervalMs: 30 * 60 * 1000, // 30 minutes - Bazoš (častejšie pre hot deals)
+  },
 ];
 
 const BASE_URL = process.env.RAILWAY_URL || process.env.NEXTAUTH_URL || "http://localhost:3000";
