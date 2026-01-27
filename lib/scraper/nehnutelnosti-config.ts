@@ -11,100 +11,119 @@
 export const NEHNUTELNOSTI_PAGE_FUNCTION = `
 async function pageFunction(context) {
     const { page, request, log } = context;
-    await page.waitForLoadState('networkidle');
     
-    // Ak nie sme na detaile, zbierame linky
+    // Čakáme na kompletné načítanie a pridáme extra čas pre JS komponenty
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000); 
+
     if (!request.url.includes('/detail/')) {
         const links = await page.evaluate(() => {
             return Array.from(document.querySelectorAll('a[href*="/detail/"]'))
                 .map(a => a.href)
                 .filter((v, i, s) => s.indexOf(v) === i);
         });
-        
         log.info('Nájdených ' + links.length + ' detailov na stránke');
-        
         for (const link of links) {
-            await context.enqueueRequest({ 
-                url: link, 
-                userData: { label: 'DETAIL' } 
-            });
+            await context.enqueueRequest({ url: link, userData: { label: 'DETAIL' } });
         }
         return; 
     }
 
-    log.info('Analyzujem detail: ' + request.url);
-    
-    // Auto-scroll pre lazy-loading obrázkov
+    log.info('Hĺbková analýza detailu: ' + request.url);
+
+    // VYLEPŠENÝ SCROLL: Simulácia reálneho čítania pre aktiváciu obrázkov
     await page.evaluate(async () => {
-        window.scrollBy(0, 800);
-        await new Promise(r => setTimeout(r, 500));
-        window.scrollBy(0, 800);
-        await new Promise(r => setTimeout(r, 500));
-        window.scrollBy(0, 800);
+        const distance = 400;
+        for(let i=0; i<4; i++) {
+            window.scrollBy(0, distance);
+            await new Promise(r => setTimeout(r, 400));
+        }
     });
+    
+    // Extra čas pre lazy-loaded obrázky
+    await page.waitForTimeout(1500);
 
     const data = await page.evaluate(() => {
-        // Helper funkcia na extrakciu parametrov
-        const getVal = (label) => {
-            const row = Array.from(document.querySelectorAll('.table-row, .parameter-row, tr, .param-row'))
-                .find(el => el.textContent.toLowerCase().includes(label.toLowerCase()));
-            return row ? (row.querySelector('.value, .parameter-value, td:last-child')?.textContent?.trim() || null) : null;
+        // AGRESÍVNY VYHĽADÁVAČ: Hľadáme text v celom riadku bez ohľadu na triedy
+        const getParameter = (searchStrings) => {
+            const elements = Array.from(document.querySelectorAll('li, tr, .parameter-row, .table-row, dt, dd, [class*="param"]'));
+            for (const el of elements) {
+                const text = el.textContent.toLowerCase();
+                if (searchStrings.some(s => text.includes(s.toLowerCase()))) {
+                    // Vrátime poslednú časť textu v riadku (zvyčajne hodnota)
+                    const valueEl = el.querySelector('.value, .parameter-value, td:last-child, dd');
+                    if (valueEl) return valueEl.textContent?.trim();
+                    // Fallback: vezmeme text za dvojbodkou
+                    const parts = el.textContent.split(':');
+                    if (parts.length > 1) return parts.pop()?.trim();
+                    return null;
+                }
+            }
+            return null;
         };
 
-        // Extrakcia fotiek vo vysokom rozlíšení
-        const photoUrls = Array.from(document.querySelectorAll('a[data-photoswipe-index], .gallery a, .photo-gallery a'))
-            .map(a => a.getAttribute('href') || a.getAttribute('data-src'))
-            .filter(src => src && (src.includes('img.nehnutelnosti.sk') || src.includes('cdn')));
+        // Selektory pre obrázky - hľadáme originály, nie náhľady
+        const imgElements = Array.from(document.querySelectorAll('img[src*="img.nehnutelnosti.sk"], img[data-src*="img.nehnutelnosti.sk"]'));
+        const photoUrls = imgElements
+            .map(img => img.src || img.getAttribute('data-src'))
+            .filter(src => src && (src.includes('/full/') || src.includes('/optim/') || src.includes('/large/')))
+            .filter((v, i, s) => s.indexOf(v) === i);
         
-        // Fallback na img elementy
+        // Fallback: ak nemáme full/optim, vezmeme čokoľvek
         if (photoUrls.length === 0) {
-            document.querySelectorAll('.gallery img, .photo-gallery img, .estate-detail img').forEach(img => {
-                const src = img.getAttribute('data-src') || img.getAttribute('src');
-                if (src && !src.includes('placeholder') && !src.includes('logo')) {
-                    photoUrls.push(src.replace(/_thumb|_small|_medium/g, ''));
+            document.querySelectorAll('img[src*="img.nehnutelnosti.sk"]').forEach(img => {
+                const src = img.src || img.getAttribute('data-src');
+                if (src && !src.includes('logo') && !src.includes('icon')) {
+                    photoUrls.push(src);
                 }
             });
         }
 
         // Extrakcia lokácie
-        const locationEl = document.querySelector('.location, .estate-detail__location, [class*="location"]');
-        const locationParts = locationEl?.textContent?.trim().split(',').map(s => s.trim()) || [];
+        const locationEl = document.querySelector('[class*="location"], .address, [class*="address"]');
+        const locationText = locationEl?.textContent?.trim() || '';
+        const locationParts = locationText.split(',').map(s => s.trim());
 
         return {
             title: document.querySelector('h1')?.textContent?.trim(),
-            price_raw: document.querySelector('.price-value, .component-advertisement-detail-price, .estate-detail__price, .price-main')?.textContent?.trim(),
-            area_m2: getVal('Úžitková plocha') || getVal('Zastavaná plocha') || getVal('Plocha'),
-            rooms: getVal('Počet izieb') || getVal('Izby'),
-            floor: getVal('Poschodie') || getVal('Podlažie'),
-            total_floors: getVal('Počet podlaží') || getVal('Poschodí'),
-            building_material: getVal('Konštrukcia objektu') || getVal('Konštrukcia') || getVal('Materiál'),
-            condition: getVal('Stav objektu') || getVal('Stav'),
-            elevator: getVal('Výťah'),
-            balcony: !!(getVal('Balkón') || getVal('Loggia') || getVal('Terasa')),
-            parking: getVal('Parkovanie') || getVal('Garáž'),
-            heating: getVal('Vykurovanie') || getVal('Kúrenie'),
-            year_built: getVal('Rok výstavby') || getVal('Rok kolaudácie'),
-            energy_certificate: getVal('Energetická trieda') || getVal('Energetický certifikát'),
-            description: document.querySelector('.component-advertisement-detail-description, .description, .estate-detail__description')?.textContent?.trim(),
+            price_raw: document.querySelector('[class*="price-value"], [class*="detail-price"], [class*="price"]')?.textContent?.trim(),
+            
+            // Hľadáme pomocou viacerých možných názvov
+            area_m2: getParameter(['Úžitková plocha', 'Plocha', 'Rozloha', 'Výmera']),
+            rooms: getParameter(['Počet izieb', 'Izby', 'Izbový']),
+            floor: getParameter(['Poschodie', 'Podlažie', 'Podlaží']),
+            building_material: getParameter(['Konštrukcia', 'Materiál', 'Typ budovy']),
+            condition: getParameter(['Stav objektu', 'Stav nehnuteľnosti', 'Stav']),
+            elevator: getParameter(['Výťah']),
+            balcony: getParameter(['Balkón', 'Loggia', 'Terasa']),
+            parking: getParameter(['Parkovanie', 'Garáž', 'Parking']),
+            heating: getParameter(['Vykurovanie', 'Kúrenie']),
+            year_built: getParameter(['Rok výstavby', 'Rok kolaudácie', 'Rok']),
+            energy_certificate: getParameter(['Energetická trieda', 'Energetický certifikát']),
+            
+            description: document.querySelector('[class*="description"], #description, .popis')?.textContent?.trim(),
             images: photoUrls,
             location: {
-                full: locationEl?.textContent?.trim(),
+                full: locationText,
                 city: locationParts[0] || null,
                 district: locationParts[1] || null,
-                street: locationParts[2] || null,
+                street: locationParts[2] || null
             },
             seller: {
-                name: document.querySelector('.contact-name, .agent-name, [class*="seller"]')?.textContent?.trim(),
+                name: document.querySelector('[class*="contact-name"], [class*="agent"], [class*="seller"]')?.textContent?.trim(),
                 phone: document.querySelector('a[href^="tel:"]')?.href?.replace('tel:', ''),
-                agency: document.querySelector('.agency-name, .realitna-kancelaria')?.textContent?.trim(),
+                agency: document.querySelector('[class*="agency"], [class*="realitka"]')?.textContent?.trim()
             }
         };
     });
+
+    log.info('Extrahované: area=' + data.area_m2 + ', images=' + (data.images?.length || 0));
 
     return { 
         ...data, 
         url: request.url, 
         portal: 'nehnutelnosti',
+        success: !!(data.area_m2 || data.price_raw),
         scraped_at: new Date().toISOString()
     };
 }
