@@ -29,7 +29,10 @@ import {
   History,
   Users,
   PiggyBank,
+  Percent,
+  Trophy,
 } from "lucide-react";
+import { YieldCard } from "@/components/YieldCard";
 
 interface Property {
   id: string;
@@ -109,6 +112,32 @@ interface TimelineEvent {
   description: string;
 }
 
+interface YieldData {
+  averageRent: number;
+  rentRange: { min: number; max: number };
+  sampleSize: number;
+  grossYield: number;
+  netYield: number;
+  priceToRent: number;
+  paybackYears: number;
+  monthlyExpenses: number;
+  monthlyProfit: number;
+}
+
+interface YieldComparison {
+  propertyYield: number;
+  cityAverage: number;
+  districtAverage: number;
+  countryAverage: number;
+  rating: "EXCELLENT" | "GOOD" | "AVERAGE" | "BELOW_AVERAGE" | "POOR";
+  percentile: number;
+}
+
+interface YieldResponse {
+  yield: YieldData;
+  comparison: YieldComparison;
+}
+
 interface PropertyTimeline {
   priceHistory: {
     price: number;
@@ -135,6 +164,7 @@ export default function PropertyDetailPage() {
   const [marketComparison, setMarketComparison] = useState<MarketComparison | null>(null);
   const [estimatedRent, setEstimatedRent] = useState<EstimatedRent | null>(null);
   const [timeline, setTimeline] = useState<PropertyTimeline | null>(null);
+  const [yieldData, setYieldData] = useState<YieldResponse | null>(null);
 
   useEffect(() => {
     const fetchProperty = async () => {
@@ -149,6 +179,7 @@ export default function PropertyDetailPage() {
           fetchMarketComparison(data.data);
           fetchEstimatedRent(data.data);
           fetchTimeline(data.data);
+          fetchYieldData(data.data);
         }
       } catch (error) {
         console.error("Error fetching property:", error);
@@ -202,6 +233,23 @@ export default function PropertyDetailPage() {
         }
       } catch (error) {
         console.error("Error fetching timeline:", error);
+      }
+    };
+
+    const fetchYieldData = async (prop: Property) => {
+      // Yield len pre nehnuteľnosti na predaj s cenou
+      if (prop.listing_type !== "PREDAJ" || prop.price <= 0) return;
+      
+      try {
+        const response = await fetch(`/api/v1/yield?propertyId=${prop.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data) {
+            setYieldData(data.data);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching yield data:", error);
       }
     };
 
@@ -265,6 +313,10 @@ export default function PropertyDetailPage() {
     ? ((property.price - property.priceHistory[property.priceHistory.length - 1].price) / property.priceHistory[property.priceHistory.length - 1].price * 100)
     : null;
 
+  // INVESTIČNÝ TRHÁK - yield 20% nad priemerom mesta
+  const isInvestmentGem = yieldData?.comparison && 
+    yieldData.yield.grossYield > yieldData.comparison.cityAverage * 1.2;
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Header - Premium */}
@@ -276,7 +328,15 @@ export default function PropertyDetailPage() {
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-medium mb-1">DETAIL NEHNUTEĽNOSTI</p>
+          <div className="flex items-center gap-2 mb-1">
+            <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-medium">DETAIL NEHNUTEĽNOSTI</p>
+            {isInvestmentGem && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-[10px] font-bold rounded-full animate-pulse">
+                <Trophy className="w-3 h-3" />
+                INVESTIČNÝ TRHÁK
+              </span>
+            )}
+          </div>
           <h1 className="text-xl font-medium text-zinc-100 leading-tight mb-2 truncate">{property.title}</h1>
           <div className="flex items-center gap-1.5 text-zinc-500 text-sm">
             <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
@@ -368,6 +428,16 @@ export default function PropertyDetailPage() {
               </div>
             </div>
           </div>
+
+          {/* Yield Engine Card - len pre nehnuteľnosti na predaj */}
+          {yieldData && property.listing_type === "PREDAJ" && (
+            <YieldCard 
+              yield={yieldData.yield}
+              comparison={yieldData.comparison}
+              propertyPrice={property.price}
+              city={property.city}
+            />
+          )}
 
           {/* Investor Analysis */}
           <div className="premium-card p-5">
