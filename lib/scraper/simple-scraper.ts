@@ -92,6 +92,19 @@ async function fetchPage(url: string): Promise<string | null> {
 }
 
 function parsePrice(text: string): number {
+  // Detekcia "cena dohodou" a podobných variantov
+  const lowerText = text.toLowerCase();
+  if (
+    lowerText.includes("dohodou") ||
+    lowerText.includes("dohoda") ||
+    lowerText.includes("dohodě") ||
+    lowerText.includes("info v rk") ||
+    lowerText.includes("cena v rk") ||
+    lowerText.includes("na vyžiadanie")
+  ) {
+    return -1; // Špeciálna hodnota pre "cena dohodou"
+  }
+  
   // Odstrániť všetky nečíselné znaky okrem číslic a medzier
   const cleaned = text.replace(/[^\d\s]/g, "").replace(/\s+/g, "");
   const price = parseInt(cleaned, 10);

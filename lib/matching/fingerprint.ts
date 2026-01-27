@@ -100,8 +100,12 @@ export function getAreaRange(areaM2: number): string {
 
 /**
  * Zaokrúhli cenu na rozsah
+ * Cena 0 = "cena dohodou" - vracia špeciálny range
  */
 export function getPriceRange(price: number): string {
+  if (price <= 0) {
+    return "negotiable"; // Cena dohodou - špeciálny range
+  }
   if (price < 100000) {
     const lower = Math.floor(price / 10000) * 10000;
     return `${lower}-${lower + 10000}`;

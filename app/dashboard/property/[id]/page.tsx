@@ -316,8 +316,17 @@ export default function PropertyDetailPage() {
           <div className="premium-card p-5">
             <div className="flex items-start justify-between mb-5">
               <div>
-                <p className="text-3xl font-semibold text-zinc-100 font-mono tracking-tight">€{property.price.toLocaleString()}</p>
-                <p className="text-sm text-zinc-500 font-mono mt-1">€{property.price_per_m2.toLocaleString()}/m²</p>
+                {property.price === 0 ? (
+                  <>
+                    <p className="text-2xl font-semibold text-amber-400 tracking-tight">Cena dohodou</p>
+                    <p className="text-sm text-zinc-500 mt-1">Kontaktujte predajcu</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-3xl font-semibold text-zinc-100 font-mono tracking-tight">€{property.price.toLocaleString()}</p>
+                    <p className="text-sm text-zinc-500 font-mono mt-1">€{property.price_per_m2.toLocaleString()}/m²</p>
+                  </>
+                )}
                 {priceChange !== null && priceChange !== 0 && (
                   <div className={`flex items-center gap-1 mt-2 text-xs font-mono ${priceChange < 0 ? "text-emerald-400" : "text-rose-400"}`}>
                     {priceChange < 0 ? <TrendingDown className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />}

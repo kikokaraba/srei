@@ -266,17 +266,28 @@ export function validateProperty(prop: ScrapedProperty): ValidationResult {
   }
 
   // Kontrola ceny
+  // Špeciálna hodnota -1 = "cena dohodou" - povolená ale označená
+  const isPriceNegotiable = prop.price === -1;
   const minPrice = prop.listingType === "PRENAJOM" ? 50 : 5000;
   const maxPrice = prop.listingType === "PRENAJOM" ? 50000 : 50000000;
   
-  if (!prop.price || prop.price < minPrice) {
+  if (!isPriceNegotiable && (!prop.price || prop.price < minPrice)) {
     errors.push(`Neplatná cena: ${prop.price}€ (min: ${minPrice}€)`);
     skipReason = skipReason || "INVALID_PRICE";
   }
   
-  if (prop.price > maxPrice) {
+  if (!isPriceNegotiable && prop.price > maxPrice) {
     errors.push(`Podozrivá cena: ${prop.price}€ (max: ${maxPrice}€)`);
     skipReason = skipReason || "INVALID_PRICE";
+  }
+  
+  // Ak je cena dohodou, nastav na 0 pre DB ale pridaj poznámku
+  if (isPriceNegotiable) {
+    prop.price = 0;
+    // Pridaj info do description alebo notes
+    if (!prop.description?.includes("Cena dohodou")) {
+      prop.description = `[Cena dohodou] ${prop.description || ""}`;
+    }
   }
 
   // Kontrola plochy

@@ -213,16 +213,22 @@ function calculateMatchScore(
   }
 
   // Cena - tolerancia 5%
-  const priceDiff = Math.abs(prop1.price - prop2.price) / Math.max(prop1.price, prop2.price);
-  if (priceDiff < 0.02) {
-    score += 20;
-    reasons.push("Rovnaká cena ±2% (+20)");
-  } else if (priceDiff < 0.05) {
-    score += 15;
-    reasons.push("Podobná cena ±5% (+15)");
-  } else if (priceDiff < 0.10) {
-    score += 8;
-    reasons.push("Približná cena ±10% (+8)");
+  // Ak je jedna z cien 0 (cena dohodou), nepridávaj body za cenu
+  if (prop1.price === 0 || prop2.price === 0) {
+    // Cena dohodou - nepridávaj body, ale ani nepenalizuj
+    reasons.push("Cena dohodou - ignorované");
+  } else {
+    const priceDiff = Math.abs(prop1.price - prop2.price) / Math.max(prop1.price, prop2.price);
+    if (priceDiff < 0.02) {
+      score += 20;
+      reasons.push("Rovnaká cena ±2% (+20)");
+    } else if (priceDiff < 0.05) {
+      score += 15;
+      reasons.push("Podobná cena ±5% (+15)");
+    } else if (priceDiff < 0.10) {
+      score += 8;
+      reasons.push("Približná cena ±10% (+8)");
+    }
   }
 
   // Počet izieb
