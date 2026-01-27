@@ -129,14 +129,16 @@ export async function POST(request: NextRequest) {
         let city = "Slovensko";
         let district = "";
         
-        if (typeof item.location === "string") {
+        const loc = item.location as string | { city?: string; district?: string; full?: string; street?: string } | undefined;
+        
+        if (typeof loc === "string") {
           // Bazoš vracia location ako string
-          const parts = item.location.split(",").map(s => s.trim());
+          const parts = loc.split(",").map((s: string) => s.trim());
           city = parts[0] || "Slovensko";
           district = parts[1] || "";
-        } else if (item.location?.city) {
-          city = item.location.city;
-          district = item.location.district || "";
+        } else if (loc?.city) {
+          city = loc.city;
+          district = loc.district || "";
         }
         
         // Extrahuj mesto z URL ak stále nemáme
@@ -189,8 +191,8 @@ export async function POST(request: NextRequest) {
           energy_certificate: "NEZISTENY" as const,
           city,
           district,
-          street: (typeof item.location === "object" ? item.location?.street : null) || null,
-          address: (typeof item.location === "string" ? item.location : item.location?.full) || city,
+          street: (typeof loc === "object" && loc ? loc.street : null) || null,
+          address: (typeof loc === "string" ? loc : (loc?.full || city)),
           photos: JSON.stringify(item.images || []),
           photo_count: (item.images || []).length,
           source: portal.toUpperCase() === "NEHNUTELNOSTI" ? "NEHNUTELNOSTI" : 
