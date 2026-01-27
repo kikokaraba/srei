@@ -229,47 +229,39 @@ async function processItem(item: ApifyScrapedItem): Promise<{
     const pricePerM2 = area > 0 ? Math.round(price / area) : 0;
     const slug = generateSlug(item.title || "nehnutelnost", externalId);
     
-    // Priprav dáta pre Prisma
+    // Priprav dáta pre Prisma (snake_case podľa schémy)
     const propertyData = {
       title: item.title || "Bez názvu",
       slug,
       description: item.description || "",
       price,
       price_per_m2: pricePerM2,
-      area: area,
+      area_m2: area,
       rooms: parseRooms(item.rooms),
       floor: parseFloor(item.floor),
-      total_floors: parseFloor(item.total_floors),
-      condition: parseCondition(item.condition),
-      building_material: item.building_material || null,
-      elevator: item.elevator?.toLowerCase().includes("áno") || false,
-      balcony: item.balcony || false,
-      parking: item.parking || null,
-      heating: item.heating || null,
-      year_built: item.year_built ? parseInt(item.year_built) : null,
-      energy_certificate: item.energy_certificate || null,
+      condition: parseCondition(item.condition) || "NEZISTENY",
+      energy_certificate: "NEZISTENY" as const,
       city,
-      district: item.location?.district || null,
+      district: item.location?.district || "",
       street: item.location?.street || null,
       address: item.location?.full || city,
-      images: item.images || [],
+      photos: JSON.stringify(item.images || []),
+      photo_count: (item.images || []).length,
       source: item.portal === "nehnutelnosti" ? "NEHNUTELNOSTI" : 
               item.portal === "bazos" ? "BAZOS" : "REALITY",
-      sourceUrl: item.url,
-      externalId,
-      propertyType,
-      listingType,
-      fingerprintHash: fingerprint,
-      status: "ACTIVE",
-      lastSeenAt: new Date(),
+      source_url: item.url,
+      external_id: externalId,
+      listing_type: listingType === "PRENAJOM" ? "PRENAJOM" : "PREDAJ",
+      status: "ACTIVE" as const,
+      last_seen_at: new Date(),
     };
     
     // Upsert - vytvor alebo aktualizuj
     const existing = await prisma.property.findFirst({
       where: {
         OR: [
-          { externalId },
-          { fingerprintHash: fingerprint },
+          { external_id: externalId },
+          { source_url: item.url },
         ],
       },
     });
@@ -281,8 +273,9 @@ async function processItem(item: ApifyScrapedItem): Promise<{
         data: {
           price: propertyData.price,
           price_per_m2: propertyData.price_per_m2,
-          images: propertyData.images,
-          lastSeenAt: new Date(),
+          photos: propertyData.photos,
+          photo_count: propertyData.photo_count,
+          last_seen_at: new Date(),
           status: "ACTIVE",
         },
       });
@@ -293,7 +286,7 @@ async function processItem(item: ApifyScrapedItem): Promise<{
           data: {
             propertyId: existing.id,
             price,
-            source: propertyData.source,
+            price_per_m2: pricePerM2,
           },
         });
       }
@@ -311,7 +304,7 @@ async function processItem(item: ApifyScrapedItem): Promise<{
           data: {
             propertyId: newProperty.id,
             price,
-            source: propertyData.source,
+            price_per_m2: pricePerM2,
           },
         });
       }
