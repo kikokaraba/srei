@@ -54,7 +54,7 @@ function SignInForm() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">SRIA</h1>
-              <p className="text-xs text-slate-500">Real Estate Intelligence</p>
+              <p className="text-xs text-zinc-500">Slovenská realitná investičná aplikácia</p>
             </div>
           </div>
 

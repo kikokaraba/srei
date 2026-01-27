@@ -94,7 +94,7 @@ export function Sidebar() {
           <div>
             <h2 className="text-lg font-semibold text-zinc-100 tracking-tight">SRIA</h2>
             <p className="text-[10px] text-zinc-500 tracking-wide hidden sm:block">
-              REAL ESTATE INTELLIGENCE
+              Slovenská realitná investičná aplikácia
             </p>
           </div>
         </div>
