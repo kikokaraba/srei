@@ -29,6 +29,12 @@ async function pageFunction(context) {
         return; 
     }
 
+    // IGNORUJ developerské projekty - majú inú štruktúru
+    if (request.url.includes('/developersky-projekt/') || request.url.includes('/developer/')) {
+        log.info('Preskakujem developerský projekt: ' + request.url);
+        return null;
+    }
+
     log.info('Extrahujem dáta z: ' + request.url);
 
     // Scroll pre lazy-loading
@@ -142,7 +148,38 @@ async function pageFunction(context) {
             return match ? match[1].replace(/\\s/g, '').replace(',', '.') : null;
         };
 
-        // Ak JSON-LD nemal plochu, hľadáme v texte
+        // ŠPECIALIZOVANÁ EXTRAKCIA PLOCHY - hľadá číslo pri m2
+        const getArea = () => {
+            const rows = Array.from(document.querySelectorAll('li, tr, .parameter-row, div, span'));
+            for (const row of rows) {
+                const text = row.textContent || '';
+                const lower = text.toLowerCase();
+                
+                // Hľadáme riadok s "plocha" alebo "rozloha"
+                if (lower.includes('plocha') || lower.includes('rozloha') || lower.includes('výmera')) {
+                    // Priorita 1: číslo pred m2/m²
+                    const m2Match = text.match(/(\\d+[\\d,.\\s]*)\\s*(m2|m²|metrov)/i);
+                    if (m2Match) {
+                        return m2Match[1].trim().replace(/\\s/g, '').replace(',', '.');
+                    }
+                    
+                    // Priorita 2: číslo väčšie ako 15 (byty majú min 15m2)
+                    const nums = text.match(/\\d+/g);
+                    if (nums) {
+                        const validNum = nums.find(n => parseInt(n) >= 15 && parseInt(n) <= 500);
+                        if (validNum) return validNum;
+                    }
+                }
+            }
+            return null;
+        };
+
+        // Ak JSON-LD nemal plochu, použijeme špecializovanú funkciu
+        if (!result.area_m2) {
+            result.area_m2 = getArea();
+        }
+        
+        // Fallback na generickú extrakciu
         if (!result.area_m2) {
             result.area_m2 = getNumber(['Úžitková plocha', 'Plocha', 'Podlahová plocha', 'Rozloha', 'Výmera']);
         }
