@@ -12,7 +12,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getApifyDatasetItems, type ApifyScrapedItem } from "@/lib/scraper/apify-service";
-import { generateFingerprintHash } from "@/lib/matching/fingerprint";
+import { generateCoreFingerprint } from "@/lib/matching/fingerprint";
 
 // ============================================================================
 // HELPER FUNKCIE PRE ČISTENIE DÁT
@@ -219,15 +219,11 @@ async function processItem(item: ApifyScrapedItem): Promise<{
     const listingType = detectTransactionType(item.url);
     
     // Generuj fingerprint pre deduplikáciu
-    const fingerprint = generateFingerprintHash({
-      title: item.title || "",
+    const fingerprint = generateCoreFingerprint({
       city,
-      district: item.location?.district,
-      street: item.location?.street,
-      area,
-      rooms: parseRooms(item.rooms) || undefined,
-      floor: parseFloor(item.floor) || undefined,
-      price,
+      district: item.location?.district || "",
+      area_m2: area,
+      rooms: parseRooms(item.rooms),
     });
     
     const pricePerM2 = area > 0 ? Math.round(price / area) : 0;
