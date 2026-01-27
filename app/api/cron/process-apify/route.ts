@@ -10,7 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getApifyDatasetItems } from "@/lib/scraper/apify-service";
+import { getApifyDatasetItems, getApifyRunStatus } from "@/lib/scraper/apify-service";
 import { prisma } from "@/lib/prisma";
 import { generateCoreFingerprint } from "@/lib/matching/fingerprint";
 
@@ -86,13 +86,22 @@ function generateSlug(title: string, externalId: string): string {
 export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const datasetId = searchParams.get("datasetId");
+    let datasetId = searchParams.get("datasetId");
+    const runId = searchParams.get("runId");
     const portal = searchParams.get("portal") || "nehnutelnosti";
+    
+    // Ak máme runId, získame z neho datasetId
+    if (runId && !datasetId) {
+      console.log(`🔍 [ProcessApify] Getting dataset from run: ${runId}`);
+      const runStatus = await getApifyRunStatus(runId);
+      datasetId = runStatus.datasetId;
+      console.log(`📦 [ProcessApify] Found dataset: ${datasetId}`);
+    }
     
     if (!datasetId) {
       return NextResponse.json({
         success: false,
-        error: "Missing datasetId parameter",
+        error: "Missing datasetId or runId parameter",
       }, { status: 400 });
     }
     
