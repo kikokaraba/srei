@@ -801,7 +801,13 @@ export function PropertyList() {
                   {/* Location */}
                   <div className="flex items-center gap-1.5 text-zinc-500 text-xs mb-2">
                     <MapPin className="w-3 h-3 flex-shrink-0" />
-                    <span className="truncate">{property.district}, {getRegionLabel(property.city)}</span>
+                    <span className="truncate">
+                      {property.district && property.city 
+                        ? `${property.district}, ${getRegionLabel(property.city)}`
+                        : property.city 
+                          ? getRegionLabel(property.city)
+                          : property.district || property.address || "Slovensko"}
+                    </span>
                   </div>
 
                   {/* Title */}
@@ -946,7 +952,11 @@ export function PropertyList() {
                       <div className="flex items-center gap-4 text-sm text-zinc-400">
                         <span className="flex items-center gap-1">
                           <MapPin className="w-3.5 h-3.5" />
-                          {property.district}, {getRegionLabel(property.city)}
+                          {property.district && property.city 
+                          ? `${property.district}, ${getRegionLabel(property.city)}`
+                          : property.city 
+                            ? getRegionLabel(property.city)
+                            : property.district || "Slovensko"}
                         </span>
                         <span className="flex items-center gap-1">
                           <Maximize2 className="w-3.5 h-3.5" />
