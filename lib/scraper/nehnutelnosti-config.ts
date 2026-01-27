@@ -77,7 +77,7 @@ async function pageFunction(context) {
         } catch (e) {}
 
         // =============================================
-        // 2. PRIAMA EXTRAKCIA Z HTML (pre Nehnutelnosti.sk)
+        // 2. AGRESÍVNY TEXTOVÝ SKENER
         // =============================================
         
         // Titulok
@@ -90,57 +90,74 @@ async function pageFunction(context) {
         const priceEl = document.querySelector('[class*="price-value"], [class*="price-main"], .cena');
         if (priceEl) result.price_raw = priceEl.textContent.trim();
 
-        // Parametre - hľadáme v konkrétnych riadkoch parametrov
-        const findParam = (keywords) => {
-            // Cielime na konkrétne kontajnery parametrov
-            const rows = Array.from(document.querySelectorAll('.parameter-row, .table-row, tr, li, dl dt, dl dd'));
-            for (const row of rows) {
-                const rowText = row.innerText || row.textContent || '';
-                if (keywords.some(kw => rowText.toLowerCase().includes(kw.toLowerCase()))) {
-                    // Vytiahneme len číselnú hodnotu
-                    const match = rowText.match(/(\\d+[\\d\\s,.]*)/);
-                    if (match) {
-                        return match[1].replace(/\\s/g, '').replace(',', '.');
+        // AGRESÍVNA EXTRAKCIA - hľadá reálne slová, nie CSS triedy
+        const getCleanText = (labels) => {
+            const elements = Array.from(document.querySelectorAll('span, li, td, dt, div'));
+            for (const el of elements) {
+                const text = (el.textContent || '').trim();
+                // Hľadáme presný label alebo label s dvojbodkou
+                const matchesLabel = labels.some(l => 
+                    text.toLowerCase() === l.toLowerCase() || 
+                    text.toLowerCase().startsWith(l.toLowerCase() + ':') ||
+                    text.toLowerCase().includes(l.toLowerCase() + ':')
+                );
+                
+                if (matchesLabel) {
+                    // Hodnota je buď za dvojbodkou, alebo v súrodencovi
+                    let val = null;
+                    
+                    // Skúsime súrodenca
+                    const sibling = el.nextElementSibling;
+                    if (sibling) {
+                        val = sibling.textContent.trim();
+                    }
+                    
+                    // Alebo text za dvojbodkou v tom istom elemente
+                    if (!val && text.includes(':')) {
+                        val = text.split(':').pop().trim();
+                    }
+                    
+                    // Alebo v rodičovi za dvojbodkou
+                    if (!val && el.parentElement) {
+                        const parentText = el.parentElement.textContent || '';
+                        if (parentText.includes(':')) {
+                            val = parentText.split(':').pop().trim();
+                        }
+                    }
+                    
+                    // Odfiltrujeme nezmysly (ID kódy, príliš dlhé stringy)
+                    if (val && val.length < 50 && val.length > 0 && !val.match(/^[a-zA-Z0-9]{20,}$/)) {
+                        return val;
                     }
                 }
             }
             return null;
         };
 
+        // Čísla extrahujeme osobitne
+        const getNumber = (labels) => {
+            const text = getCleanText(labels);
+            if (!text) return null;
+            const match = text.match(/(\\d+[\\d,.]*)/);
+            return match ? match[1].replace(/\\s/g, '').replace(',', '.') : null;
+        };
+
         // Ak JSON-LD nemal plochu, hľadáme v texte
         if (!result.area_m2) {
-            result.area_m2 = findParam(['Úžitková plocha', 'Plocha', 'Rozloha', 'Výmera']);
+            result.area_m2 = getNumber(['Úžitková plocha', 'Plocha', 'Podlahová plocha', 'Rozloha', 'Výmera']);
         }
 
         // Izby
-        result.rooms = findParam(['Počet izieb', 'Izby']);
+        result.rooms = getNumber(['Počet izieb', 'Izby']);
 
         // Poschodie  
-        result.floor = findParam(['Poschodie', 'Podlažie']);
+        result.floor = getNumber(['Poschodie', 'Podlažie']);
 
-        // Stav
-        const stavRow = Array.from(document.querySelectorAll('li, tr, div')).find(
-            el => el.textContent && el.textContent.toLowerCase().includes('stav objektu')
-        );
-        if (stavRow) {
-            const text = stavRow.textContent;
-            const colonIdx = text.indexOf(':');
-            if (colonIdx > -1) {
-                result.condition = text.substring(colonIdx + 1).trim();
-            }
-        }
+        // Stav - textová hodnota
+        result.condition = getCleanText(['Stav objektu', 'Stav nehnuteľnosti', 'Stav']);
 
-        // Konštrukcia
-        const konstrukciaRow = Array.from(document.querySelectorAll('li, tr, div')).find(
-            el => el.textContent && el.textContent.toLowerCase().includes('konštrukcia')
-        );
-        if (konstrukciaRow) {
-            const text = konstrukciaRow.textContent;
-            const colonIdx = text.indexOf(':');
-            if (colonIdx > -1) {
-                result.building_material = text.substring(colonIdx + 1).trim();
-            }
-        }
+        // Konštrukcia - textová hodnota
+        result.building_material = getCleanText(['Konštrukcia objektu', 'Konštrukcia', 'Materiál']);
 
         // Popis
         if (!result.description) {
