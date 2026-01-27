@@ -108,3 +108,20 @@ export {
   scrapeNehnutelnostiApify,
   scrapeBazosApify,
 } from "./apify-scraper";
+
+// Apify Service (Production scraping with webhooks)
+export {
+  runApifyScraper,
+  triggerSlovakiaScraping,
+  getApifyDatasetItems,
+  getApifyRunStatus,
+  waitForApifyRun,
+  type ApifyScrapedItem,
+} from "./apify-service";
+
+// Page Functions pre jednotlivé portály
+export {
+  NEHNUTELNOSTI_PAGE_FUNCTION,
+  BAZOS_PAGE_FUNCTION,
+  REALITY_PAGE_FUNCTION,
+} from "./nehnutelnosti-config";
