@@ -203,15 +203,20 @@ async function processItem(item: ApifyScrapedItem): Promise<{
     const area = parseArea(item.area_m2);
     const city = item.location?.city || "Slovensko";
     
-    // Validácia - musí mať cenu ALEBO byť "cena dohodou"
+    // Validácia - musí mať aspoň niečo užitočné (cena ALEBO plocha ALEBO obrázky)
     const isPriceNegotiable = item.price_raw?.toLowerCase().includes("dohodou");
-    if (price === 0 && !isPriceNegotiable) {
-      return { success: false, action: "skipped", error: "Invalid price" };
+    const hasPrice = price > 0 || isPriceNegotiable;
+    const hasArea = area > 0;
+    const hasImages = (item.images || []).length > 0;
+    const hasTitle = !!item.title;
+    
+    // Musí mať aspoň titulok a (cenu ALEBO plochu)
+    if (!hasTitle) {
+      return { success: false, action: "skipped", error: "Missing title" };
     }
     
-    // Validácia - musí mať plochu
-    if (area === 0) {
-      return { success: false, action: "skipped", error: "Invalid area" };
+    if (!hasPrice && !hasArea) {
+      return { success: false, action: "skipped", error: "Missing both price and area" };
     }
     
     const externalId = extractExternalId(item.url);
