@@ -18,10 +18,18 @@ import {
   List,
   X,
   TrendingDown,
+  Clock,
+  Flame,
+  Sparkles,
+  ArrowDownRight,
+  Building2,
+  Maximize2,
+  DoorOpen,
+  Zap,
 } from "lucide-react";
 import { normalizeCityName, getCityInfo } from "@/lib/constants/cities";
 
-// Slovenské kraje - mestá zodpovedajú formátu v databáze
+// Slovenské kraje
 const REGIONS = [
   { value: "BA", label: "Bratislavský", cities: ["Bratislava", "Pezinok", "Senec", "Malacky"] },
   { value: "TT", label: "Trnavský", cities: ["Trnava", "Piešťany", "Hlohovec", "Galanta", "Dunajská Streda", "Skalica", "Senica"] },
@@ -33,8 +41,6 @@ const REGIONS = [
   { value: "KE", label: "Košický", cities: ["Košice", "Michalovce", "Spišská Nová Ves", "Trebišov", "Rožňava", "Sobrance"] },
 ];
 
-// Regions are now handled by lib/constants/cities.ts
-
 const CONDITIONS = [
   { value: "POVODNY", label: "Pôvodný stav" },
   { value: "REKONSTRUKCIA", label: "Po rekonštrukcii" },
@@ -45,7 +51,7 @@ const SORT_OPTIONS = [
   { value: "createdAt", label: "Najnovšie" },
   { value: "price", label: "Cena" },
   { value: "area", label: "Plocha" },
-  { value: "price_per_m2", label: "Cena za m²" },
+  { value: "price_per_m2", label: "Cena/m²" },
 ];
 
 interface Property {
@@ -75,7 +81,6 @@ interface Property {
   } | null;
 }
 
-// Batch metriky pre investor insights
 interface PriceHistoryPoint {
   price: number;
   date: string;
@@ -103,14 +108,6 @@ interface BatchMetrics {
     history: PriceHistoryPoint[];
   };
 }
-
-// Rental data is collected in background for yield calculations but not shown in UI
-
-// Zdroje inzerátov
-const SOURCES = [
-  { value: "", label: "Všetky zdroje" },
-  { value: "NEHNUTELNOSTI", label: "Nehnutelnosti.sk" },
-];
 
 interface Filters {
   search: string;
@@ -146,21 +143,6 @@ const defaultFilters: Filters = {
   sortOrder: "desc",
 };
 
-// Štýly pre zdroje
-function getSourceStyle(source: string): { label: string; bg: string; text: string } {
-  switch (source) {
-    case "NEHNUTELNOSTI":
-      return { label: "Nehnutelnosti.sk", bg: "bg-blue-500/20", text: "text-blue-400" };
-    default:
-      return { label: source, bg: "bg-slate-500/20", text: "text-slate-400" };
-  }
-}
-
-// Štýly pre typ inzerátu (only PREDAJ shown in UI, PRENAJOM collected in background for yield calculations)
-function getListingTypeStyle(_type: string): { label: string; bg: string; text: string } {
-  return { label: "Predaj", bg: "bg-emerald-500/20", text: "text-emerald-400" };
-}
-
 export function PropertyList() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -176,15 +158,11 @@ export function PropertyList() {
   });
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [savingId, setSavingId] = useState<string | null>(null);
-  
-  // Investor batch metrics
   const [batchMetrics, setBatchMetrics] = useState<Record<string, BatchMetrics>>({});
   
-  // Load user preferences (but DON'T auto-apply them to filters - let user choose)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { preferences: _preferences, isLoading: prefsLoading } = useUserPreferences();
   
-  // Set filters as initialized immediately - don't wait for or apply preferences
   useEffect(() => {
     if (!filtersInitialized) {
       setFiltersInitialized(true);
@@ -196,8 +174,6 @@ export function PropertyList() {
   const fetchProperties = useCallback(async () => {
     try {
       setLoading(true);
-      
-      // Zostav query string
       const params = new URLSearchParams();
       params.append("page", page.toString());
       params.append("limit", ITEMS_PER_PAGE.toString());
@@ -208,14 +184,12 @@ export function PropertyList() {
       if (filters.listingType) params.append("listingType", filters.listingType);
       if (filters.source) params.append("source", filters.source);
       
-      // Mapuj región na mestá - "Všetky kraje" znamená žiadny filter
       if (filters.region) {
         const region = REGIONS.find(r => r.value === filters.region);
         if (region) {
           params.append("cities", region.cities.join(","));
         }
       }
-      // Keď je region prázdny, nepoužívame žiadny mestský filter - zobrazia sa všetky nehnuteľnosti
       
       if (filters.minPrice) params.append("minPrice", filters.minPrice);
       if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
@@ -228,9 +202,7 @@ export function PropertyList() {
 
       const response = await fetch(`/api/v1/properties/filtered?${params.toString()}`);
       
-      if (!response.ok) {
-        throw new Error("Failed to fetch properties");
-      }
+      if (!response.ok) throw new Error("Failed to fetch properties");
       
       const data = await response.json();
       setProperties(data.data || []);
@@ -256,7 +228,6 @@ export function PropertyList() {
     }
   }, []);
 
-  // Fetch batch investor metrics for all displayed properties
   const fetchBatchMetrics = useCallback(async (propertyIds: string[]) => {
     if (propertyIds.length === 0) return;
     try {
@@ -277,7 +248,6 @@ export function PropertyList() {
   }, []);
 
   useEffect(() => {
-    // Wait for filters to be initialized from user preferences
     if (!filtersInitialized) return;
     fetchProperties();
   }, [fetchProperties, filtersInitialized]);
@@ -286,7 +256,6 @@ export function PropertyList() {
     fetchSavedProperties();
   }, [fetchSavedProperties]);
 
-  // Fetch investor metrics when properties change
   useEffect(() => {
     if (properties.length > 0) {
       const ids = properties.map(p => p.id);
@@ -299,9 +268,7 @@ export function PropertyList() {
     setSavingId(propertyId);
     try {
       if (savedIds.has(propertyId)) {
-        await fetch(`/api/v1/saved-properties?propertyId=${propertyId}`, {
-          method: "DELETE",
-        });
+        await fetch(`/api/v1/saved-properties?propertyId=${propertyId}`, { method: "DELETE" });
         setSavedIds((prev) => {
           const next = new Set(prev);
           next.delete(propertyId);
@@ -324,7 +291,7 @@ export function PropertyList() {
 
   const handleFilterChange = (key: keyof Filters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
-    setPage(1); // Reset page when filters change
+    setPage(1);
   };
 
   const clearFilters = () => {
@@ -332,10 +299,8 @@ export function PropertyList() {
     setPage(1);
   };
 
-  // Count only truly user-set filters (exclude sorting and defaults)
   const activeFiltersCount = useMemo(() => {
     let count = 0;
-    // Only count these specific filters if they have non-default values
     if (filters.search) count++;
     if (filters.region) count++;
     if (filters.source) count++;
@@ -347,7 +312,6 @@ export function PropertyList() {
     if (filters.maxRooms) count++;
     if (filters.condition) count++;
     if (filters.minYield) count++;
-    // listingType is always PREDAJ now (not user-selectable), don't count it
     return count;
   }, [filters]);
 
@@ -361,306 +325,536 @@ export function PropertyList() {
     return CONDITIONS.find((c) => c.value === condition)?.label || condition;
   };
 
+  // Investor-focused badges
+  const getPropertyBadges = (property: Property, metrics?: BatchMetrics) => {
+    const badges: { icon: React.ReactNode; label: string; color: string; priority: number }[] = [];
+    
+    // Hot deal - significant price drop
+    if (metrics?.priceStory?.totalChangePercent && metrics.priceStory.totalChangePercent <= -10) {
+      badges.push({
+        icon: <Flame className="w-3 h-3" />,
+        label: `${Math.abs(metrics.priceStory.totalChangePercent)}% zľava`,
+        color: "bg-gradient-to-r from-orange-500 to-red-500 text-white",
+        priority: 1,
+      });
+    }
+    
+    // Fresh listing
+    if (property.days_on_market <= 3) {
+      badges.push({
+        icon: <Sparkles className="w-3 h-3" />,
+        label: "Novinka",
+        color: "bg-gradient-to-r from-violet-500 to-purple-500 text-white",
+        priority: 2,
+      });
+    }
+    
+    // High yield
+    if (property.investmentMetrics && property.investmentMetrics.gross_yield >= 6) {
+      badges.push({
+        icon: <Zap className="w-3 h-3" />,
+        label: `${property.investmentMetrics.gross_yield.toFixed(1)}% výnos`,
+        color: "bg-gradient-to-r from-emerald-500 to-teal-500 text-white",
+        priority: 3,
+      });
+    }
+    
+    // Long on market (negotiation opportunity)
+    if (property.days_on_market >= 60) {
+      badges.push({
+        icon: <Clock className="w-3 h-3" />,
+        label: `${property.days_on_market}d`,
+        color: "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30",
+        priority: 4,
+      });
+    }
+    
+    // Multiple price drops
+    if (metrics?.priceDrops && metrics.priceDrops >= 2) {
+      badges.push({
+        icon: <ArrowDownRight className="w-3 h-3" />,
+        label: `${metrics.priceDrops}x znížené`,
+        color: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
+        priority: 5,
+      });
+    }
+    
+    return badges.sort((a, b) => a.priority - b.priority).slice(0, 2);
+  };
+
   return (
     <div className="space-y-6">
-      {/* Search and Filter Bar */}
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-4">
-        <div className="flex flex-col lg:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Hľadať podľa názvu, adresy alebo okresu..."
-              value={filters.search}
-              onChange={(e) => handleFilterChange("search", e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-emerald-500"
-            />
-          </div>
+      {/* Modern Search Bar */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-transparent to-blue-500/10 rounded-2xl blur-xl"></div>
+        <div className="relative bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-slate-800/50 p-5">
+          {/* Main Search Row */}
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search Input */}
+            <div className="flex-1 relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+              <input
+                type="text"
+                placeholder="Hľadať nehnuteľnosti..."
+                value={filters.search}
+                onChange={(e) => handleFilterChange("search", e.target.value)}
+                className="w-full pl-12 pr-4 py-3.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:bg-slate-800 transition-all"
+              />
+            </div>
 
-          {/* Region Select */}
-          <select
-            value={filters.region}
-            onChange={(e) => handleFilterChange("region", e.target.value)}
-            className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-emerald-500 min-w-[180px]"
-          >
-            <option value="">Všetky kraje</option>
-            {REGIONS.map((region) => (
-              <option key={region.value} value={region.value}>
-                {region.label} kraj
-              </option>
-            ))}
-          </select>
+            {/* Quick Filters */}
+            <div className="flex flex-wrap gap-2 items-center">
+              {/* Region */}
+              <select
+                value={filters.region}
+                onChange={(e) => handleFilterChange("region", e.target.value)}
+                className="px-4 py-3.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white focus:outline-none focus:border-emerald-500/50 min-w-[160px] cursor-pointer"
+              >
+                <option value="">Celé Slovensko</option>
+                {REGIONS.map((region) => (
+                  <option key={region.value} value={region.value}>
+                    {region.label}
+                  </option>
+                ))}
+              </select>
 
-          {/* Sort */}
-          <div className="flex gap-2">
-            <select
-              value={filters.sortBy}
-              onChange={(e) => handleFilterChange("sortBy", e.target.value)}
-              className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-emerald-500"
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={() => handleFilterChange("sortOrder", filters.sortOrder === "asc" ? "desc" : "asc")}
-              className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 hover:border-emerald-500 transition-colors"
-            >
-              {filters.sortOrder === "asc" ? "↑" : "↓"}
-            </button>
-          </div>
-
-          {/* Filter Toggle */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-3 rounded-lg border transition-colors ${
-              showFilters || activeFiltersCount > 0
-                ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400"
-                : "bg-slate-800 border-slate-700 text-slate-100 hover:border-emerald-500"
-            }`}
-          >
-            <SlidersHorizontal className="w-5 h-5" />
-            <span>Filtre</span>
-            {activeFiltersCount > 0 && (
-              <span className="px-2 py-0.5 bg-emerald-500 text-white text-xs rounded-full">
-                {activeFiltersCount}
-              </span>
-            )}
-          </button>
-
-          {/* View Mode */}
-          <div className="flex bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`p-3 ${viewMode === "grid" ? "bg-emerald-500/20 text-emerald-400" : "text-slate-400"}`}
-            >
-              <LayoutGrid className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`p-3 ${viewMode === "list" ? "bg-emerald-500/20 text-emerald-400" : "text-slate-400"}`}
-            >
-              <List className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Source Filter */}
-        <div className="mt-4 flex items-center gap-2">
-          <span className="text-sm text-slate-400">Zdroj:</span>
-          {SOURCES.map((src) => (
-            <button
-              key={src.value}
-              onClick={() => handleFilterChange("source", filters.source === src.value ? "" : src.value)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                filters.source === src.value
-                  ? "bg-indigo-600 text-white"
-                  : "bg-slate-800 text-slate-400 hover:bg-slate-700"
-              }`}
-            >
-              {src.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Expanded Filters */}
-        {showFilters && (
-          <div className="mt-4 pt-4 border-t border-slate-700">
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {/* Price Range */}
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">
-                  Min. cena (€)
-                </label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={filters.minPrice}
-                  onChange={(e) => handleFilterChange("minPrice", e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Max. cena (€)</label>
-                <input
-                  type="number"
-                  placeholder="∞"
-                  value={filters.maxPrice}
-                  onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              {/* Area Range */}
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Min. plocha (m²)</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={filters.minArea}
-                  onChange={(e) => handleFilterChange("minArea", e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Max. plocha (m²)</label>
-                <input
-                  type="number"
-                  placeholder="∞"
-                  value={filters.maxArea}
-                  onChange={(e) => handleFilterChange("maxArea", e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              {/* Rooms */}
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Min. izieb</label>
-                <input
-                  type="number"
-                  placeholder="1"
-                  min="1"
-                  value={filters.minRooms}
-                  onChange={(e) => handleFilterChange("minRooms", e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Max. izieb</label>
-                <input
-                  type="number"
-                  placeholder="∞"
-                  min="1"
-                  value={filters.maxRooms}
-                  onChange={(e) => handleFilterChange("maxRooms", e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              {/* Condition */}
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Stav</label>
+              {/* Sort */}
+              <div className="flex items-center bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
                 <select
-                  value={filters.condition}
-                  onChange={(e) => handleFilterChange("condition", e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
+                  value={filters.sortBy}
+                  onChange={(e) => handleFilterChange("sortBy", e.target.value)}
+                  className="px-4 py-3.5 bg-transparent text-white focus:outline-none cursor-pointer border-r border-slate-700/50"
                 >
-                  <option value="">Všetky</option>
-                  {CONDITIONS.map((cond) => (
-                    <option key={cond.value} value={cond.value}>
-                      {cond.label}
+                  {SORT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
                     </option>
                   ))}
                 </select>
-              </div>
-
-              {/* Min Yield */}
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Min. výnos (%)</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  step="0.1"
-                  value={filters.minYield}
-                  onChange={(e) => handleFilterChange("minYield", e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-            </div>
-
-            {/* Clear Filters */}
-            {activeFiltersCount > 0 && (
-              <div className="mt-4 flex justify-end">
                 <button
-                  onClick={clearFilters}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-slate-400 hover:text-slate-100 transition-colors"
+                  onClick={() => handleFilterChange("sortOrder", filters.sortOrder === "asc" ? "desc" : "asc")}
+                  className="px-4 py-3.5 text-slate-400 hover:text-white transition-colors"
                 >
-                  <X className="w-4 h-4" />
-                  Vymazať filtre
+                  {filters.sortOrder === "asc" ? "↑" : "↓"}
                 </button>
               </div>
-            )}
+
+              {/* Advanced Filters Toggle */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-2 px-4 py-3.5 rounded-xl border transition-all ${
+                  showFilters || activeFiltersCount > 0
+                    ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400"
+                    : "bg-slate-800/50 border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-600"
+                }`}
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+                <span className="hidden sm:inline">Filtre</span>
+                {activeFiltersCount > 0 && (
+                  <span className="w-5 h-5 flex items-center justify-center bg-emerald-500 text-white text-xs rounded-full">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </button>
+
+              {/* View Mode */}
+              <div className="flex bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-3.5 transition-all ${viewMode === "grid" ? "bg-emerald-500/20 text-emerald-400" : "text-slate-400 hover:text-white"}`}
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-3.5 transition-all ${viewMode === "list" ? "bg-emerald-500/20 text-emerald-400" : "text-slate-400 hover:text-white"}`}
+                >
+                  <List className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
-        )}
+
+          {/* Expanded Filters */}
+          {showFilters && (
+            <div className="mt-5 pt-5 border-t border-slate-700/50">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div>
+                  <label className="block text-xs text-slate-500 mb-2 uppercase tracking-wider">Min. cena</label>
+                  <input
+                    type="number"
+                    placeholder="€0"
+                    value={filters.minPrice}
+                    onChange={(e) => handleFilterChange("minPrice", e.target.value)}
+                    className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500/50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-2 uppercase tracking-wider">Max. cena</label>
+                  <input
+                    type="number"
+                    placeholder="€∞"
+                    value={filters.maxPrice}
+                    onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
+                    className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500/50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-2 uppercase tracking-wider">Min. plocha</label>
+                  <input
+                    type="number"
+                    placeholder="0 m²"
+                    value={filters.minArea}
+                    onChange={(e) => handleFilterChange("minArea", e.target.value)}
+                    className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500/50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-2 uppercase tracking-wider">Max. plocha</label>
+                  <input
+                    type="number"
+                    placeholder="∞ m²"
+                    value={filters.maxArea}
+                    onChange={(e) => handleFilterChange("maxArea", e.target.value)}
+                    className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500/50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-2 uppercase tracking-wider">Izby</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="Od"
+                      min="1"
+                      value={filters.minRooms}
+                      onChange={(e) => handleFilterChange("minRooms", e.target.value)}
+                      className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500/50"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Do"
+                      min="1"
+                      value={filters.maxRooms}
+                      onChange={(e) => handleFilterChange("maxRooms", e.target.value)}
+                      className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500/50"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-2 uppercase tracking-wider">Stav</label>
+                  <select
+                    value={filters.condition}
+                    onChange={(e) => handleFilterChange("condition", e.target.value)}
+                    className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500/50 cursor-pointer"
+                  >
+                    <option value="">Všetky</option>
+                    {CONDITIONS.map((cond) => (
+                      <option key={cond.value} value={cond.value}>{cond.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {activeFiltersCount > 0 && (
+                <div className="mt-4 flex justify-end">
+                  <button
+                    onClick={clearFilters}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                    Vymazať filtre
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Results Count */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between px-1">
         <p className="text-slate-400">
           {loading ? (
-            "Načítavam..."
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Načítavam...
+            </span>
           ) : (
             <>
-              Nájdených <span className="text-slate-100 font-medium">{pagination.totalCount}</span> nehnuteľností
+              Nájdených <span className="text-white font-semibold">{pagination.totalCount.toLocaleString()}</span> nehnuteľností
             </>
           )}
         </p>
       </div>
 
-      {/* Properties Grid/List */}
+      {/* Properties */}
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+        <div className="flex items-center justify-center py-20">
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-slate-700 rounded-full"></div>
+              <div className="absolute top-0 left-0 w-16 h-16 border-4 border-emerald-500 rounded-full animate-spin border-t-transparent"></div>
+            </div>
+            <p className="text-slate-400">Hľadám nehnuteľnosti...</p>
+          </div>
         </div>
       ) : properties.length === 0 ? (
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-12 text-center">
-          <Home className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-slate-300 mb-2">Žiadne nehnuteľnosti</h3>
-          <p className="text-slate-500">Skúste upraviť filtre alebo vyhľadávanie</p>
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-800/50 to-transparent rounded-2xl"></div>
+          <div className="relative bg-slate-900/50 backdrop-blur rounded-2xl border border-slate-800/50 p-16 text-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-slate-800/50 flex items-center justify-center">
+              <Building2 className="w-10 h-10 text-slate-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-2">Žiadne nehnuteľnosti</h3>
+            <p className="text-slate-400 max-w-md mx-auto">
+              Skúste upraviť vyhľadávacie kritériá alebo odstrániť niektoré filtre
+            </p>
+            {activeFiltersCount > 0 && (
+              <button
+                onClick={clearFilters}
+                className="mt-6 px-6 py-3 bg-emerald-500/20 text-emerald-400 rounded-xl hover:bg-emerald-500/30 transition-colors"
+              >
+                Vymazať filtre
+              </button>
+            )}
+          </div>
         </div>
       ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {properties.map((property) => {
             const isSaved = savedIds.has(property.id);
             const isSaving = savingId === property.id;
+            const metrics = batchMetrics[property.id];
+            const badges = getPropertyBadges(property, metrics);
 
             return (
               <div
                 key={property.id}
                 onClick={() => window.location.href = `/dashboard/property/${property.id}`}
-                className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden hover:border-emerald-500/30 transition-colors group cursor-pointer"
+                className="group relative bg-slate-900/80 backdrop-blur rounded-2xl border border-slate-800/50 overflow-hidden hover:border-emerald-500/30 transition-all duration-300 cursor-pointer hover:shadow-lg hover:shadow-emerald-500/5"
               >
-                {/* Header with badges */}
-                <div className="p-4 border-b border-slate-800">
-                  {/* Source & Type badges */}
-                  <div className="flex items-center gap-2 mb-2">
-                    {(() => {
-                      const typeStyle = getListingTypeStyle(property.listing_type);
-                      return (
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${typeStyle.bg} ${typeStyle.text}`}>
-                          {typeStyle.label}
-                        </span>
-                      );
-                    })()}
-                    {(() => {
-                      const srcStyle = getSourceStyle(property.source);
-                      return (
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${srcStyle.bg} ${srcStyle.text}`}>
-                          {srcStyle.label}
-                        </span>
-                      );
-                    })()}
+                {/* Top Badges */}
+                {badges.length > 0 && (
+                  <div className="absolute top-3 left-3 z-10 flex gap-2">
+                    {badges.map((badge, i) => (
+                      <span key={i} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${badge.color}`}>
+                        {badge.icon}
+                        {badge.label}
+                      </span>
+                    ))}
                   </div>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-slate-100 truncate group-hover:text-emerald-400 transition-colors">
-                        {property.title}
-                      </h3>
-                      <div className="flex items-center gap-1 text-sm text-slate-400 mt-1">
-                        <MapPin className="w-4 h-4" />
-                        <span className="truncate">{property.district}, {getRegionLabel(property.city)}</span>
+                )}
+
+                {/* Save Button */}
+                <button
+                  onClick={(e) => toggleSave(property.id, e)}
+                  disabled={isSaving}
+                  className={`absolute top-3 right-3 z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                    isSaved
+                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25"
+                      : "bg-slate-800/80 backdrop-blur text-slate-400 hover:text-white hover:bg-slate-700"
+                  }`}
+                >
+                  {isSaving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : isSaved ? (
+                    <BookmarkCheck className="w-4 h-4" />
+                  ) : (
+                    <Bookmark className="w-4 h-4" />
+                  )}
+                </button>
+
+                {/* Card Content */}
+                <div className="p-5">
+                  {/* Location */}
+                  <div className="flex items-center gap-1.5 text-slate-400 text-sm mb-3">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span className="truncate">{property.district}, {getRegionLabel(property.city)}</span>
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="font-semibold text-white text-lg leading-tight mb-4 line-clamp-2 group-hover:text-emerald-400 transition-colors min-h-[3.5rem]">
+                    {property.title}
+                  </h3>
+
+                  {/* Key Metrics */}
+                  <div className="grid grid-cols-3 gap-3 mb-5">
+                    <div className="bg-slate-800/50 rounded-xl p-3 text-center">
+                      <div className="flex items-center justify-center gap-1 text-slate-400 text-xs mb-1">
+                        <Maximize2 className="w-3 h-3" />
+                        <span>Plocha</span>
+                      </div>
+                      <p className="text-white font-semibold">{property.area_m2} m²</p>
+                    </div>
+                    <div className="bg-slate-800/50 rounded-xl p-3 text-center">
+                      <div className="flex items-center justify-center gap-1 text-slate-400 text-xs mb-1">
+                        <DoorOpen className="w-3 h-3" />
+                        <span>Izby</span>
+                      </div>
+                      <p className="text-white font-semibold">{property.rooms || "–"}</p>
+                    </div>
+                    <div className="bg-slate-800/50 rounded-xl p-3 text-center">
+                      <div className="flex items-center justify-center gap-1 text-slate-400 text-xs mb-1">
+                        <Home className="w-3 h-3" />
+                        <span>Stav</span>
+                      </div>
+                      <p className="text-white font-semibold text-xs">{getConditionLabel(property.condition).split(" ")[0]}</p>
+                    </div>
+                  </div>
+
+                  {/* Price Section */}
+                  <div className="flex items-end justify-between pt-4 border-t border-slate-800/50">
+                    <div>
+                      <p className="text-3xl font-bold text-white">
+                        €{property.price.toLocaleString()}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-sm text-slate-400">
+                          €{property.price_per_m2.toLocaleString()}/m²
+                        </span>
+                        {/* Price History Mini */}
+                        {metrics?.priceStory?.totalChangePercent && metrics.priceStory.totalChangePercent < 0 && (
+                          <span className="flex items-center gap-0.5 text-xs text-emerald-400">
+                            <TrendingDown className="w-3 h-3" />
+                            {Math.abs(metrics.priceStory.totalChangePercent)}%
+                          </span>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
+
+                    {/* Yield Badge */}
+                    {property.investmentMetrics && property.investmentMetrics.gross_yield > 0 && (
+                      <div className="text-right">
+                        <div className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg ${
+                          property.investmentMetrics.gross_yield >= 6
+                            ? "bg-emerald-500/20 text-emerald-400"
+                            : property.investmentMetrics.gross_yield >= 4
+                            ? "bg-blue-500/20 text-blue-400"
+                            : "bg-slate-700/50 text-slate-400"
+                        }`}>
+                          <TrendingUp className="w-3.5 h-3.5" />
+                          <span className="font-bold">{property.investmentMetrics.gross_yield.toFixed(1)}%</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1">výnos</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quick Actions Footer */}
+                <div className="px-5 py-3 bg-slate-800/30 border-t border-slate-800/50 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <Clock className="w-3 h-3" />
+                    <span>{property.days_on_market} dní v ponuke</span>
+                  </div>
+                  {property.source_url && (
+                    <a
+                      href={property.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-blue-400 transition-colors"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      Originál
+                    </a>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        /* List View */
+        <div className="space-y-3">
+          {properties.map((property) => {
+            const isSaved = savedIds.has(property.id);
+            const isSaving = savingId === property.id;
+            const metrics = batchMetrics[property.id];
+            const badges = getPropertyBadges(property, metrics);
+
+            return (
+              <div
+                key={property.id}
+                onClick={() => window.location.href = `/dashboard/property/${property.id}`}
+                className="group relative bg-slate-900/80 backdrop-blur rounded-xl border border-slate-800/50 p-5 hover:border-emerald-500/30 transition-all cursor-pointer hover:shadow-lg hover:shadow-emerald-500/5"
+              >
+                <div className="flex items-center gap-6">
+                  {/* Left: Badges + Info */}
+                  <div className="flex-1 min-w-0">
+                    {/* Badges */}
+                    {badges.length > 0 && (
+                      <div className="flex gap-2 mb-2">
+                        {badges.map((badge, i) => (
+                          <span key={i} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${badge.color}`}>
+                            {badge.icon}
+                            {badge.label}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Title & Location */}
+                    <h3 className="font-semibold text-white truncate group-hover:text-emerald-400 transition-colors mb-1">
+                      {property.title}
+                    </h3>
+                    <div className="flex items-center gap-4 text-sm text-slate-400">
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5" />
+                        {property.district}, {getRegionLabel(property.city)}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Maximize2 className="w-3.5 h-3.5" />
+                        {property.area_m2} m²
+                      </span>
+                      {property.rooms && (
+                        <span className="flex items-center gap-1">
+                          <DoorOpen className="w-3.5 h-3.5" />
+                          {property.rooms} izby
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" />
+                        {property.days_on_market}d
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right: Price + Yield */}
+                  <div className="flex items-center gap-6">
+                    {/* Price */}
+                    <div className="text-right min-w-[140px]">
+                      <p className="text-2xl font-bold text-white">
+                        €{property.price.toLocaleString()}
+                      </p>
+                      <p className="text-sm text-slate-400">
+                        €{property.price_per_m2.toLocaleString()}/m²
+                      </p>
+                    </div>
+
+                    {/* Yield */}
+                    {property.investmentMetrics && (
+                      <div className={`text-center px-4 py-2 rounded-xl min-w-[80px] ${
+                        property.investmentMetrics.gross_yield >= 6
+                          ? "bg-emerald-500/20 text-emerald-400"
+                          : "bg-slate-800/50 text-slate-400"
+                      }`}>
+                        <p className="text-xl font-bold flex items-center justify-center gap-1">
+                          <TrendingUp className="w-4 h-4" />
+                          {property.investmentMetrics.gross_yield.toFixed(1)}%
+                        </p>
+                        <p className="text-xs opacity-70">výnos</p>
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={(e) => toggleSave(property.id, e)}
                         disabled={isSaving}
-                        className={`p-2 rounded-lg transition-colors ${
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                           isSaved
-                            ? "bg-emerald-500/20 text-emerald-400"
+                            ? "bg-emerald-500 text-white"
                             : "bg-slate-800 text-slate-400 hover:text-emerald-400"
                         }`}
                       >
@@ -677,190 +871,13 @@ export function PropertyList() {
                           href={property.source_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-blue-400 transition-colors"
                           onClick={(e) => e.stopPropagation()}
+                          className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 hover:text-blue-400 transition-colors"
                         >
                           <ExternalLink className="w-4 h-4" />
                         </a>
                       )}
                     </div>
-                  </div>
-                </div>
-
-                {/* Details */}
-                <div className="p-4 space-y-4">
-                  {/* Quick Stats */}
-                  <div className="flex items-center gap-4 text-sm">
-                    {property.rooms && (
-                      <div className="flex items-center gap-1 text-slate-400">
-                        <Home className="w-4 h-4" />
-                        <span>{property.rooms} {property.rooms === 1 ? "izba" : property.rooms < 5 ? "izby" : "izieb"}</span>
-                      </div>
-                    )}
-                    <div className="text-slate-400">{property.area_m2} m²</div>
-                    <div className="px-2 py-0.5 bg-slate-800 rounded text-xs text-slate-300">
-                      {getConditionLabel(property.condition)}
-                    </div>
-                  </div>
-
-                  {/* Price and Yield */}
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p className="text-2xl font-bold text-slate-100">
-                        €{property.price.toLocaleString()}
-                      </p>
-                      <p className="text-sm text-slate-400">
-                        €{property.price_per_m2.toLocaleString()}/m²
-                      </p>
-                      {/* Price Story - inline */}
-                      {(() => {
-                        const metrics = batchMetrics[property.id];
-                        const story = metrics?.priceStory;
-                        if (!story || !story.originalPrice || story.history.length <= 1) {
-                          return null;
-                        }
-                        return (
-                          <div className="flex items-center gap-1.5 mt-1 text-xs">
-                            {story.history.slice(-3).map((h, i, arr) => (
-                              <span key={i} className="flex items-center gap-0.5">
-                                {i > 0 && (
-                                  <TrendingDown className="w-3 h-3 text-emerald-400" />
-                                )}
-                                <span className={i === 0 ? "text-slate-500 line-through" : "text-slate-300"}>
-                                  {(h.price / 1000).toFixed(0)}k
-                                </span>
-                              </span>
-                            ))}
-                            {story.totalChangePercent !== null && story.totalChangePercent < 0 && (
-                              <span className="text-emerald-400 font-medium ml-1">
-                                ({story.totalChangePercent}%)
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })()}
-                    </div>
-                    {property.investmentMetrics && (
-                      <div className="text-right">
-                        <div className="flex items-center gap-1 text-emerald-400">
-                          <TrendingUp className="w-4 h-4" />
-                          <span className="font-bold">
-                            {property.investmentMetrics.gross_yield.toFixed(1)}%
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-500">hrubý výnos</p>
-                      </div>
-                    )}
-                  </div>
-
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        /* List View */
-        <div className="space-y-3">
-          {properties.map((property) => {
-            const isSaved = savedIds.has(property.id);
-            const isSaving = savingId === property.id;
-
-            return (
-              <div
-                key={property.id}
-                onClick={() => window.location.href = `/dashboard/property/${property.id}`}
-                className="bg-slate-900 rounded-xl border border-slate-800 p-4 hover:border-emerald-500/30 transition-colors cursor-pointer"
-              >
-                <div className="flex items-center gap-6">
-                  {/* Main Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      {/* Type & Source badges */}
-                      {(() => {
-                        const typeStyle = getListingTypeStyle(property.listing_type);
-                        return (
-                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${typeStyle.bg} ${typeStyle.text}`}>
-                            {typeStyle.label}
-                          </span>
-                        );
-                      })()}
-                      {(() => {
-                        const srcStyle = getSourceStyle(property.source);
-                        return (
-                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${srcStyle.bg} ${srcStyle.text}`}>
-                            {srcStyle.label}
-                          </span>
-                        );
-                      })()}
-                      <h3 className="font-semibold text-slate-100 truncate">
-                        {property.title}
-                      </h3>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-slate-400">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="w-4 h-4" />
-                        <span>{property.district}, {getRegionLabel(property.city)}</span>
-                      </div>
-                      {property.rooms && (
-                        <span>{property.rooms} izby</span>
-                      )}
-                      <span>{property.area_m2} m²</span>
-                      <span>{getConditionLabel(property.condition)}</span>
-                    </div>
-                  </div>
-
-                  {/* Price */}
-                  <div className="text-right">
-                    <p className="text-xl font-bold text-slate-100">
-                      €{property.price.toLocaleString()}
-                    </p>
-                    <p className="text-sm text-slate-400">
-                      €{property.price_per_m2.toLocaleString()}/m²
-                    </p>
-                  </div>
-
-                  {/* Yield */}
-                  {property.investmentMetrics && (
-                    <div className="text-right w-20">
-                      <div className="flex items-center justify-end gap-1 text-emerald-400">
-                        <TrendingUp className="w-4 h-4" />
-                        <span className="font-bold">
-                          {property.investmentMetrics.gross_yield.toFixed(1)}%
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500">výnos</p>
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={(e) => toggleSave(property.id, e)}
-                      disabled={isSaving}
-                      className={`p-2 rounded-lg transition-colors ${
-                        isSaved
-                          ? "bg-emerald-500/20 text-emerald-400"
-                          : "bg-slate-800 text-slate-400 hover:text-emerald-400"
-                      }`}
-                    >
-                      {isSaving ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : isSaved ? (
-                        <BookmarkCheck className="w-4 h-4" />
-                      ) : (
-                        <Bookmark className="w-4 h-4" />
-                      )}
-                    </button>
-                    {property.source_url && (
-                      <a
-                        href={property.source_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-blue-400 transition-colors"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
-                    )}
                   </div>
                 </div>
               </div>
@@ -871,17 +888,17 @@ export function PropertyList() {
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-2 pt-6">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed hover:border-emerald-500 transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed hover:border-emerald-500/50 transition-all"
           >
             <ChevronLeft className="w-4 h-4" />
-            Predchádzajúca
+            <span className="hidden sm:inline">Späť</span>
           </button>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
               let pageNum: number;
               if (pagination.totalPages <= 5) {
@@ -898,10 +915,10 @@ export function PropertyList() {
                 <button
                   key={pageNum}
                   onClick={() => setPage(pageNum)}
-                  className={`w-10 h-10 rounded-lg transition-colors ${
+                  className={`w-10 h-10 rounded-xl transition-all ${
                     page === pageNum
-                      ? "bg-emerald-500 text-white"
-                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25"
+                      : "bg-slate-800/50 text-slate-400 hover:bg-slate-700 hover:text-white"
                   }`}
                 >
                   {pageNum}
@@ -913,9 +930,9 @@ export function PropertyList() {
           <button
             onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
             disabled={page === pagination.totalPages}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed hover:border-emerald-500 transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed hover:border-emerald-500/50 transition-all"
           >
-            Ďalšia
+            <span className="hidden sm:inline">Ďalej</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
