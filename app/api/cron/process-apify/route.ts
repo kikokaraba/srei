@@ -14,6 +14,48 @@ import { getApifyDatasetItems, getApifyRunStatus } from "@/lib/scraper/apify-ser
 import { prisma } from "@/lib/prisma";
 import { generateCoreFingerprint } from "@/lib/matching/fingerprint";
 
+// Geocoding pomocou Nominatim (OpenStreetMap)
+async function geocodeAddress(city: string, district?: string, street?: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    let query = city;
+    if (district) query = `${district}, ${city}`;
+    if (street) query = `${street}, ${district || city}`;
+    query += ", Slovensko";
+
+    const url = `https://nominatim.openstreetmap.org/search?` + new URLSearchParams({
+      q: query,
+      format: "json",
+      limit: "1",
+      countrycodes: "sk",
+    });
+
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "SRIA-RealEstateApp/1.0",
+        "Accept": "application/json",
+      },
+    });
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    if (!data || data.length === 0) {
+      // Fallback - skús len mesto
+      if (district || street) {
+        return geocodeAddress(city);
+      }
+      return null;
+    }
+
+    return {
+      lat: parseFloat(data[0].lat),
+      lng: parseFloat(data[0].lon),
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ============================================================================
 // HELPER FUNKCIE
 // ============================================================================
@@ -359,8 +401,30 @@ export async function POST(request: NextRequest) {
           stats.updated++;
         } else {
           console.log(`➕ [ProcessApify] Creating: ${item.title?.substring(0, 50)} - ${city}`);
+          
+          // Geocoding - získaj GPS súradnice z adresy
+          let latitude: number | null = null;
+          let longitude: number | null = null;
+          
+          try {
+            const coords = await geocodeAddress(city, district, street);
+            if (coords) {
+              latitude = coords.lat;
+              longitude = coords.lng;
+              console.log(`📍 [ProcessApify] Geocoded: ${city} → ${latitude}, ${longitude}`);
+            }
+            // Rate limiting pre Nominatim (1 req/sec)
+            await new Promise(r => setTimeout(r, 1100));
+          } catch (e) {
+            console.warn(`⚠️ [ProcessApify] Geocoding failed for ${city}`);
+          }
+          
           const newProperty = await prisma.property.create({
-            data: propertyData as any,
+            data: {
+              ...propertyData,
+              latitude,
+              longitude,
+            } as any,
           });
           
           if (price > 0) {
