@@ -18,8 +18,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const sortBy = searchParams.get("sortBy") || undefined;
     const sortOrder = searchParams.get("sortOrder") || "desc";
-    const limit = parseInt(searchParams.get("limit") || "100", 10);
-    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = Math.min(500, Math.max(1, parseInt(searchParams.get("limit") || "12", 10) || 12));
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
     const skip = (page - 1) * limit;
 
     // Priame filtre z query parametrov
@@ -60,17 +60,18 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Typ inzerátu (predaj/prenájom)
+    const VALID_LISTING: ListingType[] = ["PREDAJ", "PRENAJOM"];
+    const VALID_SOURCES: PropertySource[] = ["BAZOS", "NEHNUTELNOSTI", "REALITY", "TOPREALITY", "MANUAL"];
+
     if (listingTypeParam) {
-      const types = listingTypeParam.split(",").filter(Boolean) as ListingType[];
+      const types = listingTypeParam.split(",").filter(Boolean).filter((t): t is ListingType => VALID_LISTING.includes(t as ListingType));
       if (types.length > 0) {
         where.listing_type = { in: types };
       }
     }
 
-    // Zdroj inzerátu (BAZOS, NEHNUTELNOSTI, REALITY, TOPREALITY)
     if (sourceParam) {
-      const sources = sourceParam.split(",").filter(Boolean) as PropertySource[];
+      const sources = sourceParam.split(",").filter(Boolean).filter((s): s is PropertySource => VALID_SOURCES.includes(s as PropertySource));
       if (sources.length > 0) {
         where.source = { in: sources };
       }
@@ -195,9 +196,10 @@ export async function GET(request: Request) {
       if (preferences.maxRooms) where.rooms.lte = preferences.maxRooms;
     }
 
-    // Stav nehnuteľnosti
+    const VALID_CONDITIONS: PropertyCondition[] = ["POVODNY", "REKONSTRUKCIA", "NOVOSTAVBA"];
+
     if (conditionParam) {
-      const conditions = conditionParam.split(",").filter(Boolean) as PropertyCondition[];
+      const conditions = conditionParam.split(",").filter(Boolean).filter((c): c is PropertyCondition => VALID_CONDITIONS.includes(c as PropertyCondition));
       if (conditions.length > 0) {
         where.condition = { in: conditions };
       }
@@ -205,8 +207,9 @@ export async function GET(request: Request) {
       try {
         const raw = preferences.condition?.trim();
         if (raw) {
-          const conditions = JSON.parse(raw) as PropertyCondition[];
-          if (Array.isArray(conditions) && conditions.length > 0) {
+          const parsed = JSON.parse(raw);
+          const conditions = Array.isArray(parsed) ? parsed.filter((c): c is PropertyCondition => VALID_CONDITIONS.includes(c as PropertyCondition)) : [];
+          if (conditions.length > 0) {
             where.condition = { in: conditions };
           }
         }
@@ -286,9 +289,11 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error fetching filtered properties:", error);
+    const msg = error instanceof Error ? error.message : "Unknown error";
+    const code = typeof (error as { code?: string })?.code === "string" ? (error as { code: string }).code : undefined;
+    console.error("Error fetching filtered properties:", msg, code ?? "", error);
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      { success: false, error: "Internal server error", code: code ?? undefined },
       { status: 500 }
     );
   }

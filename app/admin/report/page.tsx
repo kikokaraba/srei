@@ -185,20 +185,24 @@ export default function InvestorReportPage() {
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 h-64 min-h-[200px]">
-            <ResponsiveContainer width="100%" height="100%" minHeight={200}>
-              <BarChart data={alphaChartData} margin={{ top: 12, right: 12, left: 12, bottom: 12 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                <XAxis dataKey="name" tick={{ fill: "#a1a1aa", fontSize: 12 }} />
-                <YAxis tick={{ fill: "#a1a1aa", fontSize: 12 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip
-                  contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8 }}
-                  labelStyle={{ color: "#fafafa" }}
-                  formatter={(value: number | undefined) => [value != null ? formatEur(value) : "—", "Cena"]}
-                />
-                <Bar dataKey="value" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="lg:col-span-2 h-[256px] min-h-[200px]">
+            {data && alphaChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%" minHeight={200}>
+                <BarChart data={alphaChartData} margin={{ top: 12, right: 12, left: 12, bottom: 12 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                  <XAxis dataKey="name" tick={{ fill: "#a1a1aa", fontSize: 12 }} />
+                  <YAxis tick={{ fill: "#a1a1aa", fontSize: 12 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip
+                    contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8 }}
+                    labelStyle={{ color: "#fafafa" }}
+                    formatter={(value: number | undefined) => [value != null ? formatEur(value) : "—", "Cena"]}
+                  />
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full min-h-[200px] flex items-center justify-center text-zinc-500 text-sm">Žiadne dáta</div>
+            )}
           </div>
           <div className="flex flex-col justify-center rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 border border-emerald-500/30 p-6">
             <div className="text-xs font-medium text-emerald-400/80 uppercase tracking-wider mb-1">
@@ -234,30 +238,34 @@ export default function InvestorReportPage() {
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 h-56 min-h-[180px]">
-            <ResponsiveContainer width="100%" height="100%" minHeight={180}>
-              <LineChart
-                data={data?.hunter.alertsDaily ?? []}
-                margin={{ top: 8, right: 8, left: 8, bottom: 8 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                <XAxis dataKey="date" tick={{ fill: "#a1a1aa", fontSize: 11 }} />
-                <YAxis tick={{ fill: "#a1a1aa", fontSize: 11 }} />
-                <Tooltip
-                  contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8 }}
-                  labelStyle={{ color: "#fafafa" }}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="count"
-                  name="Hunter alertov"
-                  stroke="#f59e0b"
-                  strokeWidth={2}
-                  dot={{ fill: "#f59e0b", r: 3 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+          <div className="lg:col-span-2 h-[224px] min-h-[180px]">
+            {data && (data?.hunter?.alertsDaily?.length ?? 0) > 0 ? (
+              <ResponsiveContainer width="100%" height="100%" minHeight={180}>
+                <LineChart
+                  data={data?.hunter?.alertsDaily ?? []}
+                  margin={{ top: 8, right: 8, left: 8, bottom: 8 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                  <XAxis dataKey="date" tick={{ fill: "#a1a1aa", fontSize: 11 }} />
+                  <YAxis tick={{ fill: "#a1a1aa", fontSize: 11 }} />
+                  <Tooltip
+                    contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8 }}
+                    labelStyle={{ color: "#fafafa" }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="count"
+                    name="Hunter alertov"
+                    stroke="#f59e0b"
+                    strokeWidth={2}
+                    dot={{ fill: "#f59e0b", r: 3 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full min-h-[180px] flex items-center justify-center text-zinc-500 text-sm">Žiadne dáta</div>
+            )}
           </div>
           <div className="flex flex-col justify-center rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-500/5 border border-amber-500/30 p-6">
             <div className="text-xs font-medium text-amber-400/80 uppercase tracking-wider mb-1">
@@ -306,19 +314,23 @@ export default function InvestorReportPage() {
             Naša priemerná cena za m² vs. NBS. Veríme našim dátam; NBS je kontext.
           </p>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 h-48 min-h-[160px]">
-              <ResponsiveContainer width="100%" height="100%" minHeight={160}>
-                <BarChart data={liveVsNbsChartData} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                  <XAxis dataKey="name" tick={{ fill: "#a1a1aa", fontSize: 12 }} />
-                  <YAxis tick={{ fill: "#a1a1aa", fontSize: 12 }} tickFormatter={(v) => `${(v / 1000).toFixed(1)}k`} />
-                  <Tooltip
-                    contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8 }}
-                    formatter={(value: number | undefined) => [value != null ? `${value.toLocaleString()} €/m²` : "—", "€/m²"]}
-                  />
-                  <Bar dataKey="value" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="lg:col-span-2 h-[192px] min-h-[160px]">
+              {data && liveVsNbsChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%" minHeight={160}>
+                  <BarChart data={liveVsNbsChartData} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                    <XAxis dataKey="name" tick={{ fill: "#a1a1aa", fontSize: 12 }} />
+                    <YAxis tick={{ fill: "#a1a1aa", fontSize: 12 }} tickFormatter={(v) => `${(v / 1000).toFixed(1)}k`} />
+                    <Tooltip
+                      contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8 }}
+                      formatter={(value: number | undefined) => [value != null ? `${value.toLocaleString()} €/m²` : "—", "€/m²"]}
+                    />
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full min-h-[160px] flex items-center justify-center text-zinc-500 text-sm">Žiadne dáta</div>
+              )}
             </div>
             <div className="flex flex-col justify-center rounded-xl bg-zinc-800/30 border border-zinc-700/50 p-5">
               <div className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1">Rozdiel</div>

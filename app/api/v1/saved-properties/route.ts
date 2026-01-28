@@ -25,10 +25,6 @@ export async function GET() {
               orderBy: { recorded_at: "desc" },
               take: 10,
             },
-            snapshots: {
-              orderBy: { snapshotAt: "desc" },
-              take: 5,
-            },
           },
         },
       },
@@ -41,9 +37,11 @@ export async function GET() {
       count: savedProperties.length,
     });
   } catch (error) {
-    console.error("Error fetching saved properties:", error);
+    const msg = error instanceof Error ? error.message : "Unknown error";
+    const code = typeof (error as { code?: string })?.code === "string" ? (error as { code: string }).code : undefined;
+    console.error("Error fetching saved properties:", msg, code ?? "", error);
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      { success: false, error: "Internal server error", code: code ?? undefined },
       { status: 500 }
     );
   }
