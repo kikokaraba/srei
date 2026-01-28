@@ -21,7 +21,8 @@ import {
 
 const adminNav = [
   { name: "Prehľad", href: "/admin", icon: LayoutDashboard },
-  { name: "Growth Analytics", href: "/admin/growth", icon: Rocket, highlight: true },
+  { name: "Investor Report", href: "/admin/report", icon: BarChart3, highlight: true },
+  { name: "Growth Analytics", href: "/admin/growth", icon: Rocket },
   { name: "AI Brain", href: "/admin/ai-brain", icon: Brain },
   { name: "Používatelia", href: "/admin/users", icon: Users },
   { name: "Nehnuteľnosti", href: "/admin/properties", icon: Building },

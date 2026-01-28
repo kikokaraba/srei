@@ -799,6 +799,20 @@ model DataFetchLog {
   @@index([source, fetchedAt])
 }
 
+// Referral kódy pre partnerov (investičné skupiny)
+model ReferralCode {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  partnerName     String
+  commissionPct   Float    @default(10)
+  referredCount   Int      @default(0)
+  convertedCount  Int      @default(0)
+  paidCommission  Float    @default(0)
+  createdAt       DateTime @default(now())
+
+  @@index([code])
+}
+
 // Progres scrapingu - sleduje kde scraper skončil
 model ScrapeProgress {
   id              String   @id @default(cuid())

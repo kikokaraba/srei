@@ -182,4 +182,16 @@ Ukladá sa cez `/api/v1/dashboard/layout` (GET/POST).
 
 ---
 
+## 7. Investor Report (Admin)
+
+- **`/admin/report`**: „The Money View“ pre investorov.
+- **Market Arbitrage**: Bar chart (priem. trh vs. Hunter), widget „Celkový identifikovaný investičný potenciál (30 d)“.
+- **Bot Performance**: Line chart Hunter alertov denne, „Average Discovery Speed“.
+- **AI Efficiency**: % inzerátov s `investmentSummary`.
+- **Referral ROI**: Tabuľka kódov (partner, privedení, konverzia, provízia). Generovanie kódu cez „Admin Magic“.
+- **Admin Magic**: Vygenerovať referral kód (meno + % provízie), Global Credit Blast (kredity pre všetkých).
+- **API**: `GET /api/v1/admin/report`, `POST /api/v1/admin/report/credit-blast`, `POST /api/v1/admin/report/referral`. Model `ReferralCode`.
+
+---
+
 *Report vygenerovaný na základe analýzy `prisma/schema.prisma`, `app/dashboard/settings/page.tsx`, `app/api/v1/user/preferences/route.ts`, `lib/hooks/useUserPreferences.ts`, filtered API, PropertyList, AdvancedFilters, alerts a súvisiaceho kódu.*
