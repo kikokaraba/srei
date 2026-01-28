@@ -1,14 +1,7 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXTAUTH_URL || "https://srei.sk"),
@@ -40,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="sk" className="dark">
-      <body className={inter.className}>
+      <body>
         <ErrorBoundary>
           <Providers>{children}</Providers>
         </ErrorBoundary>

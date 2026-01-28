@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// Cache the response for 5 minutes
+export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 // Slovak cities with GPS coordinates

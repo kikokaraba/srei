@@ -1,5 +1,7 @@
 # Záchranný plán: 500 na `/properties/filtered` a `/saved-properties`
 
+**Pozn.:** Projekt beží na Verceli, bez lokálnej databázy. Build a DB sync sa dejú pri deployi.
+
 Keď frontend posiela správne požiadavky (mestá, filtre) ale API vracia **500**, väčšinou jde o **databázu** alebo **schému**.
 
 ---
