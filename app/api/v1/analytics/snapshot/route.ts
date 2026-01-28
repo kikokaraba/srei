@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { analyticsRateLimiter } from "@/lib/rate-limit";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getAggregatedMarketData } from "@/lib/data-sources";
+import { getAnalyticsSnapshotLive } from "@/lib/data-sources/realtime-stats";
 
 // Mapovanie miest na kódy krajov
 const CITY_TO_REGION: Record<string, string> = {
@@ -29,8 +30,19 @@ const REGION_NAMES: Record<string, string> = {
   TN: "Trenčiansky",
 };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const live = request.nextUrl.searchParams.get("live") === "true";
+
+    if (live) {
+      const { data, newLast7d, timestamp } = await getAnalyticsSnapshotLive();
+      return NextResponse.json({
+        success: true,
+        data,
+        timestamp,
+        newLast7d,
+      });
+    }
     // Rate limiting - skip ak rate limiter nie je dostupný
     try {
       const headersList = await headers();

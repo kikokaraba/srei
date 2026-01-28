@@ -4,7 +4,9 @@
 
 - **Zoznam nehnuteľností** (`/dashboard/properties`): Všetky inzeráty z Bazoš, Nehnuteľnosti.sk, Reality.sk. Filtrovanie podľa mesta, ceny, plochy, zdroja, atď.
 - **Cena, €/m², plocha, izby**: Priamo z inzerátov. Reálne.
-- **Dashboard LIVE ticker**: Počet ponúk, zmena ceny (30d), priemerná €/m² (Bratislava alebo SK) – z našej DB, aktualizované z inzerátov.
+- **Dashboard LIVE ticker**: Počet ponúk, zmena ceny (30d), priemerná €/m² (Bratislava alebo tvoj kraj z nastavení) – z našej DB, aktualizované z inzerátov.
+- **Widget Ekonomika** („100% živé dáta“): Cena/m², zmena 30d, počet ponúk, priemerný výnos (z `InvestmentMetrics`), najhorúcejšie / najlacnejšie mesto – výhradne z **scrapovaných inzerátov** a `realtime-stats` / `getMarketSummaryLive`. Žiadne NBS/ŠÚ odhady. API: `GET /api/v1/market-data?type=economy-live`.
+- **Analytické karty** (dashboard): Priem. výnos, počet nehnuteľností (+ nových za 7d), BA cena/m², top výnos podľa kraja – výhradne z **živých dát** cez `GET /api/v1/analytics/snapshot?live=true` (`getAnalyticsSnapshotLive`). Ceny a trendy z `realtime-stats`, výnosy z `InvestmentMetrics` po mestách.
 - **Porovnanie s trhom** (detail nehnuteľnosti): Priemerná €/m² v meste z našich inzerátov. Reálne.
 - **História cien** (timeline): Zmeny ceny z batch refresh / scraping. Reálne, ak sme inzerát viackrát skontrolovali.
 - **„Dostupné u partnerov“ (duplicity)**: Podobné inzeráty (mesto, plocha ±10 %, cena ±15 %) z iných portálov. Počet zdrojov a úspora sú z našich dát.
@@ -16,8 +18,9 @@
 
 ## NBS a makro dáta
 
-- **Analytické karty** (priem. výnos, BA cena/m², atď.): Z NBS (štvrťročné ceny) + statické odhady nájmov a „market indicators“. Nie priamo z našich listingov.
-- **NBS** používame pre trendové a makro porovnanie; pre živé čísla z trhu slúži realtime API a dashboard ticker.
+- **Analytické karty** (priem. výnos, BA cena/m², …): Pri `?live=true` používajú **iba živé dáta** (`getAnalyticsSnapshotLive`). Bez `live` stále NBS + odhady (legacy).
+- **Widget Ekonomika** používa iba `economy-live` (živé dáta z DB).
+- **NBS** používame pre trendové a makro porovnanie; pre živé čísla z trhu slúži realtime API, dashboard ticker a widget Ekonomika (`economy-live`).
 
 ## Čo sa zmenilo (pre „reálne dáta“)
 

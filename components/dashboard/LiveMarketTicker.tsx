@@ -2,6 +2,19 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Zap, TrendingUp, Activity } from "lucide-react";
+import { useUserPreferences } from "@/lib/hooks/useUserPreferences";
+
+/** Mapovanie kódu kraja (trackedRegions) na mesto z realtime API */
+const REGION_TO_CITY: Record<string, string> = {
+  BA: "BRATISLAVA",
+  TT: "TRNAVA",
+  TN: "TRENCIN",
+  NR: "NITRA",
+  ZA: "ZILINA",
+  BB: "BANSKA_BYSTRICA",
+  PO: "PRESOV",
+  KE: "KOSICE",
+};
 
 interface RealtimeOverview {
   nationalAvg: number;
@@ -28,6 +41,7 @@ async function fetchRealtime(): Promise<RealtimeResponse> {
 }
 
 export function LiveMarketTicker() {
+  const { preferences } = useUserPreferences();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["market-realtime"],
     queryFn: fetchRealtime,
@@ -37,9 +51,21 @@ export function LiveMarketTicker() {
 
   const overview = data?.data?.overview;
   const regions = data?.data?.regions ?? [];
-  const ba = regions.find((r) =>
-    r.city.toUpperCase().includes("BRATISLAVA")
-  );
+
+  const tracked = (preferences?.trackedRegions ?? []) as string[];
+  const firstRegion = tracked[0];
+  const preferredCity = firstRegion ? REGION_TO_CITY[firstRegion] : null;
+  const preferred = preferredCity
+    ? regions.find((r) => r.city.toUpperCase().includes(preferredCity))
+    : null;
+  const fallbackBa = regions.find((r) => r.city.toUpperCase().includes("BRATISLAVA"));
+  const regionForM2 = preferred ?? fallbackBa;
+  const avgM2 = regionForM2?.avgPricePerM2 ?? overview?.nationalAvg ?? 0;
+  const avgLabel = preferred
+    ? firstRegion
+    : fallbackBa
+      ? "BA"
+      : "SK";
 
   if (isLoading || isError || !overview) {
     return (
@@ -60,11 +86,13 @@ export function LiveMarketTicker() {
   const total = overview.totalProperties ?? 0;
   const new7d = overview.newLast7d ?? 0;
   const change30 = overview.priceChangeLast30d;
-  const avgM2 = ba?.avgPricePerM2 ?? overview.nationalAvg ?? 0;
-  const avgLabel = ba ? "BA" : "SK";
+
+  const m2Title = preferred
+    ? `€/m² pre tvoj kraj (${avgLabel}). Reálne dáta z Bazoš, Nehnuteľnosti, Reality.`
+    : "Reálne dáta z nášho zoznamu inzerátov (Bazoš, Nehnuteľnosti, Reality)";
 
   return (
-    <div className="flex items-center gap-2 px-4 py-2 premium-card" title="Reálne dáta z nášho zoznamu inzerátov (Bazoš, Nehnuteľnosti, Reality)">
+    <div className="flex items-center gap-2 px-4 py-2 premium-card" title={m2Title}>
       <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
       <span className="text-[11px] text-zinc-500 font-medium tracking-wide">
         LIVE

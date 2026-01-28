@@ -1,43 +1,37 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { 
-  TrendingUp, 
-  Percent, 
-  Users, 
-  Banknote, 
+import {
+  Percent,
   Home,
   ArrowUp,
   ArrowDown,
   Flame,
-  Coins
+  Coins,
+  Database,
 } from "lucide-react";
 
-interface MarketSummary {
+interface EconomyLive {
   nationalAvgPrice: number;
-  nationalPriceChange: number;
+  nationalPriceChange: number | null;
   totalListings: number;
-  avgYield: number;
+  avgYield: number | null;
   hottest: string;
   cheapest: string;
-  economicIndicators: {
-    gdpGrowth: number;
-    inflation: number;
-    unemployment: number;
-    mortgageRate: number;
-  };
+  dataSource: string;
+  generatedAt: string;
 }
 
 interface MarketResponse {
   success: boolean;
-  data: MarketSummary;
+  data: EconomyLive;
   source: string;
   updatedAt: string;
 }
 
-async function fetchMarketSummary(): Promise<MarketResponse> {
-  const res = await fetch("/api/v1/market-data?type=summary");
-  if (!res.ok) throw new Error("Failed to fetch market data");
+async function fetchEconomyLive(): Promise<MarketResponse> {
+  const res = await fetch("/api/v1/market-data?type=economy-live");
+  if (!res.ok) throw new Error("Failed to fetch economy data");
   return res.json();
 }
 
@@ -54,8 +48,8 @@ const CITY_NAMES: Record<string, string> = {
 
 export function EconomicIndicators() {
   const { data, isLoading } = useQuery({
-    queryKey: ["market-summary"],
-    queryFn: fetchMarketSummary,
+    queryKey: ["economy-live"],
+    queryFn: fetchEconomyLive,
     refetchInterval: 10 * 60 * 1000,
   });
 
@@ -63,9 +57,9 @@ export function EconomicIndicators() {
     return (
       <div className="relative overflow-hidden rounded-2xl bg-[#0f0f0f] p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-zinc-800/50 rounded-lg w-2/3"></div>
+          <div className="h-8 bg-zinc-800/50 rounded-lg w-2/3" />
           <div className="grid grid-cols-2 gap-3">
-            {[1, 2, 3, 4].map(i => (
+            {[1, 2, 3, 4].map((i) => (
               <div key={i} className="h-24 bg-zinc-800/30 rounded-xl" />
             ))}
           </div>
@@ -74,160 +68,138 @@ export function EconomicIndicators() {
     );
   }
 
-  const summary = data?.data;
-  if (!summary) return null;
+  const s = data?.data;
+  if (!s) return null;
 
-  const indicators = [
+  const liveIndicators: Array<{
+    label: string;
+    value: number;
+    format: (v: number) => string;
+    change?: number | null;
+    icon: typeof Home;
+    iconColor: string;
+    bg: string;
+  }> = [
     {
       label: "Cena/m²",
-      value: summary.nationalAvgPrice,
-      format: (v: number) => `€${v.toLocaleString()}`,
-      change: summary.nationalPriceChange,
+      value: s.nationalAvgPrice,
+      format: (v) => `€${v.toLocaleString()}`,
+      change: s.nationalPriceChange,
       icon: Home,
       iconColor: "text-emerald-400",
       bg: "bg-emerald-500/5",
     },
-    {
+  ];
+
+  if (s.avgYield != null) {
+    liveIndicators.push({
       label: "Výnos",
-      value: summary.avgYield,
-      format: (v: number) => `${v}%`,
+      value: s.avgYield,
+      format: (v) => `${v}%`,
       icon: Percent,
       iconColor: "text-amber-400",
       bg: "bg-amber-500/5",
-    },
-    {
-      label: "HDP",
-      value: summary.economicIndicators.gdpGrowth,
-      format: (v: number) => `${v > 0 ? "+" : ""}${v}%`,
-      icon: TrendingUp,
-      iconColor: summary.economicIndicators.gdpGrowth > 0 
-        ? "text-emerald-400" 
-        : "text-red-400",
-      bg: summary.economicIndicators.gdpGrowth > 0 
-        ? "bg-emerald-500/5" 
-        : "bg-red-500/5",
-    },
-    {
-      label: "Inflácia",
-      value: summary.economicIndicators.inflation,
-      format: (v: number) => `${v}%`,
-      icon: Banknote,
-      iconColor: summary.economicIndicators.inflation > 5 
-        ? "text-red-400" 
-        : "text-blue-400",
-      bg: summary.economicIndicators.inflation > 5 
-        ? "bg-red-500/5" 
-        : "bg-blue-500/5",
-    },
-  ];
+    });
+  }
 
   return (
     <div className="premium-card p-5">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <TrendingUp className="w-5 h-5 text-amber-400" />
-              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                Ekonomika
-              </span>
-            </div>
-            <h3 className="text-lg font-semibold text-white">
-              Ukazovatele
-            </h3>
-          </div>
-          
-          {/* Mortgage rate highlight */}
-          <div className="text-right">
-            <p className="text-xs text-zinc-500 mb-0.5">Hypotéka</p>
-            <p className="text-lg font-semibold text-amber-400 tabular-nums">
-              {summary.economicIndicators.mortgageRate}%
-            </p>
-          </div>
-        </div>
-
-        {/* Indicators Grid */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          {indicators.map((indicator, index) => {
-            const Icon = indicator.icon;
-            const isPositive = indicator.change ? indicator.change > 0 : undefined;
-            
-            return (
-              <div
-                key={index}
-                className={`relative overflow-hidden p-4 rounded-xl ${indicator.bg} 
-                            border border-zinc-800/50 hover:border-zinc-700/50 transition-all duration-300`}
-              >
-                {/* Icon */}
-                <div className={`${indicator.iconColor} mb-2`}>
-                  <Icon className="w-4 h-4" />
-                </div>
-                
-                {/* Value */}
-                <p className="text-lg font-semibold text-white tabular-nums">
-                  {indicator.format(indicator.value)}
-                </p>
-                
-                {/* Label & Change */}
-                <div className="flex items-center justify-between mt-1">
-                  <span className="text-xs text-zinc-400">{indicator.label}</span>
-                  {isPositive !== undefined && (
-                    <span className={`flex items-center gap-0.5 text-xs font-medium ${
-                      isPositive ? "text-emerald-400" : "text-red-400"
-                    }`}>
-                      {isPositive ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
-                      {Math.abs(indicator.change!)}%
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Hottest & Cheapest */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="p-4 rounded-xl bg-orange-500/10 
-                          border border-orange-500/20 hover:border-orange-500/40 transition-colors">
-            <div className="flex items-center gap-2 mb-2">
-              <Flame className="w-4 h-4 text-orange-400" />
-              <span className="text-xs text-orange-400">Najhorúcejšie</span>
-            </div>
-            <p className="text-lg font-bold text-white">
-              {CITY_NAMES[summary.hottest] || summary.hottest}
-            </p>
-          </div>
-          
-          <div className="p-4 rounded-xl bg-emerald-500/10 
-                          border border-emerald-500/20 hover:border-emerald-500/40 transition-colors">
-            <div className="flex items-center gap-2 mb-2">
-              <Coins className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs text-emerald-400">Najlacnejšie</span>
-            </div>
-            <p className="text-lg font-bold text-white">
-              {CITY_NAMES[summary.cheapest] || summary.cheapest}
-            </p>
-          </div>
-        </div>
-
-        {/* Unemployment & Listings */}
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-800/50">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-zinc-500" />
-            <span className="text-sm text-zinc-400">
-              Nezamestnanosť: <span className="text-white font-semibold">{summary.economicIndicators.unemployment}%</span>
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Database className="w-5 h-5 text-emerald-400" />
+            <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+              Ekonomika
             </span>
           </div>
-          <div className="text-sm text-zinc-400">
-            <span className="text-white font-semibold">{summary.totalListings.toLocaleString()}</span> ponúk
-          </div>
+          <h3 className="text-lg font-semibold text-white">
+            100% živé dáta
+          </h3>
         </div>
-        
-      {/* Source */}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        {liveIndicators.map((ind, idx) => {
+          const Icon = ind.icon;
+          const isPositive = ind.change != null ? ind.change > 0 : undefined;
+          return (
+            <div
+              key={idx}
+              className={`relative overflow-hidden p-4 rounded-xl ${ind.bg} border border-zinc-800/50 hover:border-zinc-700/50 transition-all duration-300`}
+            >
+              <div className={`${ind.iconColor} mb-2`}>
+                <Icon className="w-4 h-4" />
+              </div>
+              <p className="text-lg font-semibold text-white tabular-nums">
+                {ind.format(ind.value)}
+              </p>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-xs text-zinc-400">{ind.label}</span>
+                {isPositive !== undefined && ind.change != null && (
+                  <span
+                    className={`flex items-center gap-0.5 text-xs font-medium ${
+                      isPositive ? "text-emerald-400" : "text-red-400"
+                    }`}
+                  >
+                    {isPositive ? (
+                      <ArrowUp className="w-3 h-3" />
+                    ) : (
+                      <ArrowDown className="w-3 h-3" />
+                    )}
+                    {Math.abs(ind.change)}%
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 hover:border-orange-500/40 transition-colors">
+          <div className="flex items-center gap-2 mb-2">
+            <Flame className="w-4 h-4 text-orange-400" />
+            <span className="text-xs text-orange-400">Najhorúcejšie</span>
+          </div>
+          <p className="text-lg font-bold text-white">
+            {CITY_NAMES[s.hottest] || s.hottest}
+          </p>
+        </div>
+        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:border-emerald-500/40 transition-colors">
+          <div className="flex items-center gap-2 mb-2">
+            <Coins className="w-4 h-4 text-emerald-400" />
+            <span className="text-xs text-emerald-400">Najlacnejšie</span>
+          </div>
+          <p className="text-lg font-bold text-white">
+            {CITY_NAMES[s.cheapest] || s.cheapest}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-end mt-4 pt-4 border-t border-zinc-800/50">
+        <span className="text-sm text-zinc-400">
+          <span className="text-white font-semibold">
+            {s.totalListings.toLocaleString()}
+          </span>{" "}
+          ponúk
+        </span>
+      </div>
+
       <div className="flex items-center justify-center gap-2 mt-4 text-xs text-zinc-600">
-        <span>NBS + ŠÚ SR</span>
-        <span>•</span>
-        <span>Q3 2025</span>
+        <span>100% živé dáta zo zoznamu inzerátov</span>
+        {data?.updatedAt && (
+          <>
+            <span>•</span>
+            <span>
+              {new Date(data.updatedAt).toLocaleDateString("sk-SK", {
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+          </>
+        )}
       </div>
     </div>
   );

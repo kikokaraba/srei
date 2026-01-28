@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, Building2, MapPin, Percent, ArrowUp, ArrowDown } from "lucide-react";
+import { TrendingUp, Building2, MapPin, Percent, ArrowUp } from "lucide-react";
 
 interface AnalyticsData {
   region: string;
@@ -19,18 +19,20 @@ interface AnalyticsResponse {
   success: boolean;
   data: AnalyticsData[];
   timestamp: string;
+  newLast7d?: number;
 }
 
 async function fetchAnalytics(): Promise<AnalyticsResponse> {
-  const res = await fetch("/api/v1/analytics/snapshot");
+  const res = await fetch("/api/v1/analytics/snapshot?live=true");
   if (!res.ok) throw new Error("Failed to fetch analytics");
   return res.json();
 }
 
 export function AnalyticsCards() {
   const { data, isLoading } = useQuery({
-    queryKey: ["analytics"],
+    queryKey: ["analytics-live"],
     queryFn: fetchAnalytics,
+    refetchInterval: 10 * 60 * 1000,
   });
 
   if (isLoading) {
@@ -44,44 +46,53 @@ export function AnalyticsCards() {
   }
 
   const analytics: AnalyticsData[] = data?.data || [];
+  const newLast7d = data?.newLast7d ?? null;
   const bratislava = analytics.find((a) => a.region === "BA");
-  const bestYield = analytics.reduce((best, current) => 
-    current.yield_benchmark > (best?.yield_benchmark || 0) ? current : best
-  , analytics[0]);
+  const withYield = analytics.filter((a) => a.yield_benchmark > 0);
+  const bestYield =
+    analytics.length === 0
+      ? { region: "N/A", yield_benchmark: 0 }
+      : analytics.reduce(
+          (best, current) =>
+            current.yield_benchmark > (best.yield_benchmark || 0) ? current : best,
+          analytics[0]
+        );
 
-  const avgYield = analytics.length > 0
-    ? analytics.reduce((sum, a) => sum + a.yield_benchmark, 0) / analytics.length
-    : 0;
+  const avgYield =
+    withYield.length > 0
+      ? withYield.reduce((sum, a) => sum + a.yield_benchmark, 0) / withYield.length
+      : 0;
 
-  const totalProperties = analytics.reduce((sum, a) => sum + (a.properties_count || 0), 0);
+  const totalProperties = analytics.reduce(
+    (sum, a) => sum + (a.properties_count || 0),
+    0
+  );
 
   const cards = [
     {
       label: "PRIEM. VÝNOS",
       value: avgYield.toFixed(1),
       suffix: "%",
-      change: 0.3,
       icon: Percent,
-      positive: true,
     },
     {
       label: "NEHNUTEĽNOSTÍ",
       value: totalProperties.toLocaleString(),
-      change: 127,
+      change: newLast7d,
       isCount: true,
       icon: Building2,
       positive: true,
     },
     {
       label: "BA CENA/M²",
-      value: (bratislava?.avg_price_m2 || 0).toLocaleString(),
+      value: (bratislava?.avg_price_m2 ?? 0).toLocaleString(),
       prefix: "€",
       icon: MapPin,
     },
     {
       label: "TOP VÝNOS",
-      value: bestYield?.region || "N/A",
-      suffix: ` ${bestYield?.yield_benchmark?.toFixed(1) || 0}%`,
+      value: bestYield?.region ?? "N/A",
+      suffix: ` ${bestYield?.yield_benchmark?.toFixed(1) ?? 0}%`,
       icon: TrendingUp,
       highlight: true,
     },
@@ -116,16 +127,14 @@ export function AnalyticsCards() {
               )}
             </div>
             
-            {/* Change indicator */}
-            {card.change !== undefined && (
+            {/* Change indicator – len pre počet (nové za 7d) */}
+            {"change" in card && card.change != null && card.isCount && (
               <div className="flex items-center gap-1 mt-2">
-                <span className={`flex items-center gap-0.5 text-[10px] font-mono ${
-                  card.positive ? "text-emerald-400" : "text-rose-400"
-                }`}>
-                  {card.positive ? <ArrowUp className="w-2.5 h-2.5" /> : <ArrowDown className="w-2.5 h-2.5" />}
-                  {card.isCount ? `+${card.change}` : `${card.change}%`}
+                <span className="flex items-center gap-0.5 text-[10px] font-mono text-emerald-400">
+                  <ArrowUp className="w-2.5 h-2.5" />
+                  +{card.change}
                 </span>
-                <span className="text-[10px] text-zinc-600">vs minulý týždeň</span>
+                <span className="text-[10px] text-zinc-600">nových za 7d</span>
               </div>
             )}
           </div>

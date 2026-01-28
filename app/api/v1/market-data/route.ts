@@ -10,6 +10,7 @@ import {
   fetchEconomicIndicators,
   fetchDemographicData,
 } from "@/lib/data-sources";
+import { getMarketSummaryLive } from "@/lib/data-sources/realtime-stats";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -26,6 +27,17 @@ export async function GET(request: NextRequest) {
           data: summary,
           source: "NBS, Štatistický úrad SR",
           updatedAt: new Date().toISOString(),
+        });
+      }
+
+      case "economy-live": {
+        // 100% živé dáta – len z DB (scrapované inzeráty + InvestmentMetrics)
+        const live = await getMarketSummaryLive();
+        return NextResponse.json({
+          success: true,
+          data: live,
+          source: live.dataSource,
+          updatedAt: live.generatedAt.toISOString(),
         });
       }
       

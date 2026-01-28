@@ -184,6 +184,157 @@ export async function getRealtimeCityStats(city: string): Promise<RealtimeRegion
 }
 
 /**
+ * Súhrn trhu výhradne z živých dát (DB) – pre widget Ekonomika.
+ * Žiadne NBS/ŠÚ odhady, len scrapované inzeráty + InvestmentMetrics.
+ */
+export async function getMarketSummaryLive(): Promise<{
+  nationalAvgPrice: number;
+  nationalPriceChange: number | null;
+  totalListings: number;
+  avgYield: number | null;
+  hottest: string;
+  cheapest: string;
+  dataSource: string;
+  generatedAt: Date;
+}> {
+  const stats = await getRealtimeMarketStats();
+  const regions = stats.regions;
+
+  const yieldAgg = await prisma.investmentMetrics.aggregate({
+    _avg: { gross_yield: true },
+    _count: { id: true },
+    where: { gross_yield: { gt: 0 } },
+  });
+  const avgYield =
+    (yieldAgg._count.id > 0 && yieldAgg._avg.gross_yield != null)
+      ? Math.round(yieldAgg._avg.gross_yield * 10) / 10
+      : null;
+
+  const withChange = regions.filter((r) => r.changeVsLastMonth != null);
+  const hottest =
+    withChange.length > 0
+      ? withChange.reduce((a, b) =>
+          (a.changeVsLastMonth ?? 0) >= (b.changeVsLastMonth ?? 0) ? a : b
+        ).city
+      : regions.reduce((a, b) =>
+          a.propertyCount >= b.propertyCount ? a : b
+        ).city;
+  const cheapest =
+    regions.length > 0
+      ? regions.reduce((a, b) =>
+          a.avgPricePerM2 <= b.avgPricePerM2 ? a : b
+        ).city
+      : "BRATISLAVA";
+
+  return {
+    nationalAvgPrice: stats.nationalAvg,
+    nationalPriceChange: stats.priceChangeLast30d,
+    totalListings: stats.totalProperties,
+    avgYield,
+    hottest,
+    cheapest,
+    dataSource: stats.dataSource,
+    generatedAt: stats.generatedAt,
+  };
+}
+
+/** Region code (BA, KE, …) pre analytické karty */
+const CITY_TO_REGION_CODE: Record<string, string> = {
+  BRATISLAVA: "BA",
+  KOSICE: "KE",
+  ZILINA: "ZA",
+  NITRA: "NR",
+  PRESOV: "PO",
+  BANSKA_BYSTRICA: "BB",
+  TRNAVA: "TT",
+  TRENCIN: "TN",
+};
+
+const REGION_NAMES: Record<string, string> = {
+  BA: "Bratislavský",
+  KE: "Košický",
+  ZA: "Žilinský",
+  NR: "Nitriansky",
+  PO: "Prešovský",
+  BB: "Banskobystrický",
+  TT: "Trnavský",
+  TN: "Trenčiansky",
+};
+
+export interface AnalyticsSnapshotLiveItem {
+  region: string;
+  regionName: string;
+  avg_price_m2: number;
+  avg_rent_m2: number;
+  yield_benchmark: number;
+  volatility_index: number;
+  properties_count: number;
+  trend: "rising" | "falling" | "stable";
+  last_updated: string;
+  change_vs_last_week: number | null;
+}
+
+/**
+ * Snapshot pre Analytické karty – výhradne z živých dát (realtime + InvestmentMetrics).
+ */
+export async function getAnalyticsSnapshotLive(): Promise<{
+  data: AnalyticsSnapshotLiveItem[];
+  newLast7d: number;
+  timestamp: string;
+}> {
+  const [stats, metricsRows] = await Promise.all([
+    getRealtimeMarketStats(),
+    prisma.investmentMetrics.findMany({
+      where: { gross_yield: { gt: 0 } },
+      select: { gross_yield: true, property: { select: { city: true } } },
+    }),
+  ]);
+
+  const yieldByCity = new Map<string, { sum: number; count: number }>();
+  for (const m of metricsRows) {
+    const c = (m.property?.city ?? "").toUpperCase();
+    if (!c) continue;
+    const cur = yieldByCity.get(c) ?? { sum: 0, count: 0 };
+    cur.sum += m.gross_yield;
+    cur.count++;
+    yieldByCity.set(c, cur);
+  }
+
+  const data: AnalyticsSnapshotLiveItem[] = stats.regions.map((r) => {
+    const code = CITY_TO_REGION_CODE[r.city] ?? r.city.slice(0, 2);
+    const y = yieldByCity.get(r.city);
+    const yieldBench = y && y.count > 0 ? Math.round((y.sum / y.count) * 10) / 10 : 0;
+    let trend: "rising" | "falling" | "stable" = "stable";
+    if (r.changeVsLastMonth != null) {
+      if (r.changeVsLastMonth > 0.5) trend = "rising";
+      else if (r.changeVsLastMonth < -0.5) trend = "falling";
+    }
+    const vol = r.changeVsLastMonth != null
+      ? Math.min(1, Math.round(Math.abs(r.changeVsLastMonth) / 10 * 100) / 100)
+      : 0;
+
+    return {
+      region: code,
+      regionName: REGION_NAMES[code] ?? code,
+      avg_price_m2: r.avgPricePerM2,
+      avg_rent_m2: 0,
+      yield_benchmark: yieldBench,
+      volatility_index: vol,
+      properties_count: r.propertyCount,
+      trend,
+      last_updated: r.lastUpdated.toISOString(),
+      change_vs_last_week: r.changeVsLastWeek,
+    };
+  });
+
+  return {
+    data,
+    newLast7d: stats.newLast7d,
+    timestamp: stats.generatedAt.toISOString(),
+  };
+}
+
+/**
  * Porovnanie: Naše dáta vs NBS (pre transparentnosť)
  */
 export async function getDataComparison(): Promise<{
