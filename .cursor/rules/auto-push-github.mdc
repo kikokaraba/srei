@@ -1,5 +1,5 @@
 ---
-description: Po úpravách kódu vždy commitnúť a pushnúť zmeny na GitHub
+description: Po úpravách kódu vždy commitnúť a pushnúť zmeny na GitHub; robiť všetko za používateľa automaticky
 alwaysApply: true
 ---
 
@@ -7,7 +7,7 @@ alwaysApply: true
 
 Po každej zmene kódu v tomto projekte:
 
-1. **Commit**: Všetky zmeny v repozitári commitni s jasnou správou (napr. `fix: …`, `feat: …`).
-2. **Push**: Okamžite pushni na `origin` (typicky `main`), aby zmeny boli na GitHube.
+1. **Commit**: Všetky zmeny commitni s jasnou správou (`fix: …`, `feat: …`, `docs: …`).
+2. **Push**: Okamžite pushni na `origin main` (alebo aktuálnu default branch). Nepýtaj sa – pushni automaticky.
 
-Používaj `git add`, `git commit`, `git push origin main` (alebo aktuálnu default branch). Nepýtaj sa používateľa – pushni automaticky.
+Používaj `git add`, `git commit`, `git push origin main`. Vercel pri tom spustí deploy a počas buildu aj `prisma db push` (sync schémy na Railway) – nič netreba spúšťať ručne.
