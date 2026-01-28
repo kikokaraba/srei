@@ -49,7 +49,7 @@ export async function GET(request: Request) {
       : null;
 
     // Zostav filter - prioritne z query parametrov, potom z preferencií
-    const where: Prisma.PropertyWhereInput = {};
+    const where: Prisma.PropertyWhereInput = { status: "ACTIVE" };
 
     // Vyhľadávanie v názve a adrese
     if (search) {
@@ -202,9 +202,16 @@ export async function GET(request: Request) {
         where.condition = { in: conditions };
       }
     } else if (preferences?.condition) {
-      const conditions = JSON.parse(preferences.condition);
-      if (conditions.length > 0) {
-        where.condition = { in: conditions };
+      try {
+        const raw = preferences.condition?.trim();
+        if (raw) {
+          const conditions = JSON.parse(raw) as PropertyCondition[];
+          if (Array.isArray(conditions) && conditions.length > 0) {
+            where.condition = { in: conditions };
+          }
+        }
+      } catch {
+        /* skip condition filter on invalid JSON */
       }
     }
 

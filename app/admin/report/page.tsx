@@ -185,8 +185,8 @@ export default function InvestorReportPage() {
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 h-64">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="lg:col-span-2 h-64 min-h-[200px]">
+            <ResponsiveContainer width="100%" height="100%" minHeight={200}>
               <BarChart data={alphaChartData} margin={{ top: 12, right: 12, left: 12, bottom: 12 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
                 <XAxis dataKey="name" tick={{ fill: "#a1a1aa", fontSize: 12 }} />
@@ -234,8 +234,8 @@ export default function InvestorReportPage() {
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 h-56">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="lg:col-span-2 h-56 min-h-[180px]">
+            <ResponsiveContainer width="100%" height="100%" minHeight={180}>
               <LineChart
                 data={data?.hunter.alertsDaily ?? []}
                 margin={{ top: 8, right: 8, left: 8, bottom: 8 }}
@@ -306,8 +306,8 @@ export default function InvestorReportPage() {
             Naša priemerná cena za m² vs. NBS. Veríme našim dátam; NBS je kontext.
           </p>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 h-48">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="lg:col-span-2 h-48 min-h-[160px]">
+              <ResponsiveContainer width="100%" height="100%" minHeight={160}>
                 <BarChart data={liveVsNbsChartData} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
                   <XAxis dataKey="name" tick={{ fill: "#a1a1aa", fontSize: 12 }} />

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import { REGIONS, DISTRICTS } from "@/lib/constants/slovakia-locations";
 
 export async function GET(request: Request) {
@@ -120,6 +121,7 @@ export async function GET(request: Request) {
       // Získame všetky nehnuteľnosti v mestách s liquidity dátami
       const properties = await prisma.property.findMany({
         where: {
+          status: "ACTIVE",
           city: { in: citiesToFilter },
         },
         include: {
@@ -179,15 +181,11 @@ export async function GET(request: Request) {
     }
 
     // Ak nie je zadaný propertyId ani city, vrátime nehnuteľnosti s dlhým časom na trhu
-    // Získame všetky nehnuteľnosti a vypočítame days_on_market dynamicky
-    const whereClause: Record<string, unknown> = {};
-    
-    // Add city filter if specified
+    const whereClause: Prisma.PropertyWhereInput = { status: "ACTIVE" };
     if (uniqueCities.length > 0) {
       whereClause.city = { in: uniqueCities };
     }
-    
-    // Get all properties and calculate days on market dynamically
+
     const allProperties = await prisma.property.findMany({
       where: whereClause,
       include: {
