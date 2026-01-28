@@ -2,7 +2,44 @@
 
 Keď frontend posiela správne požiadavky (mestá, filtre) ale API vracia **500**, väčšinou jde o **databázu** alebo **schému**.
 
-## 1. Synchronizuj databázu (najčastejšia príčina)
+---
+
+## P2022: „The column (not available) does not exist in the current database“
+
+**Príčina:** Prisma očakáva stĺpce podľa schémy, ale production DB ich nemá (schéma vs. DB nezhoda).
+
+**Riešenie:** Synchronizovať schému s production DB – `npx prisma db push` proti **production** `DATABASE_URL`.
+
+### Kroky (Vercel + production Postgres)
+
+1. **Získaj production `DATABASE_URL`:**
+   - Vercel Dashboard → tvoj projekt (**sria-two**) → **Settings** → **Environment Variables**
+   - Nájdi `DATABASE_URL` (Production) → **Value** → skopíruj (celý reťazec, vrátane hesla).
+
+2. **Spusti db push lokálne s touto URL:**
+
+   ```bash
+   DATABASE_URL="postgresql://user:pass@host:5432/db?sslmode=require" npm run db:push
+   ```
+
+   Alebo si ju nastav do `.env.production.local` (nepridávaj do gitu) a potom:
+
+   ```bash
+   npm run db:push
+   ```
+
+   Prípadne použij helper skript (kontroluje, či nie si na localhost):
+
+   ```bash
+   DATABASE_URL="postgresql://..." npm run db:push:prod
+   ```
+
+3. **Po úspešnom `db push`:**  
+   Vercel už používa tú istú DB – zmeny sú v databáze. **Redeploy (git push) nie je potrebný** na opravu P2022. Ak 500 pretrváva, over v Logs, že Vercel naozaj používa tú istú `DATABASE_URL`.
+
+---
+
+## 1. Synchronizuj databázu (všeobecne)
 
 Po zmene Prisma schémy alebo novom scrapingu (nové polia, tabuľky) musí byť DB v súlade so schémou:
 
@@ -10,8 +47,8 @@ Po zmene Prisma schémy alebo novom scrapingu (nové polia, tabuľky) musí byť
 npx prisma db push
 ```
 
-- **Lokálne:** Spusti proti tvojej `DATABASE_URL` z `.env`.
-- **Vercel:** `DATABASE_URL` v Project → Settings → Environment Variables musí smerovať na production DB. Potom spusti `npx prisma db push` **lokálne** s touto URL (napr. cez `.env.production` alebo jednorázovo `DATABASE_URL="..." npx prisma db push`).
+- **Lokálne:** Spusti proti `DATABASE_URL` z `.env`.
+- **Production (Vercel):** Použi production `DATABASE_URL` ako vyššie a spusti `db push` lokálne.
 
 ## 2. Vyčisti cache a reštartuj (lokálny dev)
 
@@ -35,6 +72,7 @@ Presný stack trace ti povie, ktorý model, pole alebo migrácia spôsobuje pád
 
 ## 5. Ak 500 pretrváva
 
+- Over, že `db push` bežal **proti production** DB (ta istá `DATABASE_URL` ako na Verceli).
 - Over `DATABASE_URL` (prefix `postgresql://`, prístup z Vercelu cez pooler ak používaš).
-- Over, že si po `prisma db push` **redeployol** (push do Git → Vercel znova nasadí).
+- Pre P2022 **netreba** redeploy – zmeny sú v DB. Ak stále 500, over v Logs, že Vercel používa tú istú DB.
 - Skontroluj, či nový scraping neposiela dáta, ktoré porušujú NOT NULL / enum (napr. `condition`, `listing_type`). V tom prípade uprav webhook / validáciu pred zápisom do DB.
