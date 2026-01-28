@@ -387,7 +387,7 @@ export async function POST(request: NextRequest) {
           last_seen_at: new Date(),
         };
         
-        // Skontroluj či už existuje
+        // Skontroluj či už existuje (len id + price, nie celý model)
         const existing = await prisma.property.findFirst({
           where: {
             OR: [
@@ -395,6 +395,7 @@ export async function POST(request: NextRequest) {
               { source_url: item.url },
             ],
           },
+          select: { id: true, price: true },
         });
         
         if (existing) {

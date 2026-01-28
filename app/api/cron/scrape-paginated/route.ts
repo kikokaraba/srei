@@ -348,7 +348,7 @@ async function scrapePage(url: string, listingType: string): Promise<ScrapedProp
 }
 
 async function saveProperty(prop: ScrapedProperty): Promise<"new" | "updated" | "duplicate"> {
-  // Check if exists
+  // Check if exists (select len id + price)
   const existing = await prisma.property.findFirst({
     where: {
       OR: [
@@ -356,6 +356,7 @@ async function saveProperty(prop: ScrapedProperty): Promise<"new" | "updated" | 
         { source_url: prop.sourceUrl },
       ],
     },
+    select: { id: true, price: true },
   });
 
   if (existing) {
