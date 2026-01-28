@@ -700,8 +700,8 @@ export async function getPropertyTimeline(propertyId: string): Promise<{
   // Spracuj price history
   const formattedHistory = priceHistory.map((ph, index) => {
     const prevPrice = index > 0 ? priceHistory[index - 1].price : null;
-    const changePercent = prevPrice 
-      ? Math.round((ph.price - prevPrice) / prevPrice * 100 * 10) / 10
+    const changePercent = prevPrice && prevPrice > 0
+      ? Math.round(((ph.price - prevPrice) / prevPrice) * 100 * 10) / 10
       : null;
     
     return {
@@ -728,11 +728,12 @@ export async function getPropertyTimeline(propertyId: string): Promise<{
     const prev = priceHistory[i - 1];
     const curr = priceHistory[i];
     const diff = curr.price - prev.price;
-    
+    if (prev.price === 0) continue;
+
     // Preskočiť ak je rozdiel 0 alebo zanedbateľný (< 1%)
     if (diff === 0 || Math.abs(diff / prev.price) < 0.01) continue;
-    
-    const diffPercent = Math.round(diff / prev.price * 100 * 10) / 10;
+
+    const diffPercent = Math.round((diff / prev.price) * 100 * 10) / 10;
     
     events.push({
       type: diff < 0 ? "PRICE_DROP" : "PRICE_INCREASE",
@@ -747,7 +748,9 @@ export async function getPropertyTimeline(propertyId: string): Promise<{
   const originalPrice = priceHistory.length > 0 ? priceHistory[0].price : property.price;
   const currentPrice = property.price;
   const totalChange = currentPrice - originalPrice;
-  const totalChangePercent = Math.round(totalChange / originalPrice * 100 * 10) / 10;
+  const totalChangePercent = originalPrice > 0
+    ? Math.round((totalChange / originalPrice) * 100 * 10) / 10
+    : 0;
   const daysOnMarket = Math.floor((Date.now() - firstDate.getTime()) / (1000 * 60 * 60 * 24));
   const priceDrops = priceHistory.filter((ph, i) => i > 0 && ph.price < priceHistory[i - 1].price).length;
   

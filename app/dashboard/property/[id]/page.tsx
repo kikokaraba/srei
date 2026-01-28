@@ -167,22 +167,38 @@ export default function PropertyDetailPage() {
   const [yieldData, setYieldData] = useState<YieldResponse | null>(null);
 
   useEffect(() => {
+    const id = typeof params.id === "string" ? params.id : Array.isArray(params.id) ? params.id[0] : undefined;
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+
+    setProperty(null);
+    setDuplicates(null);
+    setMarketComparison(null);
+    setEstimatedRent(null);
+    setTimeline(null);
+    setYieldData(null);
+    setLoading(true);
+
     const fetchProperty = async () => {
       try {
-        const response = await fetch(`/api/v1/properties/${params.id}`);
-        if (response.ok) {
-          const data = await response.json();
+        const res = await fetch(`/api/v1/properties/${id}`);
+        if (res.ok) {
+          const data = await res.json();
           setProperty(data.data);
-          
-          // Fetch additional data
+
           fetchDuplicates(data.data);
           fetchMarketComparison(data.data);
           fetchEstimatedRent(data.data);
           fetchTimeline(data.data);
           fetchYieldData(data.data);
+        } else if (res.status === 401) {
+          setProperty(null);
         }
       } catch (error) {
         console.error("Error fetching property:", error);
+        setProperty(null);
       } finally {
         setLoading(false);
       }
@@ -253,10 +269,21 @@ export default function PropertyDetailPage() {
       }
     };
 
-    if (params.id) {
-      fetchProperty();
-    }
+    fetchProperty();
   }, [params.id]);
+
+  const priceChange = useMemo(() => {
+    if (!property) return null;
+    const hist = property.priceHistory ?? [];
+    if (hist.length < 2) return null;
+    const sortedHistory = [...hist].sort((a, b) =>
+      new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime()
+    );
+    const firstPrice = sortedHistory[0]?.price;
+    const currentPrice = property.price;
+    if (!firstPrice || firstPrice === currentPrice || firstPrice === 0) return null;
+    return ((currentPrice - firstPrice) / firstPrice) * 100;
+  }, [property?.priceHistory, property?.price]);
 
   const calculateInvestorScore = (prop: Property): number => {
     let score = 50;
@@ -286,6 +313,9 @@ export default function PropertyDetailPage() {
     return "Pod priemerom";
   };
 
+  const isInvestmentGem = !!(property && yieldData?.comparison &&
+    yieldData.yield.grossYield > yieldData.comparison.cityAverage * 1.2);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
@@ -309,28 +339,6 @@ export default function PropertyDetailPage() {
   }
 
   const score = calculateInvestorScore(property);
-  // priceHistory je zoradená desc (najnovšia prvá), takže posledná položka je najstaršia (prvá cena)
-  // Porovnávame aktuálnu cenu s prvou cenou
-  const priceChange = useMemo(() => {
-    if (property.priceHistory.length < 2) return null;
-    
-    // Nájdi prvú (najstaršiu) a poslednú (najnovšiu) cenu
-    const sortedHistory = [...property.priceHistory].sort((a, b) => 
-      new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime()
-    );
-    
-    const firstPrice = sortedHistory[0]?.price;
-    const currentPrice = property.price;
-    
-    // Ak sú ceny rovnaké, žiadna zmena
-    if (!firstPrice || firstPrice === currentPrice) return null;
-    
-    return ((currentPrice - firstPrice) / firstPrice * 100);
-  }, [property.priceHistory, property.price]);
-
-  // INVESTIČNÝ TRHÁK - yield 20% nad priemerom mesta
-  const isInvestmentGem = yieldData?.comparison && 
-    yieldData.yield.grossYield > yieldData.comparison.cityAverage * 1.2;
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -773,7 +781,9 @@ export default function PropertyDetailPage() {
                     .map((dup, index) => {
                       const isLowest = dup.price === duplicates.priceRange.min;
                       const priceDiff = property.price - dup.price;
-                      const priceDiffPercent = ((priceDiff / property.price) * 100).toFixed(1);
+                      const priceDiffPercent = property.price > 0
+                        ? ((priceDiff / property.price) * 100).toFixed(1)
+                        : "0";
                       
                       return (
                         <div 
@@ -937,7 +947,7 @@ export default function PropertyDetailPage() {
                 Hypotekárna kalkulačka
               </Link>
               <Link 
-                href={`/dashboard/calculators?calc=investment&price=${property.price}&area=${property.area_m2}&rent=${estimatedRent || 0}&title=${encodeURIComponent(property.title)}`}
+                href={`/dashboard/calculators?calc=investment&price=${property.price}&area=${property.area_m2}&rent=${estimatedRent?.estimatedRent ?? 0}&title=${encodeURIComponent(property.title)}`}
                 className="flex items-center gap-3 w-full px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors"
               >
                 <PiggyBank className="w-5 h-5" />
