@@ -99,6 +99,7 @@ export const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Admin",
   PREMIUM_INVESTOR: "Premium Investor",
   FREE_USER: "Free",
+  PARTNER: "Partner",
 } as const;
 
 export const ROLE_OPTIONS = Object.entries(ROLE_LABELS).map(([value, label]) => ({

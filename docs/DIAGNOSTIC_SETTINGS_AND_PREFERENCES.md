@@ -182,7 +182,19 @@ Ukladá sa cez `/api/v1/dashboard/layout` (GET/POST).
 
 ---
 
-## 7. Investor Report (Admin)
+## 7. Partner Dashboard & Commission Engine
+
+- **Rola `PARTNER`**: Pridaná do `UserRole`. Partner vidí v menu „Partner Panel“ (`/dashboard/partner`).
+- **User**: `referredByUserId`, `partnerRef`, `iban`. **Commission**: `userId` (platiteľ), `partnerId`, `amount`, `status` (PENDING/PAID).
+- **Registrácia**: `?ref=XXX` na `/auth/signup` → ak `XXX` = `partnerRef` alebo `id` PARTNERa, nastaví sa `referredByUserId`.
+- **Partner dashboard**: referral link, aktívni odberatelia, dnešný zárobok, na výplatu, história provízií, výplatné údaje (IBAN, ref kód).
+- **Commission engine**: `lib/commission/engine.ts` → `recordCommission(userId, amountEur)`. Pri platbe skontroluje `referredBy`, vytvorí Commission (10 %).
+- **API**: `GET /api/v1/partner/stats`, `GET/PATCH /api/v1/partner/payout-details`, `POST /api/v1/commission/record` (admin).
+- **Stripe**: Pri `invoice.paid` volať `recordCommission(userId, amountEur)` (webhook zatiaľ nie je implementovaný).
+
+---
+
+## 8. Investor Report (Admin)
 
 - **`/admin/report`**: „The Money View“ pre investorov.
 - **Market Arbitrage**: Bar chart (priem. trh vs. Hunter), widget „Celkový identifikovaný investičný potenciál (30 d)“.

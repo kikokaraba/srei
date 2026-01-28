@@ -18,6 +18,7 @@ import {
   X,
   Brain,
   Sparkles,
+  Handshake,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 
@@ -143,6 +144,26 @@ export function Sidebar() {
             </div>
           </div>
         ))}
+
+        {/* Partner Panel */}
+        {(session?.user as { role?: string } | null)?.role === "PARTNER" && (
+          <div className="pt-3 mt-2 border-t border-zinc-800/50">
+            <Link
+              href="/dashboard/partner"
+              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
+                pathname === "/dashboard/partner"
+                  ? "bg-violet-500/10 text-violet-400"
+                  : "text-violet-400 hover:bg-violet-500/10"
+              }`}
+            >
+              {pathname === "/dashboard/partner" && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-violet-400 rounded-r" />
+              )}
+              <Handshake className="w-[18px] h-[18px] shrink-0" />
+              <span className="font-medium text-[13px] tracking-wide">Partner Panel</span>
+            </Link>
+          </div>
+        )}
 
         {/* Admin Link */}
         {isAdmin && (

@@ -15,6 +15,7 @@ import {
   User,
   X,
   Check,
+  Handshake,
 } from "lucide-react";
 
 interface UserData {
@@ -39,9 +40,10 @@ const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Admin",
   PREMIUM_INVESTOR: "Premium",
   FREE_USER: "Free",
+  PARTNER: "Partner",
 };
 
-const ROLES = ["ADMIN", "PREMIUM_INVESTOR", "FREE_USER"];
+const ROLES = ["ADMIN", "PREMIUM_INVESTOR", "FREE_USER", "PARTNER"];
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserData[]>([]);
@@ -141,6 +143,8 @@ export default function AdminUsersPage() {
         return <Shield className="w-4 h-4 text-red-400" />;
       case "PREMIUM_INVESTOR":
         return <Crown className="w-4 h-4 text-yellow-400" />;
+      case "PARTNER":
+        return <Handshake className="w-4 h-4 text-violet-400" />;
       default:
         return <User className="w-4 h-4 text-slate-400" />;
     }
@@ -233,6 +237,7 @@ export default function AdminUsersPage() {
                         <span className={`px-2 py-1 rounded text-xs font-medium ${
                           user.role === "ADMIN" ? "bg-red-500/20 text-red-400" :
                           user.role === "PREMIUM_INVESTOR" ? "bg-yellow-500/20 text-yellow-400" :
+                          user.role === "PARTNER" ? "bg-violet-500/20 text-violet-400" :
                           "bg-slate-700 text-slate-300"
                         }`}>
                           {ROLE_LABELS[user.role]}

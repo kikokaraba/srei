@@ -18,6 +18,12 @@ enum UserRole {
   ADMIN
   PREMIUM_INVESTOR
   FREE_USER
+  PARTNER
+}
+
+enum CommissionStatus {
+  PENDING
+  PAID
 }
 
 // SlovakCity enum removed - now using String for city field
@@ -88,25 +94,47 @@ enum InfrastructureType {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  password      String?  // Hashované heslo (bcrypt)
-  emailVerified DateTime?
-  name          String?
-  image         String?
-  role          UserRole  @default(FREE_USER)
-  aiCredits     Int       @default(5)  // Kredity pre AI analýzy (Claude)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  accounts      Account[]
-  sessions      Session[]
-  properties    Property[]
-  savedProperties SavedProperty[]
-  dashboardLayout DashboardLayout?
-  preferences   UserPreferences?
+  id                String    @id @default(cuid())
+  email             String    @unique
+  password          String?   // Hashované heslo (bcrypt)
+  emailVerified     DateTime?
+  name              String?
+  image             String?
+  role              UserRole  @default(FREE_USER)
+  aiCredits         Int       @default(5)  // Kredity pre AI analýzy (Claude)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  referredByUserId  String?   // Partner, cez ktorého sa používateľ zaregistroval
+  referredBy        User?     @relation("Referrals", fields: [referredByUserId], references: [id], onDelete: SetNull)
+  referrals         User[]    @relation("Referrals")
+  partnerRef        String?   @unique // Ref pre /register?ref= (len PARTNER)
+  iban              String?   // Výplatné údaje pre PARTNER
+  accounts          Account[]
+  sessions          Session[]
+  properties        Property[]
+  savedProperties   SavedProperty[]
+  dashboardLayout   DashboardLayout?
+  preferences       UserPreferences?
   portfolioProperties PortfolioProperty[]
-  apiKeys       ApiKey[]
-  subscription  Subscription?
+  apiKeys           ApiKey[]
+  subscription      Subscription?
+  commissionsAsPartner Commission[] @relation("CommissionPartner")
+  commissionsAsPayer   Commission[] @relation("CommissionPayer")
+}
+
+model Commission {
+  id        String          @id @default(cuid())
+  amount    Float           // Suma v EUR (podiel pre partnera)
+  userId    String          // Kto zaplatil (odberateľ)
+  user      User            @relation("CommissionPayer", fields: [userId], references: [id], onDelete: Cascade)
+  partnerId String          // Partner, ktorý dostane províziu
+  partner   User            @relation("CommissionPartner", fields: [partnerId], references: [id], onDelete: Cascade)
+  status    CommissionStatus @default(PENDING)
+  createdAt DateTime        @default(now())
+
+  @@index([partnerId])
+  @@index([userId])
+  @@index([status])
 }
 
 // API kľúče pre verejné API (Pro/Enterprise)

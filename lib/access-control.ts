@@ -114,6 +114,25 @@ export const ROLE_LIMITS: Record<UserRole, RoleLimits> = {
     priceAlerts: true,
     unlimitedComparisons: true,
   },
+
+  PARTNER: {
+    // Partner má plný prístup ako Premium (referral partner)
+    maxSavedProperties: Infinity,
+    maxPortfolioItems: Infinity,
+    maxDailyComparisons: Infinity,
+    hotDealsDelayHours: 0,
+    maxFiltersPresets: Infinity,
+    aiPredictions: true,
+    aiMatching: true,
+    exportData: true,
+    scenarioSimulator: true,
+    advancedTax: true,
+    realtimeDeals: true,
+    urbanDevelopment: true,
+    portfolioManagement: true,
+    priceAlerts: true,
+    unlimitedComparisons: true,
+  },
 };
 
 /**
@@ -136,7 +155,7 @@ export function getLimit(role: UserRole | undefined | null, limit: LimitKey): nu
  * Skontroluje či používateľ je Premium alebo Admin
  */
 export function isPremium(role: UserRole | undefined | null): boolean {
-  return role === "PREMIUM_INVESTOR" || role === "ADMIN";
+  return role === "PREMIUM_INVESTOR" || role === "ADMIN" || role === "PARTNER";
 }
 
 /**

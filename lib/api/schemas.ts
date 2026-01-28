@@ -21,7 +21,7 @@ export const searchSchema = z.object({
 // USER SCHEMAS
 // ==========================================
 
-export const userRoleSchema = z.enum(["ADMIN", "PREMIUM_INVESTOR", "FREE_USER"]);
+export const userRoleSchema = z.enum(["ADMIN", "PREMIUM_INVESTOR", "FREE_USER", "PARTNER"]);
 
 export const updateUserSchema = z.object({
   userId: z.string().min(1, "User ID je povinné"),

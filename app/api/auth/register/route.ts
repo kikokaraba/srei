@@ -7,6 +7,7 @@ const registerSchema = z.object({
   name: z.string().min(2, "Meno musí mať aspoň 2 znaky"),
   email: z.string().email("Neplatný email"),
   password: z.string().min(8, "Heslo musí mať aspoň 8 znakov"),
+  ref: z.string().optional(),
 });
 
 export async function POST(request: Request) {
@@ -25,7 +26,22 @@ export async function POST(request: Request) {
       );
     }
 
-    const { name, email, password } = validated.data;
+    const { name, email, password, ref } = validated.data;
+
+    let referredByUserId: string | null = null;
+    if (ref && ref.trim()) {
+      const partner = await prisma.user.findFirst({
+        where: {
+          role: "PARTNER",
+          OR: [
+            { partnerRef: ref.trim() },
+            { id: ref.trim() },
+          ],
+        },
+        select: { id: true },
+      });
+      if (partner) referredByUserId = partner.id;
+    }
 
     // Skontroluj či email už existuje
     const existingUser = await prisma.user.findUnique({
@@ -49,6 +65,7 @@ export async function POST(request: Request) {
         email,
         password: hashedPassword,
         role: "FREE_USER",
+        referredByUserId: referredByUserId ?? undefined,
       },
       select: {
         id: true,
