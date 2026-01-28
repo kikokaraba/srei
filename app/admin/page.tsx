@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Users,
   Building,
@@ -12,6 +12,9 @@ import {
   Loader2,
   ArrowUpRight,
   ArrowDownRight,
+  Zap,
+  DollarSign,
+  BarChart3,
 } from "lucide-react";
 import Link from "next/link";
 import { getCityRegionLabel, ROLE_LABELS } from "@/lib/constants";
@@ -36,20 +39,39 @@ interface AdminStats {
   }>;
 }
 
+interface ReportSnippet {
+  alpha?: { opportunitiesToday: number };
+  referral?: { pendingPayout: number };
+  liveVsNbs?: { ourAvgPricePerM2: number; nbsAvgPricePerM2: number; differencePercent: number; nbsPeriod: string } | null;
+}
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);
+  const [report, setReport] = useState<ReportSnippet | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch("/api/v1/admin/stats")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setStats(data.data);
+  const fetchData = useCallback(() => {
+    setLoading(true);
+    Promise.all([
+      fetch("/api/v1/admin/stats").then((r) => r.json()),
+      fetch("/api/v1/admin/report").then((r) => r.json()),
+    ])
+      .then(([statsRes, reportRes]) => {
+        if (statsRes.success) setStats(statsRes.data);
+        if (reportRes.success && reportRes.data) {
+          setReport({
+            alpha: reportRes.data.alpha,
+            referral: reportRes.data.referral,
+            liveVsNbs: reportRes.data.liveVsNbs ?? null,
+          });
         }
       })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return (
@@ -111,6 +133,65 @@ export default function AdminDashboard() {
           color="red"
           trend={stats.overview.newUsersLast30Days > 0 ? "up" : undefined}
         />
+      </div>
+
+      {/* Money Metrics – Alpha, Referral, Live vs NBS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Link
+          href="/admin/report"
+          className="premium-card p-5 hover:border-emerald-500/40 transition-all group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <Zap className="w-6 h-6 text-amber-400" />
+            <ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-amber-400 transition-colors" />
+          </div>
+          <div className="text-2xl font-bold text-zinc-100 font-mono">
+            {report?.alpha?.opportunitiesToday ?? "—"}
+          </div>
+          <div className="text-[10px] text-zinc-600 uppercase tracking-widest mt-0.5">
+            Dnešné Alpha príležitosti
+          </div>
+          <p className="text-xs text-zinc-500 mt-2">
+            Gap &gt; 10 % · Zľava &gt; 5 %
+          </p>
+        </Link>
+        <Link
+          href="/admin/report"
+          className="premium-card p-5 hover:border-amber-500/40 transition-all group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <DollarSign className="w-6 h-6 text-amber-400" />
+            <ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-amber-400 transition-colors" />
+          </div>
+          <div className="text-2xl font-bold text-zinc-100 font-mono">
+            {report?.referral?.pendingPayout != null
+              ? new Intl.NumberFormat("sk-SK", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(report.referral.pendingPayout)
+              : "—"}
+          </div>
+          <div className="text-[10px] text-zinc-600 uppercase tracking-widest mt-0.5">
+            Na výplatu partnerom
+          </div>
+        </Link>
+        <Link
+          href="/admin/report"
+          className="premium-card p-5 hover:border-violet-500/40 transition-all group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <BarChart3 className="w-6 h-6 text-violet-400" />
+            <ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-violet-400 transition-colors" />
+          </div>
+          <div className="text-2xl font-bold text-zinc-100 font-mono">
+            {report?.liveVsNbs != null
+              ? `${(report.liveVsNbs.differencePercent >= 0 ? "+" : "")}${report.liveVsNbs.differencePercent.toFixed(1)} %`
+              : "—"}
+          </div>
+          <div className="text-[10px] text-zinc-600 uppercase tracking-widest mt-0.5">
+            Live vs NBS
+          </div>
+          <p className="text-xs text-zinc-500 mt-2">
+            {report?.liveVsNbs?.nbsPeriod ?? "NBS"} · Investor Report →
+          </p>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -210,6 +291,16 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-3">
                 <TrendingUp className="w-4 h-4 text-amber-400" />
                 <span className="text-zinc-200 text-sm">Štatistiky</span>
+              </div>
+              <ArrowUpRight className="w-3.5 h-3.5 text-zinc-600" />
+            </Link>
+            <Link
+              href="/admin/report"
+              className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-xl hover:bg-zinc-800/80 transition-colors border border-emerald-500/20"
+            >
+              <div className="flex items-center gap-3">
+                <BarChart3 className="w-4 h-4 text-emerald-400" />
+                <span className="text-zinc-200 text-sm">Investor Report</span>
               </div>
               <ArrowUpRight className="w-3.5 h-3.5 text-zinc-600" />
             </Link>

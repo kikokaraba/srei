@@ -28,6 +28,8 @@ export async function GET() {
       propertiesByCity,
       recentUsers,
       activeUsers,
+      onboardingCompletedCount,
+      usersWithSavedCount,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.property.count(),
@@ -65,6 +67,8 @@ export async function GET() {
           ],
         },
       }),
+      prisma.userPreferences.count({ where: { onboardingCompleted: true } }),
+      prisma.user.count({ where: { savedProperties: { some: {} } } }),
     ]);
 
     // Calculate growth (users created in last 30 days)
@@ -83,6 +87,8 @@ export async function GET() {
           totalSavedProperties,
           activeUsers,
           newUsersLast30Days,
+          onboardingCompletedCount,
+          usersWithSavedCount,
         },
         usersByRole: usersByRole.map((r) => ({
           role: r.role,

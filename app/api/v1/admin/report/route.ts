@@ -1,11 +1,12 @@
 /**
  * Investor Report API
- * Alpha, Hunter alerts, AI efficiency, referral stub. Admin-only.
+ * Alpha, Hunter alerts, AI efficiency, referral, Live vs NBS. Admin-only.
  */
 
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getDataComparison } from "@/lib/data-sources/realtime-stats";
 
 const MS_30D = 30 * 24 * 60 * 60 * 1000;
 
@@ -25,6 +26,58 @@ export async function GET() {
     }
 
     const since = new Date(Date.now() - MS_30D);
+
+    // --- Alpha opportunities today (Gap > 10% AND PriceDrop > 5%) ---
+    const gapsWithDrop = await prisma.marketGap.findMany({
+      where: { gap_percentage: { gte: 10 } },
+      include: {
+        property: {
+          select: {
+            id: true,
+            price: true,
+            priceHistory: { orderBy: { recorded_at: "asc" }, take: 20 },
+          },
+        },
+      },
+    });
+    let alphaOpportunitiesToday = 0;
+    for (const g of gapsWithDrop) {
+      const ph = g.property.priceHistory;
+      if (ph.length < 2) continue;
+      const firstPrice = ph[0].price;
+      const currentPrice = g.property.price;
+      if (firstPrice <= 0) continue;
+      const dropPct = ((firstPrice - currentPrice) / firstPrice) * 100;
+      if (dropPct >= 5) alphaOpportunitiesToday++;
+    }
+
+    // --- Referral pending payout (sum Commission PENDING) ---
+    const pending = await prisma.commission.aggregate({
+      where: { status: "PENDING" },
+      _sum: { amount: true },
+    });
+    const referralPendingPayout = pending._sum.amount ?? 0;
+
+    // --- Live vs NBS (naše vs NBS priemer) ---
+    let liveVsNbs: {
+      ourAvgPricePerM2: number;
+      nbsAvgPricePerM2: number;
+      differencePercent: number;
+      source: string;
+      nbsPeriod: string;
+    } | null = null;
+    try {
+      const comp = await getDataComparison();
+      liveVsNbs = {
+        ourAvgPricePerM2: comp.ourData.avg,
+        nbsAvgPricePerM2: comp.nbsData.avg,
+        differencePercent: comp.differencePercent,
+        source: comp.ourData.source,
+        nbsPeriod: comp.nbsData.period,
+      };
+    } catch {
+      /* ignore */
+    }
 
     // --- Alpha (Market vs Hunter) ---
     const [allProps, hunterProps, gaps] = await Promise.all([
@@ -123,6 +176,7 @@ export async function GET() {
           totalPotentialAlpha: Math.round(totalPotentialAlpha),
           hunterCount: hunterProps.length,
           marketCount: allProps.length,
+          opportunitiesToday: alphaOpportunitiesToday,
         },
         hunter: {
           alertsDaily: hunterAlertsDaily,
@@ -136,7 +190,9 @@ export async function GET() {
         },
         referral: {
           leaderboard: referralLeaderboard,
+          pendingPayout: Math.round(referralPendingPayout * 100) / 100,
         },
+        liveVsNbs,
       },
     });
   } catch (e) {

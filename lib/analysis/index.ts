@@ -17,4 +17,5 @@ export {
   getYieldStats,
   type YieldData,
   type MarketComparison,
+  type PriceToRentTrend,
 } from "./yield-engine";

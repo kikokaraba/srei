@@ -20,6 +20,8 @@ interface AdminStats {
     totalSavedProperties: number;
     activeUsers: number;
     newUsersLast30Days: number;
+    onboardingCompletedCount?: number;
+    usersWithSavedCount?: number;
   };
   usersByRole: Array<{ role: string; count: number }>;
   propertiesByCity: Array<{ city: string; count: number }>;
@@ -172,20 +174,20 @@ export default function AdminStatsPage() {
               />
               <FunnelStep
                 label="Dokončili onboarding"
-                value={Math.round(stats.overview.totalUsers * 0.7)} // Estimate
-                percentage={70}
+                value={stats.overview.onboardingCompletedCount ?? 0}
+                percentage={stats.overview.totalUsers > 0 ? ((stats.overview.onboardingCompletedCount ?? 0) / stats.overview.totalUsers) * 100 : 0}
                 color="purple"
               />
               <FunnelStep
                 label="Uložili nehnuteľnosť"
-                value={Math.round(stats.overview.totalSavedProperties > 0 ? stats.overview.totalUsers * 0.4 : 0)}
-                percentage={40}
+                value={stats.overview.usersWithSavedCount ?? 0}
+                percentage={stats.overview.totalUsers > 0 ? ((stats.overview.usersWithSavedCount ?? 0) / stats.overview.totalUsers) * 100 : 0}
                 color="emerald"
               />
               <FunnelStep
                 label="Aktívni (7 dní)"
                 value={stats.overview.activeUsers}
-                percentage={(stats.overview.activeUsers / stats.overview.totalUsers) * 100}
+                percentage={stats.overview.totalUsers > 0 ? (stats.overview.activeUsers / stats.overview.totalUsers) * 100 : 0}
                 color="yellow"
               />
             </div>
@@ -193,23 +195,23 @@ export default function AdminStatsPage() {
         </div>
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary Cards – živé dáta z DB */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 rounded-xl border border-emerald-500/20 p-6">
-          <h4 className="text-emerald-400 font-medium mb-2">Zdravie platformy</h4>
-          <div className="text-4xl font-bold text-slate-100 mb-2">Dobrý</div>
+          <h4 className="text-emerald-400 font-medium mb-2">Aktivita</h4>
+          <div className="text-4xl font-bold text-slate-100 mb-2 font-mono">{stats.overview.activeUsers}</div>
           <p className="text-sm text-slate-400">
-            {stats.overview.activeUsers > 0 ? "Aktívni používatelia sú zapojení" : "Potrebuje viac používateľov"}
+            Aktívnych používateľov (7 dní)
           </p>
         </div>
         <div className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-xl border border-blue-500/20 p-6">
           <h4 className="text-blue-400 font-medium mb-2">Rast</h4>
-          <div className="text-4xl font-bold text-slate-100 mb-2">+{stats.overview.newUsersLast30Days}</div>
+          <div className="text-4xl font-bold text-slate-100 mb-2 font-mono">+{stats.overview.newUsersLast30Days}</div>
           <p className="text-sm text-slate-400">Nových používateľov za 30 dní</p>
         </div>
         <div className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 rounded-xl border border-purple-500/20 p-6">
           <h4 className="text-purple-400 font-medium mb-2">Dáta</h4>
-          <div className="text-4xl font-bold text-slate-100 mb-2">{stats.overview.totalProperties}</div>
+          <div className="text-4xl font-bold text-slate-100 mb-2 font-mono">{stats.overview.totalProperties}</div>
           <p className="text-sm text-slate-400">Nehnuteľností v databáze</p>
         </div>
       </div>

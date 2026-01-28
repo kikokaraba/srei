@@ -333,22 +333,24 @@ function getRating(yield_: number): MarketComparison["rating"] {
 // EXPORT PRE DASHBOARD
 // ============================================================================
 
+export type PriceToRentTrend = "RISING" | "STABLE" | "FALLING" | "INSUFFICIENT_DATA";
+
 /**
- * Získa yield štatistiky pre dashboard
+ * Získa yield štatistiky pre dashboard.
+ * priceToRentTrend z MonthlyMarketStats; ak nie sú dáta, vráti INSUFFICIENT_DATA.
  */
 export async function getYieldStats(city?: string): Promise<{
   averageGrossYield: number;
   averageNetYield: number;
   bestYieldDistricts: Array<{ district: string; yield: number }>;
-  priceToRentTrend: "RISING" | "STABLE" | "FALLING";
+  priceToRentTrend: PriceToRentTrend;
 }> {
   const where = {
     status: "ACTIVE" as const,
     ...(city && { city }),
   };
 
-  // Agregácie
-  const [salesStats, rentStats] = await Promise.all([
+  const [salesStats, rentStats, monthlyForTrend] = await Promise.all([
     prisma.property.aggregate({
       where: { ...where, listing_type: "PREDAJ", price: { gt: 10000 } },
       _avg: { price_per_m2: true },
@@ -359,19 +361,48 @@ export async function getYieldStats(city?: string): Promise<{
       _avg: { price_per_m2: true },
       _count: true,
     }),
+    prisma.monthlyMarketStats.findMany({
+      where: {
+        listingType: "PREDAJ",
+        city: city?.toUpperCase() || "BRATISLAVA",
+      },
+      orderBy: [{ year: "desc" }, { month: "desc" }],
+      take: 3,
+      select: { year: true, month: true, avgPricePerM2: true, priceChangePercent: true, city: true },
+    }),
   ]);
 
-  let averageGrossYield = 4.5; // Default
+  let averageGrossYield = 4.5;
   if (salesStats._avg.price_per_m2 && rentStats._avg.price_per_m2) {
     averageGrossYield = (rentStats._avg.price_per_m2 * 12) / salesStats._avg.price_per_m2 * 100;
   }
-
   const averageNetYield = averageGrossYield * (1 - TOTAL_EXPENSE_RATE);
+
+  let priceToRentTrend: PriceToRentTrend = "INSUFFICIENT_DATA";
+  if (monthlyForTrend.length >= 2) {
+    const latest = monthlyForTrend[0];
+    const pct = latest.priceChangePercent;
+    if (pct != null) {
+      if (pct > 0.5) priceToRentTrend = "RISING";
+      else if (pct < -0.5) priceToRentTrend = "FALLING";
+      else priceToRentTrend = "STABLE";
+    } else {
+      const prev = monthlyForTrend[1];
+      const prevAvg = prev.avgPricePerM2;
+      const currAvg = latest.avgPricePerM2;
+      if (prevAvg > 0 && currAvg > 0) {
+        const ch = ((currAvg - prevAvg) / prevAvg) * 100;
+        if (ch > 0.5) priceToRentTrend = "RISING";
+        else if (ch < -0.5) priceToRentTrend = "FALLING";
+        else priceToRentTrend = "STABLE";
+      }
+    }
+  }
 
   return {
     averageGrossYield: Math.round(averageGrossYield * 100) / 100,
     averageNetYield: Math.round(averageNetYield * 100) / 100,
-    bestYieldDistricts: [], // TODO: Implementovať
-    priceToRentTrend: "STABLE",
+    bestYieldDistricts: [],
+    priceToRentTrend,
   };
 }

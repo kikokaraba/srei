@@ -33,6 +33,7 @@ interface ReportData {
     totalPotentialAlpha: number;
     hunterCount: number;
     marketCount: number;
+    opportunitiesToday: number;
   };
   hunter: {
     alertsDaily: { date: string; count: number }[];
@@ -53,7 +54,15 @@ interface ReportData {
       commission: number;
       commissionPct?: number;
     }[];
+    pendingPayout: number;
   };
+  liveVsNbs: {
+    ourAvgPricePerM2: number;
+    nbsAvgPricePerM2: number;
+    differencePercent: number;
+    source: string;
+    nbsPeriod: string;
+  } | null;
 }
 
 const formatEur = (n: number) =>
@@ -139,6 +148,12 @@ export default function InvestorReportPage() {
         { name: "Priem. Hunter ponuky", value: data.alpha.avgHunterPrice, fill: "#10b981" },
       ]
     : [];
+  const liveVsNbsChartData = data?.liveVsNbs
+    ? [
+        { name: "SRIA (live)", value: data.liveVsNbs.ourAvgPricePerM2, fill: "#10b981" },
+        { name: "NBS " + (data.liveVsNbs.nbsPeriod ?? ""), value: data.liveVsNbs.nbsAvgPricePerM2, fill: "#6366f1" },
+      ]
+    : [];
 
   return (
     <div className="space-y-10">
@@ -195,6 +210,15 @@ export default function InvestorReportPage() {
             <p className="text-sm text-zinc-500 mt-2">
               {data?.alpha.hunterCount ?? 0} Hunter ponúk · {data?.alpha.marketCount ?? 0} inzerátov v dátach
             </p>
+            <div className="mt-4 pt-4 border-t border-emerald-500/20">
+              <div className="text-xs font-medium text-amber-400/80 uppercase tracking-wider mb-0.5">
+                Dnešné Alpha príležitosti
+              </div>
+              <div className="text-2xl font-bold text-amber-400 font-mono">
+                {data?.alpha.opportunitiesToday ?? 0}
+              </div>
+              <p className="text-xs text-zinc-500">Gap &gt; 10 % a zľava &gt; 5 %</p>
+            </div>
           </div>
         </div>
       </section>
@@ -271,16 +295,60 @@ export default function InvestorReportPage() {
         </div>
       </section>
 
-      {/* 4. Referral ROI + Funnel placeholder */}
+      {/* 4. Live vs NBS */}
+      {liveVsNbsChartData.length > 0 && (
+        <section className="rounded-2xl border border-zinc-800/60 bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 p-6 lg:p-8">
+          <h2 className="text-xl font-bold text-zinc-100 mb-1 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-violet-400" />
+            Live Market vs NBS
+          </h2>
+          <p className="text-sm text-zinc-500 mb-6">
+            Naša priemerná cena za m² vs. NBS. Veríme našim dátam; NBS je kontext.
+          </p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={liveVsNbsChartData} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                  <XAxis dataKey="name" tick={{ fill: "#a1a1aa", fontSize: 12 }} />
+                  <YAxis tick={{ fill: "#a1a1aa", fontSize: 12 }} tickFormatter={(v) => `${(v / 1000).toFixed(1)}k`} />
+                  <Tooltip
+                    contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8 }}
+                    formatter={(value: number | undefined) => [value != null ? `${value.toLocaleString()} €/m²` : "—", "€/m²"]}
+                  />
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex flex-col justify-center rounded-xl bg-zinc-800/30 border border-zinc-700/50 p-5">
+              <div className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1">Rozdiel</div>
+              <div className={`text-2xl font-bold font-mono ${(data?.liveVsNbs?.differencePercent ?? 0) >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                {(data?.liveVsNbs?.differencePercent ?? 0) >= 0 ? "+" : ""}
+                {data?.liveVsNbs?.differencePercent?.toFixed(1) ?? "—"} %
+              </div>
+              <p className="text-xs text-zinc-500 mt-1">
+                SRIA vs. NBS {data?.liveVsNbs?.nbsPeriod ?? ""}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 5. Referral ROI */}
       <section className="rounded-2xl border border-zinc-800/60 bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 p-6 lg:p-8">
         <h2 className="text-xl font-bold text-zinc-100 mb-1 flex items-center gap-2">
           <Users className="w-5 h-5 text-blue-400" />
           Conversion & Referral
         </h2>
         <p className="text-sm text-zinc-500 mb-6">
-          Výkonnosť referral kódov. Funnel: Registrácie → Kredity → Predplatné (coming soon).
+          Výkonnosť referral kódov. Na výplatu partnerom: suma provízií so stavom PENDING.
         </p>
-
+        <div className="mb-6 flex flex-wrap items-center gap-4">
+          <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 px-5 py-3">
+            <span className="text-xs text-amber-400/80 uppercase tracking-wider">Na výplatu</span>
+            <div className="text-xl font-bold text-amber-400 font-mono">{formatEur(data?.referral.pendingPayout ?? 0)}</div>
+          </div>
+        </div>
         <div className="overflow-x-auto rounded-xl border border-zinc-800/60">
           <table className="w-full text-sm">
             <thead>
