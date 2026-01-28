@@ -339,6 +339,8 @@ export async function POST(request: NextRequest) {
           rooms: parseRooms(item.rooms),
         });
         
+        const images = item.images || [];
+        const thumbnailUrl = images.length > 0 ? (images[0].startsWith("//") ? `https:${images[0]}` : images[0]) : null;
         const propertyData = {
           title: item.title,
           slug,
@@ -354,8 +356,9 @@ export async function POST(request: NextRequest) {
           district,
           street: street || null,
           address: (typeof loc === "string" ? loc : (loc?.full || city)),
-          photos: JSON.stringify(item.images || []),
-          photo_count: (item.images || []).length,
+          photos: JSON.stringify(images),
+          thumbnail_url: thumbnailUrl,
+          photo_count: images.length,
           source: portal.toUpperCase() === "NEHNUTELNOSTI" ? "NEHNUTELNOSTI" : 
                   portal.toUpperCase() === "BAZOS" ? "BAZOS" : "REALITY",
           source_url: item.url,
@@ -382,6 +385,7 @@ export async function POST(request: NextRequest) {
               price: propertyData.price,
               price_per_m2: propertyData.price_per_m2,
               photos: propertyData.photos,
+              thumbnail_url: propertyData.thumbnail_url,
               photo_count: propertyData.photo_count,
               last_seen_at: new Date(),
               status: "ACTIVE",

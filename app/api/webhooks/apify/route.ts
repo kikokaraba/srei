@@ -235,6 +235,8 @@ async function processItem(item: ApifyScrapedItem): Promise<{
     const slug = generateSlug(item.title || "nehnutelnost", externalId);
     
     // Priprav dáta pre Prisma (snake_case podľa schémy)
+    const images = item.images || [];
+    const thumbnailUrl = images.length > 0 ? (images[0].startsWith("//") ? `https:${images[0]}` : images[0]) : null;
     const propertyData = {
       title: item.title || "Bez názvu",
       slug,
@@ -250,8 +252,9 @@ async function processItem(item: ApifyScrapedItem): Promise<{
       district: item.location?.district || "",
       street: item.location?.street || null,
       address: item.location?.full || city,
-      photos: JSON.stringify(item.images || []),
-      photo_count: (item.images || []).length,
+      photos: JSON.stringify(images),
+      thumbnail_url: thumbnailUrl,
+      photo_count: images.length,
       source: item.portal === "nehnutelnosti" ? "NEHNUTELNOSTI" : 
               item.portal === "bazos" ? "BAZOS" : "REALITY",
       source_url: item.url,
@@ -279,6 +282,7 @@ async function processItem(item: ApifyScrapedItem): Promise<{
           price: propertyData.price,
           price_per_m2: propertyData.price_per_m2,
           photos: propertyData.photos,
+          thumbnail_url: propertyData.thumbnail_url,
           photo_count: propertyData.photo_count,
           last_seen_at: new Date(),
           status: "ACTIVE",

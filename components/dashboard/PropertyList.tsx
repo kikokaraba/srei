@@ -29,7 +29,6 @@ import {
   ImageOff,
   Camera,
 } from "lucide-react";
-import Image from "next/image";
 import { normalizeCityName, getCityInfo } from "@/lib/constants/cities";
 
 // Slovenské kraje
@@ -234,6 +233,7 @@ export function PropertyList() {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [savingId, setSavingId] = useState<string | null>(null);
   const [batchMetrics, setBatchMetrics] = useState<Record<string, BatchMetrics>>({});
+  const [failedImageIds, setFailedImageIds] = useState<Set<string>>(new Set());
   
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { preferences: _preferences, isLoading: prefsLoading } = useUserPreferences();
@@ -249,6 +249,7 @@ export function PropertyList() {
   const fetchProperties = useCallback(async () => {
     try {
       setLoading(true);
+      setFailedImageIds(new Set());
       const params = new URLSearchParams();
       params.append("page", page.toString());
       params.append("limit", ITEMS_PER_PAGE.toString());
@@ -404,27 +405,28 @@ export function PropertyList() {
     return CONDITIONS.find((c) => c.value === condition)?.label || condition;
   };
 
-  // Helper pre získanie thumbnail URL
+  // Helper pre získanie thumbnail URL (raw z API)
   const getThumbnailUrl = (property: Property): string | null => {
-    // Prioritne thumbnail_url
-    if (property.thumbnail_url) {
-      return property.thumbnail_url;
-    }
-    // Fallback na prvú fotku z JSON poľa
+    if (property.thumbnail_url) return property.thumbnail_url;
     if (property.photos) {
       try {
         const photosArray = JSON.parse(property.photos);
         if (Array.isArray(photosArray) && photosArray.length > 0) {
-          return photosArray[0];
+          const u = photosArray[0];
+          return typeof u === "string" ? (u.startsWith("//") ? `https:${u}` : u) : null;
         }
       } catch {
-        // Ak photos nie je validné JSON, skús či to nie je samotná URL
-        if (property.photos.startsWith("http")) {
-          return property.photos;
-        }
+        if (property.photos.startsWith("http")) return property.photos;
+        if (property.photos.startsWith("//")) return `https:${property.photos}`;
       }
     }
     return null;
+  };
+
+  // URL pre <img> – cez proxy proti hotlink blokovaniu
+  const getThumbnailSrc = (url: string | null): string | null => {
+    if (!url || !url.startsWith("http")) return null;
+    return `/api/image-proxy?url=${encodeURIComponent(url)}`;
   };
 
   // Investor-focused badges
@@ -768,16 +770,14 @@ export function PropertyList() {
               >
                 {/* Photo Section */}
                 <div className="relative h-44 bg-zinc-900 overflow-hidden">
-                  {thumbnailUrl ? (
+                  {thumbnailUrl && !failedImageIds.has(property.id) ? (
                     <img
-                      src={thumbnailUrl}
+                      src={getThumbnailSrc(thumbnailUrl)!}
                       alt={property.title}
                       referrerPolicy="no-referrer"
                       className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
                       loading="lazy"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
+                      onError={() => setFailedImageIds((s) => new Set(s).add(property.id))}
                     />
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-700">
@@ -937,16 +937,14 @@ export function PropertyList() {
                 <div className="flex">
                   {/* Thumbnail */}
                   <div className="relative w-40 h-28 flex-shrink-0 bg-zinc-800/50">
-                    {thumbnailUrl ? (
+                    {thumbnailUrl && !failedImageIds.has(property.id) ? (
                       <img
-                        src={thumbnailUrl}
+                        src={getThumbnailSrc(thumbnailUrl)!}
                         alt={property.title}
                         referrerPolicy="no-referrer"
                         className="absolute inset-0 w-full h-full object-cover"
                         loading="lazy"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                        onError={() => setFailedImageIds((s) => new Set(s).add(property.id))}
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center text-zinc-600">
