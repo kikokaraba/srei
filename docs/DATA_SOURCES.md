@@ -30,3 +30,9 @@
 - Pravidelne spúšťať scraping (Bazoš, Nehnuteľnosti, Reality) aby DB obsahovala aktuálne inzeráty.
 - Scrapovať aj **prenájmy** (PRENAJOM), aby fungovali yield a odhad nájmu.
 - Batch refresh zapnutý pre históriu cien a „dni na trhu“.
+
+## Apify Webhook – batch upsert
+
+- Webhook (`/api/webhooks/apify`) spracováva dáta **dávkovo**: prepare → bulk `findMany` → split create/update → chunkované `$transaction` (po 40).
+- Obchádza timeout pri veľkých datasetch (140+ položiek): menej round-tripov, `maxDuration` 300s.
+- Duplicity v datasete sa odfiltrujú podľa `externalId` a `sourceUrl` pred zápisom.

@@ -12,7 +12,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getApifyDatasetItems, type ApifyScrapedItem } from "@/lib/scraper/apify-service";
-import { generateCoreFingerprint } from "@/lib/matching/fingerprint";
 
 // ============================================================================
 // HELPER FUNKCIE PRE ČISTENIE DÁT
@@ -107,21 +106,26 @@ function parseFloor(floorRaw: string | undefined): number | null {
 }
 
 /**
- * Normalizuje stav nehnuteľnosti
+ * Normalizuje stav nehnuteľnosti (raw)
  */
 function parseCondition(conditionRaw: string | undefined): string | null {
   if (!conditionRaw) return null;
-  
   const lower = conditionRaw.toLowerCase();
-  
   if (lower.includes("novostavba") || lower.includes("nová")) return "NOVOSTAVBA";
   if (lower.includes("komplet") && lower.includes("rekon")) return "KOMPLETNA_REKONSTRUKCIA";
   if (lower.includes("čiastoč") && lower.includes("rekon")) return "CIASTOCNA_REKONSTRUKCIA";
   if (lower.includes("pôvodný") || lower.includes("povodny")) return "POVODNY_STAV";
   if (lower.includes("dobrý") || lower.includes("dobry")) return "DOBRY_STAV";
   if (lower.includes("veľmi dobrý")) return "VELMI_DOBRY_STAV";
-  
   return "NEZISTENY";
+}
+
+/** Mapuje na PropertyCondition enum (POVODNY | REKONSTRUKCIA | NOVOSTAVBA) */
+function mapConditionToSchema(raw: string | null): "POVODNY" | "REKONSTRUKCIA" | "NOVOSTAVBA" {
+  if (!raw) return "POVODNY";
+  if (raw === "NOVOSTAVBA") return "NOVOSTAVBA";
+  if (raw.includes("REKONSTRUKCIA") || raw.includes("REKON")) return "REKONSTRUKCIA";
+  return "POVODNY";
 }
 
 /**
@@ -177,67 +181,75 @@ function generateSlug(title: string, externalId: string): string {
  * Extrahuje externalId z URL
  */
 function extractExternalId(url: string): string {
-  // Nehnutelnosti.sk: /detail/abc123/
   const nehnutMatch = url.match(/\/detail\/([^\/]+)/);
   if (nehnutMatch) return `nh-${nehnutMatch[1]}`;
-  
-  // Bazoš: /inzerat/12345/
   const bazosMatch = url.match(/\/inzerat\/(\d+)/);
   if (bazosMatch) return `bz-${bazosMatch[1]}`;
-  
-  // Fallback
   return `uk-${Date.now()}`;
 }
 
 // ============================================================================
-// SPRACOVANIE JEDNÉHO ITEMU
+// BATCH: PRÍPRAVA A NORMALIZÁCIA (bez DB)
 // ============================================================================
 
-async function processItem(item: ApifyScrapedItem): Promise<{
-  success: boolean;
-  action: "created" | "updated" | "skipped";
-  error?: string;
-}> {
-  try {
-    const price = parsePrice(item.price_raw);
-    const area = parseArea(item.area_m2);
-    const city = item.location?.city || "Slovensko";
-    
-    // Validácia - musí mať aspoň niečo užitočné (cena ALEBO plocha ALEBO obrázky)
-    const isPriceNegotiable = item.price_raw?.toLowerCase().includes("dohodou");
-    const hasPrice = price > 0 || isPriceNegotiable;
-    const hasArea = area > 0;
-    const hasImages = (item.images || []).length > 0;
-    const hasTitle = !!item.title;
-    
-    // Musí mať aspoň titulok a (cenu ALEBO plochu)
-    if (!hasTitle) {
-      return { success: false, action: "skipped", error: "Missing title" };
-    }
-    
-    if (!hasPrice && !hasArea) {
-      return { success: false, action: "skipped", error: "Missing both price and area" };
-    }
-    
-    const externalId = extractExternalId(item.url);
-    const propertyType = detectPropertyType(item.url, item.title || "");
-    const listingType = detectTransactionType(item.url);
-    
-    // Generuj fingerprint pre deduplikáciu
-    const fingerprint = generateCoreFingerprint({
-      city,
-      district: item.location?.district || "",
-      area_m2: area,
-      rooms: parseRooms(item.rooms),
-    });
-    
-    const pricePerM2 = area > 0 ? Math.round(price / area) : 0;
-    const slug = generateSlug(item.title || "nehnutelnost", externalId);
-    
-    // Priprav dáta pre Prisma (snake_case podľa schémy)
-    const images = item.images || [];
-    const thumbnailUrl = images.length > 0 ? (images[0].startsWith("//") ? `https:${images[0]}` : images[0]) : null;
-    const propertyData = {
+interface PreparedItem {
+  externalId: string;
+  sourceUrl: string;
+  price: number;
+  pricePerM2: number;
+  data: {
+    title: string;
+    slug: string;
+    description: string;
+    price: number;
+    price_per_m2: number;
+    area_m2: number;
+    rooms: number | null;
+    floor: number | null;
+    condition: "POVODNY" | "REKONSTRUKCIA" | "NOVOSTAVBA";
+    energy_certificate: "NONE";
+    city: string;
+    district: string;
+    street: string | null;
+    address: string;
+    photos: string;
+    thumbnail_url: string | null;
+    photo_count: number;
+    source: "NEHNUTELNOSTI" | "BAZOS" | "REALITY";
+    source_url: string;
+    external_id: string;
+    listing_type: "PREDAJ" | "PRENAJOM";
+    status: "ACTIVE";
+    last_seen_at: Date;
+  };
+  addPriceHistory: boolean;
+}
+
+function prepareItem(item: ApifyScrapedItem): PreparedItem | null {
+  const price = parsePrice(item.price_raw);
+  const area = parseArea(item.area_m2);
+  const city = item.location?.city || "Slovensko";
+  const isPriceNegotiable = !!item.price_raw?.toLowerCase().includes("dohodou");
+  const hasPrice = price > 0 || isPriceNegotiable;
+  const hasArea = area > 0;
+  const hasTitle = !!item.title;
+  if (!hasTitle || (!hasPrice && !hasArea)) return null;
+
+  const externalId = extractExternalId(item.url);
+  const listingType = detectTransactionType(item.url);
+  const pricePerM2 = area > 0 ? Math.round(price / area) : 0;
+  const slug = generateSlug(item.title || "nehnutelnost", externalId);
+  const images = item.images || [];
+  const thumbnailUrl = images.length > 0 ? (images[0].startsWith("//") ? `https:${images[0]}` : images[0]) : null;
+  const source = item.portal === "nehnutelnosti" ? "NEHNUTELNOSTI" as const : item.portal === "bazos" ? "BAZOS" as const : "REALITY" as const;
+
+  return {
+    externalId,
+    sourceUrl: item.url,
+    price,
+    pricePerM2,
+    addPriceHistory: price > 0,
+    data: {
       title: item.title || "Bez názvu",
       slug,
       description: item.description || "",
@@ -246,8 +258,8 @@ async function processItem(item: ApifyScrapedItem): Promise<{
       area_m2: area,
       rooms: parseRooms(item.rooms),
       floor: parseFloor(item.floor),
-      condition: parseCondition(item.condition) || "NEZISTENY",
-      energy_certificate: "NEZISTENY" as const,
+      condition: mapConditionToSchema(parseCondition(item.condition)),
+      energy_certificate: "NONE",
       city,
       district: item.location?.district || "",
       street: item.location?.street || null,
@@ -255,146 +267,161 @@ async function processItem(item: ApifyScrapedItem): Promise<{
       photos: JSON.stringify(images),
       thumbnail_url: thumbnailUrl,
       photo_count: images.length,
-      source: item.portal === "nehnutelnosti" ? "NEHNUTELNOSTI" : 
-              item.portal === "bazos" ? "BAZOS" : "REALITY",
+      source,
       source_url: item.url,
       external_id: externalId,
       listing_type: listingType === "PRENAJOM" ? "PRENAJOM" : "PREDAJ",
-      status: "ACTIVE" as const,
+      status: "ACTIVE",
       last_seen_at: new Date(),
-    };
-    
-    // Upsert - vytvor alebo aktualizuj
-    const existing = await prisma.property.findFirst({
-      where: {
-        OR: [
-          { external_id: externalId },
-          { source_url: item.url },
-        ],
-      },
-    });
-    
-    if (existing) {
-      // Aktualizuj existujúcu
-      await prisma.property.update({
-        where: { id: existing.id },
-        data: {
-          price: propertyData.price,
-          price_per_m2: propertyData.price_per_m2,
-          photos: propertyData.photos,
-          thumbnail_url: propertyData.thumbnail_url,
-          photo_count: propertyData.photo_count,
-          last_seen_at: new Date(),
-          status: "ACTIVE",
-        },
-      });
-      
-      // Pridaj do histórie cien ak sa zmenila
-      if (existing.price !== price && price > 0) {
-        await prisma.priceHistory.create({
-          data: {
-            propertyId: existing.id,
-            price,
-            price_per_m2: pricePerM2,
-          },
-        });
-      }
-      
-      return { success: true, action: "updated" };
-    } else {
-      // Vytvor novú
-      const newProperty = await prisma.property.create({
-        data: propertyData as any, // Type assertion kvôli Prisma
-      });
-      
-      // Pridaj prvú cenu do histórie
-      if (price > 0) {
-        await prisma.priceHistory.create({
-          data: {
-            propertyId: newProperty.id,
-            price,
-            price_per_m2: pricePerM2,
-          },
-        });
-      }
-      
-      return { success: true, action: "created" };
-    }
-    
-  } catch (error) {
-    return {
-      success: false,
-      action: "skipped",
-      error: error instanceof Error ? error.message : "Unknown error",
-    };
-  }
+    },
+  };
 }
 
 // ============================================================================
-// WEBHOOK HANDLER
+// WEBHOOK HANDLER – BATCH UPSERT
 // ============================================================================
+
+const BATCH_CHUNK_SIZE = 40;
+export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   try {
     const payload = await request.json();
-    
     console.log("📥 [Webhook] Received Apify notification:", {
       resourceId: payload.resourceId,
       datasetId: payload.datasetId,
       portal: payload.portal,
       status: payload.status,
     });
-    
-    // Validácia
+
     if (!payload.datasetId) {
-      return NextResponse.json(
-        { success: false, error: "Missing datasetId" },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: "Missing datasetId" }, { status: 400 });
     }
-    
-    // Stiahni dáta z Apify
-    console.log("📦 [Webhook] Fetching dataset items...");
+
     const items = await getApifyDatasetItems(payload.datasetId);
-    console.log(`📊 [Webhook] Received ${items.length} items`);
-    
-    // Spracuj každý item
-    const stats = {
-      total: items.length,
-      created: 0,
-      updated: 0,
-      skipped: 0,
-      errors: [] as string[],
-    };
-    
+    console.log(`📦 [Webhook] Fetched ${items.length} items`);
+
+    const prepared: PreparedItem[] = [];
+    const skippedReasons: string[] = [];
     for (const item of items) {
-      const result = await processItem(item);
-      
-      if (result.action === "created") stats.created++;
-      else if (result.action === "updated") stats.updated++;
-      else stats.skipped++;
-      
-      if (result.error) {
-        stats.errors.push(result.error);
+      const p = prepareItem(item);
+      if (p) prepared.push(p);
+      else skippedReasons.push("Missing title or price+area");
+    }
+    const seenIds = new Set<string>();
+    const seenUrls = new Set<string>();
+    const deduped: PreparedItem[] = [];
+    for (const p of prepared) {
+      if (seenIds.has(p.externalId) || seenUrls.has(p.sourceUrl)) continue;
+      seenIds.add(p.externalId);
+      seenUrls.add(p.sourceUrl);
+      deduped.push(p);
+    }
+
+    if (deduped.length === 0) {
+      return NextResponse.json({
+        success: true,
+        portal: payload.portal,
+        stats: { total: items.length, created: 0, updated: 0, skipped: items.length, errors: skippedReasons.slice(0, 20) },
+      });
+    }
+
+    const externalIds = [...new Set(deduped.map((p) => p.externalId).filter((id) => !id.startsWith("uk-")))];
+    const sourceUrls = [...new Set(deduped.map((p) => p.sourceUrl))];
+    const orParts: { external_id?: string; source_url?: string }[] = [];
+    for (const id of externalIds) orParts.push({ external_id: id });
+    for (const u of sourceUrls) orParts.push({ source_url: u });
+    const existing =
+      orParts.length > 0
+        ? await prisma.property.findMany({
+            where: { OR: orParts },
+            select: { id: true, external_id: true, source_url: true, price: true },
+          })
+        : [];
+
+    const byExt = new Map<string, { id: string; price: number }>();
+    const byUrl = new Map<string, { id: string; price: number }>();
+    for (const e of existing) {
+      if (e.external_id) byExt.set(e.external_id, { id: e.id, price: e.price });
+      if (e.source_url) byUrl.set(e.source_url, { id: e.id, price: e.price });
+    }
+
+    const toCreate: PreparedItem[] = [];
+    const toUpdate: { prepared: PreparedItem; existingId: string; existingPrice: number }[] = [];
+    for (const p of deduped) {
+      const ex = byExt.get(p.externalId) ?? byUrl.get(p.sourceUrl);
+      if (ex) toUpdate.push({ prepared: p, existingId: ex.id, existingPrice: ex.price });
+      else toCreate.push(p);
+    }
+
+    let created = 0;
+    let updated = 0;
+    const errors: string[] = [];
+
+    for (let i = 0; i < toCreate.length; i += BATCH_CHUNK_SIZE) {
+      const chunk = toCreate.slice(i, i + BATCH_CHUNK_SIZE);
+      try {
+        await prisma.$transaction(async (tx) => {
+          for (const p of chunk) {
+            const prop = await tx.property.create({ data: p.data as never });
+            created++;
+            if (p.addPriceHistory) {
+              await tx.priceHistory.create({
+                data: { propertyId: prop.id, price: p.price, price_per_m2: p.pricePerM2 },
+              });
+            }
+          }
+        });
+      } catch (e) {
+        errors.push(e instanceof Error ? e.message : "Create batch failed");
       }
     }
-    
-    console.log("✅ [Webhook] Processing complete:", stats);
-    
-    return NextResponse.json({
-      success: true,
-      portal: payload.portal,
-      stats,
-    });
-    
+
+    for (let i = 0; i < toUpdate.length; i += BATCH_CHUNK_SIZE) {
+      const chunk = toUpdate.slice(i, i + BATCH_CHUNK_SIZE);
+      try {
+        await prisma.$transaction(async (tx) => {
+          for (const { prepared: p, existingId, existingPrice } of chunk) {
+            await tx.property.update({
+              where: { id: existingId },
+              data: {
+                price: p.data.price,
+                price_per_m2: p.data.price_per_m2,
+                photos: p.data.photos,
+                thumbnail_url: p.data.thumbnail_url,
+                photo_count: p.data.photo_count,
+                last_seen_at: p.data.last_seen_at,
+                status: "ACTIVE",
+              },
+            });
+            updated++;
+            const priceChanged = existingPrice !== p.price && p.price > 0;
+            if (priceChanged && p.addPriceHistory) {
+              await tx.priceHistory.create({
+                data: { propertyId: existingId, price: p.price, price_per_m2: p.pricePerM2 },
+              });
+            }
+          }
+        });
+      } catch (e) {
+        errors.push(e instanceof Error ? e.message : "Update batch failed");
+      }
+    }
+
+    const stats = {
+      total: items.length,
+      created,
+      updated,
+      skipped: Math.max(0, items.length - created - updated),
+      errors: errors.slice(0, 50),
+    };
+    console.log("✅ [Webhook] Batch complete:", stats);
+
+    return NextResponse.json({ success: true, portal: payload.portal, stats });
   } catch (error) {
     console.error("❌ [Webhook] Error:", error);
-    
     return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
+      { success: false, error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
