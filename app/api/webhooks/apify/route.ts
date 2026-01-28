@@ -220,6 +220,8 @@ interface PreparedItem {
     source_url: string;
     external_id: string;
     listing_type: "PREDAJ" | "PRENAJOM";
+    property_type: string;
+    priority_score: number;
     status: "ACTIVE";
     last_seen_at: Date;
   };
@@ -238,10 +240,15 @@ function prepareItem(item: ApifyScrapedItem): PreparedItem | null {
 
   const externalId = extractExternalId(item.url);
   const listingType = detectTransactionType(item.url);
+  const propertyType = detectPropertyType(item.url, item.title || "");
+  if (propertyType !== "BYT") return null;
+
   const pricePerM2 = area > 0 ? Math.round(price / area) : 0;
   const slug = generateSlug(item.title || "nehnutelnost", externalId);
   const { urls: imageUrls, thumbnailUrl } = normalizeImages(item.images);
   const source = item.portal === "nehnutelnosti" ? "NEHNUTELNOSTI" as const : item.portal === "bazos" ? "BAZOS" as const : "REALITY" as const;
+  const rooms = parseRooms(item.rooms);
+  const priority_score = rooms != null ? 50 : 30;
 
   return {
     externalId,
@@ -256,7 +263,7 @@ function prepareItem(item: ApifyScrapedItem): PreparedItem | null {
       price,
       price_per_m2: pricePerM2,
       area_m2: area,
-      rooms: parseRooms(item.rooms),
+      rooms,
       floor: parseFloor(item.floor),
       condition: mapConditionToSchema(parseCondition(item.condition)),
       energy_certificate: "NONE",
@@ -271,6 +278,8 @@ function prepareItem(item: ApifyScrapedItem): PreparedItem | null {
       source_url: item.url,
       external_id: externalId,
       listing_type: listingType === "PRENAJOM" ? "PRENAJOM" : "PREDAJ",
+      property_type: "BYT",
+      priority_score,
       status: "ACTIVE",
       last_seen_at: new Date(),
     },

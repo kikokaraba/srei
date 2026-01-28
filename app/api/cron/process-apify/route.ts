@@ -112,6 +112,15 @@ function detectListingType(url: string): "PREDAJ" | "PRENAJOM" {
   return "PREDAJ";
 }
 
+function detectPropertyType(url: string, title: string): string {
+  const combined = (url + " " + (title || "")).toLowerCase();
+  if (combined.includes("/byty/") || combined.includes("byt") || combined.includes("garsónka")) return "BYT";
+  if (combined.includes("/domy/") || combined.includes("dom") || combined.includes("rodinný")) return "DOM";
+  if (combined.includes("/pozemky/") || combined.includes("pozemok") || combined.includes("stavebný")) return "POZEMOK";
+  if (combined.includes("/komercne/") || combined.includes("komerčn") || combined.includes("kancelár")) return "KOMERCNE";
+  return "BYT";
+}
+
 function generateSlug(title: string, externalId: string): string {
   const base = title
     .toLowerCase()
@@ -328,8 +337,16 @@ export async function POST(request: NextRequest) {
           continue;
         }
         
+        const propertyType = detectPropertyType(item.url, item.title);
+        if (propertyType !== "BYT") {
+          stats.skipped++;
+          continue;
+        }
+        
         const externalId = extractExternalId(item.url);
         const listingType = detectListingType(item.url);
+        const rooms = parseRooms(item.rooms);
+        const priority_score = rooms != null ? 50 : 30;
         const pricePerM2 = area > 0 ? Math.round(price / area) : 0;
         const slug = generateSlug(item.title, externalId);
         
@@ -337,7 +354,7 @@ export async function POST(request: NextRequest) {
           city,
           district,
           area_m2: area,
-          rooms: parseRooms(item.rooms),
+          rooms,
         });
         
         const { urls: imageUrls, thumbnailUrl } = normalizeImages(item.images);
@@ -348,7 +365,7 @@ export async function POST(request: NextRequest) {
           price,
           price_per_m2: pricePerM2,
           area_m2: area,
-          rooms: parseRooms(item.rooms),
+          rooms,
           floor: parseFloor(item.floor),
           condition: mapCondition(item.condition),
           energy_certificate: "NONE" as const,
@@ -364,6 +381,8 @@ export async function POST(request: NextRequest) {
           source_url: item.url,
           external_id: externalId,
           listing_type: listingType,
+          property_type: "BYT" as const,
+          priority_score,
           status: "ACTIVE" as const,
           last_seen_at: new Date(),
         };

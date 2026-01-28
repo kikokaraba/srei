@@ -32,14 +32,15 @@ export async function GET() {
       take: 5,
     });
 
-    // Calculate ETA
+    // Calculate ETA (byty-only: predaj + prenajom)
     let eta = null;
     if (progress && !progress.isComplete) {
-      const categoryIndex = ["byty-predaj", "domy-predaj", "byty-prenajom"].indexOf(progress.category);
-      const pagesPerCategory = progress.totalPages / 3;
+      const categories = ["byty-predaj", "byty-prenajom"];
+      const categoryIndex = categories.indexOf(progress.category);
+      const pagesPerCategory = progress.totalPages / Math.max(1, categories.length);
       const totalPagesRemaining = 
-        (pagesPerCategory - progress.currentPage) + 
-        (2 - categoryIndex) * pagesPerCategory;
+        Math.max(0, pagesPerCategory - progress.currentPage) + 
+        Math.max(0, (categories.length - 1 - categoryIndex)) * pagesPerCategory;
       
       const runsRemaining = Math.ceil(totalPagesRemaining / 20);
       const minutesRemaining = runsRemaining * 10;

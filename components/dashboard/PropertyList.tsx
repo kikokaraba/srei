@@ -177,6 +177,7 @@ interface Filters {
   region: string;
   city: string;
   listingType: string;
+  propertyType: string;
   source: string;
   minPrice: string;
   maxPrice: string;
@@ -189,6 +190,14 @@ interface Filters {
   sortBy: string;
   sortOrder: string;
 }
+
+const PROPERTY_TYPES = [
+  { value: "", label: "Všetky" },
+  { value: "BYT", label: "Byty" },
+  { value: "DOM", label: "Domy" },
+  { value: "POZEMOK", label: "Pozemky" },
+  { value: "KOMERCNE", label: "Komerčné" },
+];
 
 // Hlavné mestá pre filter
 const CITIES = [
@@ -204,6 +213,7 @@ const defaultFilters: Filters = {
   region: "",
   city: "",
   listingType: "PREDAJ",
+  propertyType: "BYT",
   source: "",
   minPrice: "",
   maxPrice: "",
@@ -256,6 +266,7 @@ export function PropertyList() {
       
       if (filters.search) params.append("search", filters.search);
       if (filters.listingType) params.append("listingType", filters.listingType);
+      if (filters.propertyType) params.append("propertyType", filters.propertyType);
       if (filters.source) params.append("source", filters.source);
       
       // City má prednosť pred region
@@ -381,6 +392,7 @@ export function PropertyList() {
     if (filters.search) count++;
     if (filters.region) count++;
     if (filters.city) count++;
+    if (filters.propertyType) count++;
     if (filters.source) count++;
     if (filters.minPrice) count++;
     if (filters.maxPrice) count++;
@@ -544,6 +556,19 @@ export function PropertyList() {
               {CITIES.map((city) => (
                 <option key={city} value={city}>
                   {city}
+                </option>
+              ))}
+            </select>
+
+            {/* Kategória – predvolene Byty */}
+            <select
+              value={filters.propertyType}
+              onChange={(e) => handleFilterChange("propertyType", e.target.value)}
+              className="px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-zinc-300 text-sm focus:outline-none focus:border-zinc-700 min-w-[120px] cursor-pointer"
+            >
+              {PROPERTY_TYPES.map((opt) => (
+                <option key={opt.value || "all"} value={opt.value}>
+                  {opt.label}
                 </option>
               ))}
             </select>

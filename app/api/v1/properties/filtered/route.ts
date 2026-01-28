@@ -34,6 +34,7 @@ export async function GET(request: Request) {
     const minRooms = searchParams.get("minRooms");
     const maxRooms = searchParams.get("maxRooms");
     const conditionParam = searchParams.get("condition");
+    const propertyTypeParam = searchParams.get("propertyType"); // BYT | DOM | POZEMOK | KOMERCNE
     const minYield = searchParams.get("minYield");
     const maxYield = searchParams.get("maxYield");
     const search = searchParams.get("search");
@@ -72,6 +73,14 @@ export async function GET(request: Request) {
       const sources = sourceParam.split(",").filter(Boolean) as PropertySource[];
       if (sources.length > 0) {
         where.source = { in: sources };
+      }
+    }
+
+    // Kategória (BYT | DOM | POZEMOK | KOMERCNE) – predvolene „len byty“
+    if (propertyTypeParam) {
+      const t = propertyTypeParam.toUpperCase();
+      if (["BYT", "DOM", "POZEMOK", "KOMERCNE"].includes(t)) {
+        where.property_type = t;
       }
     }
 

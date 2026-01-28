@@ -36,3 +36,10 @@
 - Webhook (`/api/webhooks/apify`) spracováva dáta **dávkovo**: prepare → bulk `findMany` → split create/update → chunkované `$transaction` (po 40).
 - Obchádza timeout pri veľkých datasetch (140+ položiek): menej round-tripov, `maxDuration` 300s.
 - Duplicity v datasete sa odfiltrujú podľa `externalId` a `sourceUrl` pred zápisom.
+
+## Zameranie na byty (Yield Engine)
+
+- **Scraping**: Paginated scraper iba `byty/predaj` a `byty/prenajom` (50:50). Domy, pozemky vynechané.
+- **Validácia**: Webhook a process-apify vyraďujú inzeráty s typom DOM/POZEMOK/KOMERCNE; ukladajú len **BYT**. Pri vytvorení sa nastaví `property_type` a `priority_score` (50 ak sú izby, 30 ak nie).
+- **Yield Engine**: Porovnateľné nájmy sa hľadajú podľa mesta, okresu, izieb a plochy; scraper je zameraný na byty, takže PRENAJOM dáta sú z bytov.
+- **UI**: Predvolený filter kategórie je **Byty**; v zozname je dropdown Byty / Domy / Pozemky / Komerčné / Všetky.

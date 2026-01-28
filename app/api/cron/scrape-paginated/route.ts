@@ -19,10 +19,9 @@ const CONFIG = {
   baseUrl: "https://www.nehnutelnosti.sk",
 };
 
-// Kategórie na scraping
+// Kategórie na scraping – prioritizujeme byty, 50:50 predaj/prenajom (Yield Engine)
 const CATEGORIES = [
   { slug: "byty/predaj", name: "byty-predaj", listingType: "PREDAJ" },
-  { slug: "domy/predaj", name: "domy-predaj", listingType: "PREDAJ" },
   { slug: "byty/prenajom", name: "byty-prenajom", listingType: "PRENAJOM" },
 ];
 
@@ -417,6 +416,8 @@ async function saveProperty(prop: ScrapedProperty): Promise<"new" | "updated" | 
       address: `${prop.city}${prop.district ? `, ${prop.district}` : ""}`,
       rooms: prop.rooms,
       listing_type: prop.listingType as "PREDAJ" | "PRENAJOM",
+      property_type: "BYT",
+      priority_score: prop.rooms != null ? 50 : 30,
       condition: "POVODNY",
       energy_certificate: "NONE",
       source_url: prop.sourceUrl,

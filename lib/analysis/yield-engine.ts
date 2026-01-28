@@ -113,7 +113,9 @@ export async function calculateYieldForLocation(
 }
 
 /**
- * Získa priemerné nájmy v lokalite
+ * Získa priemerné nájmy v lokalite.
+ * Priorita: mesto + okres + počet izieb + plocha (±20%). Scraping je zameraný na byty,
+ * takže PRENAJOM dáta sú z bytov; pri zavedení property_type môžeme filtrovať výhradne BYT.
  */
 export async function getComparableRents(
   city: string,

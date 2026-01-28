@@ -202,6 +202,7 @@ model Property {
   condition         PropertyCondition
   energy_certificate EnergyCertificate
   listing_type      ListingType       @default(PREDAJ) // Predaj alebo prenájom
+  property_type     String?          // BYT | DOM | POZEMOK | KOMERCNE – pre filter „len byty“
   source_url        String?          @db.Text
   is_distressed     Boolean          @default(false)
   days_on_market    Int              @default(0) // Počet dní v ponuke
@@ -231,6 +232,7 @@ model Property {
   @@index([city, area_m2, condition])
   @@index([is_distressed, createdAt])
   @@index([listing_type, createdAt])
+  @@index([property_type])
   @@index([status, priority_score]) // Pre batch refresh - najprv vysoká priorita
   @@index([status, last_checked_at]) // Pre batch refresh - najstaršie kontroly
   @@index([status, check_count_today]) // Pre denný limit kontrol
