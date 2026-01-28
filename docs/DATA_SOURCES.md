@@ -37,6 +37,13 @@
 - Obchádza timeout pri veľkých datasetch (140+ položiek): menej round-tripov, `maxDuration` 300s.
 - Duplicity v datasete sa odfiltrujú podľa `externalId` a `sourceUrl` pred zápisom.
 
+## AI Address Enrichment
+
+- **Scraper**: Pre každý detail sa okrem `location` ukladá `raw_address_context` – text z `.top--location` (Nehnutelnosti) resp. lokality + prvých 200 znakov popisu (Bazoš, Reality).
+- **Webhook**: Pre inzeráty s chýbajúcou alebo „podozrivou“ adresou (napr. „balkón“, „obývačka“ namiesto ulice) sa volá `enrichAddressWithAI` (Anthropic). AI vráti mesto, štvrť, ulicu, číslo; nevymýšľa.
+- **Geocoding**: Výstup sa overuje cez Nominatim (Slovensko). Ak adresa neexistuje, loguje sa „Lokalita neoverená“, údaje sa aj tak použijú.
+- Obmedzenia: max 30 enrichmentov na run, konkurrency 5 pre AI, sekvenčné verify s 1,1 s medzerou (rate limit).
+
 ## Zameranie na byty (Yield Engine)
 
 - **Scraping**: Paginated scraper iba `byty/predaj` a `byty/prenajom` (50:50). Domy, pozemky vynechané.

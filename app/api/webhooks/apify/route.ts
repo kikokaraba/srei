@@ -13,6 +13,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getApifyDatasetItems, type ApifyScrapedItem } from "@/lib/scraper/apify-service";
 import { normalizeImages } from "@/lib/scraper/normalize-images";
+import {
+  enrichAddressWithAI,
+  verifyAddressWithGeocoding,
+  type EnrichedAddress,
+} from "@/lib/ai/address-enrichment";
 
 // ============================================================================
 // HELPER FUNKCIE PRE ČISTENIE DÁT
@@ -190,6 +195,26 @@ function extractExternalId(url: string): string {
 }
 
 // ============================================================================
+// AI ADDRESS ENRICHMENT
+// ============================================================================
+
+const BAD_ADDRESS = /balkón|obývačka|garáž|pivnica|terasa|pivot|loggia|záhrad|garden|kompletný|čiastočn/i;
+
+function addressLooksBad(full: string | undefined): boolean {
+  if (!full || full.length < 10) return true;
+  return BAD_ADDRESS.test(full);
+}
+
+function buildFullAddress(a: EnrichedAddress): string {
+  const parts: string[] = [];
+  if (a.streetNumber && a.street) parts.push(`${a.street} ${a.streetNumber}`);
+  else if (a.street) parts.push(a.street);
+  if (a.district) parts.push(a.district);
+  parts.push(a.city);
+  return parts.join(", ");
+}
+
+// ============================================================================
 // BATCH: PRÍPRAVA A NORMALIZÁCIA (bez DB)
 // ============================================================================
 
@@ -228,7 +253,7 @@ interface PreparedItem {
   addPriceHistory: boolean;
 }
 
-function prepareItem(item: ApifyScrapedItem): PreparedItem | null {
+function prepareItem(item: ApifyScrapedItem): { prepared: PreparedItem; rawAddressContext: string | null } | null {
   const price = parsePrice(item.price_raw);
   const area = parseArea(item.area_m2);
   const city = item.location?.city || "Slovensko";
@@ -250,39 +275,43 @@ function prepareItem(item: ApifyScrapedItem): PreparedItem | null {
   const rooms = parseRooms(item.rooms);
   const priority_score = rooms != null ? 50 : 30;
 
+  const rawAddressContext = (item.raw_address_context ?? "").trim() || null;
   return {
-    externalId,
-    sourceUrl: item.url,
-    price,
-    pricePerM2,
-    addPriceHistory: price > 0,
-    data: {
-      title: item.title || "Bez názvu",
-      slug,
-      description: item.description || "",
+    prepared: {
+      externalId,
+      sourceUrl: item.url,
       price,
-      price_per_m2: pricePerM2,
-      area_m2: area,
-      rooms,
-      floor: parseFloor(item.floor),
-      condition: mapConditionToSchema(parseCondition(item.condition)),
-      energy_certificate: "NONE",
-      city,
-      district: item.location?.district || "",
-      street: item.location?.street || null,
-      address: item.location?.full || city,
-      photos: JSON.stringify(imageUrls),
-      thumbnail_url: thumbnailUrl,
-      photo_count: imageUrls.length,
-      source,
-      source_url: item.url,
-      external_id: externalId,
-      listing_type: listingType === "PRENAJOM" ? "PRENAJOM" : "PREDAJ",
-      property_type: "BYT",
-      priority_score,
-      status: "ACTIVE",
-      last_seen_at: new Date(),
+      pricePerM2,
+      addPriceHistory: price > 0,
+      data: {
+        title: item.title || "Bez názvu",
+        slug,
+        description: item.description || "",
+        price,
+        price_per_m2: pricePerM2,
+        area_m2: area,
+        rooms,
+        floor: parseFloor(item.floor),
+        condition: mapConditionToSchema(parseCondition(item.condition)),
+        energy_certificate: "NONE",
+        city,
+        district: item.location?.district || "",
+        street: item.location?.street || null,
+        address: item.location?.full || city,
+        photos: JSON.stringify(imageUrls),
+        thumbnail_url: thumbnailUrl,
+        photo_count: imageUrls.length,
+        source,
+        source_url: item.url,
+        external_id: externalId,
+        listing_type: listingType === "PRENAJOM" ? "PRENAJOM" : "PREDAJ",
+        property_type: "BYT",
+        priority_score,
+        status: "ACTIVE",
+        last_seen_at: new Date(),
+      },
     },
+    rawAddressContext,
   };
 }
 
@@ -310,17 +339,48 @@ export async function POST(request: NextRequest) {
     const items = await getApifyDatasetItems(payload.datasetId);
     console.log(`📦 [Webhook] Fetched ${items.length} items`);
 
-    const prepared: PreparedItem[] = [];
+    const results: { prepared: PreparedItem; rawAddressContext: string | null }[] = [];
     const skippedReasons: string[] = [];
     for (const item of items) {
-      const p = prepareItem(item);
-      if (p) prepared.push(p);
+      const r = prepareItem(item);
+      if (r) results.push(r);
       else skippedReasons.push("Missing title or price+area");
     }
+
+    const MAX_ENRICH = 30;
+    const ENRICH_CONCURRENCY = 5;
+    const toEnrich = results.filter((r) => {
+      if (!r.rawAddressContext) return false;
+      const noStreet = !r.prepared.data.street;
+      const bad = addressLooksBad(r.prepared.data.address);
+      return noStreet || bad;
+    }).slice(0, MAX_ENRICH);
+
+    for (let i = 0; i < toEnrich.length; i += ENRICH_CONCURRENCY) {
+      const chunk = toEnrich.slice(i, i + ENRICH_CONCURRENCY);
+      const enrichedList = await Promise.all(
+        chunk.map(async (r) => {
+          const enriched = await enrichAddressWithAI(r.rawAddressContext!);
+          return { r, enriched } as const;
+        })
+      );
+      for (const { r, enriched } of enrichedList) {
+        if (!enriched) continue;
+        const verified = await verifyAddressWithGeocoding(enriched);
+        if (!verified) console.warn("[Webhook] Lokalita neoverená:", enriched.city, enriched.street);
+        r.prepared.data.city = enriched.city;
+        r.prepared.data.district = enriched.district ?? "";
+        r.prepared.data.street = enriched.street;
+        r.prepared.data.address = buildFullAddress(enriched);
+        await new Promise((by) => setTimeout(by, 1100));
+      }
+    }
+
     const seenIds = new Set<string>();
     const seenUrls = new Set<string>();
     const deduped: PreparedItem[] = [];
-    for (const p of prepared) {
+    for (const r of results) {
+      const p = r.prepared;
       if (seenIds.has(p.externalId) || seenUrls.has(p.sourceUrl)) continue;
       seenIds.add(p.externalId);
       seenUrls.add(p.sourceUrl);

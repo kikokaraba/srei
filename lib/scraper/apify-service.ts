@@ -61,6 +61,7 @@ export interface ApifyScrapedItem {
     district?: string;
     street?: string;
   };
+  raw_address_context?: string | null;
   seller?: {
     name?: string;
     phone?: string;

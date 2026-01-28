@@ -57,7 +57,8 @@ async function pageFunction(context) {
             building_material: null,
             description: null,
             images: [],
-            location: { full: null, city: null, district: null, street: null }
+            location: { full: null, city: null, district: null, street: null },
+            raw_address_context: null
         };
 
         // =============================================
@@ -408,6 +409,12 @@ async function pageFunction(context) {
             }
         }
 
+        // 5. raw_address_context pre AI enrichment (lokalita + úvod popisu)
+        const topLoc = document.querySelector('.top--location, [class*="top--location"]');
+        const locText = topLoc && topLoc.textContent ? topLoc.textContent.trim() : null;
+        const descSnippet = result.description ? result.description.substring(0, 200) : null;
+        result.raw_address_context = [locText, descSnippet].filter(Boolean).join('\\n\\n') || null;
+
         return result;
     });
 
@@ -450,13 +457,17 @@ async function pageFunction(context) {
         const images = Array.from(document.querySelectorAll('.obrazky img, .gallery img, .foto img'))
             .map(img => img.src)
             .filter(src => src && !src.includes('placeholder'));
+        const desc = document.querySelector('.popis, .text')?.textContent?.trim();
+        const loc = document.querySelector('.lokalita')?.textContent?.trim();
+        const raw_address_context = [loc, desc ? desc.substring(0, 200) : null].filter(Boolean).join('\\n\\n') || null;
 
         return {
             title: document.querySelector('h1, .nadpis')?.textContent?.trim(),
             price_raw: document.querySelector('.cena, .inzeratcena')?.textContent?.trim(),
-            description: document.querySelector('.popis, .text')?.textContent?.trim(),
-            location: document.querySelector('.lokalita')?.textContent?.trim(),
+            description: desc,
+            location: loc,
             images,
+            raw_address_context,
             seller: {
                 name: document.querySelector('.kontakt, .predajca')?.textContent?.trim(),
                 phone: document.querySelector('a[href^="tel:"]')?.href?.replace('tel:', ''),
@@ -499,14 +510,18 @@ async function pageFunction(context) {
         const images = Array.from(document.querySelectorAll('.gallery img, .photo img'))
             .map(img => img.getAttribute('data-src') || img.src)
             .filter(src => src && !src.includes('placeholder'));
+        const desc = document.querySelector('.description, [class*="popis"]')?.textContent?.trim();
+        const loc = document.querySelector('.location, [class*="lokac"]')?.textContent?.trim();
+        const raw_address_context = [loc, desc ? desc.substring(0, 200) : null].filter(Boolean).join('\\n\\n') || null;
 
         return {
             title: document.querySelector('h1')?.textContent?.trim(),
             price_raw: document.querySelector('.price, [class*="cena"]')?.textContent?.trim(),
             area_m2: document.querySelector('[class*="area"]')?.textContent?.trim(),
-            description: document.querySelector('.description, [class*="popis"]')?.textContent?.trim(),
-            location: document.querySelector('.location, [class*="lokac"]')?.textContent?.trim(),
+            description: desc,
+            location: loc,
             images,
+            raw_address_context,
         };
     });
 
