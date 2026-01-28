@@ -107,15 +107,8 @@ export async function POST() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Nájdi záznamy kde city = "Slovensko" alebo je prázdne
+    // Nájdi VŠETKY záznamy a oprav ich
     const properties = await prisma.property.findMany({
-      where: {
-        OR: [
-          { city: "Slovensko" },
-          { city: "" },
-          { city: null as any },
-        ]
-      },
       select: {
         id: true,
         address: true,
@@ -135,18 +128,23 @@ export async function POST() {
     for (const prop of properties) {
       const parsed = parseSlovakAddress(prop.address, prop.source_url || undefined, prop.title);
       
-      // Aktualizuj len ak sme našli lepšie mesto
+      // Aktualizuj ak sme našli mesto alebo ak aktuálne mesto je "Slovensko"/prázdne
+      const needsFix = parsed.city !== "Slovensko" || 
+                       prop.city === "Slovensko" || 
+                       !prop.city || 
+                       prop.city === "";
+      
       if (parsed.city !== "Slovensko") {
         await prisma.property.update({
           where: { id: prop.id },
           data: {
             city: parsed.city,
-            district: parsed.district || prop.district,
+            district: parsed.district || prop.district || "",
             street: parsed.street || prop.street,
           }
         });
         fixed++;
-        console.log(`✅ Fixed: ${prop.title?.substring(0, 40)} → ${parsed.city}`);
+        console.log(`✅ Fixed: ${prop.title?.substring(0, 40)} → ${parsed.city}, ${parsed.district || ""}`);
       } else {
         skipped++;
       }
