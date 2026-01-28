@@ -249,14 +249,16 @@ export async function GET(request: Request) {
       orderBy,
     });
 
-    // Filtruj podľa výnosu (ak je zadaný)
+    // Filtruj podľa výnosu (ak je zadaný) – query params majú prednosť, inak preferencie pri usePreferences
+    const effectiveMinYield = minYield ?? (useUserPreferences && preferences ? (preferences.minYield != null ? String(preferences.minYield) : preferences.minGrossYield != null ? String(preferences.minGrossYield) : null) : null);
+    const effectiveMaxYield = maxYield ?? (useUserPreferences && preferences?.maxYield != null ? String(preferences.maxYield) : null);
     let filteredProperties = properties;
-    if (minYield || maxYield) {
+    if (effectiveMinYield || effectiveMaxYield) {
       filteredProperties = filteredProperties.filter((p) => {
         const yieldValue = p.investmentMetrics?.gross_yield;
-        if (!yieldValue) return !minYield; // Ak nie je yield, vráť len ak nie je minYield
-        if (minYield && yieldValue < parseFloat(minYield)) return false;
-        if (maxYield && yieldValue > parseFloat(maxYield)) return false;
+        if (!yieldValue) return !effectiveMinYield;
+        if (effectiveMinYield && yieldValue < parseFloat(effectiveMinYield)) return false;
+        if (effectiveMaxYield && yieldValue > parseFloat(effectiveMaxYield)) return false;
         return true;
       });
     }

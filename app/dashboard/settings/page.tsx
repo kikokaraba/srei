@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { TrendingUp, Bell, Save, Settings as SettingsIcon, Check, Sparkles, Map } from "lucide-react";
+import { TrendingUp, Bell, Save, Settings as SettingsIcon, Check, Sparkles, Map, Crosshair } from "lucide-react";
 import { AdvancedFilters } from "@/components/dashboard/AdvancedFilters";
 import { LocationPickerV2 } from "@/components/ui/LocationPickerV2";
 import { TelegramSettings } from "@/components/dashboard/TelegramSettings";
+import { useToast } from "@/lib/hooks/useToast";
 import type { NormalizedSelection } from "@/lib/location-utils";
 
 const INVESTMENT_TYPES = [
@@ -40,6 +41,7 @@ async function savePreferences(preferences: Record<string, unknown>) {
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
+  const { showSuccess } = useToast();
   const { data: preferences, isLoading } = useQuery({
     queryKey: ["user-preferences"],
     queryFn: fetchPreferences,
@@ -61,6 +63,10 @@ export default function SettingsPage() {
     investmentTypes: [] as string[],
     minYield: null as number | null,
     maxPrice: null as number | null,
+    minGrossYield: null as number | null,
+    onlyDistressed: false,
+    minPriceDrop: null as number | null,
+    minGapPercentage: null as number | null,
     notifyMarketGaps: true,
     notifyPriceDrops: true,
     notifyNewProperties: true,
@@ -103,8 +109,12 @@ export default function SettingsPage() {
         trackedDistricts,
         trackedCities,
         investmentTypes,
-        minYield: preferences.minYield || null,
-        maxPrice: preferences.maxPrice || null,
+        minYield: preferences.minYield ?? null,
+        maxPrice: preferences.maxPrice ?? null,
+        minGrossYield: preferences.minGrossYield ?? null,
+        onlyDistressed: preferences.onlyDistressed ?? false,
+        minPriceDrop: preferences.minPriceDrop ?? null,
+        minGapPercentage: preferences.minGapPercentage ?? null,
         notifyMarketGaps: preferences.notifyMarketGaps ?? true,
         notifyPriceDrops: preferences.notifyPriceDrops ?? true,
         notifyNewProperties: preferences.notifyNewProperties ?? true,
@@ -114,33 +124,43 @@ export default function SettingsPage() {
   }, [preferences]);
 
   const handleSave = useCallback(() => {
-    const dataToSave = { 
+    const dataToSave = {
       trackedRegions: formData.trackedRegions,
       trackedDistricts: formData.trackedDistricts,
       trackedCities: formData.trackedCities,
       investmentTypes: formData.investmentTypes,
       minYield: formData.minYield,
       maxPrice: formData.maxPrice,
+      minGrossYield: formData.minGrossYield,
+      onlyDistressed: formData.onlyDistressed,
+      minPriceDrop: formData.minPriceDrop,
+      minGapPercentage: formData.minGapPercentage,
       notifyMarketGaps: formData.notifyMarketGaps,
       notifyPriceDrops: formData.notifyPriceDrops,
       notifyNewProperties: formData.notifyNewProperties,
       notifyUrbanDevelopment: formData.notifyUrbanDevelopment,
       onboardingCompleted: true,
     };
-    
-    console.log("Saving preferences:", dataToSave);
-    
+
     saveMutation.mutate(dataToSave, {
-      onSuccess: (result) => {
-        console.log("Save success:", result);
+      onSuccess: () => {
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
+        const yieldVal = formData.minYield ?? formData.minGrossYield;
+        if (yieldVal != null && yieldVal > 0) {
+          showSuccess(
+            "Investičný profil bol aktualizovaný.",
+            `Váš dashboard teraz prioritizuje ponuky s výnosom nad ${yieldVal}%.`
+          );
+        } else {
+          showSuccess("Investičný profil bol aktualizovaný.", undefined);
+        }
       },
       onError: (error) => {
         console.error("Save error:", error);
-      }
+      },
     });
-  }, [formData, saveMutation]);
+  }, [formData, saveMutation, showSuccess]);
 
   if (isLoading) {
     return (
@@ -316,6 +336,77 @@ export default function SettingsPage() {
                              focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                 />
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Investment Hunter */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-rose-950/20 p-6">
+        <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-10 bg-rose-500" />
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center">
+              <Crosshair className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">Investment Hunter</h2>
+              <p className="text-sm text-zinc-400">Upozornenia len na tie ponuky, ktoré spĺňajú vaše pravidlá</p>
+            </div>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-zinc-400 mb-1">Min. hrubý výnos (%)</label>
+              <input
+                type="number"
+                value={formData.minGrossYield ?? ""}
+                onChange={(e) => setFormData({ ...formData, minGrossYield: e.target.value ? parseFloat(e.target.value) : null })}
+                placeholder="napr. 6"
+                step="0.1"
+                min={0}
+                max={30}
+                className="w-full px-3 py-2.5 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-zinc-400 mb-1">Min. pokles ceny (%)</label>
+              <input
+                type="number"
+                value={formData.minPriceDrop ?? ""}
+                onChange={(e) => setFormData({ ...formData, minPriceDrop: e.target.value ? parseFloat(e.target.value) : null })}
+                placeholder="napr. 5"
+                step="0.5"
+                min={0}
+                max={100}
+                className="w-full px-3 py-2.5 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/50"
+              />
+              <p className="text-[10px] text-zinc-500 mt-1">Upozorniť len ak cena klesla o viac než X %</p>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-zinc-400 mb-1">Min. podhodnotenie (%)</label>
+              <input
+                type="number"
+                value={formData.minGapPercentage ?? ""}
+                onChange={(e) => setFormData({ ...formData, minGapPercentage: e.target.value ? parseFloat(e.target.value) : null })}
+                placeholder="napr. 10"
+                step="1"
+                min={0}
+                max={100}
+                className="w-full px-3 py-2.5 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/50"
+              />
+              <p className="text-[10px] text-zinc-500 mt-1">Index skrytého potenciálu – podhodnotené o X %</p>
+            </div>
+            <div className="flex flex-col justify-end">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.onlyDistressed}
+                  onChange={(e) => setFormData({ ...formData, onlyDistressed: e.target.checked })}
+                  className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-rose-500 focus:ring-rose-500/50"
+                />
+                <span className="text-sm text-zinc-300">Len exekúcie / problémové</span>
+              </label>
+              <p className="text-[10px] text-zinc-500 mt-1">Upozorniť len na byty v núdzi</p>
             </div>
           </div>
         </div>

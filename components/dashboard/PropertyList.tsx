@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useUserPreferences } from "@/lib/hooks/useUserPreferences";
 import {
   Search,
@@ -27,6 +27,7 @@ import {
   DoorOpen,
   Zap,
   Camera,
+  User,
 } from "lucide-react";
 import { normalizeCityName, getCityInfo } from "@/lib/constants/cities";
 import { PropertyImage } from "@/components/property/PropertyImage";
@@ -244,10 +245,35 @@ export function PropertyList() {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [savingId, setSavingId] = useState<string | null>(null);
   const [batchMetrics, setBatchMetrics] = useState<Record<string, BatchMetrics>>({});
-  
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { preferences: _preferences, isLoading: prefsLoading } = useUserPreferences();
-  
+  const [myProfileOn, setMyProfileOn] = useState(false);
+  const prefillDone = useRef(false);
+
+  const { preferences, isLoading: prefsLoading } = useUserPreferences();
+
+  // Predvyplnenie filtrov z preferencií pri prvom načítaní (ak má používateľ lokalitu / yield / cenu)
+  useEffect(() => {
+    if (prefillDone.current || !preferences || prefsLoading) return;
+    const hasLoc = (preferences.trackedRegions?.length || 0) > 0 || (preferences.trackedDistricts?.length || 0) > 0 || (preferences.trackedCities?.length || 0) > 0;
+    const hasYield = preferences.minYield != null && preferences.minYield > 0;
+    const hasPrice = preferences.maxPrice != null && preferences.maxPrice > 0;
+    if (!hasLoc && !hasYield && !hasPrice) return;
+    prefillDone.current = true;
+    setFilters((prev) => {
+      const next = { ...prev };
+      if (preferences.trackedRegions?.length === 1) {
+        const r = REGIONS.find((x) => x.value === preferences.trackedRegions![0]);
+        if (r) next.region = r.value;
+      }
+      if (preferences.trackedCities?.length === 1 && CITIES.includes(preferences.trackedCities[0])) {
+        next.city = preferences.trackedCities[0];
+        if (next.region) next.region = "";
+      }
+      if (hasYield) next.minYield = String(preferences.minYield!);
+      if (hasPrice) next.maxPrice = String(preferences.maxPrice!);
+      return next;
+    });
+  }, [preferences, prefsLoading]);
+
   useEffect(() => {
     if (!filtersInitialized) {
       setFiltersInitialized(true);
@@ -264,35 +290,33 @@ export function PropertyList() {
       params.append("limit", ITEMS_PER_PAGE.toString());
       params.append("sortBy", filters.sortBy);
       params.append("sortOrder", filters.sortOrder);
-      
-      if (filters.search) params.append("search", filters.search);
-      if (filters.listingType) params.append("listingType", filters.listingType);
-      if (filters.propertyType) params.append("propertyType", filters.propertyType);
-      if (filters.source) params.append("source", filters.source);
-      
-      // City má prednosť pred region
-      if (filters.city) {
-        params.append("city", filters.city);
-      } else if (filters.region) {
-        const region = REGIONS.find(r => r.value === filters.region);
-        if (region) {
-          params.append("cities", region.cities.join(","));
+
+      if (myProfileOn) {
+        params.append("usePreferences", "true");
+        if (filters.search) params.append("search", filters.search);
+      } else {
+        if (filters.search) params.append("search", filters.search);
+        if (filters.listingType) params.append("listingType", filters.listingType);
+        if (filters.propertyType) params.append("propertyType", filters.propertyType);
+        if (filters.source) params.append("source", filters.source);
+        if (filters.city) {
+          params.append("city", filters.city);
+        } else if (filters.region) {
+          const region = REGIONS.find((r) => r.value === filters.region);
+          if (region) params.append("cities", region.cities.join(","));
         }
+        if (filters.minPrice) params.append("minPrice", filters.minPrice);
+        if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
+        if (filters.minArea) params.append("minArea", filters.minArea);
+        if (filters.maxArea) params.append("maxArea", filters.maxArea);
+        if (filters.minRooms) params.append("minRooms", filters.minRooms);
+        if (filters.maxRooms) params.append("maxRooms", filters.maxRooms);
+        if (filters.condition) params.append("condition", filters.condition);
+        if (filters.minYield) params.append("minYield", filters.minYield);
       }
-      
-      if (filters.minPrice) params.append("minPrice", filters.minPrice);
-      if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
-      if (filters.minArea) params.append("minArea", filters.minArea);
-      if (filters.maxArea) params.append("maxArea", filters.maxArea);
-      if (filters.minRooms) params.append("minRooms", filters.minRooms);
-      if (filters.maxRooms) params.append("maxRooms", filters.maxRooms);
-      if (filters.condition) params.append("condition", filters.condition);
-      if (filters.minYield) params.append("minYield", filters.minYield);
 
       const response = await fetch(`/api/v1/properties/filtered?${params.toString()}`);
-      
       if (!response.ok) throw new Error("Failed to fetch properties");
-      
       const data = await response.json();
       setProperties(data.data || []);
       setPagination(data.pagination || { totalCount: 0, totalPages: 0, hasMore: false });
@@ -302,7 +326,7 @@ export function PropertyList() {
     } finally {
       setLoading(false);
     }
-  }, [filters, page]);
+  }, [filters, page, myProfileOn]);
 
   const fetchSavedProperties = useCallback(async () => {
     try {
@@ -340,6 +364,11 @@ export function PropertyList() {
     if (!filtersInitialized) return;
     fetchProperties();
   }, [fetchProperties, filtersInitialized]);
+
+  const toggleMyProfile = useCallback(() => {
+    setMyProfileOn((v) => !v);
+    setPage(1);
+  }, []);
 
   useEffect(() => {
     fetchSavedProperties();
@@ -529,6 +558,20 @@ export function PropertyList() {
 
           {/* Quick Filters */}
           <div className="flex flex-wrap gap-2 items-center">
+            {/* Môj investičný profil – filter podľa nastavení */}
+            <button
+              type="button"
+              onClick={toggleMyProfile}
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all text-sm shrink-0 ${
+                myProfileOn
+                  ? "bg-amber-500/15 border-amber-500/50 text-amber-400"
+                  : "bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-700"
+              }`}
+              title={myProfileOn ? "Dashboard filtrovaný podľa vášho profilu" : "Použiť moje nastavenia z Nastavení"}
+            >
+              <User className="w-4 h-4" />
+              <span className="hidden sm:inline">Môj profil</span>
+            </button>
             {/* Region */}
             <select
               value={filters.region}

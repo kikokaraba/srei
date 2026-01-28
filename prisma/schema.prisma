@@ -95,6 +95,7 @@ model User {
   name          String?
   image         String?
   role          UserRole  @default(FREE_USER)
+  aiCredits     Int       @default(5)  // Kredity pre AI analýzy (Claude)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   accounts      Account[]

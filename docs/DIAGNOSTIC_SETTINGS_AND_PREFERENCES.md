@@ -162,4 +162,14 @@ Ukladá sa cez `/api/v1/dashboard/layout` (GET/POST).
 
 ---
 
+## 5. Implementované zmeny (Investment Hunter)
+
+- **User.aiCredits**: Pridané `aiCredits Int @default(5)` do schémy. Spusti `npx prisma db push` pri dostupnej DB.
+- **PropertyList „Môj profil“**: Prepínač v hlavnom liste. Pri zapnutí sa volá filtered API s `usePreferences=true`; dashboard používa len nastavenia z Nastavení. Pri prvom načítaní sa filtre predvyplnia z preferencií (región, mesto, min yield, max cena).
+- **Filtered API**: Pri `usePreferences=true` sa pre yield používajú `minYield` / `minGrossYield` a `maxYield` z preferencií, ak nie sú v query.
+- **Investment Hunter v Nastaveniach**: Sekcia s `minGrossYield`, `onlyDistressed`, `minPriceDrop`, `minGapPercentage`. Ukladanie cez `POST /api/v1/user/preferences`.
+- **Toast pri uložení**: Po uložení nastavení sa zobrazí „Investičný profil bol aktualizovaný“; ak je nastavený min. výnos, aj „Váš dashboard teraz prioritizuje ponuky s výnosom nad X%.“
+
+---
+
 *Report vygenerovaný na základe analýzy `prisma/schema.prisma`, `app/dashboard/settings/page.tsx`, `app/api/v1/user/preferences/route.ts`, `lib/hooks/useUserPreferences.ts`, filtered API, PropertyList, AdvancedFilters, alerts a súvisiaceho kódu.*
