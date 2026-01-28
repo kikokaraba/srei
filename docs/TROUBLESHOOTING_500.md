@@ -43,6 +43,18 @@ Cursor spúšťa príkazy na tvojom PC. Aby `prisma db push` išiel na **Railway
 
    **Ak je `DATABASE_URL` nastavená ale stále „Connection refused“:** Railway môže blokovať prístup z tvojej IP. Skontroluj, či používaš **Public Network** connection string a či nemáš zmenené heslo.
 
+### Railway: „column Property.property_type does not exist“
+
+Ak v Railway Postgres logoch vidíš túto chybu (alebo ďalšie chýbajúce stĺpce), schéma nebola zosynchronizovaná.
+
+**Rýchla oprava – spusti SQL v Railway:**
+
+1. Otvor **Railway** → tvoj projekt → **PostgreSQL** → **Data** alebo **Query**.
+2. Skopíruj obsah `prisma/railway-fix-property-columns.sql` a spusti ho ako dotaz.
+3. Skript pridá `property_type`, `status`, AI stĺpce atď. (`ADD COLUMN IF NOT EXISTS`).
+
+**Alternatíva:** V koreni projektu máš `.env` s Railway `DATABASE_URL`. Spusti `npm run db:railway-fix` – ten použije ten istý skript cez Prisma.
+
 5. **Po úspešnom pushi:**  
    Správa typu „Database schema is now in sync“. Vercel (cez Railway DB) potom prestane hádzať P2022 / 500.
 

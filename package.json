@@ -20,6 +20,7 @@
     "db:audit-properties": "tsx scripts/audit-properties.ts",
     "db:migrate-fix-old": "tsx scripts/migrate-fix-old-properties.ts",
     "db:geocode-old": "tsx scripts/geocode-old-properties.ts",
+    "db:railway-fix": "prisma db execute --file prisma/railway-fix-property-columns.sql",
     "cron:start": "tsx scripts/start-cron.ts",
     "test": "vitest run",
     "test:watch": "vitest",
