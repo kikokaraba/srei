@@ -543,7 +543,7 @@ export default function PropertyDetailPage() {
               <div>
                 {property.price === 0 ? (
                   <>
-                    <p className="text-2xl font-semibold text-amber-400 tracking-tight">Cena dohodou</p>
+                    <p className="text-2xl font-semibold text-amber-400 tracking-tight">Cena v RK</p>
                     <p className="text-sm text-zinc-500 mt-1">Kontaktujte predajcu</p>
                   </>
                 ) : (

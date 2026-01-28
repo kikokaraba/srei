@@ -67,8 +67,8 @@ function parseArea(areaRaw: string | undefined): number {
   
   const area = parseFloat(match[1].replace(",", "."));
   
-  // Validácia (10 - 10000 m²)
-  if (area < 10 || area > 10000) {
+  // Validácia: 10–500 m² (nad 500 = podozrivé, napr. domy; pod 10 = chyba)
+  if (area < 10 || area > 500) {
     return 0;
   }
   
@@ -359,15 +359,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Missing datasetId" }, { status: 400 });
     }
 
+    const runStart = Date.now();
     const items = await getApifyDatasetItems(payload.datasetId);
     console.log(`📦 [Webhook] Fetched ${items.length} items`);
 
     const results: { prepared: PreparedItem; rawAddressContext: string | null }[] = [];
     const skippedReasons: string[] = [];
+    const itemErrors: { url?: string; reason: string }[] = [];
+
     for (const item of items) {
-      const r = prepareItem(item);
-      if (r) results.push(r);
-      else skippedReasons.push("Missing title or price+area");
+      try {
+        const r = prepareItem(item);
+        if (r) results.push(r);
+        else skippedReasons.push("Missing title or price+area or invalid area (10–500 m²)");
+      } catch (e) {
+        const err = e instanceof Error ? e.message : String(e);
+        itemErrors.push({ url: item?.url, reason: err });
+        skippedReasons.push(`Prepare failed: ${err}`);
+      }
     }
 
     const MAX_ENRICH = 30;
@@ -383,18 +392,27 @@ export async function POST(request: NextRequest) {
       const chunk = toEnrich.slice(i, i + ENRICH_CONCURRENCY);
       const enrichedList = await Promise.all(
         chunk.map(async (r) => {
-          const enriched = await enrichAddressWithAI(r.rawAddressContext!);
-          return { r, enriched } as const;
+          try {
+            const enriched = await enrichAddressWithAI(r.rawAddressContext!);
+            return { r, enriched } as const;
+          } catch (e) {
+            itemErrors.push({ url: r.prepared.sourceUrl, reason: `Enrich: ${e instanceof Error ? e.message : String(e)}` });
+            return { r, enriched: null } as const;
+          }
         })
       );
       for (const { r, enriched } of enrichedList) {
         if (!enriched) continue;
-        const verified = await verifyAddressWithGeocoding(enriched);
-        if (!verified) console.warn("[Webhook] Lokalita neoverená:", enriched.city, enriched.street);
-        r.prepared.data.city = enriched.city;
-        r.prepared.data.district = enriched.district ?? "";
-        r.prepared.data.street = enriched.street;
-        r.prepared.data.address = buildFullAddress(enriched);
+        try {
+          const verified = await verifyAddressWithGeocoding(enriched);
+          if (!verified) console.warn("[Webhook] Lokalita neoverená:", enriched.city, enriched.street);
+          r.prepared.data.city = enriched.city;
+          r.prepared.data.district = enriched.district ?? "";
+          r.prepared.data.street = enriched.street;
+          r.prepared.data.address = buildFullAddress(enriched);
+        } catch (e) {
+          itemErrors.push({ url: r.prepared.sourceUrl, reason: `Verify: ${e instanceof Error ? e.message : String(e)}` });
+        }
         await new Promise((by) => setTimeout(by, 1100));
       }
     }
@@ -424,8 +442,8 @@ export async function POST(request: NextRequest) {
               r.prepared.data.street = parsed.street ?? r.prepared.data.street;
               r.prepared.data.address = parsed.address;
             }
-          } catch {
-            /* AI zlyhalo – ponecháme základný formát, nebrzdíme scraping */
+          } catch (e) {
+            itemErrors.push({ url: r.prepared.sourceUrl, reason: `Analyst: ${e instanceof Error ? e.message : String(e)}` });
           }
         })
       );
@@ -443,6 +461,20 @@ export async function POST(request: NextRequest) {
     }
 
     if (deduped.length === 0) {
+      const duration_ms = Date.now() - runStart;
+      try {
+        await prisma.dataFetchLog.create({
+          data: {
+            source: "apify-webhook",
+            status: "success",
+            recordsCount: 0,
+            error: skippedReasons.length ? skippedReasons.slice(0, 10).join("; ") : null,
+            duration_ms,
+          },
+        });
+      } catch {
+        /* ignore */
+      }
       return NextResponse.json({
         success: true,
         portal: payload.portal,
@@ -482,71 +514,83 @@ export async function POST(request: NextRequest) {
     let updated = 0;
     const errors: string[] = [];
 
-    for (let i = 0; i < toCreate.length; i += BATCH_CHUNK_SIZE) {
-      const chunk = toCreate.slice(i, i + BATCH_CHUNK_SIZE);
+    for (const p of toCreate) {
       try {
-        await prisma.$transaction(async (tx) => {
-          for (const p of chunk) {
-            const prop = await tx.property.create({ data: p.data as never });
-            created++;
-            if (p.addPriceHistory) {
-              await tx.priceHistory.create({
-                data: { propertyId: prop.id, price: p.price, price_per_m2: p.pricePerM2 },
-              });
-            }
-          }
-        });
+        const prop = await prisma.property.create({ data: p.data as never });
+        created++;
+        if (p.addPriceHistory) {
+          await prisma.priceHistory.create({
+            data: { propertyId: prop.id, price: p.price, price_per_m2: p.pricePerM2 },
+          });
+        }
       } catch (e) {
-        errors.push(e instanceof Error ? e.message : "Create batch failed");
+        const err = e instanceof Error ? e.message : String(e);
+        errors.push(`Create ${p.externalId}: ${err}`);
+        itemErrors.push({ url: p.sourceUrl, reason: `DB create: ${err}` });
       }
     }
 
-    for (let i = 0; i < toUpdate.length; i += BATCH_CHUNK_SIZE) {
-      const chunk = toUpdate.slice(i, i + BATCH_CHUNK_SIZE);
+    for (const { prepared: p, existingId, existingPrice } of toUpdate) {
       try {
-        await prisma.$transaction(async (tx) => {
-          for (const { prepared: p, existingId, existingPrice } of chunk) {
-            const updateData: Record<string, unknown> = {
-              price: p.data.price,
-              price_per_m2: p.data.price_per_m2,
-              photos: p.data.photos,
-              thumbnail_url: p.data.thumbnail_url,
-              photo_count: p.data.photo_count,
-              last_seen_at: p.data.last_seen_at,
-              status: "ACTIVE",
-            };
-            if (p.data.constructionType != null) updateData.constructionType = p.data.constructionType;
-            if (p.data.ownership != null) updateData.ownership = p.data.ownership;
-            if (p.data.technicalCondition != null) updateData.technicalCondition = p.data.technicalCondition;
-            if (p.data.redFlags != null) updateData.redFlags = p.data.redFlags;
-            if (p.data.aiAddress != null) updateData.aiAddress = p.data.aiAddress;
-            if (p.data.investmentSummary != null) updateData.investmentSummary = p.data.investmentSummary;
-            if (p.data.top3_facts != null) updateData.top3_facts = p.data.top3_facts;
-            if (p.data.seller_phone != null) updateData.seller_phone = p.data.seller_phone;
-            if (p.data.seller_name != null) updateData.seller_name = p.data.seller_name;
-            if (p.data.aiAddress) {
-              const parsed = parseCleanAddress(p.data.aiAddress);
-              if (parsed.city) updateData.city = parsed.city;
-              if (parsed.district) updateData.district = parsed.district;
-              if (parsed.street != null) updateData.street = parsed.street;
-              updateData.address = parsed.address;
-            }
-            await tx.property.update({
-              where: { id: existingId },
-              data: updateData as never,
-            });
-            updated++;
-            const priceChanged = existingPrice !== p.price && p.price > 0;
-            if (priceChanged && p.addPriceHistory) {
-              await tx.priceHistory.create({
-                data: { propertyId: existingId, price: p.price, price_per_m2: p.pricePerM2 },
-              });
-            }
-          }
+        const updateData: Record<string, unknown> = {
+          price: p.data.price,
+          price_per_m2: p.data.price_per_m2,
+          photos: p.data.photos,
+          thumbnail_url: p.data.thumbnail_url,
+          photo_count: p.data.photo_count,
+          last_seen_at: p.data.last_seen_at,
+          status: "ACTIVE",
+        };
+        if (p.data.constructionType != null) updateData.constructionType = p.data.constructionType;
+        if (p.data.ownership != null) updateData.ownership = p.data.ownership;
+        if (p.data.technicalCondition != null) updateData.technicalCondition = p.data.technicalCondition;
+        if (p.data.redFlags != null) updateData.redFlags = p.data.redFlags;
+        if (p.data.aiAddress != null) updateData.aiAddress = p.data.aiAddress;
+        if (p.data.investmentSummary != null) updateData.investmentSummary = p.data.investmentSummary;
+        if (p.data.top3_facts != null) updateData.top3_facts = p.data.top3_facts;
+        if (p.data.seller_phone != null) updateData.seller_phone = p.data.seller_phone;
+        if (p.data.seller_name != null) updateData.seller_name = p.data.seller_name;
+        if (p.data.aiAddress) {
+          const parsed = parseCleanAddress(p.data.aiAddress);
+          if (parsed.city) updateData.city = parsed.city;
+          if (parsed.district) updateData.district = parsed.district;
+          if (parsed.street != null) updateData.street = parsed.street;
+          updateData.address = parsed.address;
+        }
+        await prisma.property.update({
+          where: { id: existingId },
+          data: updateData as never,
         });
+        updated++;
+        const priceChanged = existingPrice !== p.price && p.price > 0;
+        if (priceChanged && p.addPriceHistory) {
+          await prisma.priceHistory.create({
+            data: { propertyId: existingId, price: p.price, price_per_m2: p.pricePerM2 },
+          });
+        }
       } catch (e) {
-        errors.push(e instanceof Error ? e.message : "Update batch failed");
+        const err = e instanceof Error ? e.message : String(e);
+        errors.push(`Update ${existingId}: ${err}`);
+        itemErrors.push({ url: p.sourceUrl, reason: `DB update: ${err}` });
       }
+    }
+
+    const duration_ms = Date.now() - runStart;
+    const logStatus = errors.length > 0 ? (created + updated > 0 ? "partial" : "error") : "success";
+    const allErrors = [...errors, ...itemErrors.map((e) => `${e.url ?? "?"}: ${e.reason}`)];
+
+    try {
+      await prisma.dataFetchLog.create({
+        data: {
+          source: "apify-webhook",
+          status: logStatus,
+          recordsCount: created + updated,
+          error: allErrors.length > 0 ? allErrors.slice(0, 30).join("; ") : null,
+          duration_ms,
+        },
+      });
+    } catch (logErr) {
+      console.warn("[Webhook] DataFetchLog create failed:", logErr);
     }
 
     const stats = {
@@ -554,15 +598,30 @@ export async function POST(request: NextRequest) {
       created,
       updated,
       skipped: Math.max(0, items.length - created - updated),
-      errors: errors.slice(0, 50),
+      errors: allErrors.slice(0, 50),
+      duration_ms,
     };
     console.log("✅ [Webhook] Batch complete:", stats);
 
     return NextResponse.json({ success: true, portal: payload.portal, stats });
   } catch (error) {
     console.error("❌ [Webhook] Error:", error);
+    const errMsg = error instanceof Error ? error.message : "Unknown error";
+    try {
+      await prisma.dataFetchLog.create({
+        data: {
+          source: "apify-webhook",
+          status: "error",
+          recordsCount: 0,
+          error: errMsg,
+          duration_ms: 0,
+        },
+      });
+    } catch {
+      /* ignore */
+    }
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : "Unknown error" },
+      { success: false, error: errMsg },
       { status: 500 }
     );
   }

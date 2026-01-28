@@ -52,6 +52,19 @@ const EXPENSE_RATES = {
 const TOTAL_EXPENSE_RATE = Object.values(EXPENSE_RATES).reduce((a, b) => a + b, 0);
 
 // ============================================================================
+// ČISTÉ FUNKCIE (pre testy)
+// ============================================================================
+
+/**
+ * Hrubá ročná výnosnosť v %: (mesačný nájom × 12) / cena × 100.
+ * Napr. 100 000 €, 500 €/mes → 6 %.
+ */
+export function computeGrossYield(price: number, monthlyRentEur: number): number {
+  if (price <= 0 || monthlyRentEur <= 0) return 0;
+  return (monthlyRentEur * 12 / price) * 100;
+}
+
+// ============================================================================
 // HLAVNÉ FUNKCIE
 // ============================================================================
 

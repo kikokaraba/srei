@@ -57,6 +57,23 @@
 - **Detail**: Investičný Summary Box (zlatý/emerald okraj) – Verdikt (investmentSummary), TOP 3 fakty, tlačidlá „📞 Volať hneď“ (tel:) a „🌐 Pôvodný zdroj“. Sekcia „Vysvetlenie ikoniek“ odstránená.
 - **Zoznam**: Na kartách a v list view sa zobrazuje AI Verdikt (investmentSummary), ak existuje.
 
+## Bulletproof Webhook a Edge Cases
+
+- **Error Boundary**: Prepare, enrich, verify, analyst a DB create/update majú try-catch na úrovni položky. Zlyhanie jednej nebrzdí zvyšok; chyby sa logujú do `itemErrors` a do `DataFetchLog`.
+- **Plocha**: Validácia 10–500 m². Mimo rozsah → `parseArea` vráti 0, inzerát sa preskočí.
+- **Cena 0**: UI zobrazuje „Cena v RK“ (detail aj zoznam).
+- **0 fotiek**: Fallback „Bez fotky“ v `PropertyImage` / zoznamoch.
+- **Logovanie**: Každý webhook run zapíše záznam do `DataFetchLog` (`source: apify-webhook`, `status`, `recordsCount`, `error`, `duration_ms`). Pri fatálnej chybe (napr. fetch datasetu) sa tiež vytvorí záznam so `status: error`.
+
+## Testy (Vitest)
+
+- `npm run test` – unit testy pre Yield Engine.
+- `computeGrossYield(price, monthlyRent)`: 100k € + 500 €/mes → 6 % hrubý výnos. Okrajové prípady (0, záporné) vráti 0.
+
+---
+
+**Code Audit (Cursor)**: Pre systematické hľadanie ďalších edge cases a chýb môžeš použiť prompt typu: *„Sprav kompletný Code Audit webhooku a yield/pricing logiky: validácie vstupov, handling chýb, logovanie, UI pre cenu 0 a chýbajúce dáta. Vypíš zistenia a návrhy úprav.“*
+
 ## Zameranie na byty (Yield Engine)
 
 - **Scraping**: Paginated scraper iba `byty/predaj` a `byty/prenajom` (50:50). Domy, pozemky vynechané.

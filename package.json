@@ -17,6 +17,8 @@
     "db:init": "bash scripts/init-db.sh",
     "db:auto-seed": "tsx scripts/ensure-admin.ts",
     "cron:start": "tsx scripts/start-cron.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -65,7 +67,9 @@
     "postcss": "^8.4.49",
     "prisma": "^7.3.0",
     "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite-tsconfig-paths": "^6.0.5",
+    "vitest": "^4.0.18"
   },
   "overrides": {
     "react": "^19.2.0",

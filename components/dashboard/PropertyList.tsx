@@ -887,7 +887,7 @@ export function PropertyList() {
                   <div className="flex items-end justify-between pt-3 border-t border-zinc-800/50">
                     <div>
                       <p className="text-xl font-semibold text-zinc-100 font-mono tracking-tight">
-                        €{property.price.toLocaleString()}
+                        {property.price === 0 ? "Cena v RK" : `€${property.price.toLocaleString()}`}
                       </p>
                       {/* Price History Mini */}
                       {metrics?.priceStory?.totalChangePercent && metrics.priceStory.totalChangePercent < 0 && (
@@ -1030,11 +1030,13 @@ export function PropertyList() {
                       {/* Price */}
                       <div className="text-right min-w-[120px]">
                         <p className="text-lg font-semibold text-zinc-100 font-mono">
-                          €{property.price.toLocaleString()}
+                          {property.price === 0 ? "Cena v RK" : `€${property.price.toLocaleString()}`}
                         </p>
-                        <p className="text-xs text-zinc-500 font-mono">
-                          €{property.price_per_m2.toLocaleString()}/m²
-                        </p>
+                        {property.price > 0 && (
+                          <p className="text-xs text-zinc-500 font-mono">
+                            €{property.price_per_m2.toLocaleString()}/m²
+                          </p>
+                        )}
                       </div>
 
                       {/* Yield */}
