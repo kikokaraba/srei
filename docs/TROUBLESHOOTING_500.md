@@ -14,32 +14,61 @@ Keď frontend posiela správne požiadavky (mestá, filtre) ale API vracia **500
 
 **Automaticky:** Pri každom Vercel deployi sa spustí `prisma db push` počas buildu (`scripts/vercel-db-push.sh`). Stačí push do `main` a nechať prebehnúť deploy – schéma sa zosynchronizuje s production DB.
 
+### Cursor + Railway (žiadna lokálna DB)
+
+Cursor spúšťa príkazy na tvojom PC. Aby `prisma db push` išiel na **Railway** (nie na localhost), musí mať Prisma `DATABASE_URL` z **`.env`**.
+
+1. **Skontroluj `.env`:**
+   - V koreni projektu musí byť súbor **`.env`** (nie len `.env.example`).
+   - Ak chýba: `cp .env.example .env` a doplň premenné.
+
+2. **Nastav `DATABASE_URL` na Railway:**
+   - Railway Dashboard → tvoja PostgreSQL DB → **Connect** → **Public Network**
+   - Skopíruj connection string (napr. `postgresql://postgres:PASSWORD@HOST.proxy.rlwy.net:PORT/railway`).
+   - Pridaj `?sslmode=require` na koniec.
+   - Do `.env` vlož riadok:
+     ```
+     DATABASE_URL="postgresql://postgres:PASSWORD@HOST.proxy.rlwy.net:PORT/railway?sslmode=require"
+     ```
+   - Ulož súbor (`.env` je v `.gitignore`, do gitu nechodí).
+
+3. **Spusti db push (Cursor / terminál):**
+   ```bash
+   npx prisma db push
+   ```
+   Prisma načíta `DATABASE_URL` z `.env` a pushne schému na Railway. Nepoužíva sa žiadna lokálna Postgres.
+
+4. **Ak vidíš `localhost:5432` alebo „Can't reach database server“:**  
+   Znamená to, že `DATABASE_URL` sa nenačítava (chýba `.env` alebo v ňom nie je `DATABASE_URL`). Over krok 1–2.
+
+   **Ak je `DATABASE_URL` nastavená ale stále „Connection refused“:** Railway môže blokovať prístup z tvojej IP. Skontroluj, či používaš **Public Network** connection string a či nemáš zmenené heslo.
+
+5. **Po úspešnom pushi:**  
+   Správa typu „Database schema is now in sync“. Vercel (cez Railway DB) potom prestane hádzať P2022 / 500.
+
 ### Kroky (Vercel + production Postgres)
 
 1. **Získaj production `DATABASE_URL`:**
-   - Vercel Dashboard → tvoj projekt (**sria-two**) → **Settings** → **Environment Variables**
-   - Nájdi `DATABASE_URL` (Production) → **Value** → skopíruj (celý reťazec, vrátane hesla).
+   - Vercel Dashboard → tvoj projekt (**sria-two**) → **Settings** → **Environment Variables**, alebo  
+   - **Railway** → PostgreSQL → Connect → Public Network.  
+   Skopíruj celý reťazec (včetne hesla).
 
-2. **Spusti db push lokálne s touto URL:**
-
-   ```bash
-   DATABASE_URL="postgresql://user:pass@host:5432/db?sslmode=require" npm run db:push
-   ```
-
-   Alebo si ju nastav do `.env.production.local` (nepridávaj do gitu) a potom:
+2. **Spusti db push s touto URL:**
 
    ```bash
-   npm run db:push
+   DATABASE_URL="postgresql://user:pass@host:port/db?sslmode=require" npx prisma db push
    ```
 
-   Prípadne použij helper skript (kontroluje, či nie si na localhost):
+   Alebo nastav `DATABASE_URL` do **`.env`** v koreni projektu a potom:
 
    ```bash
-   DATABASE_URL="postgresql://..." npm run db:push:prod
+   npx prisma db push
    ```
+
+   Prípadne `npm run db:push:prod` (skript kontroluje, či nie si na localhost).
 
 3. **Po úspešnom `db push`:**  
-   Vercel už používa tú istú DB – zmeny sú v databáze. **Redeploy (git push) nie je potrebný** na opravu P2022. Ak 500 pretrváva, over v Logs, že Vercel naozaj používa tú istú `DATABASE_URL`.
+   Vercel používa tú istú DB – zmeny sú v databáze. **Redeploy nie je potrebný** na opravu P2022. Ak 500 pretrváva, over v Logs, že Vercel naozaj používa tú istú `DATABASE_URL`.
 
 ---
 
