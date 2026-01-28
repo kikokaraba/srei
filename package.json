@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "rm -rf generated node_modules/.prisma 2>/dev/null; rm -rf .next/cache 2>/dev/null || true; npx prisma generate --schema=./prisma/schema.prisma && next build",
+    "build": "rm -rf generated node_modules/.prisma 2>/dev/null; rm -rf .next/cache 2>/dev/null || true; npx prisma generate --schema=./prisma/schema.prisma && bash scripts/vercel-db-push.sh && next build",
     "start": "node .next/standalone/server.js",
     "start:prod": "next start",
     "lint": "next lint",

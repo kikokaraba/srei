@@ -10,6 +10,8 @@ Keď frontend posiela správne požiadavky (mestá, filtre) ale API vracia **500
 
 **Riešenie:** Synchronizovať schému s production DB – `npx prisma db push` proti **production** `DATABASE_URL`.
 
+**Automaticky:** Pri každom Vercel deployi sa spustí `prisma db push` počas buildu (`scripts/vercel-db-push.sh`). Stačí push do `main` a nechať prebehnúť deploy – schéma sa zosynchronizuje s production DB.
+
 ### Kroky (Vercel + production Postgres)
 
 1. **Získaj production `DATABASE_URL`:**
