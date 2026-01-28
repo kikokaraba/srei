@@ -19,6 +19,7 @@ import {
   type EnrichedAddress,
 } from "@/lib/ai/address-enrichment";
 import { analyzeListing } from "@/lib/ai/listing-analyst";
+import { runHunterAlertsForProperty } from "@/lib/telegram/hunter";
 
 // ============================================================================
 // HELPER FUNKCIE PRE ČISTENIE DÁT
@@ -513,11 +514,14 @@ export async function POST(request: NextRequest) {
     let created = 0;
     let updated = 0;
     const errors: string[] = [];
+    const createdIds: string[] = [];
+    const updatedIds: string[] = [];
 
     for (const p of toCreate) {
       try {
         const prop = await prisma.property.create({ data: p.data as never });
         created++;
+        createdIds.push(prop.id);
         if (p.addPriceHistory) {
           await prisma.priceHistory.create({
             data: { propertyId: prop.id, price: p.price, price_per_m2: p.pricePerM2 },
@@ -562,6 +566,7 @@ export async function POST(request: NextRequest) {
           data: updateData as never,
         });
         updated++;
+        updatedIds.push(existingId);
         const priceChanged = existingPrice !== p.price && p.price > 0;
         if (priceChanged && p.addPriceHistory) {
           await prisma.priceHistory.create({
@@ -575,6 +580,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    let hunterAlertsSent = 0;
+    const hunterIds = [...createdIds, ...updatedIds];
+    for (const id of hunterIds) {
+      try {
+        hunterAlertsSent += await runHunterAlertsForProperty(id);
+      } catch (e) {
+        console.warn("[Webhook] Hunter alerts failed for property", id, e);
+      }
+    }
+
     const duration_ms = Date.now() - runStart;
     const logStatus = errors.length > 0 ? (created + updated > 0 ? "partial" : "error") : "success";
     const allErrors = [...errors, ...itemErrors.map((e) => `${e.url ?? "?"}: ${e.reason}`)];
@@ -585,6 +600,7 @@ export async function POST(request: NextRequest) {
           source: "apify-webhook",
           status: logStatus,
           recordsCount: created + updated,
+          hunterAlertsSent: hunterAlertsSent > 0 ? hunterAlertsSent : null,
           error: allErrors.length > 0 ? allErrors.slice(0, 30).join("; ") : null,
           duration_ms,
         },
@@ -598,6 +614,7 @@ export async function POST(request: NextRequest) {
       created,
       updated,
       skipped: Math.max(0, items.length - created - updated),
+      hunterAlertsSent,
       errors: allErrors.slice(0, 50),
       duration_ms,
     };

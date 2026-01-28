@@ -787,13 +787,14 @@ model CityMarketData {
 
 // Log zberu dát
 model DataFetchLog {
-  id          String   @id @default(cuid())
-  source      String   // "NBS", "SUSR", "scraper"
-  status      String   // "success", "error", "partial"
-  recordsCount Int?
-  error       String?  @db.Text
-  duration_ms Int?
-  fetchedAt   DateTime @default(now())
+  id               String   @id @default(cuid())
+  source           String   // "NBS", "SUSR", "scraper", "apify-webhook"
+  status           String   // "success", "error", "partial"
+  recordsCount     Int?
+  hunterAlertsSent Int?     // Počet Hunter Telegram notifikácií odoslaných v danom behu
+  error            String?  @db.Text
+  duration_ms      Int?
+  fetchedAt        DateTime @default(now())
   
   @@index([source, fetchedAt])
 }

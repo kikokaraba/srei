@@ -172,4 +172,14 @@ Ukladá sa cez `/api/v1/dashboard/layout` (GET/POST).
 
 ---
 
+## 6. Telegram Hunter Bot
+
+- **`lib/telegram/hunter.ts`**: `sendHunterAlert`, `runHunterAlertsForProperty`, Hunter filter podľa `UserPreferences` (mesto, minYield, minGrossYield, minPriceDrop, minGapPercentage, onlyDistressed).
+- **Formát správy**: HUNTER ALERT, mesto/izby, cena, výnos, podhodnotenie, zľava, AI verdikt, telefón, tlačidlá Otvoriť inzerát / SRIA.
+- **Webhook**: Po create/update pre každú nehnuteľnosť volá `runHunterAlertsForProperty`; chyba pri odoslaní nepreruší spracovanie. Do `DataFetchLog` sa zapisuje `hunterAlertsSent`.
+- **PRO vs FREE**: V kóde je komentár – PRO okamžite, FREE so 60-min delay (batch cron neskôr). Aktuálne sa notifikujú všetci používatelia s `telegramEnabled` + `telegramChatId`.
+- **`TELEGRAM_BOT_TOKEN`** v `.env` (BotFather).
+
+---
+
 *Report vygenerovaný na základe analýzy `prisma/schema.prisma`, `app/dashboard/settings/page.tsx`, `app/api/v1/user/preferences/route.ts`, `lib/hooks/useUserPreferences.ts`, filtered API, PropertyList, AdvancedFilters, alerts a súvisiaceho kódu.*
