@@ -48,8 +48,14 @@
 
 - **Každý inzerát** prechádza pred uložením cez `analyzeListing` (Claude 3.5 Sonnet). Vstup: celý popis + surová lokalita z Apify.
 - **Brutálna extrakcia**: Iba fakty, žiadny marketing. JSON: `constructionType` (Tehla/Panel/Skelet/Neuvedené), `ownership` (Osobné/Družstevné/Štátne), `technicalCondition` (max 10 slov), `redFlags` (exekúcia, ťarcha, podiel, bez výťahu, drahý správca; inak null), `cleanAddress` (mesto, časť, ulica, číslo; žiadne „balkóny“), `investmentSummary` (jedna veta).
-- **Zápis**: Výstupy sa mapujú na `Property`. Ak je `cleanAddress`, použije sa ako primárna adresa (city, district, street, address) a uloží sa aj do `aiAddress`.
+- **Zápis**: Výstupy sa mapujú na `Property`. Ak je `cleanAddress`, použije sa ako primárna adresa (city, district, street, address) a uloží sa aj do `aiAddress`. Ďalej sa ukladajú `phone` → `seller_phone`, `contactName` → `seller_name`, `top3Facts` → `top3_facts` (JSON).
+- **Zákaz halucinácií**: Pri adrese – ak AI nevie ulicu/číslo, vráti null; nikdy „balkón“, „terasa“ ani podobné.
 - **Bezpečnosť**: `try-catch` okolo AI. Pri zlyhaní sa inzerát uloží v základnom formáte, scraping pokračuje.
+
+## UI (Investičný terminál)
+
+- **Detail**: Investičný Summary Box (zlatý/emerald okraj) – Verdikt (investmentSummary), TOP 3 fakty, tlačidlá „📞 Volať hneď“ (tel:) a „🌐 Pôvodný zdroj“. Sekcia „Vysvetlenie ikoniek“ odstránená.
+- **Zoznam**: Na kartách a v list view sa zobrazuje AI Verdikt (investmentSummary), ak existuje.
 
 ## Zameranie na byty (Yield Engine)
 

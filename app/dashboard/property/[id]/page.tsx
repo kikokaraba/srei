@@ -12,24 +12,20 @@ import {
   TrendingDown,
   Bookmark,
   BookmarkCheck,
-  Loader2,
+  Phone,
+  Globe,
   Shield,
-  Copy,
   Clock,
   Target,
   Calendar,
   BarChart3,
-  AlertTriangle,
   CheckCircle,
-  Info,
   Banknote,
   Calculator,
   Building2,
-  Zap,
   History,
   Users,
   PiggyBank,
-  Percent,
   Trophy,
 } from "lucide-react";
 import { YieldCard } from "@/components/YieldCard";
@@ -59,6 +55,10 @@ interface Property {
   photos?: string;
   thumbnail_url?: string | null;
   photo_count?: number;
+  seller_phone?: string | null;
+  seller_name?: string | null;
+  investmentSummary?: string | null;
+  top3_facts?: string | null;
   investmentMetrics: {
     gross_yield: number;
     net_yield: number;
@@ -377,9 +377,24 @@ export default function PropertyDetailPage() {
   const thumbnailUrl = getThumbnailUrl();
   const photoUrls = getPhotoUrls();
 
+  const top3Facts = ((): string[] => {
+    const raw = property.top3_facts;
+    if (!raw) return [];
+    try {
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr.filter((x): x is string => typeof x === "string").slice(0, 3) : [];
+    } catch {
+      return [];
+    }
+  })();
+
+  const hasVerdikt = !!(property.investmentSummary?.trim());
+  const hasTop3 = top3Facts.length > 0;
+  const showSummaryBox = hasVerdikt || hasTop3;
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Header - Premium */}
+      {/* Header */}
       <div className="flex items-start gap-4">
         <button
           onClick={() => router.back()}
@@ -389,7 +404,6 @@ export default function PropertyDetailPage() {
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-medium">DETAIL NEHNUTEĽNOSTI</p>
             {isInvestmentGem && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-[10px] font-bold rounded-full animate-pulse">
                 <Trophy className="w-3 h-3" />
@@ -414,21 +428,10 @@ export default function PropertyDetailPage() {
           >
             {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
           </button>
-          {property.source_url && (
-            <a
-              href={property.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2.5 bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-medium rounded-lg transition-colors"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Otvoriť</span>
-            </a>
-          )}
         </div>
       </div>
 
-      {/* Gallery – stav nehnuteľnosti na prvý pohľad */}
+      {/* Gallery */}
       <div className="premium-card overflow-hidden p-0">
         <div className="aspect-video bg-zinc-900 relative">
           <PropertyImage
@@ -458,11 +461,83 @@ export default function PropertyDetailPage() {
         )}
       </div>
 
+      {/* AI Investičný Summary Box + Action Buttons */}
+      {showSummaryBox && (
+        <div className="rounded-2xl border-2 border-amber-500/40 bg-gradient-to-br from-amber-500/5 to-emerald-500/5 p-5">
+          {hasVerdikt && (
+            <div className="mb-4">
+              <p className="text-[10px] text-amber-400/80 uppercase tracking-widest font-medium mb-1">Verdikt</p>
+              <p className="text-zinc-100 text-base leading-snug">{property.investmentSummary}</p>
+            </div>
+          )}
+          {hasTop3 && (
+            <div className="mb-4">
+              <p className="text-[10px] text-amber-400/80 uppercase tracking-widest font-medium mb-2">TOP 3 fakty</p>
+              <ol className="list-decimal list-inside space-y-1 text-sm text-zinc-300">
+                {top3Facts.map((f, i) => (
+                  <li key={i}>{f}</li>
+                ))}
+              </ol>
+            </div>
+          )}
+          {(property.seller_phone || property.source_url) && (
+            <div className="flex flex-wrap gap-3 pt-2 border-t border-zinc-700/50">
+              {property.seller_phone && (
+                <a
+                  href={`tel:${property.seller_phone.replace(/\s/g, "")}`}
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm transition-colors"
+                >
+                  <Phone className="w-5 h-5" />
+                  Volať hneď
+                </a>
+              )}
+              {property.source_url && (
+                <a
+                  href={property.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-medium text-sm border border-zinc-700 transition-colors"
+                >
+                  <Globe className="w-5 h-5" />
+                  Pôvodný zdroj
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Fallback Action Buttons ak nemáme AI Summary */}
+      {!showSummaryBox && (property.seller_phone || property.source_url) && (
+        <div className="flex flex-wrap gap-3">
+          {property.seller_phone && (
+            <a
+              href={`tel:${property.seller_phone.replace(/\s/g, "")}`}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm transition-colors"
+            >
+              <Phone className="w-5 h-5" />
+              Volať hneď
+            </a>
+          )}
+          {property.source_url && (
+            <a
+              href={property.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-medium text-sm border border-zinc-700 transition-colors"
+            >
+              <Globe className="w-5 h-5" />
+              Pôvodný zdroj
+            </a>
+          )}
+        </div>
+      )}
+
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Left Column - Main Info */}
         <div className="lg:col-span-2 space-y-5">
-          {/* Price & Key Stats - Premium */}
+          {/* Price & Key Stats */}
           <div className="premium-card p-5">
             <div className="flex items-start justify-between mb-5">
               <div>
@@ -997,15 +1072,26 @@ export default function PropertyDetailPage() {
           <div className="premium-card p-5">
             <h3 className="font-bold text-white mb-4">Rýchle akcie</h3>
             <div className="space-y-3">
-              <a
-                href={property.source_url || "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
-              >
-                <ExternalLink className="w-5 h-5" />
-                Otvoriť inzerát
-              </a>
+              {property.seller_phone && (
+                <a
+                  href={`tel:${property.seller_phone.replace(/\s/g, "")}`}
+                  className="flex items-center gap-3 w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
+                >
+                  <Phone className="w-5 h-5" />
+                  Volať hneď
+                </a>
+              )}
+              {property.source_url && (
+                <a
+                  href={property.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 w-full px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors"
+                >
+                  <Globe className="w-5 h-5" />
+                  Pôvodný zdroj
+                </a>
+              )}
               <Link 
                 href={`/dashboard/calculators?calc=mortgage&price=${property.price}&title=${encodeURIComponent(property.title)}`}
                 className="flex items-center gap-3 w-full px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors"
@@ -1056,78 +1142,6 @@ export default function PropertyDetailPage() {
             </div>
           </div>
 
-          {/* Legend */}
-          <div className="premium-card p-5">
-            <h3 className="font-bold text-white mb-4 flex items-center gap-2">
-              <Info className="w-5 h-5 text-zinc-400" />
-              Vysvetlenie ikoniek
-            </h3>
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-emerald-500/20 border border-emerald-500/30 rounded-lg flex items-center justify-center">
-                  <Shield className="w-4 h-4 text-emerald-400" />
-                </div>
-                <div>
-                  <p className="text-white">Investičné skóre</p>
-                  <p className="text-zinc-400 text-xs">0-100 bodov podľa výnosnosti</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-amber-500/20 border border-amber-500/30 rounded-lg flex items-center justify-center">
-                  <Copy className="w-4 h-4 text-amber-400" />
-                </div>
-                <div>
-                  <p className="text-white">Duplicity</p>
-                  <p className="text-zinc-400 text-xs">Inzerát na viacerých portáloch</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-emerald-500/20 border border-emerald-500/30 rounded-lg flex items-center justify-center">
-                  <TrendingDown className="w-4 h-4 text-emerald-400" />
-                </div>
-                <div>
-                  <p className="text-white">Zníženie ceny</p>
-                  <p className="text-zinc-400 text-xs">Cena bola znížená</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-red-500/20 border border-red-500/30 rounded-lg flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-red-400" />
-                </div>
-                <div>
-                  <p className="text-white">Hot Deal</p>
-                  <p className="text-zinc-400 text-xs">15%+ pod trhovou cenou</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-cyan-500/20 border border-cyan-500/30 rounded-lg flex items-center justify-center">
-                  <Target className="w-4 h-4 text-cyan-400" />
-                </div>
-                <div>
-                  <p className="text-white">Vyjednaj zľavu</p>
-                  <p className="text-zinc-400 text-xs">Dlho na trhu, navrhni -10%</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-violet-500/20 border border-violet-500/30 rounded-lg flex items-center justify-center">
-                  <span className="text-sm">🆕</span>
-                </div>
-                <div>
-                  <p className="text-white">Čerstvý inzerát</p>
-                  <p className="text-zinc-400 text-xs">Pridané pred menej ako 3 dňami</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-zinc-600/30 border border-zinc-500/30 rounded-lg flex items-center justify-center">
-                  <Clock className="w-4 h-4 text-zinc-400" />
-                </div>
-                <div>
-                  <p className="text-white">Dni na trhu</p>
-                  <p className="text-zinc-400 text-xs">Koľko dní je v ponuke</p>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

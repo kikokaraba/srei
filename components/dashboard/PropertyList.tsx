@@ -83,6 +83,7 @@ interface Property {
   // Kontakt
   seller_name?: string | null;
   seller_phone?: string | null;
+  investmentSummary?: string | null;
   // Časové polia pre freshness
   createdAt?: string;
   updatedAt?: string;
@@ -853,9 +854,18 @@ export function PropertyList() {
                   </div>
 
                   {/* Title */}
-                  <h3 className="font-medium text-zinc-100 text-sm leading-snug mb-3 line-clamp-2 group-hover:text-emerald-400 transition-colors min-h-[2.5rem]">
+                  <h3 className="font-medium text-zinc-100 text-sm leading-snug mb-2 line-clamp-2 group-hover:text-emerald-400 transition-colors min-h-[2.5rem]">
                     {property.title}
                   </h3>
+
+                  {/* AI Verdikt - jedna veta */}
+                  {property.investmentSummary && (
+                    <p className="text-zinc-400 text-xs leading-snug mb-3 line-clamp-2">
+                      {property.investmentSummary.length > 100
+                        ? `${property.investmentSummary.slice(0, 100)}…`
+                        : property.investmentSummary}
+                    </p>
+                  )}
 
                   {/* Key Metrics - Minimal Grid */}
                   <div className="grid grid-cols-3 gap-2 mb-4">
@@ -982,6 +992,13 @@ export function PropertyList() {
                       <h3 className="font-semibold text-white truncate group-hover:text-emerald-400 transition-colors mb-1">
                         {property.title}
                       </h3>
+                      {property.investmentSummary && (
+                        <p className="text-zinc-400 text-xs mb-1.5 line-clamp-1 max-w-xl">
+                          {property.investmentSummary.length > 80
+                            ? `${property.investmentSummary.slice(0, 80)}…`
+                            : property.investmentSummary}
+                        </p>
+                      )}
                       <div className="flex items-center gap-4 text-sm text-zinc-400">
                         <span className="flex items-center gap-1">
                           <MapPin className="w-3.5 h-3.5" />

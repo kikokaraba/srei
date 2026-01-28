@@ -16,16 +16,22 @@ export interface ListingAnalysis {
   redFlags: string | null;
   cleanAddress: string | null;
   investmentSummary: string | null;
+  phone: string | null;
+  contactName: string | null;
+  top3Facts: string[] | null;
 }
 
-const SYSTEM = `Si elitný realitný investor. Tvojou úlohou je vybrať z balastu v popise inzerátu iba fakty. Ignoruj marketingové reči o slnečných bytoch a duši. Odpovedaj výhradne v JSON formáte s týmito kľúčmi:
+const SYSTEM = `Si elitný realitný investor. Vyber z popisu inzerátu iba fakty. Ignoruj marketing. Odpovedaj výhradne v JSON s týmito kľúčmi:
 - constructionType: (Tehla / Panel / Skelet / Neuvedené)
 - ownership: (Osobné / Družstevné / Štátne)
-- technicalCondition: (Max 10 slov o stave: napr. "Pôvodný stav, nové okná, rozvody pôvodné")
-- redFlags: (Varovania: exekúcia, ťarcha, podiel na pozemku, bez výťahu na vysokom poschodí, drahý správca. Ak nie sú, null)
-- cleanAddress: (Mesto, Mestská časť, Ulica, Číslo domu - ak sú v texte. Žiadne "balkóny"!)
-- investmentSummary: (Jedna veta: prečo je/nie je tento byt dobrý na investíciu)
-Ak informácia v texte nie je, vráť null. Žiadny úvod ani markdown – iba platný JSON objekt.`;
+- technicalCondition: (Max 10 slov o stave)
+- redFlags: (exekúcia, ťarcha, podiel, bez výťahu, drahý správca; ak nie, null)
+- cleanAddress: (Mesto, Mestská časť, Ulica, Číslo – LEN ak sú v texte. ZÁKAZ HALUCINÁCIÍ: ak si nevieš ulicu/číslo, vráť null; nikdy "balkón", "terasa" alebo podobné.)
+- investmentSummary: (Jedna veta: prečo je/nie je dobrý na investíciu)
+- phone: (telefónne číslo ak je v popise, inak null)
+- contactName: (meno makléra/majiteľa ak je v texte, inak null)
+- top3Facts: (pole max 3 reťazcov, napr. ["Tehla", "Osobné vlastníctvo", "Parkovanie v cene"])
+Ak niečo v texte nie je, vráť null. Iba platný JSON, žiadny markdown.`;
 
 /**
  * Analyzuje popis a surovú lokalitu, vracia extrahované fakty.
@@ -61,6 +67,11 @@ export async function analyzeListing(
     const parsed = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
     const str = (v: unknown) =>
       v != null && typeof v === "string" && v.trim() ? v.trim() : null;
+    const arr = (v: unknown): string[] | null => {
+      if (!Array.isArray(v)) return null;
+      const out = v.filter((x): x is string => typeof x === "string" && !!x.trim()).map((x) => x.trim());
+      return out.length ? out.slice(0, 3) : null;
+    };
 
     return {
       constructionType: str(parsed.constructionType),
@@ -69,6 +80,9 @@ export async function analyzeListing(
       redFlags: str(parsed.redFlags),
       cleanAddress: str(parsed.cleanAddress),
       investmentSummary: str(parsed.investmentSummary),
+      phone: str(parsed.phone),
+      contactName: str(parsed.contactName),
+      top3Facts: arr(parsed.top3Facts),
     };
   } catch (e) {
     console.warn("[listing-analyst] AI error:", e);

@@ -269,6 +269,9 @@ interface PreparedItem {
     redFlags?: string | null;
     aiAddress?: string | null;
     investmentSummary?: string | null;
+    seller_name?: string | null;
+    seller_phone?: string | null;
+    top3_facts?: string | null;
   };
   addPriceHistory: boolean;
 }
@@ -411,6 +414,9 @@ export async function POST(request: NextRequest) {
             r.prepared.data.redFlags = analysis.redFlags;
             r.prepared.data.investmentSummary = analysis.investmentSummary;
             r.prepared.data.aiAddress = analysis.cleanAddress;
+            r.prepared.data.seller_phone = analysis.phone;
+            r.prepared.data.seller_name = analysis.contactName;
+            r.prepared.data.top3_facts = analysis.top3Facts ? JSON.stringify(analysis.top3Facts) : null;
             if (analysis.cleanAddress) {
               const parsed = parseCleanAddress(analysis.cleanAddress);
               if (parsed.city) r.prepared.data.city = parsed.city;
@@ -515,6 +521,9 @@ export async function POST(request: NextRequest) {
             if (p.data.redFlags != null) updateData.redFlags = p.data.redFlags;
             if (p.data.aiAddress != null) updateData.aiAddress = p.data.aiAddress;
             if (p.data.investmentSummary != null) updateData.investmentSummary = p.data.investmentSummary;
+            if (p.data.top3_facts != null) updateData.top3_facts = p.data.top3_facts;
+            if (p.data.seller_phone != null) updateData.seller_phone = p.data.seller_phone;
+            if (p.data.seller_name != null) updateData.seller_name = p.data.seller_name;
             if (p.data.aiAddress) {
               const parsed = parseCleanAddress(p.data.aiAddress);
               if (parsed.city) updateData.city = parsed.city;

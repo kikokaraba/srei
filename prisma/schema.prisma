@@ -233,6 +233,7 @@ model Property {
   redFlags           String?         @db.Text // Varovania: exekúcia, ťarcha, podiel, bez výťahu, drahý správca
   aiAddress          String?         @db.Text // Čistá adresa z AI (Mesto, časť, ulica, číslo)
   investmentSummary  String?         @db.Text // Jedna veta: prečo je/nie je dobrý na investíciu
+  top3_facts         String?         @db.Text // JSON array: TOP 3 fakty (Tehla, Osobné, Parkovanie v cene)
   
   @@index([source, external_id])
   @@index([source, city])
