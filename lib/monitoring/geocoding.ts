@@ -72,6 +72,20 @@ async function geocodeAddress(
 }
 
 /**
+ * Geocode address parts and return coordinates only.
+ * For use in scripts (e.g. geocode-old-properties with AI enrichment).
+ * Respect Nominatim rate limit: 1 req/s – caller must await delay between calls.
+ */
+export async function geocodeAddressToCoords(
+  city: string,
+  district?: string,
+  street?: string
+): Promise<{ latitude: number; longitude: number } | null> {
+  const r = await geocodeAddress(city, district, street);
+  return r ? { latitude: r.latitude, longitude: r.longitude } : null;
+}
+
+/**
  * Geocode properties that don't have coordinates yet
  */
 export async function geocodeProperties(limit: number = 20): Promise<{
@@ -156,34 +170,38 @@ export async function getPropertiesForMap(filters?: {
   minPrice?: number;
   maxPrice?: number;
   listingType?: string;
+  limit?: number;
 }): Promise<{
   id: string;
   title: string;
   price: number;
+  price_per_m2: number;
   latitude: number;
   longitude: number;
   city: string;
   rooms: number | null;
   area_m2: number;
+  is_distressed: boolean;
 }[]> {
-  const where: any = {
+  const where: Record<string, unknown> = {
     status: "ACTIVE",
     latitude: { not: null },
     longitude: { not: null },
   };
 
   if (filters?.city) {
-    where.city = { contains: filters.city, mode: "insensitive" };
+    (where as any).city = { contains: filters.city, mode: "insensitive" };
   }
-  if (filters?.minPrice) {
-    where.price = { gte: filters.minPrice };
-  }
-  if (filters?.maxPrice) {
-    where.price = { ...where.price, lte: filters.maxPrice };
+  if (filters?.minPrice != null || filters?.maxPrice != null) {
+    (where as any).price = {};
+    if (filters?.minPrice != null) (where as any).price.gte = filters.minPrice;
+    if (filters?.maxPrice != null) (where as any).price.lte = filters.maxPrice;
   }
   if (filters?.listingType) {
-    where.listing_type = filters.listingType;
+    (where as any).listing_type = filters.listingType;
   }
+
+  const take = Math.min(filters?.limit ?? 1000, 2000);
 
   const properties = await prisma.property.findMany({
     where,
@@ -191,14 +209,16 @@ export async function getPropertiesForMap(filters?: {
       id: true,
       title: true,
       price: true,
+      price_per_m2: true,
       latitude: true,
       longitude: true,
       city: true,
       rooms: true,
       area_m2: true,
+      is_distressed: true,
     },
-    take: 1000, // Limit for performance
+    take,
   });
 
-  return properties.filter(p => p.latitude && p.longitude) as any;
+  return properties.filter((p) => p.latitude != null && p.longitude != null) as any;
 }

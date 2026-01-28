@@ -16,21 +16,27 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const city = searchParams.get("city") || undefined;
-    const minPrice = searchParams.get("minPrice") ? parseFloat(searchParams.get("minPrice")!) : undefined;
-    const maxPrice = searchParams.get("maxPrice") ? parseFloat(searchParams.get("maxPrice")!) : undefined;
+    const minP = searchParams.get("minPrice") ?? searchParams.get("priceMin");
+    const maxP = searchParams.get("maxPrice") ?? searchParams.get("priceMax");
+    const minPrice = minP != null && minP !== "" && !Number.isNaN(parseFloat(minP)) ? parseFloat(minP) : undefined;
+    const maxPrice = maxP != null && maxP !== "" && !Number.isNaN(parseFloat(maxP)) ? parseFloat(maxP) : undefined;
     const listingType = searchParams.get("listingType") || undefined;
+    const limitParam = searchParams.get("limit");
+    const limit = limitParam ? Math.min(parseInt(limitParam, 10) || 1000, 2000) : undefined;
 
     const properties = await getPropertiesForMap({
       city,
       minPrice,
       maxPrice,
       listingType,
+      limit,
     });
 
     return NextResponse.json({
       success: true,
       count: properties.length,
       data: properties,
+      properties,
     });
 
   } catch (error) {
