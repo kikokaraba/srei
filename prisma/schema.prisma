@@ -225,6 +225,14 @@ model Property {
   check_count_today Int              @default(0) // Koľkokrát bol dnes skontrolovaný
   last_checked_at   DateTime?        // Kedy bol naposledy skontrolovaný batch workerom
   consecutive_failures Int           @default(0) // Počet po sebe idúcich chýb pri kontrole
+
+  // AI Realitný Analytik (Claude) – brutálna extrakcia z popisu
+  constructionType   String?         // Tehla | Panel | Skelet | Neuvedené
+  ownership          String?         // Osobné | Družstevné | Štátne
+  technicalCondition String?         @db.Text // Max 10 slov o stave
+  redFlags           String?         @db.Text // Varovania: exekúcia, ťarcha, podiel, bez výťahu, drahý správca
+  aiAddress          String?         @db.Text // Čistá adresa z AI (Mesto, časť, ulica, číslo)
+  investmentSummary  String?         @db.Text // Jedna veta: prečo je/nie je dobrý na investíciu
   
   @@index([source, external_id])
   @@index([source, city])

@@ -18,6 +18,7 @@ import {
   verifyAddressWithGeocoding,
   type EnrichedAddress,
 } from "@/lib/ai/address-enrichment";
+import { analyzeListing } from "@/lib/ai/listing-analyst";
 
 // ============================================================================
 // HELPER FUNKCIE PRE ČISTENIE DÁT
@@ -214,6 +215,19 @@ function buildFullAddress(a: EnrichedAddress): string {
   return parts.join(", ");
 }
 
+/** Parsuje cleanAddress "Mesto, Mestská časť, Ulica, Číslo" z AI. */
+function parseCleanAddress(
+  cleanAddress: string
+): { city: string; district: string; street: string | null; address: string } {
+  const parts = cleanAddress.split(",").map((s) => s.trim()).filter(Boolean);
+  return {
+    city: parts[0] || "",
+    district: parts[1] || "",
+    street: parts[2] || null,
+    address: cleanAddress,
+  };
+}
+
 // ============================================================================
 // BATCH: PRÍPRAVA A NORMALIZÁCIA (bez DB)
 // ============================================================================
@@ -249,6 +263,12 @@ interface PreparedItem {
     priority_score: number;
     status: "ACTIVE";
     last_seen_at: Date;
+    constructionType?: string | null;
+    ownership?: string | null;
+    technicalCondition?: string | null;
+    redFlags?: string | null;
+    aiAddress?: string | null;
+    investmentSummary?: string | null;
   };
   addPriceHistory: boolean;
 }
@@ -376,6 +396,35 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const ANALYST_CONCURRENCY = 5;
+    for (let i = 0; i < results.length; i += ANALYST_CONCURRENCY) {
+      const chunk = results.slice(i, i + ANALYST_CONCURRENCY);
+      await Promise.all(
+        chunk.map(async (r) => {
+          try {
+            const rawLoc = r.rawAddressContext ?? [r.prepared.data.city, r.prepared.data.district, r.prepared.data.address].filter(Boolean).join(", ");
+            const analysis = await analyzeListing(r.prepared.data.description || "", rawLoc);
+            if (!analysis) return;
+            r.prepared.data.constructionType = analysis.constructionType;
+            r.prepared.data.ownership = analysis.ownership;
+            r.prepared.data.technicalCondition = analysis.technicalCondition;
+            r.prepared.data.redFlags = analysis.redFlags;
+            r.prepared.data.investmentSummary = analysis.investmentSummary;
+            r.prepared.data.aiAddress = analysis.cleanAddress;
+            if (analysis.cleanAddress) {
+              const parsed = parseCleanAddress(analysis.cleanAddress);
+              if (parsed.city) r.prepared.data.city = parsed.city;
+              if (parsed.district) r.prepared.data.district = parsed.district;
+              r.prepared.data.street = parsed.street ?? r.prepared.data.street;
+              r.prepared.data.address = parsed.address;
+            }
+          } catch {
+            /* AI zlyhalo – ponecháme základný formát, nebrzdíme scraping */
+          }
+        })
+      );
+    }
+
     const seenIds = new Set<string>();
     const seenUrls = new Set<string>();
     const deduped: PreparedItem[] = [];
@@ -451,17 +500,31 @@ export async function POST(request: NextRequest) {
       try {
         await prisma.$transaction(async (tx) => {
           for (const { prepared: p, existingId, existingPrice } of chunk) {
+            const updateData: Record<string, unknown> = {
+              price: p.data.price,
+              price_per_m2: p.data.price_per_m2,
+              photos: p.data.photos,
+              thumbnail_url: p.data.thumbnail_url,
+              photo_count: p.data.photo_count,
+              last_seen_at: p.data.last_seen_at,
+              status: "ACTIVE",
+            };
+            if (p.data.constructionType != null) updateData.constructionType = p.data.constructionType;
+            if (p.data.ownership != null) updateData.ownership = p.data.ownership;
+            if (p.data.technicalCondition != null) updateData.technicalCondition = p.data.technicalCondition;
+            if (p.data.redFlags != null) updateData.redFlags = p.data.redFlags;
+            if (p.data.aiAddress != null) updateData.aiAddress = p.data.aiAddress;
+            if (p.data.investmentSummary != null) updateData.investmentSummary = p.data.investmentSummary;
+            if (p.data.aiAddress) {
+              const parsed = parseCleanAddress(p.data.aiAddress);
+              if (parsed.city) updateData.city = parsed.city;
+              if (parsed.district) updateData.district = parsed.district;
+              if (parsed.street != null) updateData.street = parsed.street;
+              updateData.address = parsed.address;
+            }
             await tx.property.update({
               where: { id: existingId },
-              data: {
-                price: p.data.price,
-                price_per_m2: p.data.price_per_m2,
-                photos: p.data.photos,
-                thumbnail_url: p.data.thumbnail_url,
-                photo_count: p.data.photo_count,
-                last_seen_at: p.data.last_seen_at,
-                status: "ACTIVE",
-              },
+              data: updateData as never,
             });
             updated++;
             const priceChanged = existingPrice !== p.price && p.price > 0;

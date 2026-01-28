@@ -44,6 +44,13 @@
 - **Geocoding**: Výstup sa overuje cez Nominatim (Slovensko). Ak adresa neexistuje, loguje sa „Lokalita neoverená“, údaje sa aj tak použijú.
 - Obmedzenia: max 30 enrichmentov na run, konkurrency 5 pre AI, sekvenčné verify s 1,1 s medzerou (rate limit).
 
+## AI Realitný Analytik (Claude)
+
+- **Každý inzerát** prechádza pred uložením cez `analyzeListing` (Claude 3.5 Sonnet). Vstup: celý popis + surová lokalita z Apify.
+- **Brutálna extrakcia**: Iba fakty, žiadny marketing. JSON: `constructionType` (Tehla/Panel/Skelet/Neuvedené), `ownership` (Osobné/Družstevné/Štátne), `technicalCondition` (max 10 slov), `redFlags` (exekúcia, ťarcha, podiel, bez výťahu, drahý správca; inak null), `cleanAddress` (mesto, časť, ulica, číslo; žiadne „balkóny“), `investmentSummary` (jedna veta).
+- **Zápis**: Výstupy sa mapujú na `Property`. Ak je `cleanAddress`, použije sa ako primárna adresa (city, district, street, address) a uloží sa aj do `aiAddress`.
+- **Bezpečnosť**: `try-catch` okolo AI. Pri zlyhaní sa inzerát uloží v základnom formáte, scraping pokračuje.
+
 ## Zameranie na byty (Yield Engine)
 
 - **Scraping**: Paginated scraper iba `byty/predaj` a `byty/prenajom` (50:50). Domy, pozemky vynechané.
