@@ -309,9 +309,24 @@ export default function PropertyDetailPage() {
   }
 
   const score = calculateInvestorScore(property);
-  const priceChange = property.priceHistory.length > 1
-    ? ((property.price - property.priceHistory[property.priceHistory.length - 1].price) / property.priceHistory[property.priceHistory.length - 1].price * 100)
-    : null;
+  // priceHistory je zoradená desc (najnovšia prvá), takže posledná položka je najstaršia (prvá cena)
+  // Porovnávame aktuálnu cenu s prvou cenou
+  const priceChange = useMemo(() => {
+    if (property.priceHistory.length < 2) return null;
+    
+    // Nájdi prvú (najstaršiu) a poslednú (najnovšiu) cenu
+    const sortedHistory = [...property.priceHistory].sort((a, b) => 
+      new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime()
+    );
+    
+    const firstPrice = sortedHistory[0]?.price;
+    const currentPrice = property.price;
+    
+    // Ak sú ceny rovnaké, žiadna zmena
+    if (!firstPrice || firstPrice === currentPrice) return null;
+    
+    return ((currentPrice - firstPrice) / firstPrice * 100);
+  }, [property.priceHistory, property.price]);
 
   // INVESTIČNÝ TRHÁK - yield 20% nad priemerom mesta
   const isInvestmentGem = yieldData?.comparison && 

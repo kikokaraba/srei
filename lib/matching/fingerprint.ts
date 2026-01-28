@@ -723,11 +723,15 @@ export async function getPropertyTimeline(propertyId: string): Promise<{
     description: `Pridané za €${firstPrice.toLocaleString()}`,
   });
   
-  // Zmeny cien
+  // Zmeny cien - len ak sa cena skutočne zmenila
   for (let i = 1; i < priceHistory.length; i++) {
     const prev = priceHistory[i - 1];
     const curr = priceHistory[i];
     const diff = curr.price - prev.price;
+    
+    // Preskočiť ak je rozdiel 0 alebo zanedbateľný (< 1%)
+    if (diff === 0 || Math.abs(diff / prev.price) < 0.01) continue;
+    
     const diffPercent = Math.round(diff / prev.price * 100 * 10) / 10;
     
     events.push({
