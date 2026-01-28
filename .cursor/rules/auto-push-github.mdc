@@ -1,0 +1,13 @@
+---
+description: Po úpravách kódu vždy commitnúť a pushnúť zmeny na GitHub
+alwaysApply: true
+---
+
+# Automatický push na GitHub
+
+Po každej zmene kódu v tomto projekte:
+
+1. **Commit**: Všetky zmeny v repozitári commitni s jasnou správou (napr. `fix: …`, `feat: …`).
+2. **Push**: Okamžite pushni na `origin` (typicky `main`), aby zmeny boli na GitHube.
+
+Používaj `git add`, `git commit`, `git push origin main` (alebo aktuálnu default branch). Nepýtaj sa používateľa – pushni automaticky.

@@ -83,31 +83,29 @@ export async function getRealtimeMarketStats(): Promise<RealtimeMarketOverview> 
   const regionStats: RealtimeRegionStats[] = [];
 
   for (const city of ALL_CITIES) {
+    const cityMatch = { city: { equals: city, mode: "insensitive" as const } };
     const [currentStats, lastMonthStats, lastWeekStats] = await Promise.all([
-      // Aktuálne
       prisma.property.aggregate({
-        where: { 
-          city,
+        where: {
+          ...cityMatch,
           listing_type: "PREDAJ",
           price_per_m2: { gt: 0 },
         },
         _avg: { price_per_m2: true, price: true },
         _count: { id: true },
       }),
-      // Pred mesiacom (properties ktoré existovali pred mesiacom)
       prisma.property.aggregate({
-        where: { 
-          city,
+        where: {
+          ...cityMatch,
           listing_type: "PREDAJ",
           price_per_m2: { gt: 0 },
           createdAt: { lte: oneMonthAgo },
         },
         _avg: { price_per_m2: true },
       }),
-      // Pred týždňom
       prisma.property.aggregate({
-        where: { 
-          city,
+        where: {
+          ...cityMatch,
           listing_type: "PREDAJ",
           price_per_m2: { gt: 0 },
           createdAt: { lte: oneWeekAgo },

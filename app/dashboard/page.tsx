@@ -3,7 +3,7 @@
 import { CustomizableDashboard } from "@/components/dashboard/CustomizableDashboard";
 import { UrbanImpactAlert } from "@/components/dashboard/UrbanImpactAlert";
 import { ListingModeToggle } from "@/components/ListingModeToggle";
-import { Zap, TrendingUp, Activity } from "lucide-react";
+import { LiveMarketTicker } from "@/components/dashboard/LiveMarketTicker";
 import { useSession } from "next-auth/react";
 import { useListingMode } from "@/lib/hooks/useListingMode";
 
@@ -26,37 +26,10 @@ export default function DashboardPage() {
           </h1>
         </div>
         
-        {/* Mode Toggle + Live Market Ticker */}
+        {/* Mode Toggle + Live Market Ticker (real data from scraped listings) */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          {/* Listing Mode Toggle */}
           <ListingModeToggle />
-          
-          {/* Live Market Ticker - Premium */}
-          <div className="flex items-center gap-2 px-4 py-2 premium-card">
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[11px] text-zinc-500 font-medium tracking-wide">LIVE</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-amber-400" />
-                <span className="font-mono text-sm text-zinc-300">2,847</span>
-                <span className="text-[10px] text-zinc-600">ponúk</span>
-              </div>
-              <div className="w-px h-4 bg-zinc-800" />
-              <div className="flex items-center gap-1.5">
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="font-mono text-sm text-emerald-400">+2.4%</span>
-                <span className="text-[10px] text-zinc-600">týždeň</span>
-              </div>
-              <div className="w-px h-4 bg-zinc-800" />
-              <div className="flex items-center gap-1.5">
-                <Activity className="w-3.5 h-3.5 text-blue-400" />
-                <span className="font-mono text-sm text-zinc-300">€2,431</span>
-                <span className="text-[10px] text-zinc-600">/m² BA</span>
-              </div>
-            </div>
-          </div>
+          <LiveMarketTicker />
         </div>
       </div>
 
