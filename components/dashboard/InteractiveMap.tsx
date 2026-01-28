@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.heat";
 import {
   TrendingUp,
   TrendingDown,
@@ -13,7 +14,42 @@ import {
   Loader2,
   ChevronRight,
   BarChart3,
+  Layers,
+  ThermometerSun,
+  Building,
 } from "lucide-react";
+
+// Heatmap Layer Component
+function HeatmapLayer({ points }: { points: [number, number, number][] }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (!points || points.length === 0) return;
+    
+    // @ts-ignore - leaflet.heat types
+    const heat = L.heatLayer(points, {
+      radius: 25,
+      blur: 15,
+      maxZoom: 17,
+      max: 1.0,
+      gradient: {
+        0.0: '#22c55e',  // green - cheap
+        0.3: '#84cc16',  // lime
+        0.5: '#eab308',  // yellow
+        0.7: '#f97316',  // orange
+        1.0: '#ef4444'   // red - expensive
+      }
+    });
+    
+    heat.addTo(map);
+    
+    return () => {
+      map.removeLayer(heat);
+    };
+  }, [map, points]);
+  
+  return null;
+}
 import { 
   normalizeCityName, 
   getCityCoordinates, 
@@ -77,6 +113,8 @@ interface Property {
   source_url?: string | null;
 }
 
+type ViewMode = "bubbles" | "heatmap" | "markers";
+
 export default function InteractiveMap() {
   const [selectedCity, setSelectedCity] = useState<CityMapData | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([48.7, 19.5]);
@@ -85,6 +123,7 @@ export default function InteractiveMap() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [dbConnected, setDbConnected] = useState<boolean | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("bubbles");
 
   // Initialize city stats from TRACKED_CITIES
   const [cityStats, setCityStats] = useState<CityMapData[]>(
@@ -232,6 +271,30 @@ export default function InteractiveMap() {
       return distance < 0.15; // ~15km radius
     });
   }, [selectedCity, properties]);
+
+  // Heatmap points - normalized price per m2
+  const heatmapPoints = useMemo(() => {
+    if (properties.length === 0) return [];
+    
+    // Find min/max price per m2 for normalization
+    const pricesPerM2 = properties
+      .filter(p => p.area_m2 > 0)
+      .map(p => p.price / p.area_m2);
+    
+    if (pricesPerM2.length === 0) return [];
+    
+    const minPrice = Math.min(...pricesPerM2);
+    const maxPrice = Math.max(...pricesPerM2);
+    const range = maxPrice - minPrice || 1;
+    
+    return properties
+      .filter(p => p.latitude && p.longitude && p.area_m2 > 0)
+      .map(p => {
+        const pricePerM2 = p.price / p.area_m2;
+        const intensity = (pricePerM2 - minPrice) / range; // 0-1
+        return [p.latitude, p.longitude, intensity] as [number, number, number];
+      });
+  }, [properties]);
 
   return (
     <div className="h-full w-full flex flex-col lg:flex-row bg-zinc-950">
@@ -394,25 +457,61 @@ export default function InteractiveMap() {
           )}
         </div>
 
+        {/* View Mode Toggle */}
+        <div className="p-4 border-t border-zinc-800">
+          <div className="text-xs text-zinc-500 mb-2">Zobrazenie</div>
+          <div className="grid grid-cols-3 gap-1 bg-zinc-800/50 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode("bubbles")}
+              className={`flex flex-col items-center gap-1 p-2 rounded-md transition-colors ${
+                viewMode === "bubbles" ? "bg-zinc-700 text-emerald-400" : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              <Layers className="w-4 h-4" />
+              <span className="text-[10px]">Bubliny</span>
+            </button>
+            <button
+              onClick={() => setViewMode("heatmap")}
+              className={`flex flex-col items-center gap-1 p-2 rounded-md transition-colors ${
+                viewMode === "heatmap" ? "bg-zinc-700 text-emerald-400" : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              <ThermometerSun className="w-4 h-4" />
+              <span className="text-[10px]">Heatmapa</span>
+            </button>
+            <button
+              onClick={() => setViewMode("markers")}
+              className={`flex flex-col items-center gap-1 p-2 rounded-md transition-colors ${
+                viewMode === "markers" ? "bg-zinc-700 text-emerald-400" : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              <Building className="w-4 h-4" />
+              <span className="text-[10px]">Body</span>
+            </button>
+          </div>
+        </div>
+
         {/* Legend */}
         <div className="p-4 border-t border-zinc-800">
-          <div className="text-xs text-zinc-500 mb-2">Cena za m²</div>
+          <div className="text-xs text-zinc-500 mb-2">
+            {viewMode === "heatmap" ? "Intenzita = Cena/m²" : "Cena za m²"}
+          </div>
           <div className="flex items-center gap-2 text-xs flex-wrap">
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded-full bg-green-500" />
-              <span className="text-zinc-400">&lt;€1800</span>
+              <span className="text-zinc-400">{viewMode === "heatmap" ? "Lacné" : "<€1800"}</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded-full bg-yellow-500" />
-              <span className="text-zinc-400">€1800-2200</span>
+              <span className="text-zinc-400">{viewMode === "heatmap" ? "Stredné" : "€1800-2200"}</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded-full bg-orange-500" />
-              <span className="text-zinc-400">€2200-3000</span>
+              <span className="text-zinc-400">{viewMode === "heatmap" ? "Drahšie" : "€2200-3000"}</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded-full bg-red-500" />
-              <span className="text-zinc-400">&gt;€3000</span>
+              <span className="text-zinc-400">{viewMode === "heatmap" ? "Drahé" : ">€3000"}</span>
             </div>
           </div>
         </div>
@@ -434,8 +533,13 @@ export default function InteractiveMap() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           />
 
-          {/* City bubbles when not zoomed */}
-          {!selectedCity && citiesWithProperties.map((city) => (
+          {/* Heatmap Layer */}
+          {viewMode === "heatmap" && heatmapPoints.length > 0 && (
+            <HeatmapLayer points={heatmapPoints} />
+          )}
+
+          {/* City bubbles when not zoomed - only in bubbles mode */}
+          {viewMode === "bubbles" && !selectedCity && citiesWithProperties.map((city) => (
             <CircleMarker
               key={city.name}
               center={[city.lat, city.lng]}
@@ -481,8 +585,17 @@ export default function InteractiveMap() {
             </CircleMarker>
           ))}
 
-          {/* Property markers when zoomed in */}
-          {selectedCity && cityProperties.map((property) => (
+          {/* All property markers - in markers mode or when zoomed in */}
+          {(viewMode === "markers" || selectedCity) && properties.filter(p => {
+            if (selectedCity) {
+              const distance = Math.sqrt(
+                Math.pow(p.latitude - selectedCity.lat, 2) + 
+                Math.pow(p.longitude - selectedCity.lng, 2)
+              );
+              return distance < 0.15;
+            }
+            return true;
+          }).slice(0, 500).map((property) => (
             <CircleMarker
               key={property.id}
               center={[property.latitude, property.longitude]}
