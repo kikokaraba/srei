@@ -26,10 +26,10 @@ import {
   Maximize2,
   DoorOpen,
   Zap,
-  ImageOff,
   Camera,
 } from "lucide-react";
 import { normalizeCityName, getCityInfo } from "@/lib/constants/cities";
+import { PropertyImage } from "@/components/property/PropertyImage";
 
 // Slovenské kraje
 const REGIONS = [
@@ -233,7 +233,6 @@ export function PropertyList() {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [savingId, setSavingId] = useState<string | null>(null);
   const [batchMetrics, setBatchMetrics] = useState<Record<string, BatchMetrics>>({});
-  const [failedImageIds, setFailedImageIds] = useState<Set<string>>(new Set());
   
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { preferences: _preferences, isLoading: prefsLoading } = useUserPreferences();
@@ -249,7 +248,6 @@ export function PropertyList() {
   const fetchProperties = useCallback(async () => {
     try {
       setLoading(true);
-      setFailedImageIds(new Set());
       const params = new URLSearchParams();
       params.append("page", page.toString());
       params.append("limit", ITEMS_PER_PAGE.toString());
@@ -421,12 +419,6 @@ export function PropertyList() {
       }
     }
     return null;
-  };
-
-  // URL pre <img> – cez proxy proti hotlink blokovaniu
-  const getThumbnailSrc = (url: string | null): string | null => {
-    if (!url || !url.startsWith("http")) return null;
-    return `/api/image-proxy?url=${encodeURIComponent(url)}`;
   };
 
   // Investor-focused badges
@@ -770,21 +762,13 @@ export function PropertyList() {
               >
                 {/* Photo Section */}
                 <div className="relative h-44 bg-zinc-900 overflow-hidden">
-                  {thumbnailUrl && !failedImageIds.has(property.id) ? (
-                    <img
-                      src={getThumbnailSrc(thumbnailUrl)!}
-                      alt={property.title}
-                      referrerPolicy="no-referrer"
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
-                      loading="lazy"
-                      onError={() => setFailedImageIds((s) => new Set(s).add(property.id))}
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-700">
-                      <ImageOff className="w-10 h-10 mb-2" />
-                      <span className="text-xs">Bez fotky</span>
-                    </div>
-                  )}
+                  <PropertyImage
+                    url={thumbnailUrl}
+                    alt={property.title}
+                    fill
+                    className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                    aspectRatio="auto"
+                  />
                   
                   {/* Photo Count Badge */}
                   {property.photo_count && property.photo_count > 1 && (
@@ -936,21 +920,14 @@ export function PropertyList() {
               >
                 <div className="flex">
                   {/* Thumbnail */}
-                  <div className="relative w-40 h-28 flex-shrink-0 bg-zinc-800/50">
-                    {thumbnailUrl && !failedImageIds.has(property.id) ? (
-                      <img
-                        src={getThumbnailSrc(thumbnailUrl)!}
-                        alt={property.title}
-                        referrerPolicy="no-referrer"
-                        className="absolute inset-0 w-full h-full object-cover"
-                        loading="lazy"
-                        onError={() => setFailedImageIds((s) => new Set(s).add(property.id))}
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-zinc-600">
-                        <ImageOff className="w-8 h-8" />
-                      </div>
-                    )}
+                  <div className="relative w-40 h-28 flex-shrink-0 bg-zinc-800/50 overflow-hidden">
+                    <PropertyImage
+                      url={thumbnailUrl}
+                      alt={property.title}
+                      fill
+                      className="object-cover"
+                      aspectRatio="auto"
+                    />
                     {/* Photo Count */}
                     {property.photo_count && property.photo_count > 1 && (
                       <div className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 bg-black/60 backdrop-blur rounded text-xs text-white">

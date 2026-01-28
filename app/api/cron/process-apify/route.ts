@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getApifyDatasetItems, getApifyRunStatus } from "@/lib/scraper/apify-service";
 import { prisma } from "@/lib/prisma";
 import { generateCoreFingerprint } from "@/lib/matching/fingerprint";
+import { normalizeImages } from "@/lib/scraper/normalize-images";
 
 // Geocoding pomocou Nominatim (OpenStreetMap)
 async function geocodeAddress(city: string, district?: string, street?: string): Promise<{ lat: number; lng: number } | null> {
@@ -339,8 +340,7 @@ export async function POST(request: NextRequest) {
           rooms: parseRooms(item.rooms),
         });
         
-        const images = item.images || [];
-        const thumbnailUrl = images.length > 0 ? (images[0].startsWith("//") ? `https:${images[0]}` : images[0]) : null;
+        const { urls: imageUrls, thumbnailUrl } = normalizeImages(item.images);
         const propertyData = {
           title: item.title,
           slug,
@@ -356,9 +356,9 @@ export async function POST(request: NextRequest) {
           district,
           street: street || null,
           address: (typeof loc === "string" ? loc : (loc?.full || city)),
-          photos: JSON.stringify(images),
+          photos: JSON.stringify(imageUrls),
           thumbnail_url: thumbnailUrl,
-          photo_count: images.length,
+          photo_count: imageUrls.length,
           source: portal.toUpperCase() === "NEHNUTELNOSTI" ? "NEHNUTELNOSTI" : 
                   portal.toUpperCase() === "BAZOS" ? "BAZOS" : "REALITY",
           source_url: item.url,

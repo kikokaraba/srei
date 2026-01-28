@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getApifyDatasetItems, type ApifyScrapedItem } from "@/lib/scraper/apify-service";
+import { normalizeImages } from "@/lib/scraper/normalize-images";
 
 // ============================================================================
 // HELPER FUNKCIE PRE ČISTENIE DÁT
@@ -239,8 +240,7 @@ function prepareItem(item: ApifyScrapedItem): PreparedItem | null {
   const listingType = detectTransactionType(item.url);
   const pricePerM2 = area > 0 ? Math.round(price / area) : 0;
   const slug = generateSlug(item.title || "nehnutelnost", externalId);
-  const images = item.images || [];
-  const thumbnailUrl = images.length > 0 ? (images[0].startsWith("//") ? `https:${images[0]}` : images[0]) : null;
+  const { urls: imageUrls, thumbnailUrl } = normalizeImages(item.images);
   const source = item.portal === "nehnutelnosti" ? "NEHNUTELNOSTI" as const : item.portal === "bazos" ? "BAZOS" as const : "REALITY" as const;
 
   return {
@@ -264,9 +264,9 @@ function prepareItem(item: ApifyScrapedItem): PreparedItem | null {
       district: item.location?.district || "",
       street: item.location?.street || null,
       address: item.location?.full || city,
-      photos: JSON.stringify(images),
+      photos: JSON.stringify(imageUrls),
       thumbnail_url: thumbnailUrl,
-      photo_count: images.length,
+      photo_count: imageUrls.length,
       source,
       source_url: item.url,
       external_id: externalId,

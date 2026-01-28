@@ -33,6 +33,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { YieldCard } from "@/components/YieldCard";
+import { PropertyImage } from "@/components/property/PropertyImage";
 
 interface Property {
   id: string;
@@ -55,6 +56,9 @@ interface Property {
   days_on_market: number;
   listing_type: string;
   createdAt: string;
+  photos?: string;
+  thumbnail_url?: string | null;
+  photo_count?: number;
   investmentMetrics: {
     gross_yield: number;
     net_yield: number;
@@ -340,6 +344,39 @@ export default function PropertyDetailPage() {
 
   const score = calculateInvestorScore(property);
 
+  const getThumbnailUrl = (): string | null => {
+    if (property.thumbnail_url) return property.thumbnail_url;
+    if (!property.photos) return null;
+    try {
+      const arr = JSON.parse(property.photos);
+      if (Array.isArray(arr) && arr.length > 0) {
+        const u = arr[0];
+        return typeof u === "string" ? (u.startsWith("//") ? `https:${u}` : u) : null;
+      }
+    } catch {
+      if (property.photos.startsWith("http")) return property.photos;
+      if (property.photos.startsWith("//")) return `https:${property.photos}`;
+    }
+    return null;
+  };
+
+  const getPhotoUrls = (): string[] => {
+    if (!property.photos) return [];
+    try {
+      const arr = JSON.parse(property.photos);
+      if (!Array.isArray(arr)) return [];
+      return arr
+        .filter((x): x is string => typeof x === "string")
+        .map((u) => (u.startsWith("//") ? `https:${u}` : u))
+        .filter((u) => u.startsWith("http"));
+    } catch {
+      return [];
+    }
+  };
+
+  const thumbnailUrl = getThumbnailUrl();
+  const photoUrls = getPhotoUrls();
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Header - Premium */}
@@ -389,6 +426,36 @@ export default function PropertyDetailPage() {
             </a>
           )}
         </div>
+      </div>
+
+      {/* Gallery – stav nehnuteľnosti na prvý pohľad */}
+      <div className="premium-card overflow-hidden p-0">
+        <div className="aspect-video bg-zinc-900 relative">
+          <PropertyImage
+            url={thumbnailUrl}
+            alt={property.title}
+            fill
+            className="object-cover"
+            aspectRatio="video"
+            loading="eager"
+          />
+        </div>
+        {photoUrls.length > 1 && (
+          <div className="flex gap-2 p-3 overflow-x-auto bg-zinc-900/30">
+            {photoUrls.slice(0, 8).map((url, i) => (
+              <div key={i} className="relative flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden bg-zinc-800">
+                <PropertyImage
+                  url={url}
+                  alt={`${property.title} – fotka ${i + 1}`}
+                  fill
+                  className="object-cover"
+                  aspectRatio="auto"
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Main Grid */}
