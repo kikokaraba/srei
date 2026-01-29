@@ -22,6 +22,7 @@
     "db:geocode-old": "tsx scripts/geocode-old-properties.ts",
     "db:fix-merged-properties": "tsx scripts/fix-merged-properties.ts",
     "db:fix-missing-photos": "tsx scripts/fix-missing-photos.ts",
+    "db:audit-shady-prices": "tsx scripts/audit-shady-prices.ts",
     "db:railway-fix": "prisma db execute --file prisma/railway-fix-property-columns.sql",
     "cron:start": "tsx scripts/start-cron.ts",
     "test": "vitest run",

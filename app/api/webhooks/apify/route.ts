@@ -25,34 +25,32 @@ import { runHunterAlertsForProperty } from "@/lib/telegram/hunter";
 // HELPER FUNKCIE PRE ČISTENIE DÁT
 // ============================================================================
 
+const NEGOTIABLE_MARKERS = [
+  "dohodou", "dohoda", "info v rk", "na vyžiadanie", "vyžiadanie",
+  "v rk", "v r.k.", "cena v rk", "cena v r.k.",
+];
+
+function isPriceNegotiable(priceRaw: string | undefined): boolean {
+  if (!priceRaw || typeof priceRaw !== "string") return false;
+  const lower = priceRaw.toLowerCase().trim();
+  return NEGOTIABLE_MARKERS.some((m) => lower.includes(m));
+}
+
 /**
- * Parsuje cenu z raw stringu
+ * Parsuje cenu z raw stringu. Prísna validácia – nikdy nehádať.
  * Príklady: "150 000 €", "150000", "Cena dohodou"
  */
 function parsePrice(priceRaw: string | undefined): number {
   if (!priceRaw) return 0;
-  
-  const lower = priceRaw.toLowerCase();
-  
-  // Cena dohodou
-  if (
-    lower.includes("dohodou") ||
-    lower.includes("dohoda") ||
-    lower.includes("info v rk") ||
-    lower.includes("na vyžiadanie")
-  ) {
-    return 0; // Špeciálna hodnota
-  }
-  
-  // Vyčisti a parsuj
+  const lower = priceRaw.toLowerCase().trim();
+
+  // Cena dohodou / v RK – NIKDY nepoužívať číslo z textu (ani z meta/odhadu)
+  if (isPriceNegotiable(priceRaw)) return 0;
+
   const cleaned = priceRaw.replace(/[^0-9]/g, "");
   const price = parseInt(cleaned, 10);
-  
-  // Validácia
-  if (price < 1000 || price > 50000000) {
-    return 0;
-  }
-  
+  if (Number.isNaN(price)) return 0;
+  if (price < 1000 || price > 50000000) return 0;
   return price;
 }
 
@@ -273,16 +271,17 @@ interface PreparedItem {
     seller_name?: string | null;
     seller_phone?: string | null;
     top3_facts?: string | null;
+    is_negotiable: boolean;
   };
   addPriceHistory: boolean;
 }
 
 function prepareItem(item: ApifyScrapedItem): { prepared: PreparedItem; rawAddressContext: string | null } | null {
+  const negotiable = isPriceNegotiable(item.price_raw);
   const price = parsePrice(item.price_raw);
   const area = parseArea(item.area_m2);
   const city = item.location?.city || "Slovensko";
-  const isPriceNegotiable = !!item.price_raw?.toLowerCase().includes("dohodou");
-  const hasPrice = price > 0 || isPriceNegotiable;
+  const hasPrice = price > 0 || negotiable;
   const hasArea = area > 0;
   const hasTitle = !!item.title;
   if (!hasTitle || (!hasPrice && !hasArea)) return null;
@@ -292,9 +291,8 @@ function prepareItem(item: ApifyScrapedItem): { prepared: PreparedItem; rawAddre
   const propertyType = detectPropertyType(item.url, item.title || "");
   if (propertyType !== "BYT") return null;
 
-  const pricePerM2 = area > 0 ? Math.round(price / area) : 0;
+  const pricePerM2 = area > 0 && price > 0 ? Math.round(price / area) : 0;
   const slug = generateSlug(item.title || "nehnutelnost", externalId);
-  // Apify môže vracať images, photos, imageUrls alebo mainImage – normalizeImages skúsi všetky
   const { urls: imageUrls, thumbnailUrl } = normalizeImages(item);
   const source = item.portal === "nehnutelnosti" ? "NEHNUTELNOSTI" as const : item.portal === "bazos" ? "BAZOS" as const : "REALITY" as const;
   const rooms = parseRooms(item.rooms);
@@ -334,6 +332,7 @@ function prepareItem(item: ApifyScrapedItem): { prepared: PreparedItem; rawAddre
         priority_score,
         status: "ACTIVE",
         last_seen_at: new Date(),
+        is_negotiable: negotiable || price === 0,
       },
     },
     rawAddressContext,
@@ -542,6 +541,7 @@ export async function POST(request: NextRequest) {
         const updateData: Record<string, unknown> = {
           price: p.data.price,
           price_per_m2: p.data.price_per_m2,
+          is_negotiable: p.data.is_negotiable,
           photos: p.data.photos,
           thumbnail_url: p.data.thumbnail_url,
           photo_count: p.data.photo_count,

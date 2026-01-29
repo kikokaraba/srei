@@ -31,7 +31,8 @@ const SYSTEM = `Si elitný realitný investor. Vyber z popisu inzerátu iba fakt
 - phone: (telefónne číslo ak je v popise, inak null)
 - contactName: (meno makléra/majiteľa ak je v texte, inak null)
 - top3Facts: (pole max 3 reťazcov, napr. ["Tehla", "Osobné vlastníctvo", "Parkovanie v cene"])
-Ak niečo v texte nie je, vráť null. Iba platný JSON, žiadny markdown.`;
+
+PRAVIDLÁ: Ak niečo v texte nie je, vráť null. NIKDY si nevymýšľaj cenu. Nepoužívaj ceny z hypoték, odhadov ani príkladov. V investmentSummary neuvádzaj konkrétne sumy v €, pokiaľ nie sú v popise explicitne ako kúpna cena. Iba platný JSON, žiadny markdown.`;
 
 /**
  * Analyzuje popis a surovú lokalitu, vracia extrahované fakty.

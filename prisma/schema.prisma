@@ -226,6 +226,7 @@ model Property {
   price             Float
   area_m2           Float
   price_per_m2      Float
+  is_negotiable     Boolean          @default(false) // Cena dohodou / v RK – nikdy nehádať
   rooms             Int?
   floor             Int?
   condition         PropertyCondition

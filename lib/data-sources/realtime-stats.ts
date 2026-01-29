@@ -69,11 +69,12 @@ export async function getRealtimeMarketStats(): Promise<RealtimeMarketOverview> 
     }),
   ]);
 
-  // Národný priemer
+  // Národný priemer (bez cena dohodou – is_negotiable / price 0)
   const nationalStats = await prisma.property.aggregate({
     where: { 
       listing_type: "PREDAJ",
       price_per_m2: { gt: 0 },
+      is_negotiable: false,
     },
     _avg: { price_per_m2: true, price: true },
     _count: { id: true },
@@ -90,6 +91,7 @@ export async function getRealtimeMarketStats(): Promise<RealtimeMarketOverview> 
           ...cityMatch,
           listing_type: "PREDAJ",
           price_per_m2: { gt: 0 },
+          is_negotiable: false,
         },
         _avg: { price_per_m2: true, price: true },
         _count: { id: true },
@@ -99,6 +101,7 @@ export async function getRealtimeMarketStats(): Promise<RealtimeMarketOverview> 
           ...cityMatch,
           listing_type: "PREDAJ",
           price_per_m2: { gt: 0 },
+          is_negotiable: false,
           createdAt: { lte: oneMonthAgo },
         },
         _avg: { price_per_m2: true },
@@ -108,6 +111,7 @@ export async function getRealtimeMarketStats(): Promise<RealtimeMarketOverview> 
           ...cityMatch,
           listing_type: "PREDAJ",
           price_per_m2: { gt: 0 },
+          is_negotiable: false,
           createdAt: { lte: oneWeekAgo },
         },
         _avg: { price_per_m2: true },
@@ -152,6 +156,7 @@ export async function getRealtimeMarketStats(): Promise<RealtimeMarketOverview> 
     where: { 
       listing_type: "PREDAJ",
       price_per_m2: { gt: 0 },
+      is_negotiable: false,
       createdAt: { lte: oneMonthAgo },
     },
     _avg: { price_per_m2: true },

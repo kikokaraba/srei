@@ -37,3 +37,6 @@ ALTER TABLE "Property" ADD COLUMN IF NOT EXISTS "top3_facts" TEXT;
 
 -- DataFetchLog: chýbajúci stĺpec (Prisma očakáva hunterAlertsSent)
 ALTER TABLE "DataFetchLog" ADD COLUMN IF NOT EXISTS "hunterAlertsSent" INTEGER;
+
+-- Property: cena dohodou (is_negotiable)
+ALTER TABLE "Property" ADD COLUMN IF NOT EXISTS "is_negotiable" BOOLEAN NOT NULL DEFAULT false;

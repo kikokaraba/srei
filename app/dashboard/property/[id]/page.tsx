@@ -42,6 +42,7 @@ interface Property {
   price: number;
   area_m2: number;
   price_per_m2: number;
+  is_negotiable?: boolean;
   rooms: number | null;
   floor: number | null;
   condition: string;
@@ -541,9 +542,9 @@ export default function PropertyDetailPage() {
           <div className="premium-card p-5">
             <div className="flex items-start justify-between mb-5">
               <div>
-                {property.price === 0 ? (
+                {(property.price === 0 || property.is_negotiable) ? (
                   <>
-                    <p className="text-2xl font-semibold text-amber-400 tracking-tight">Cena v RK</p>
+                    <p className="text-2xl font-semibold text-amber-400 tracking-tight">Cena dohodou</p>
                     <p className="text-sm text-zinc-500 mt-1">Kontaktujte predajcu</p>
                   </>
                 ) : (
@@ -911,7 +912,7 @@ export default function PropertyDetailPage() {
                           <span className="text-xs text-blue-400">Práve prezeráte</span>
                         </div>
                         <p className="text-xl font-bold text-white mt-1">
-                          €{property.price.toLocaleString()}
+                          {(property.price === 0 || property.is_negotiable) ? "Cena dohodou" : `€${property.price.toLocaleString()}`}
                         </p>
                       </div>
                     </div>

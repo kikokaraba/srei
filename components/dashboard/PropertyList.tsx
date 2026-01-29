@@ -68,6 +68,7 @@ interface Property {
   price: number;
   area_m2: number;
   price_per_m2: number;
+  is_negotiable?: boolean;
   rooms: number | null;
   floor: number | null;
   condition: string;
@@ -922,7 +923,9 @@ export function PropertyList() {
                     </div>
                     <div className="bg-zinc-900/50 rounded-lg p-2 text-center">
                       <p className="text-zinc-500 text-[9px] uppercase tracking-wider mb-0.5">€/m²</p>
-                      <p className="text-zinc-200 font-mono text-sm font-medium">{property.price_per_m2.toLocaleString()}</p>
+                      <p className="text-zinc-200 font-mono text-sm font-medium">
+                        {(property.price === 0 || property.is_negotiable) ? "–" : property.price_per_m2.toLocaleString()}
+                      </p>
                     </div>
                   </div>
 
@@ -930,7 +933,7 @@ export function PropertyList() {
                   <div className="flex items-end justify-between pt-3 border-t border-zinc-800/50">
                     <div>
                       <p className="text-xl font-semibold text-zinc-100 font-mono tracking-tight">
-                        {property.price === 0 ? "Cena v RK" : `€${property.price.toLocaleString()}`}
+                        {(property.price === 0 || property.is_negotiable) ? "Cena dohodou" : `€${property.price.toLocaleString()}`}
                       </p>
                       {/* Price History Mini */}
                       {metrics?.priceStory?.totalChangePercent && metrics.priceStory.totalChangePercent < 0 && (
@@ -1073,9 +1076,9 @@ export function PropertyList() {
                       {/* Price */}
                       <div className="text-right min-w-[120px]">
                         <p className="text-lg font-semibold text-zinc-100 font-mono">
-                          {property.price === 0 ? "Cena v RK" : `€${property.price.toLocaleString()}`}
+                          {(property.price === 0 || property.is_negotiable) ? "Cena dohodou" : `€${property.price.toLocaleString()}`}
                         </p>
-                        {property.price > 0 && (
+                        {property.price > 0 && !property.is_negotiable && (
                           <p className="text-xs text-zinc-500 font-mono">
                             €{property.price_per_m2.toLocaleString()}/m²
                           </p>

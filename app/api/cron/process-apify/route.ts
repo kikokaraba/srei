@@ -61,13 +61,20 @@ async function geocodeAddress(city: string, district?: string, street?: string):
 // HELPER FUNKCIE
 // ============================================================================
 
+const NEGOTIABLE_MARKERS = ["dohodou", "dohoda", "info v rk", "na vyžiadanie", "vyžiadanie", "v rk", "v r.k.", "cena v rk", "cena v r.k."];
+
+function isPriceNegotiable(priceRaw: string | undefined): boolean {
+  if (!priceRaw || typeof priceRaw !== "string") return false;
+  const lower = priceRaw.toLowerCase().trim();
+  return NEGOTIABLE_MARKERS.some((m) => lower.includes(m));
+}
+
 function parsePrice(priceRaw: string | undefined): number {
   if (!priceRaw) return 0;
-  const lower = priceRaw.toLowerCase();
-  if (lower.includes("dohodou") || lower.includes("info v rk")) return 0;
+  if (isPriceNegotiable(priceRaw)) return 0;
   const cleaned = priceRaw.replace(/[^0-9]/g, "");
   const price = parseInt(cleaned, 10);
-  if (price < 1000 || price > 50000000) return 0;
+  if (Number.isNaN(price) || price < 1000 || price > 50000000) return 0;
   return price;
 }
 
@@ -285,6 +292,7 @@ export async function POST(request: NextRequest) {
     // Spracuj každý item
     for (const item of items) {
       try {
+        const negotiable = isPriceNegotiable(item.price_raw);
         const price = parsePrice(item.price_raw);
         const area = parseArea(item.area_m2);
         
@@ -347,7 +355,7 @@ export async function POST(request: NextRequest) {
         const listingType = detectListingType(item.url);
         const rooms = parseRooms(item.rooms);
         const priority_score = rooms != null ? 50 : 30;
-        const pricePerM2 = area > 0 ? Math.round(price / area) : 0;
+        const pricePerM2 = area > 0 && price > 0 ? Math.round(price / area) : 0;
         const slug = generateSlug(item.title, externalId);
         
         const fingerprint = generateCoreFingerprint({
@@ -364,6 +372,7 @@ export async function POST(request: NextRequest) {
           description: item.description || "",
           price,
           price_per_m2: pricePerM2,
+          is_negotiable: negotiable || price === 0,
           area_m2: area,
           rooms,
           floor: parseFloor(item.floor),
@@ -404,6 +413,7 @@ export async function POST(request: NextRequest) {
             data: {
               price: propertyData.price,
               price_per_m2: propertyData.price_per_m2,
+              is_negotiable: propertyData.is_negotiable,
               photos: propertyData.photos,
               thumbnail_url: propertyData.thumbnail_url,
               photo_count: propertyData.photo_count,
