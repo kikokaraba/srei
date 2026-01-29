@@ -26,7 +26,8 @@
     "cron:start": "tsx scripts/start-cron.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "go": "bash scripts/go.sh"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
