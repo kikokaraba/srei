@@ -8,7 +8,23 @@
  * Použitie: npx tsx scripts/fix-missing-photos.ts
  */
 
-import { prisma } from "@/lib/prisma";
+// Načítaj .env súbor (Next.js štýl)
+import { loadEnvConfig } from "@next/env";
+loadEnvConfig(process.cwd());
+
+import { PrismaClient } from "../generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+
+// Vytvor Prisma klienta priamo
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  console.error("❌ DATABASE_URL nie je nastavený. Skontroluj .env súbor.");
+  process.exit(1);
+}
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter, log: ["error"] });
 
 function isEmptyPhotos(photos: string | null, photoCount: number): boolean {
   if (photoCount > 0) return false;
@@ -49,6 +65,8 @@ async function main() {
 
   if (filtered.length === 0) {
     console.log("Žiadne. Všetky záznamy majú aspoň jednu fotku alebo photo_count > 0.\n");
+    await prisma.$disconnect();
+    await pool.end();
     return;
   }
 
@@ -66,6 +84,9 @@ async function main() {
   console.log("── Tip ──");
   console.log("Fotky sa doplnia pri ďalšom scrapingu (Apify webhook) alebo manuálnom re-scrape.");
   console.log("Skontroluj v Apify Dataset, či pole 'images' / 'photos' nie je prázdne – ak áno, uprav Page Function (nehnutelnosti-config.ts alebo iný portál).\n");
+
+  await prisma.$disconnect();
+  await pool.end();
 }
 
 main().catch((e) => {

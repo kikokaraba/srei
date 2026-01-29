@@ -1,7 +1,7 @@
 /**
- * Audit Shady Prices – nájde inzeráty s „cena dohodou“ uloženou ako konkrétna suma
+ * Audit Shady Prices – nájde inzeráty s „cena dohodou" uloženou ako konkrétna suma
  *
- * Pošle description do Claude: „Je v tomto texte cena kúpna 'cena dohodou' / 'v RK'?“.
+ * Pošle description do Claude: „Je v tomto texte cena kúpna 'cena dohodou' / 'v RK'?".
  * Ak AI potvrdí dohodou, ale v DB máme sumu > 0, nastavíme price=0, is_negotiable=true, price_per_m2=0.
  *
  * Použitie:
@@ -10,8 +10,24 @@
  *   LIMIT=50 npx tsx scripts/audit-shady-prices.ts    # max 50 kontrolovaných
  */
 
-import { prisma } from "@/lib/prisma";
+// Načítaj .env súbor (Next.js štýl)
+import { loadEnvConfig } from "@next/env";
+loadEnvConfig(process.cwd());
+
+import { PrismaClient } from "../generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import Anthropic from "@anthropic-ai/sdk";
+
+// Vytvor Prisma klienta priamo (aby sme mali DATABASE_URL po loadEnvConfig)
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  console.error("❌ DATABASE_URL nie je nastavený. Skontroluj .env súbor.");
+  process.exit(1);
+}
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter, log: ["error"] });
 
 const DRY_RUN = process.env.DRY_RUN === "1" || process.env.DRY_RUN === "true";
 const LIMIT = Math.min(500, Math.max(1, parseInt(process.env.LIMIT || "100", 10) || 100));
@@ -73,7 +89,7 @@ async function main() {
     await new Promise((r) => setTimeout(r, 400));
   }
 
-  console.log(`\n── Nájdených ${toFix.length} inzerátov s „dohodou“ ale uloženou cenou ──\n`);
+  console.log(`\n── Nájdených ${toFix.length} inzerátov s „dohodou" ale uloženou cenou ──\n`);
 
   for (const f of toFix.slice(0, 30)) {
     console.log(`  ${f.id} | €${f.price.toLocaleString()} | ${f.title.slice(0, 50)}…`);
@@ -100,6 +116,9 @@ async function main() {
 
   console.log("✅ Hotovo.");
   if (toFix.length > 0 && DRY_RUN) console.log("\nSpusti bez DRY_RUN=1 pre aplikovanie zmien.");
+
+  await prisma.$disconnect();
+  await pool.end();
 }
 
 main().catch((e) => {

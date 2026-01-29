@@ -9,7 +9,23 @@
  * Dry-run (len report): DRY_RUN=1 npx tsx scripts/fix-merged-properties.ts
  */
 
-import { prisma } from "@/lib/prisma";
+// Načítaj .env súbor (Next.js štýl)
+import { loadEnvConfig } from "@next/env";
+loadEnvConfig(process.cwd());
+
+import { PrismaClient } from "../generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+
+// Vytvor Prisma klienta priamo
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  console.error("❌ DATABASE_URL nie je nastavený. Skontroluj .env súbor.");
+  process.exit(1);
+}
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter, log: ["error"] });
 
 const PRICE_JUMP_PCT = 30;
 const SAME_DAY_MS = 24 * 60 * 60 * 1000;
@@ -162,6 +178,9 @@ async function main() {
       "\nTip: Záznamy s podozrivým skokom ceny skontroluj v DB (mohli byť zle zlúčení v minulosti). PriceHistory nemá source_url, takže automatické rozdelenie jedného Property na dve nie je v tomto skripte."
     );
   }
+
+  await prisma.$disconnect();
+  await pool.end();
 }
 
 main().catch((e) => {
