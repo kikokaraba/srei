@@ -8,6 +8,8 @@ import { NextRequest, NextResponse } from "next/server";
 const ALLOWED_HOSTNAMES = [
   "nehnutelnosti.sk",
   "www.nehnutelnosti.sk",
+  "img.nehnutelnosti.sk",
+  "cdn.nehnutelnosti.sk",
   "bazos.sk",
   "www.bazos.sk",
   "reality.bazos.sk",
@@ -19,8 +21,7 @@ const ALLOWED_HOSTNAMES = [
   "ireality.sk",
   "www.ireality.sk",
   "realityref.sk",
-  "cdn.nehnutelnosti.sk",
-  "images.unsplash.com", // fallback/placeholder ak niekedy použijeme
+  "images.unsplash.com",
 ];
 
 function isAllowedUrl(raw: string): boolean {

@@ -3,15 +3,23 @@
  * - vždy vráti pole (aj pri chybe), nikdy nehadzuje
  * - iba platné URL (http/https alebo //)
  * - // -> https:
+ *
+ * Ak raw nie je pole, skúsi z objektu polia: images, photos, imageUrls, mainImage (string → [string]).
  */
-
 export function normalizeImages(raw: unknown): {
   urls: string[];
   thumbnailUrl: string | null;
 } {
   let arr: unknown[] = [];
   try {
-    if (Array.isArray(raw)) arr = raw;
+    if (Array.isArray(raw)) {
+      arr = raw;
+    } else if (raw && typeof raw === "object") {
+      const o = raw as Record<string, unknown>;
+      const from =
+        o.images ?? o.photos ?? o.imageUrls ?? o.image ?? (o.mainImage != null ? [o.mainImage] : null);
+      arr = Array.isArray(from) ? from : typeof from === "string" ? [from] : [];
+    }
   } catch {
     /* ignore */
   }

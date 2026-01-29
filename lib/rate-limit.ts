@@ -1,21 +1,25 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-// Initialize Redis client with proper error handling
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || "",
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || "",
-});
+const hasRedis =
+  Boolean(process.env.UPSTASH_REDIS_REST_URL) && Boolean(process.env.UPSTASH_REDIS_REST_TOKEN);
 
-// Fallback rate limiter if Redis is not available
-const createFallbackLimiter = () => {
-  return {
-    limit: async () => ({ success: true, limit: 100, remaining: 100, reset: Date.now() + 3600000 }),
-  };
-};
+// Initialize Redis only when both URL and token are set (avoids Upstash warning)
+const redis = hasRedis
+  ? new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    })
+  : null;
+
+// Fallback rate limiter when Redis is not configured
+const createFallbackLimiter = () => ({
+  limit: async () => ({ success: true, limit: 100, remaining: 100, reset: Date.now() + 3600000 }),
+});
 
 // Rate limiter for API routes
 export const apiRateLimiter = (() => {
+  if (!redis) return createFallbackLimiter();
   try {
     return new Ratelimit({
       redis,
@@ -30,6 +34,7 @@ export const apiRateLimiter = (() => {
 
 // Stricter limiter for analytics endpoints
 export const analyticsRateLimiter = (() => {
+  if (!redis) return createFallbackLimiter();
   try {
     return new Ratelimit({
       redis,

@@ -294,7 +294,8 @@ function prepareItem(item: ApifyScrapedItem): { prepared: PreparedItem; rawAddre
 
   const pricePerM2 = area > 0 ? Math.round(price / area) : 0;
   const slug = generateSlug(item.title || "nehnutelnost", externalId);
-  const { urls: imageUrls, thumbnailUrl } = normalizeImages(item.images);
+  // Apify môže vracať images, photos, imageUrls alebo mainImage – normalizeImages skúsi všetky
+  const { urls: imageUrls, thumbnailUrl } = normalizeImages(item);
   const source = item.portal === "nehnutelnosti" ? "NEHNUTELNOSTI" as const : item.portal === "bazos" ? "BAZOS" as const : "REALITY" as const;
   const rooms = parseRooms(item.rooms);
   const priority_score = rooms != null ? 50 : 30;
@@ -483,6 +484,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Strict matching: duplikát = IBA zhoda source_url alebo external_id. Žiadne spájanie podľa mesta/plochy/ceny.
     const externalIds = [...new Set(deduped.map((p) => p.externalId).filter((id) => !id.startsWith("uk-")))];
     const sourceUrls = [...new Set(deduped.map((p) => p.sourceUrl))];
     const orParts: { external_id?: string; source_url?: string }[] = [];
@@ -506,7 +508,8 @@ export async function POST(request: NextRequest) {
     const toCreate: PreparedItem[] = [];
     const toUpdate: { prepared: PreparedItem; existingId: string; existingPrice: number }[] = [];
     for (const p of deduped) {
-      const ex = byExt.get(p.externalId) ?? byUrl.get(p.sourceUrl);
+      // Prefer source_url (kanonická URL), potom external_id. Nikdy nespájať podľa parametrov.
+      const ex = byUrl.get(p.sourceUrl) ?? byExt.get(p.externalId);
       if (ex) toUpdate.push({ prepared: p, existingId: ex.id, existingPrice: ex.price });
       else toCreate.push(p);
     }
@@ -567,8 +570,8 @@ export async function POST(request: NextRequest) {
         });
         updated++;
         updatedIds.push(existingId);
-        const priceChanged = existingPrice !== p.price && p.price > 0;
-        if (priceChanged && p.addPriceHistory) {
+        // Pri zhode podľa URL vždy aktualizujeme cenu a pridáme záznam do PriceHistory (audit + staleness).
+        if (p.addPriceHistory) {
           await prisma.priceHistory.create({
             data: { propertyId: existingId, price: p.price, price_per_m2: p.pricePerM2 },
           });
@@ -619,6 +622,8 @@ export async function POST(request: NextRequest) {
       duration_ms,
     };
     console.log("✅ [Webhook] Batch complete:", stats);
+    if (createdIds.length > 0) console.log("[Webhook] Created IDs:", createdIds);
+    if (updatedIds.length > 0) console.log("[Webhook] Updated by URL/external_id:", updatedIds);
 
     return NextResponse.json({ success: true, portal: payload.portal, stats });
   } catch (error) {

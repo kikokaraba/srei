@@ -357,7 +357,7 @@ export async function POST(request: NextRequest) {
           rooms,
         });
         
-        const { urls: imageUrls, thumbnailUrl } = normalizeImages(item.images);
+        const { urls: imageUrls, thumbnailUrl } = normalizeImages(item);
         const propertyData = {
           title: item.title,
           slug,
