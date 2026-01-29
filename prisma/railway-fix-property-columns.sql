@@ -34,3 +34,6 @@ ALTER TABLE "Property" ADD COLUMN IF NOT EXISTS "redFlags" TEXT;
 ALTER TABLE "Property" ADD COLUMN IF NOT EXISTS "aiAddress" TEXT;
 ALTER TABLE "Property" ADD COLUMN IF NOT EXISTS "investmentSummary" TEXT;
 ALTER TABLE "Property" ADD COLUMN IF NOT EXISTS "top3_facts" TEXT;
+
+-- DataFetchLog: chýbajúci stĺpec (Prisma očakáva hunterAlertsSent)
+ALTER TABLE "DataFetchLog" ADD COLUMN IF NOT EXISTS "hunterAlertsSent" INTEGER;
