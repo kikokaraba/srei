@@ -25,7 +25,10 @@ if (!connectionString) {
   console.error("❌ DATABASE_URL nie je nastavený. Skontroluj .env súbor.");
   process.exit(1);
 }
-const pool = new Pool({ connectionString });
+const pool = new Pool({ 
+  connectionString,
+  ssl: { rejectUnauthorized: false }  // Railway self-signed cert
+});
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter, log: ["error"] });
 

@@ -105,12 +105,38 @@ function parseFloor(floorRaw: string | undefined): number | null {
   return parseInt(match[1], 10);
 }
 
+/**
+ * Extrahuje externalId z URL
+ * 
+ * Nehnutelnosti.sk má rôzne URL formáty:
+ * - /detail/JuNCe35i6FJ/slug → ID je JuNCe35i6FJ
+ * - /detail/developersky-projekt/JuNCe35i6FJ/slug → ID je JuNCe35i6FJ (nie "developersky-projekt"!)
+ */
 function extractExternalId(url: string): string {
-  const nehnutMatch = url.match(/\/detail\/([^\/]+)/);
-  if (nehnutMatch) return `nh-${nehnutMatch[1]}`;
+  // Bazos - jednoduchý formát
   const bazosMatch = url.match(/\/inzerat\/(\d+)/);
   if (bazosMatch) return `bz-${bazosMatch[1]}`;
-  return `uk-${Date.now()}`;
+  
+  // Nehnutelnosti - hľadaj ID vo formáte Ju* (11 znakov, začína Ju)
+  const nehnutIdMatch = url.match(/\/(Ju[A-Za-z0-9_-]{8,12})\/?/);
+  if (nehnutIdMatch) return `nh-${nehnutIdMatch[1]}`;
+  
+  // Fallback: ak nenájdeme Ju*, skús prvý segment po /detail/ ktorý nie je generický
+  const pathAfterDetail = url.match(/\/detail\/([^?]+)/);
+  if (pathAfterDetail) {
+    const segments = pathAfterDetail[1].split("/").filter(Boolean);
+    const genericPatterns = /^(developersky-projekt|predaj|prenajom|byty|domy|pozemky|reality|novostavby)$/i;
+    for (const seg of segments) {
+      if (!genericPatterns.test(seg) && seg.length >= 8) {
+        return `nh-${seg}`;
+      }
+    }
+    if (segments.length > 0) {
+      return `nh-${segments[segments.length - 1]}`;
+    }
+  }
+  
+  return `uk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 function detectListingType(url: string): "PREDAJ" | "PRENAJOM" {

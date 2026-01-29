@@ -45,6 +45,7 @@ interface ScrapedProperty {
   sourceUrl: string;
   listingType: string;
   description: string;
+  thumbnailUrl: string | null;
 }
 
 export async function GET(request: Request) {
@@ -224,6 +225,30 @@ export async function GET(request: Request) {
   }
 }
 
+/**
+ * Extrahuje správne external ID z URL nehnutelnosti.sk
+ * Format ID: začína "Ju" + 8-12 alfanumerických znakov
+ */
+function extractExternalIdFromUrl(url: string): string {
+  // Hľadaj ID vo formáte Ju* (unikátne ID)
+  const nehnutIdMatch = url.match(/\/(Ju[A-Za-z0-9_-]{8,12})\/?/);
+  if (nehnutIdMatch) return `nh-${nehnutIdMatch[1]}`;
+  
+  // Fallback: skús prvý nie-generický segment po /detail/
+  const pathAfterDetail = url.match(/\/detail\/([^?]+)/);
+  if (pathAfterDetail) {
+    const segments = pathAfterDetail[1].split("/").filter(Boolean);
+    const genericPatterns = /^(developersky-projekt|predaj|prenajom|byty|domy|pozemky|reality|novostavby)$/i;
+    for (const seg of segments) {
+      if (!genericPatterns.test(seg) && seg.length >= 8) {
+        return `nh-${seg}`;
+      }
+    }
+  }
+  
+  return `uk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 async function scrapePage(url: string, listingType: string): Promise<ScrapedProperty[]> {
   const userAgent = USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
 
@@ -247,6 +272,8 @@ async function scrapePage(url: string, listingType: string): Promise<ScrapedProp
   const detailLinkPattern = /href="((?:https:\/\/www\.nehnutelnosti\.sk)?\/detail\/([^\/]+)\/([^"]+))"/g;
   const pricePattern = /data-test-id="text">(\d[\d\s]*€)/g;
   const areaPattern = /(\d+)\s*m²/g;
+  // Extract thumbnail images (src or data-src from img tags near detail links)
+  const imgPattern = /(?:src|data-src)="(https:\/\/[^"]*(?:nehnutelnosti|cloudflare|img)[^"]*\.(?:jpg|jpeg|png|webp)[^"]*)"/gi;
 
   // Extract all detail URLs
   const detailLinks: { url: string; id: string; slug: string }[] = [];
@@ -257,6 +284,17 @@ async function scrapePage(url: string, listingType: string): Promise<ScrapedProp
       id: linkMatch[2],
       slug: linkMatch[3],
     });
+  }
+
+  // Extract all thumbnails
+  const thumbnails: string[] = [];
+  let imgMatch;
+  while ((imgMatch = imgPattern.exec(html)) !== null) {
+    const imgUrl = imgMatch[1];
+    // Filter only property images (skip logos, icons, etc.)
+    if (imgUrl.includes("img.nehnutelnosti") || imgUrl.includes("cloudflare")) {
+      thumbnails.push(imgUrl);
+    }
   }
 
   // Extract all prices
@@ -280,16 +318,21 @@ async function scrapePage(url: string, listingType: string): Promise<ScrapedProp
     }
   }
 
-  // Remove duplicates from links
-  const uniqueLinks = [...new Map(detailLinks.map(l => [l.id, l])).values()];
+  // Remove duplicates from links based on extracted ID
+  const uniqueLinks = [...new Map(detailLinks.map(l => {
+    const fullUrl = l.url.startsWith("http") ? l.url : `${CONFIG.baseUrl}${l.url}`;
+    const externalId = extractExternalIdFromUrl(fullUrl);
+    return [externalId, { ...l, externalId }];
+  })).values()];
 
-  console.log(`  Found ${uniqueLinks.length} unique links, ${prices.length} prices, ${areas.length} areas`);
+  console.log(`  Found ${uniqueLinks.length} unique links, ${prices.length} prices, ${areas.length} areas, ${thumbnails.length} thumbnails`);
 
   // Match links with prices (they should be in order)
   for (let i = 0; i < uniqueLinks.length && i < prices.length; i++) {
     const link = uniqueLinks[i];
     const price = prices[i];
     const area = areas[i] || 50;
+    const thumbnailUrl = thumbnails[i] || null;
 
     // Parse title and location from slug
     // Example: 3-izbovy-prazak-68m2-kosice-stare-mesto-vojenska
@@ -330,7 +373,7 @@ async function scrapePage(url: string, listingType: string): Promise<ScrapedProp
       : `${CONFIG.baseUrl}${link.url}`;
 
     properties.push({
-      externalId: `neh-${link.id}`,
+      externalId: (link as any).externalId || extractExternalIdFromUrl(fullUrl),
       title,
       price,
       pricePerM2: area > 0 ? Math.round(price / area) : price,
@@ -341,6 +384,7 @@ async function scrapePage(url: string, listingType: string): Promise<ScrapedProp
       sourceUrl: fullUrl,
       listingType,
       description: "",
+      thumbnailUrl,
     });
   }
 
@@ -348,7 +392,7 @@ async function scrapePage(url: string, listingType: string): Promise<ScrapedProp
 }
 
 async function saveProperty(prop: ScrapedProperty): Promise<"new" | "updated" | "duplicate"> {
-  // Check if exists (select len id + price)
+  // Check if exists (select id, price, photos)
   const existing = await prisma.property.findFirst({
     where: {
       OR: [
@@ -356,22 +400,37 @@ async function saveProperty(prop: ScrapedProperty): Promise<"new" | "updated" | 
         { source_url: prop.sourceUrl },
       ],
     },
-    select: { id: true, price: true },
+    select: { id: true, price: true, photos: true, thumbnail_url: true },
   });
 
   if (existing) {
-    // Check for price change
-    if (existing.price !== prop.price) {
-      await prisma.property.update({
-        where: { id: existing.id },
-        data: {
-          price: prop.price,
-          price_per_m2: prop.pricePerM2,
-          last_seen_at: new Date(),
-          updatedAt: new Date(),
-        },
-      });
+    // Priprav update data
+    const updateData: Record<string, unknown> = {
+      last_seen_at: new Date(),
+    };
 
+    // Update price ak sa zmenila
+    if (existing.price !== prop.price) {
+      updateData.price = prop.price;
+      updateData.price_per_m2 = prop.pricePerM2;
+      updateData.updatedAt = new Date();
+    }
+
+    // Doplň thumbnail ak chýba a máme nový
+    const hasNoPhotos = !existing.photos || existing.photos === "[]" || existing.photos === "";
+    if (hasNoPhotos && prop.thumbnailUrl) {
+      updateData.thumbnail_url = prop.thumbnailUrl;
+      updateData.photos = JSON.stringify([prop.thumbnailUrl]);
+      updateData.photo_count = 1;
+    }
+
+    await prisma.property.update({
+      where: { id: existing.id },
+      data: updateData,
+    });
+
+    // Pridaj PriceHistory ak sa cena zmenila
+    if (existing.price !== prop.price && prop.price > 0) {
       await prisma.priceHistory.create({
         data: {
           propertyId: existing.id,
@@ -379,15 +438,8 @@ async function saveProperty(prop: ScrapedProperty): Promise<"new" | "updated" | 
           price_per_m2: prop.pricePerM2,
         },
       });
-
       return "updated";
     }
-
-    // Just update last_seen
-    await prisma.property.update({
-      where: { id: existing.id },
-      data: { last_seen_at: new Date() },
-    });
 
     return "duplicate";
   }
@@ -401,6 +453,9 @@ async function saveProperty(prop: ScrapedProperty): Promise<"new" | "updated" | 
     .substring(0, 80);
 
   const uniqueSlug = `${slug}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+
+  // Priprav photos pole
+  const photos = prop.thumbnailUrl ? [prop.thumbnailUrl] : [];
 
   await prisma.property.create({
     data: {
@@ -422,6 +477,9 @@ async function saveProperty(prop: ScrapedProperty): Promise<"new" | "updated" | 
       condition: "POVODNY",
       energy_certificate: "NONE",
       source_url: prop.sourceUrl,
+      photos: JSON.stringify(photos),
+      thumbnail_url: prop.thumbnailUrl,
+      photo_count: photos.length,
       is_distressed: false,
       status: "ACTIVE",
       last_seen_at: new Date(),
