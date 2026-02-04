@@ -3,6 +3,9 @@
  * Použitie: import { CITY_LABELS, CONDITION_LABELS, ... } from "@/lib/constants/labels";
  */
 
+import { getCityInfo } from "./cities";
+import { getDistrictInfo } from "./districts";
+
 // ==========================================
 // MESTÁ
 // ==========================================
@@ -224,10 +227,41 @@ export function getCityRegion(city: string): string {
   return CITY_TO_REGION[city] || city;
 }
 
+/** Hodnoty mesta, ktoré znamenajú „neznáma lokalita“ (nie skutočný región) */
+const UNKNOWN_LOCATION_VALUES = new Set([
+  "slovensko", "neznáme", "neznámo", "unknown", "",
+]);
+
+function isUnknownLocation(val: string | null | undefined): boolean {
+  if (!val || typeof val !== "string") return true;
+  return UNKNOWN_LOCATION_VALUES.has(val.trim().toLowerCase());
+}
+
 /**
- * Získa label kraja pre mesto
+ * Získa label kraja pre mesto. Pre neznáme lokality (Slovensko, Neznáme) vráti
+ * "Lokalita neznáma" namiesto zobrazenia ako región. Ak je mesto neznáme ale
+ * máme okres, skúsi odvodiť kraj z okresu.
  */
-export function getCityRegionLabel(city: string): string {
-  const regionCode = CITY_TO_REGION[city];
-  return regionCode ? REGION_LABELS[regionCode] : city;
+export function getCityRegionLabel(city: string): string;
+export function getCityRegionLabel(city: string, district: string | null | undefined): string;
+export function getCityRegionLabel(city: string, district?: string | null): string {
+  const cityTrimmed = city?.trim() ?? "";
+
+  // 1. Ak je mesto platné, skús získať kraj z getCityInfo (SLOVAK_CITIES + okresy)
+  if (!isUnknownLocation(cityTrimmed)) {
+    const cityInfo = getCityInfo(cityTrimmed);
+    if (cityInfo?.region) return cityInfo.region;
+
+    const regionCode = CITY_TO_REGION[cityTrimmed.toUpperCase()];
+    if (regionCode && REGION_LABELS[regionCode]) return REGION_LABELS[regionCode];
+  }
+
+  // 2. Fallback: ak máme okres (napr. city=Slovensko ale district=Bratislava I), odvoď kraj
+  if (district?.trim()) {
+    const districtInfo = getDistrictInfo(district);
+    if (districtInfo?.region) return districtInfo.region;
+  }
+
+  // 3. Neznáma lokalita – Slovensko nie je región
+  return "Lokalita neznáma";
 }
