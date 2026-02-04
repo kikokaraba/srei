@@ -94,7 +94,7 @@ function sanitizeTitle(raw: string, maxLen = 150): string {
     .replace(/\$RT\s*=\s*[^;]+;?/g, " ")
     .replace(/function\s*\([^)]*\)\s*\{[^}]*\}/g, " ")
     .replace(/<[^>]+>/g, " ");
-  // Odstrániť známe footer/právne reťazce
+  // Odstrániť známe footer/menu reťazce
   const junk = [
     "United Classifieds",
     "s.r.o.",
@@ -106,6 +106,23 @@ function sanitizeTitle(raw: string, maxLen = 150): string {
     "Súhlasím",
     "©",
     "všetky práva vyhradené",
+    "Realitné kancelárie",
+    "Magazín",
+    "Užitočné info",
+    "Developerské projekty",
+    "novostavby",
+    "Ocenenie nehnuteľnosti",
+    "Hypotekárna kalkulačka",
+    "Ceny realít",
+    "Zmluvy",
+    "Pridať inzerát",
+    "Prihlásiť sa",
+    "Ako inzerovať",
+    "Podmienky inzercie",
+    "Firemná inzercia",
+    "Nastavenie súkromia",
+    "Nahlásenie nelegálneho obsahu",
+    "Pripomienky Nehnuteľnosti na Facebooku",
   ];
   for (const j of junk) {
     const re = new RegExp(j.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");

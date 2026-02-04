@@ -15,7 +15,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { TrackByUrlForm } from "./TrackByUrlForm";
-import { formatPropertyTitle } from "@/lib/display-utils";
+import { formatPropertyTitle, formatLocation } from "@/lib/display-utils";
 
 interface PriceHistoryItem {
   id: string;
@@ -194,8 +194,8 @@ export function SavedProperties({ onSelectProperty }: SavedPropertiesProps) {
                       )}
                     </div>
                     
-                    <p className="text-sm text-zinc-400 mb-3">
-                      {saved.property.district}, {saved.property.city}
+                    <p className="text-sm text-zinc-400 mb-3 truncate">
+                      {formatLocation(saved.property.district, saved.property.city, 40)}
                     </p>
                     
                     <div className="flex flex-wrap items-center gap-4 text-sm">
