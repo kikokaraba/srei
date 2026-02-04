@@ -20,6 +20,7 @@ import {
   extractPriorityFactors, 
   calculatePriorityScore 
 } from "@/lib/monitoring/priority";
+import { createPriceDropAlertsForProperty } from "@/lib/ai/ai-alerts";
 
 // Config
 const BATCH_SIZE = 50; // Properties per run
@@ -87,7 +88,8 @@ export async function GET(request: Request) {
     });
 
     // Filter to properties that actually need checking now
-    const needsCheck = propertiesToCheck.filter(p => 
+    type CheckItem = (typeof propertiesToCheck)[number];
+    const needsCheck = propertiesToCheck.filter((p: CheckItem) =>
       shouldCheckNow(p.priority_score, p.check_count_today, p.last_checked_at)
     ).slice(0, BATCH_SIZE);
 
@@ -104,7 +106,7 @@ export async function GET(request: Request) {
 
     // Perform health checks
     const healthResults = await batchHealthCheck(
-      needsCheck.map(p => ({
+      needsCheck.map((p: CheckItem) => ({
         id: p.id,
         source_url: p.source_url,
         source: p.source,
@@ -306,7 +308,8 @@ async function handleRemovedProperty(
  * Handle a price change
  */
 async function handlePriceChange(property: any, newPrice: number) {
-  console.log(`💰 Price change: ${property.id} - €${property.price} → €${newPrice}`);
+  const oldPrice = property.price;
+  console.log(`💰 Price change: ${property.id} - €${oldPrice} → €${newPrice}`);
 
   // Update property
   await prisma.property.update({
@@ -330,7 +333,12 @@ async function handlePriceChange(property: any, newPrice: number) {
     },
   });
 
-  // TODO: Send notifications to users who saved this property
+  // AI Price Drop alerts for users who saved this property
+  try {
+    await createPriceDropAlertsForProperty(property.id, oldPrice, newPrice);
+  } catch (e) {
+    console.warn("Price drop alerts failed:", e);
+  }
 }
 
 /**

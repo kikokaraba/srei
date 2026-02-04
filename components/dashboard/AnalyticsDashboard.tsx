@@ -14,7 +14,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
-import { getCityRegionLabel, CONDITION_LABELS } from "@/lib/constants";
+import { CONDITION_LABELS } from "@/lib/constants";
+import { getCityRegionLabel } from "@/lib/constants/labels";
 
 interface RegionStats {
   region: string;
