@@ -225,6 +225,28 @@ export async function GET(request: Request) {
       where.is_distressed = true;
     }
 
+    // Výnos – query params majú prednosť, inak preferencie pri usePreferences
+    const effectiveMinYield =
+      minYield != null && minYield !== ""
+        ? parseFloat(minYield)
+        : useUserPreferences && preferences
+          ? preferences.minYield ?? preferences.minGrossYield ?? null
+          : null;
+    const effectiveMaxYield =
+      maxYield != null && maxYield !== ""
+        ? parseFloat(maxYield)
+        : useUserPreferences && preferences?.maxYield != null
+          ? preferences.maxYield
+          : null;
+    const minY = effectiveMinYield != null && !Number.isNaN(effectiveMinYield) ? effectiveMinYield : null;
+    const maxY = effectiveMaxYield != null && !Number.isNaN(effectiveMaxYield) ? effectiveMaxYield : null;
+    if (minY != null || maxY != null) {
+      const yieldRange: { gte?: number; lte?: number } = {};
+      if (minY != null) yieldRange.gte = minY;
+      if (maxY != null) yieldRange.lte = maxY;
+      where.investmentMetrics = { gross_yield: yieldRange };
+    }
+
     // Urči radenie - preferuj query parametre, potom user preferences
     const actualSortBy = sortBy || preferences?.sortBy || "createdAt";
     const actualSortOrder = sortOrder || preferences?.sortOrder || "desc";
@@ -244,40 +266,20 @@ export async function GET(request: Request) {
     // Získaj celkový počet
     const totalCount = await prisma.property.count({ where });
 
-    // Načítaj nehnuteľnosti s filtrami a stránkovaním
+    // Načítaj nehnuteľnosti s filtrami a stránkovaním (investmentMetrics pre výnos v UI a filter)
     const properties = await prisma.property.findMany({
       where,
-      // TODO: investmentMetrics and priceHistory tables don't exist yet
-      // include: {
-      //   investmentMetrics: true,
-      //   priceHistory: {
-      //     orderBy: { recorded_at: "desc" },
-      //     take: 1,
-      //   },
-      // },
+      include: {
+        investmentMetrics: true,
+      },
       skip,
       take: limit,
       orderBy,
     });
 
-    // Filtruj podľa výnosu (ak je zadaný) – query params majú prednosť, inak preferencie pri usePreferences
-    // TODO: investmentMetrics table doesn't exist yet, yield filtering disabled
-    // const effectiveMinYield = minYield ?? (useUserPreferences && preferences ? (preferences.minYield != null ? String(preferences.minYield) : preferences.minGrossYield != null ? String(preferences.minGrossYield) : null) : null);
-    // const effectiveMaxYield = maxYield ?? (useUserPreferences && preferences?.maxYield != null ? String(preferences.maxYield) : null);
-    let filteredProperties = properties;
-    // if (effectiveMinYield || effectiveMaxYield) {
-    //   filteredProperties = filteredProperties.filter((p) => {
-    //     const yieldValue = p.investmentMetrics?.gross_yield;
-    //     if (!yieldValue) return !effectiveMinYield;
-    //     if (effectiveMinYield && yieldValue < parseFloat(effectiveMinYield)) return false;
-    //     if (effectiveMaxYield && yieldValue > parseFloat(effectiveMaxYield)) return false;
-    //     return true;
-    //   });
-    // }
-
     return NextResponse.json({
       success: true,
-      data: filteredProperties,
+      data: properties,
       pagination: {
         page,
         limit,
