@@ -63,7 +63,7 @@ const WIDGET_REGISTRY = {
     id: "price-history",
     title: "Vývoj cien",
     component: "PriceHistory",
-    description: "Historický vývoj cien nehnuteľností (2005-2025)",
+    description: "Referenčný trend (NBS) vs. aktuálny trh (SRIA) – porovnanie pre investorov",
   },
   "tax-assistant": {
     id: "tax-assistant",

@@ -238,12 +238,15 @@ export function PriceHistory() {
             <h3 className="text-lg font-semibold text-white">
               {REGION_FULL_NAMES[selectedRegion]}
             </h3>
+            <p className="text-xs text-zinc-500 mt-1 max-w-xs">
+              Referenčný trend (NBS) vs. aktuálny trh (SRIA). Porovnajte, či sú ceny nad alebo pod trendom.
+            </p>
           </div>
           
-          {/* Current price badge: NBS + naše dáta */}
+          {/* Current price badge: referenčný trend NBS + aktuálny trh SRIA */}
           <div className="text-right space-y-2">
             <div>
-              <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">NBS</div>
+              <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Referenčný trend (NBS)</div>
               <div className="text-xl font-semibold text-white tabular-nums">
                 {currentPrice.toLocaleString()}
                 <span className="text-lg text-zinc-400 ml-1">€/m²</span>
@@ -264,7 +267,7 @@ export function PriceHistory() {
             </div>
             {data?.ourData && (
               <div className="pt-2 border-t border-zinc-700/50">
-                <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">SRIA (naše dáta)</div>
+                <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Aktuálny trh (SRIA)</div>
                 <div className="text-lg font-semibold text-amber-400 tabular-nums">
                   {data.ourData.avgPricePerM2.toLocaleString()}
                   <span className="text-sm text-zinc-400 ml-1">€/m²</span>
@@ -487,46 +490,52 @@ export function PriceHistory() {
           </div>
         )}
 
-        {/* Period selector */}
-        <div className="flex items-center justify-center gap-2 mt-6">
-          {[5, 10, 20].map((p) => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
-                period === p
-                  ? "bg-white/10 text-white backdrop-blur-sm"
-                  : "text-zinc-400 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              {p} rokov
-            </button>
-          ))}
+        {/* Period selector – ako ďaleko dozadu zobrazovať referenčný trend */}
+        <div className="flex flex-col items-center gap-2 mt-6">
+          <span className="text-[10px] text-zinc-500 uppercase tracking-wider">Obdobie referenčného trendu</span>
+          <div className="flex items-center justify-center gap-2">
+            {[5, 10, 20].map((p) => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
+                  period === p
+                    ? "bg-white/10 text-white backdrop-blur-sm"
+                    : "text-zinc-400 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                {p} rokov
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Stats footer */}
+        {/* Stats footer – všetky údaje z referenčného trendu NBS (nie z SRIA) */}
         {data?.stats && (
-          <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-zinc-800/50">
-            <div className="text-center">
-              <div className="text-xs text-zinc-500 mb-1">5 rokov</div>
-              <div className={`text-lg font-bold ${
-                (data.stats.priceChange5Y || 0) >= 0 ? "text-emerald-400" : "text-rose-400"
-              }`}>
-                {(data.stats.priceChange5Y || 0) >= 0 ? "+" : ""}{data.stats.priceChange5Y?.toFixed(1)}%
+          <div className="mt-6 pt-6 border-t border-zinc-800/50">
+            <div className="text-[10px] text-zinc-500 uppercase tracking-wider text-center mb-3">Z referenčného trendu (NBS)</div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="text-xs text-zinc-500 mb-1">5 rokov</div>
+                <div className={`text-lg font-bold ${
+                  (data.stats.priceChange5Y || 0) >= 0 ? "text-emerald-400" : "text-rose-400"
+                }`}>
+                  {(data.stats.priceChange5Y || 0) >= 0 ? "+" : ""}{data.stats.priceChange5Y?.toFixed(1)}%
+                </div>
               </div>
-            </div>
-            <div className="text-center">
-              <div className="text-xs text-zinc-500 mb-1">Maximum</div>
-              <div className="text-lg font-bold text-white">
-                {data.stats.allTimeHigh?.toLocaleString()} €
+              <div className="text-center">
+                <div className="text-xs text-zinc-500 mb-1">Maximum</div>
+                <div className="text-lg font-bold text-white">
+                  {data.stats.allTimeHigh?.toLocaleString()} €
+                </div>
               </div>
-            </div>
-            <div className="text-center">
-              <div className="text-xs text-zinc-500 mb-1">10 rokov</div>
-              <div className={`text-lg font-bold ${
-                (data.stats.priceChange10Y || 0) >= 0 ? "text-emerald-400" : "text-rose-400"
-              }`}>
-                {(data.stats.priceChange10Y || 0) >= 0 ? "+" : ""}{data.stats.priceChange10Y?.toFixed(1)}%
+              <div className="text-center">
+                <div className="text-xs text-zinc-500 mb-1">10 rokov</div>
+                <div className={`text-lg font-bold ${
+                  (data.stats.priceChange10Y || 0) >= 0 ? "text-emerald-400" : "text-rose-400"
+                }`}>
+                  {(data.stats.priceChange10Y || 0) >= 0 ? "+" : ""}{data.stats.priceChange10Y?.toFixed(1)}%
+                </div>
               </div>
             </div>
           </div>
@@ -535,21 +544,21 @@ export function PriceHistory() {
         {/* Legend + Source */}
         <div className="mt-4 space-y-2">
           {chartData?.ourPoint && (
-            <div className="flex items-center justify-center gap-4 text-xs text-zinc-500">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-zinc-500">
               <span className="flex items-center gap-1.5">
                 <span className="inline-block w-2 h-2 rounded-full bg-amber-500" style={{ boxShadow: "0 0 0 1px #f59e0b" }} />
-                SRIA – priemer €/m² z našich inzerátov (2025)
+                SRIA – aktuálny priemer €/m² z inzerátov (len dnešný bod)
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="inline-block w-2 h-2 rounded-full bg-zinc-500" />
-                Krivka: NBS vývoj cien
+                Krivka: referenčný vývoj (NBS)
               </span>
             </div>
           )}
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-zinc-600">
-            <span>NBS: oficiálne štatistiky (Q3 2025)</span>
+            <span>NBS: referenčný trend cien</span>
             <span>•</span>
-            <span>SRIA: naša databáza inzerátov</span>
+            <span>SRIA: reálne ceny z našej databázy (aktuálny stav)</span>
           </div>
         </div>
       </div>
