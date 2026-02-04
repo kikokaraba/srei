@@ -105,30 +105,6 @@ export function OnboardingFlow() {
   });
   const [isSaving, setIsSaving] = useState(false);
 
-  // Check if user is authenticated
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      console.log("User not authenticated, redirecting to sign in...");
-      router.push("/auth/signin?callbackUrl=/onboarding");
-    } else if (status === "authenticated") {
-      console.log("User authenticated:", session?.user?.email, "User ID:", session?.user?.id);
-    }
-  }, [status, session, router]);
-
-  // Show loading while checking authentication
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <div className="text-zinc-400">Načítavam...</div>
-      </div>
-    );
-  }
-
-  // Don't render if not authenticated (will redirect)
-  if (status === "unauthenticated") {
-    return null;
-  }
-
   const handleNext = useCallback(() => {
     if (step < 5) {
       setStep(step + 1);
@@ -222,8 +198,14 @@ export function OnboardingFlow() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("Failed to skip onboarding:", response.status, errorData);
-        throw new Error(errorData.error || `HTTP ${response.status}: Failed to skip onboarding`);
+        const message =
+          (typeof errorData?.error === "string" && errorData.error) ||
+          (typeof errorData?.details === "string" && errorData.details) ||
+          `HTTP ${response.status}: Nepodarilo sa preskočiť nastavenie`;
+        if (process.env.NODE_ENV === "development") {
+          console.error("Failed to skip onboarding:", response.status, errorData);
+        }
+        throw new Error(message);
       }
 
       const result = await response.json();
@@ -243,6 +225,27 @@ export function OnboardingFlow() {
   const updateData = useCallback((updates: Partial<OnboardingData>) => {
     setData((prev) => ({ ...prev, ...updates }));
   }, []);
+
+  // Check if user is authenticated (must be after all hooks)
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/signin?callbackUrl=/onboarding");
+    }
+  }, [status, router]);
+
+  // Show loading while checking authentication
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="text-zinc-400">Načítavam...</div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated (will redirect)
+  if (status === "unauthenticated") {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 md:p-6">
