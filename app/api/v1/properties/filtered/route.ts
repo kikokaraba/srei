@@ -49,7 +49,7 @@ export async function GET(request: Request) {
       : null;
 
     // Zostav filter - prioritne z query parametrov, potom z preferencií
-    const where: Prisma.PropertyWhereInput = {}; // status column may not exist
+    const where: Prisma.PropertyWhereInput = { status: "ACTIVE" };
 
     // Vyhľadávanie v názve a adrese
     if (search) {
@@ -65,27 +65,24 @@ export async function GET(request: Request) {
 
     if (listingTypeParam) {
       const types = listingTypeParam.split(",").filter(Boolean).filter((t): t is ListingType => VALID_LISTING.includes(t as ListingType));
-      // TODO: listing_type column doesn't exist yet
-      // if (types.length > 0) {
-      //   where.listing_type = { in: types };
-      // }
+      if (types.length > 0) {
+        where.listing_type = { in: types };
+      }
     }
 
     if (sourceParam) {
       const sources = sourceParam.split(",").filter(Boolean).filter((s): s is PropertySource => VALID_SOURCES.includes(s as PropertySource));
-      // TODO: source column doesn't exist yet
-      // if (sources.length > 0) {
-      //   where.source = { in: sources };
-      // }
+      if (sources.length > 0) {
+        where.source = { in: sources };
+      }
     }
 
     // Kategória (BYT | DOM | POZEMOK | KOMERCNE) – predvolene „len byty“
     if (propertyTypeParam) {
       const t = propertyTypeParam.toUpperCase();
-      // TODO: property_type column doesn't exist yet
-      // if (["BYT", "DOM", "POZEMOK", "KOMERCNE"].includes(t)) {
-      //   where.property_type = t;
-      // }
+      if (["BYT", "DOM", "POZEMOK", "KOMERCNE"].includes(t)) {
+        where.property_type = t;
+      }
     }
 
     // Mesto - prioritne z query, potom z preferencií (regióny + okresy + mestá)
@@ -221,12 +218,12 @@ export async function GET(request: Request) {
       }
     }
 
-    // Distressed - TODO: is_distressed column doesn't exist yet
-    // if (onlyDistressed) {
-    //   where.is_distressed = true;
-    // } else if (preferences?.onlyDistressed) {
-    //   where.is_distressed = true;
-    // }
+    // Distressed
+    if (onlyDistressed) {
+      where.is_distressed = true;
+    } else if (preferences?.onlyDistressed) {
+      where.is_distressed = true;
+    }
 
     // Urči radenie - preferuj query parametre, potom user preferences
     const actualSortBy = sortBy || preferences?.sortBy || "createdAt";
