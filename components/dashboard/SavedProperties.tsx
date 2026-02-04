@@ -124,8 +124,8 @@ export function SavedProperties({ onSelectProperty }: SavedPropertiesProps) {
     }
   };
 
-  const getPriceChange = (priceHistory: PriceHistoryItem[]) => {
-    if (priceHistory.length < 2) return null;
+  const getPriceChange = (priceHistory: PriceHistoryItem[] | undefined) => {
+    if (!priceHistory || priceHistory.length < 2) return null;
     const latest = priceHistory[0].price;
     const previous = priceHistory[1].price;
     const change = latest - previous;
