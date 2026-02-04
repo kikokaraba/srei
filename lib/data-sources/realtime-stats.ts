@@ -111,35 +111,35 @@ export async function getRealtimeMarketStats(): Promise<RealtimeMarketOverview> 
         }),
       ]);
 
-    const avgPricePerM2 = currentStats._avg.price_per_m2 || 0;
-    const lastMonthAvg = lastMonthStats._avg.price_per_m2;
-    const lastWeekAvg = lastWeekStats._avg.price_per_m2;
+      const avgPricePerM2 = currentStats._avg.price_per_m2 || 0;
+      const lastMonthAvg = lastMonthStats._avg.price_per_m2;
+      const lastWeekAvg = lastWeekStats._avg.price_per_m2;
 
-    // Vypočítaj zmeny
-    const changeVsLastMonth = lastMonthAvg && avgPricePerM2
-      ? Math.round(((avgPricePerM2 - lastMonthAvg) / lastMonthAvg) * 1000) / 10
-      : null;
-    
-    const changeVsLastWeek = lastWeekAvg && avgPricePerM2
-      ? Math.round(((avgPricePerM2 - lastWeekAvg) / lastWeekAvg) * 1000) / 10
-      : null;
+      // Vypočítaj zmeny
+      const changeVsLastMonth = lastMonthAvg && avgPricePerM2
+        ? Math.round(((avgPricePerM2 - lastMonthAvg) / lastMonthAvg) * 1000) / 10
+        : null;
+      
+      const changeVsLastWeek = lastWeekAvg && avgPricePerM2
+        ? Math.round(((avgPricePerM2 - lastWeekAvg) / lastWeekAvg) * 1000) / 10
+        : null;
 
-    // Median (aproximácia - skutočný median by bol drahší na výpočet)
-    const medianEstimate = avgPricePerM2 * 0.95; // Median je typicky o 5% nižší
+      // Median (aproximácia - skutočný median by bol drahší na výpočet)
+      const medianEstimate = avgPricePerM2 * 0.95; // Median je typicky o 5% nižší
 
-    regionStats.push({
-      region: CITY_TO_REGION[city] || city,
-      city,
-      avgPricePerM2: Math.round(avgPricePerM2),
-      medianPricePerM2: Math.round(medianEstimate),
-      avgPrice: Math.round(currentStats._avg.price || 0),
-      propertyCount: currentStats._count.id,
-      changeVsLastMonth,
-      changeVsLastWeek,
-      dataFreshness: "live",
-      lastUpdated: now,
-    });
-  }
+      regionStats.push({
+        region: CITY_TO_REGION[city] || city,
+        city,
+        avgPricePerM2: Math.round(avgPricePerM2),
+        medianPricePerM2: Math.round(medianEstimate),
+        avgPrice: Math.round(currentStats._avg.price || 0),
+        propertyCount: currentStats._count.id,
+        changeVsLastMonth,
+        changeVsLastWeek,
+        dataFreshness: "live",
+        lastUpdated: now,
+      });
+    }
 
     // Zoraď podľa ceny (najdrahšie prvé)
     regionStats.sort((a, b) => b.avgPricePerM2 - a.avgPricePerM2);
