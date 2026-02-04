@@ -13,7 +13,7 @@ import {
   Link2,
   X,
 } from "lucide-react";
-import { formatPropertyTitle } from "@/lib/display-utils";
+import { formatPropertyTitle, formatLocation, formatDisplayText } from "@/lib/display-utils";
 
 interface TimelineEvent {
   type: "listed" | "price_change" | "update";
@@ -159,8 +159,8 @@ export function PropertyTimeline({ propertyId, onClose }: PropertyTimelineProps)
             <h2 className="text-base font-semibold text-zinc-100 mb-1" title={data.property.title}>
               {formatPropertyTitle(data.property.title, 80)}
             </h2>
-            <p className="text-zinc-400">
-              {data.property.district}, {data.property.city}
+            <p className="text-zinc-400 truncate">
+              {formatLocation(data.property.district, data.property.city, 40)}
             </p>
           </div>
           {onClose && (
@@ -350,8 +350,8 @@ export function PropertyTimeline({ propertyId, onClose }: PropertyTimelineProps)
                           {match.matchScore}% zhoda
                         </span>
                       </div>
-                      <p className="text-sm text-zinc-400 mb-2">
-                        {match.property.address}
+                      <p className="text-sm text-zinc-400 mb-2 truncate">
+                        {formatDisplayText(match.property.address, 60)}
                       </p>
                       <div className="flex flex-wrap gap-3 text-sm">
                         <span className="text-zinc-300">

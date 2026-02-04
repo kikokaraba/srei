@@ -12,25 +12,28 @@ const JUNK_PATTERNS = [
   /Ochrana údajov/gi,
   /Všeobecné obchodné podmienky/gi,
   /všetky práva vyhradené/gi,
-  /©\s*[\d\sA-Za-z]*/g,
-  // Menu/footer Nehnutelnosti, Bazoš
-  /\bRealitné kancelárie\b/gi,
-  /\bMagazín\b/gi,
-  /\bUžitočné info\b/gi,
-  /\bDeveloperské projekty\b/gi,
-  /\bnovostavby\b/gi,
-  /\bOcenenie nehnuteľnosti\b/gi,
-  /\bHypotekárna kalkulačka\b/gi,
-  /\bCeny realít\b/gi,
-  /\bZmluvy\b/gi,
-  /\bPridať inzerát\b/gi,
-  /\bPrihlásiť sa\b/gi,
-  /\bAko inzerovať\b/gi,
-  /\bPodmienky inzercie\b/gi,
-  /\bFiremná inzercia\b/gi,
-  /\bNastavenie súkromia\b/gi,
-  /\bNahlásenie nelegálneho obsahu\b/gi,
-  /\bPripomienky Nehnuteľnosti na Facebooku\b/gi,
+  /©\s*[\d\s\-\.A-Za-z]*(United\s*Classifieds)?\s*s\.r\.o\.?/gi,
+  /•/g,
+  // Menu/footer Nehnutelnosti, Bazoš (bez \b – text môže byť bez medzier „MagazínUžitočné“)
+  /Realitné kancelárie/gi,
+  /Magazín/gi,
+  /Užitočné info/gi,
+  /Developerské projekty/gi,
+  /novostavby/gi,
+  /Ocenenie nehnuteľnosti/gi,
+  /Hypotekárna kalkulačka/gi,
+  /Ceny realít/gi,
+  /Zmluvy/gi,
+  /Pridať inzerát/gi,
+  /Prihlásiť sa/gi,
+  /Ako inzerovať/gi,
+  /Podmienky inzercie/gi,
+  /Firemná inzercia/gi,
+  /Nastavenie súkromia/gi,
+  /Nahlásenie nelegálneho obsahu/gi,
+  /Pripomienky Nehnuteľnosti na Facebooku/gi,
+  /self\.__next_f\s*=\s*self\.__next_f\|\|\[\]/gi,
+  /self\.__next_f\.push\(\[[^\]]+\]\)/gi,
 ];
 
 function stripJunk(t: string): string {
@@ -50,6 +53,18 @@ export function formatPropertyTitle(raw: string | null | undefined, maxLength = 
   const firstLine = t.split("\n")[0]?.trim() || t;
   const out = firstLine.substring(0, maxLength).trim();
   return out || raw.substring(0, Math.min(maxLength, 80));
+}
+
+/**
+ * Vyčistí a skráti ľubovoľný text (adresa, poznámka) pre zobrazenie.
+ */
+export function formatDisplayText(
+  raw: string | null | undefined,
+  maxLen = 60
+): string {
+  if (raw == null || typeof raw !== "string") return "";
+  const t = stripJunk(raw).replace(/\s+/g, " ").trim();
+  return t.substring(0, maxLen).trim() || "";
 }
 
 /**
