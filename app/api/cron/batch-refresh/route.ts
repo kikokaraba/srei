@@ -46,11 +46,12 @@ export async function GET(request: Request) {
     // Reset daily counters if it's a new day
     await resetDailyCountersIfNeeded();
 
-    // Get properties that need checking
+    // Get properties that need checking (len byty – ostatné typy nescrapujeme)
     const propertiesToCheck = await prisma.property.findMany({
       where: {
         status: "ACTIVE",
         source_url: { not: null },
+        property_type: "BYT",
       },
       orderBy: [
         { priority_score: "desc" }, // High priority first

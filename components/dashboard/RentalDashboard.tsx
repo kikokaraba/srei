@@ -55,12 +55,8 @@ interface RentStatsData {
   byAreaRange: ByAreaRow[];
 }
 
-const PROPERTY_TYPE_OPTIONS = [
-  { value: "", label: "Všetky typy" },
-  { value: "BYT", label: "Byty" },
-  { value: "DOM", label: "Domy" },
-  { value: "KOMERCNE", label: "Komerčné" },
-];
+// Aplikácia zobrazuje len byty
+const PROPERTY_TYPE_OPTIONS = [{ value: "BYT", label: "Byty" }];
 
 const ROOMS_OPTIONS = [
   { value: "", label: "Všetky" },
@@ -95,7 +91,7 @@ export function RentalDashboard() {
     city: "",
     district: "",
     rooms: "",
-    propertyType: "",
+    propertyType: "BYT",
     areaMin: "",
     areaMax: "",
   });
@@ -135,7 +131,7 @@ export function RentalDashboard() {
       city: "",
       district: "",
       rooms: "",
-      propertyType: "",
+      propertyType: "BYT",
       areaMin: "",
       areaMax: "",
     });

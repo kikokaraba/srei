@@ -7,6 +7,8 @@
 
 import * as cheerio from "cheerio";
 import type { ListingType, PropertySource } from "@/generated/prisma/client";
+import { getCityFromPsc } from "./psc-map";
+import { extractLocationWithAI } from "@/lib/ai/location-extraction";
 
 export interface ScrapedProperty {
   externalId: string;
@@ -233,34 +235,8 @@ function parseCity(text: string): { city: string; district: string } {
     }
   }
   
-  // Hľadaj PSČ a určiť mesto
-  const pscMatch = text.match(/(\d{3})\s?(\d{2})/);
-  if (pscMatch) {
-    const psc = pscMatch[1];
-    const pscToCity: Record<string, string> = {
-      "811": "Bratislava", "821": "Bratislava", "831": "Bratislava", 
-      "841": "Bratislava", "851": "Bratislava",
-      "040": "Košice", "041": "Košice", "042": "Košice", 
-      "043": "Košice", "044": "Košice",
-      "080": "Prešov", "081": "Prešov", "082": "Prešov",
-      "010": "Žilina", "011": "Žilina", "012": "Žilina",
-      "974": "Banská Bystrica", "975": "Banská Bystrica",
-      "917": "Trnava", "918": "Trnava",
-      "949": "Nitra", "950": "Nitra", "951": "Nitra",
-      "911": "Trenčín", "912": "Trenčín",
-      "058": "Poprad", "059": "Poprad",
-      "036": "Martin",
-      "960": "Zvolen", "961": "Zvolen",
-      "971": "Prievidza", "972": "Prievidza",
-      "071": "Michalovce", "072": "Michalovce",
-      "052": "Spišská Nová Ves", "053": "Spišská Nová Ves",
-      "066": "Humenné", "067": "Humenné",
-    };
-    
-    if (pscToCity[psc]) {
-      return { city: pscToCity[psc], district: pscToCity[psc] };
-    }
-  }
+  const pscCity = getCityFromPsc(text);
+  if (pscCity) return { city: pscCity, district: pscCity };
   
   // Fallback - skús extrahovať prvé slovo s veľkým písmenom
   const words = text.split(/[\s,;]+/).filter(w => w.length > 2);
@@ -276,6 +252,31 @@ function parseCity(text: string): { city: string; district: string } {
   }
   
   return { city: "Slovensko", district: "Neznáme" };
+}
+
+/** AI dopĺňanie lokality pre inzeráty s city=Slovensko (voliteľné, len pri ANTHROPIC_API_KEY) */
+async function enrichUnknownLocationsWithAI(
+  properties: ScrapedProperty[]
+): Promise<void> {
+  const toEnrich = properties.filter((p) => p.city === "Slovensko");
+  if (toEnrich.length === 0 || !process.env.ANTHROPIC_API_KEY) return;
+
+  for (const p of toEnrich) {
+    try {
+      const aiLocation = await extractLocationWithAI({
+        title: p.title,
+        description: p.description || undefined,
+        locationText: undefined,
+        address: undefined,
+      });
+      if (aiLocation?.city) {
+        p.city = aiLocation.city;
+        p.district = aiLocation.district ?? aiLocation.city;
+      }
+    } catch {
+      /* skip per-item errors */
+    }
+  }
 }
 
 /**
@@ -443,8 +444,7 @@ export async function scrapeBazos(options: {
       });
       
       console.log(`  ✓ Found ${foundOnPage} listings on page`);
-      
-      // Ak málo výsledkov, koniec kategórie
+
       if (foundOnPage < 3) {
         console.log(`  ⏹️ Reached last page or no more listings`);
         break;
@@ -452,14 +452,15 @@ export async function scrapeBazos(options: {
     }
   }
   
+  await enrichUnknownLocationsWithAI(properties);
+
   const duration = Date.now() - startTime;
-  
   console.log(`\n📊 Bazos Scraping Complete:`);
   console.log(`  - Properties: ${properties.length}`);
   console.log(`  - Pages: ${pagesScraped}`);
   console.log(`  - Errors: ${errors.length}`);
   console.log(`  - Duration: ${(duration / 1000).toFixed(1)}s`);
-  
+
   return {
     properties,
     pagesScraped,
@@ -481,10 +482,9 @@ export async function scrapeNehnutelnosti(options: {
   const properties: ScrapedProperty[] = [];
   let pagesScraped = 0;
   
-  // Kategórie
+  // Kategórie – len byty (ostatné typy prídeme neskôr)
   const categories = [
     { path: "/predaj/byty/", name: "Byty" },
-    { path: "/predaj/domy/", name: "Domy" },
   ];
   
   console.log(`\n🚀 Starting Nehnutelnosti.sk Scraper (2026 selectors)`);
@@ -641,15 +641,16 @@ export async function scrapeNehnutelnosti(options: {
       }
     }
   }
-  
+
+  await enrichUnknownLocationsWithAI(properties);
+
   const duration = Date.now() - startTime;
-  
   console.log(`\n📊 Nehnutelnosti.sk Scraping Complete:`);
   console.log(`  - Properties: ${properties.length}`);
   console.log(`  - Pages: ${pagesScraped}`);
   console.log(`  - Errors: ${errors.length}`);
   console.log(`  - Duration: ${(duration / 1000).toFixed(1)}s`);
-  
+
   return {
     properties,
     pagesScraped,

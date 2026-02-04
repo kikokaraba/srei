@@ -39,7 +39,7 @@ interface ScrapeOptions {
 const DEFAULT_OPTIONS: ScrapeOptions = {
   usePlaywright: !!process.env.BROWSER_WS_ENDPOINT || !!process.env.BROWSER_EXECUTABLE_PATH,
   maxListings: 200,
-  categories: ["/predaj/byty/", "/predaj/domy/"],
+  categories: ["/predaj/byty/", "/prenajom/byty/"],
 };
 
 /**

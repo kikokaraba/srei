@@ -28,10 +28,10 @@ export async function GET(request: NextRequest) {
     const where: Prisma.PropertyWhereInput = {
       status: "ACTIVE",
       listing_type: "PRENAJOM",
+      property_type: "BYT", // Aplikácia zobrazuje len byty
     };
     if (city) where.city = { equals: city, mode: "insensitive" };
     if (district) where.district = { contains: district, mode: "insensitive" };
-    if (propertyType) where.property_type = propertyType;
     if (roomsParam !== null && roomsParam !== undefined && roomsParam !== "") {
       const r = parseInt(roomsParam, 10);
       if (!Number.isNaN(r) && r >= 0) where.rooms = r;

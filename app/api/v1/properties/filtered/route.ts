@@ -34,7 +34,6 @@ export async function GET(request: Request) {
     const minRooms = searchParams.get("minRooms");
     const maxRooms = searchParams.get("maxRooms");
     const conditionParam = searchParams.get("condition");
-    const propertyTypeParam = searchParams.get("propertyType"); // BYT | DOM | POZEMOK | KOMERCNE
     const minYield = searchParams.get("minYield");
     const maxYield = searchParams.get("maxYield");
     const search = searchParams.get("search");
@@ -77,13 +76,8 @@ export async function GET(request: Request) {
       }
     }
 
-    // Kategória (BYT | DOM | POZEMOK | KOMERCNE) – predvolene „len byty“
-    if (propertyTypeParam) {
-      const t = propertyTypeParam.toUpperCase();
-      if (["BYT", "DOM", "POZEMOK", "KOMERCNE"].includes(t)) {
-        where.property_type = t;
-      }
-    }
+    // Kategória: aplikácia zobrazuje len byty (ostatné typy prídeme neskôr)
+    where.property_type = "BYT";
 
     // Mesto - prioritne z query, potom z preferencií (regióny + okresy + mestá)
     // Case-insensitive matching - databáza má "Bratislava" ale frontend môže poslať "BRATISLAVA"
@@ -244,12 +238,50 @@ export async function GET(request: Request) {
       const yieldRange: { gte?: number; lte?: number } = {};
       if (minY != null) yieldRange.gte = minY;
       if (maxY != null) yieldRange.lte = maxY;
-      where.investmentMetrics = { gross_yield: yieldRange };
+      // Zobraz aj nehnuteľnosti bez vypočítaného výnosu (bez investmentMetrics), aby „Môj profil“ nevylúčil väčšinu ponúk
+      if (!where.AND) where.AND = [];
+      (where.AND as Prisma.PropertyWhereInput[]).push({
+        OR: [
+          { investmentMetrics: { is: null } },
+          { investmentMetrics: { gross_yield: yieldRange } },
+        ],
+      });
     }
 
-    // Urči radenie - preferuj query parametre, potom user preferences
-    const actualSortBy = sortBy || preferences?.sortBy || "createdAt";
-    const actualSortOrder = sortOrder || preferences?.sortOrder || "desc";
+    // Urči radenie – query > user preferences > odvodené z typu investície (investmentTypes)
+    let actualSortBy = sortBy || preferences?.sortBy || undefined;
+    let actualSortOrder = sortOrder || preferences?.sortOrder || "desc";
+
+    // Ak je radenie predvolené (createdAt alebo neposlané) a máme typ investície, predvolíme radenie podľa stratégie
+    const isDefaultSort = !actualSortBy || actualSortBy === "createdAt";
+    if (isDefaultSort && useUserPreferences && preferences?.investmentTypes) {
+      let investmentTypes: string[] = [];
+      try {
+        const raw = preferences.investmentTypes;
+        investmentTypes = typeof raw === "string" ? (JSON.parse(raw) as string[]) : Array.isArray(raw) ? raw : [];
+      } catch {
+        /* ignore */
+      }
+      if (investmentTypes.length > 0) {
+        // high-yield / rental → najprv podľa výnosu (najvyšší hore)
+        if (investmentTypes.some((t: string) => t === "high-yield" || t === "rental")) {
+          actualSortBy = "yield";
+          actualSortOrder = "desc";
+        }
+        // flip → čerstvé ponuky a tie s potenciálom na zmenu ceny (dni v ponuke)
+        else if (investmentTypes.some((t: string) => t === "flip")) {
+          actualSortBy = "days_on_market";
+          actualSortOrder = "asc";
+        }
+        // stable-growth / future-potential → nové ponuky hore
+        else if (investmentTypes.some((t: string) => t === "stable-growth" || t === "future-potential")) {
+          actualSortBy = "createdAt";
+          actualSortOrder = "desc";
+        }
+      }
+    }
+    if (!actualSortBy) actualSortBy = "createdAt";
+    if (!actualSortOrder) actualSortOrder = "desc";
 
     // Zostav orderBy objekt
     let orderBy: Prisma.PropertyOrderByWithRelationInput = { createdAt: "desc" };
@@ -261,10 +293,34 @@ export async function GET(request: Request) {
       orderBy = { createdAt: actualSortOrder === "desc" ? "desc" : "asc" };
     } else if (actualSortBy === "price_per_m2") {
       orderBy = { price_per_m2: actualSortOrder === "desc" ? "desc" : "asc" };
+    } else if (actualSortBy === "yield") {
+      orderBy = { investmentMetrics: { gross_yield: actualSortOrder === "desc" ? "desc" : "asc" } };
+    } else if (actualSortBy === "days_on_market") {
+      orderBy = { days_on_market: actualSortOrder === "desc" ? "desc" : "asc" };
     }
 
     // Získaj celkový počet
     const totalCount = await prisma.property.count({ where });
+
+    // Pri „Môj profil“ vráť zhrnutie aplikovaných kritérií (pre empty state vo frontende)
+    let appliedProfileCriteria: Record<string, unknown> | null = null;
+    if (useUserPreferences && preferences) {
+      appliedProfileCriteria = {};
+      try {
+        if (preferences.trackedRegions && JSON.parse(preferences.trackedRegions as string)?.length > 0) appliedProfileCriteria.regions = true;
+        if (preferences.trackedDistricts && JSON.parse(preferences.trackedDistricts as string)?.length > 0) appliedProfileCriteria.districts = true;
+        if (preferences.trackedCities && JSON.parse(preferences.trackedCities as string)?.length > 0) appliedProfileCriteria.cities = true;
+      } catch { /* ignore */ }
+      if (preferences.minPrice != null) appliedProfileCriteria.minPrice = preferences.minPrice;
+      if (preferences.maxPrice != null) appliedProfileCriteria.maxPrice = preferences.maxPrice;
+      if (preferences.minYield != null || preferences.minGrossYield != null) appliedProfileCriteria.minYield = preferences.minYield ?? preferences.minGrossYield;
+      if (preferences.maxYield != null || preferences.maxGrossYield != null) appliedProfileCriteria.maxYield = preferences.maxYield ?? preferences.maxGrossYield;
+      if (preferences.minArea != null) appliedProfileCriteria.minArea = preferences.minArea;
+      if (preferences.maxArea != null) appliedProfileCriteria.maxArea = preferences.maxArea;
+      if (preferences.minRooms != null) appliedProfileCriteria.minRooms = preferences.minRooms;
+      if (preferences.maxRooms != null) appliedProfileCriteria.maxRooms = preferences.maxRooms;
+      if (preferences.onlyDistressed) appliedProfileCriteria.onlyDistressed = true;
+    }
 
     // Načítaj nehnuteľnosti s filtrami a stránkovaním (investmentMetrics pre výnos v UI a filter)
     const properties = await prisma.property.findMany({
@@ -277,7 +333,7 @@ export async function GET(request: Request) {
       orderBy,
     });
 
-    return NextResponse.json({
+    const json: { success: true; data: typeof properties; pagination: object; appliedProfileCriteria?: Record<string, unknown> } = {
       success: true,
       data: properties,
       pagination: {
@@ -287,7 +343,12 @@ export async function GET(request: Request) {
         totalPages: Math.ceil(totalCount / limit),
         hasMore: page * limit < totalCount,
       },
-    }, {
+    };
+    if (appliedProfileCriteria && Object.keys(appliedProfileCriteria).length > 0) {
+      json.appliedProfileCriteria = appliedProfileCriteria;
+    }
+
+    return NextResponse.json(json, {
       headers: {
         'Cache-Control': 'private, s-maxage=60, stale-while-revalidate=120',
       },

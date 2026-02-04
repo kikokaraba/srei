@@ -196,13 +196,8 @@ interface Filters {
   sortOrder: string;
 }
 
-const PROPERTY_TYPES = [
-  { value: "", label: "Všetky" },
-  { value: "BYT", label: "Byty" },
-  { value: "DOM", label: "Domy" },
-  { value: "POZEMOK", label: "Pozemky" },
-  { value: "KOMERCNE", label: "Komerčné" },
-];
+// Aplikácia zobrazuje len byty (ostatné typy prídeme neskôr)
+const PROPERTY_TYPES = [{ value: "BYT", label: "Byty" }];
 
 // Hlavné mestá pre filter
 const CITIES = [
@@ -218,7 +213,7 @@ const defaultFilters: Filters = {
   region: "",
   city: "",
   listingType: "PREDAJ",
-  propertyType: "",
+  propertyType: "BYT",
   source: "",
   minPrice: "",
   maxPrice: "",
@@ -466,7 +461,7 @@ export function PropertyList() {
       region: "",
       city: "",
       listingType: "PREDAJ",
-      propertyType: "",
+      propertyType: "BYT",
       source: "",
       minPrice: "",
       maxPrice: "",
@@ -922,16 +917,44 @@ export function PropertyList() {
             <Building2 className="w-8 h-8 text-zinc-700" />
           </div>
           <h3 className="text-lg font-medium text-zinc-200 mb-2">Žiadne nehnuteľnosti</h3>
-          <p className="text-zinc-500 text-sm max-w-md mx-auto">
-            Skúste upraviť vyhľadávacie kritériá alebo odstrániť niektoré filtre
-          </p>
-          {activeFiltersCount > 0 && (
-            <button
-              onClick={clearFilters}
-              className="mt-5 px-5 py-2.5 bg-zinc-800 text-zinc-300 rounded-xl hover:bg-zinc-700 transition-colors text-sm"
-            >
-              Vymazať filtre
-            </button>
+          {myProfileOn ? (
+            <>
+              <p className="text-zinc-500 text-sm max-w-md mx-auto mb-3">
+                Žiadna nehnuteľnosť nespĺňa kritériá vášho investičného profilu. Zobrazujú sa len ponuky podľa Nastavení (lokalita, cena, výnos, plocha, izby, stav, „len v núdzi“). Filter výnosu vylučuje nehnuteľnosti bez vypočítaného výnosu.
+              </p>
+              <p className="text-zinc-500 text-sm max-w-md mx-auto mb-5">
+                Skúste v <strong className="text-zinc-400">Nastaveniach → Investičný profil</strong> rozšíriť lokalitu, zvýšiť max. cenu alebo znížiť min. výnos, prípadne vypnúť „Môj profil“ tu v paneli.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <a
+                  href="/dashboard/settings"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500/15 border border-amber-500/40 text-amber-400 rounded-xl hover:bg-amber-500/25 transition-colors text-sm font-medium"
+                >
+                  <User className="w-4 h-4" />
+                  Nastavenia profilu
+                </a>
+                <button
+                  onClick={toggleMyProfile}
+                  className="px-5 py-2.5 bg-zinc-800 text-zinc-300 rounded-xl hover:bg-zinc-700 transition-colors text-sm"
+                >
+                  Vypnúť Môj profil
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-zinc-500 text-sm max-w-md mx-auto">
+                Skúste upraviť vyhľadávacie kritériá alebo odstrániť niektoré filtre
+              </p>
+              {activeFiltersCount > 0 && (
+                <button
+                  onClick={clearFilters}
+                  className="mt-5 px-5 py-2.5 bg-zinc-800 text-zinc-300 rounded-xl hover:bg-zinc-700 transition-colors text-sm"
+                >
+                  Vymazať filtre
+                </button>
+              )}
+            </>
           )}
         </div>
       ) : viewMode === "grid" ? (

@@ -76,9 +76,8 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
       link: "a[href*='/detail/']",
     },
     categories: [
-      // Len predaj - najdôležitejšie kategórie
       { path: "/byty/predaj/", listingType: "PREDAJ", name: "Byty predaj" },
-      { path: "/domy/predaj/", listingType: "PREDAJ", name: "Domy predaj" },
+      { path: "/byty/prenajom/", listingType: "PRENAJOM", name: "Byty prenájom" },
     ],
   },
   REALITY: {
@@ -95,9 +94,7 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     },
     categories: [
       { path: "/byty/predaj/", listingType: "PREDAJ", name: "Byty predaj" },
-      { path: "/domy/predaj/", listingType: "PREDAJ", name: "Domy predaj" },
       { path: "/byty/prenajom/", listingType: "PRENAJOM", name: "Byty prenájom" },
-      { path: "/domy/prenajom/", listingType: "PRENAJOM", name: "Domy prenájom" },
     ],
   },
   TOPREALITY: {
@@ -114,9 +111,7 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     },
     categories: [
       { path: "/vyhladavanie/predaj/byty/", listingType: "PREDAJ", name: "Byty predaj" },
-      { path: "/vyhladavanie/predaj/domy/", listingType: "PREDAJ", name: "Domy predaj" },
       { path: "/vyhladavanie/prenajom/byty/", listingType: "PRENAJOM", name: "Byty prenájom" },
-      { path: "/vyhladavanie/prenajom/domy/", listingType: "PRENAJOM", name: "Domy prenájom" },
     ],
   },
   BAZOS: {
@@ -133,9 +128,7 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
     },
     categories: [
       { path: "/predam/byt/", listingType: "PREDAJ", name: "Byty predaj" },
-      { path: "/predam/dom/", listingType: "PREDAJ", name: "Domy predaj" },
       { path: "/prenajmu/byt/", listingType: "PRENAJOM", name: "Byty prenájom" },
-      { path: "/prenajmu/dom/", listingType: "PRENAJOM", name: "Domy prenájom" },
     ],
   },
 };

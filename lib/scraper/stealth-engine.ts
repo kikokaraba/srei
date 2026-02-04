@@ -1299,28 +1299,22 @@ interface ScrapingCategory {
   source: "BAZOS" | "NEHNUTELNOSTI" | "REALITY";
 }
 
-// Bazoš kategórie - aktualizované URL 2025/2026
+// Bazoš kategórie – len byty (ostatné typy prídeme neskôr)
 const BAZOS_CATEGORIES: ScrapingCategory[] = [
   { name: "Byty predaj", baseUrl: "https://reality.bazos.sk", path: "/predam/byt/", listingType: "PREDAJ", source: "BAZOS" },
-  { name: "Domy predaj", baseUrl: "https://reality.bazos.sk", path: "/predam/dom/", listingType: "PREDAJ", source: "BAZOS" },
   { name: "Byty prenájom", baseUrl: "https://reality.bazos.sk", path: "/prenajmu/byt/", listingType: "PRENAJOM", source: "BAZOS" },
-  { name: "Domy prenájom", baseUrl: "https://reality.bazos.sk", path: "/prenajmu/dom/", listingType: "PRENAJOM", source: "BAZOS" },
 ];
 
-// Nehnutelnosti.sk kategórie
+// Nehnutelnosti.sk kategórie – len byty
 const NEHNUTELNOSTI_CATEGORIES: ScrapingCategory[] = [
   { name: "Byty predaj", baseUrl: "https://www.nehnutelnosti.sk", path: "/byty/predaj/", listingType: "PREDAJ", source: "NEHNUTELNOSTI" },
-  { name: "Domy predaj", baseUrl: "https://www.nehnutelnosti.sk", path: "/domy/predaj/", listingType: "PREDAJ", source: "NEHNUTELNOSTI" },
   { name: "Byty prenájom", baseUrl: "https://www.nehnutelnosti.sk", path: "/byty/prenajom/", listingType: "PRENAJOM", source: "NEHNUTELNOSTI" },
-  { name: "Domy prenájom", baseUrl: "https://www.nehnutelnosti.sk", path: "/domy/prenajom/", listingType: "PRENAJOM", source: "NEHNUTELNOSTI" },
 ];
 
-// Reality.sk kategórie
+// Reality.sk kategórie – len byty
 const REALITY_CATEGORIES: ScrapingCategory[] = [
   { name: "Byty predaj", baseUrl: "https://www.reality.sk", path: "/byty/predaj/", listingType: "PREDAJ", source: "REALITY" },
-  { name: "Domy predaj", baseUrl: "https://www.reality.sk", path: "/domy/predaj/", listingType: "PREDAJ", source: "REALITY" },
   { name: "Byty prenájom", baseUrl: "https://www.reality.sk", path: "/byty/prenajom/", listingType: "PRENAJOM", source: "REALITY" },
-  { name: "Domy prenájom", baseUrl: "https://www.reality.sk", path: "/domy/prenajom/", listingType: "PRENAJOM", source: "REALITY" },
 ];
 
 // Všetky kategórie

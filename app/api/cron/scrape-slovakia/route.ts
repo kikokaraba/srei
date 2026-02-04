@@ -39,7 +39,10 @@ export async function POST(request: NextRequest) {
     } else {
       targets = getTargetsByPortal(portal as any);
     }
-    
+
+    // Aplikácia scrapuje len byty (ostatné typy prídeme neskôr)
+    targets = targets.filter((t) => t.propertyType === "byty");
+
     // Limit počet URL
     targets = targets.slice(0, limit);
     
