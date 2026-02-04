@@ -62,12 +62,13 @@ export async function GET(request: Request) {
       // Získame liquidity dáta pre konkrétnu nehnuteľnosť
       const property = await prisma.property.findUnique({
         where: { id: propertyId },
-        include: {
-          priceHistory: {
-            orderBy: { recorded_at: "desc" },
-            take: 10, // Posledných 10 zmien
-          },
-        },
+        // priceHistory may not exist in database yet
+        // include: {
+        //   priceHistory: {
+        //     orderBy: { recorded_at: "desc" },
+        //     take: 10, // Posledných 10 zmien
+        //   },
+        // },
       });
 
       if (!property) {
@@ -80,25 +81,8 @@ export async function GET(request: Request) {
         (Date.now() - new Date(firstListed).getTime()) / (1000 * 60 * 60 * 24)
       );
 
-      // Najnovšia zmena ceny
-      const latestPriceChange = property.priceHistory[0];
-      const previousPrice = property.priceHistory[1];
-      
-      let priceChangeInfo = null;
-      if (latestPriceChange && previousPrice) {
-        const priceDiff = latestPriceChange.price - previousPrice.price;
-        const priceDiffPercent = ((priceDiff / previousPrice.price) * 100);
-        const daysSinceChange = Math.floor(
-          (Date.now() - new Date(latestPriceChange.recorded_at).getTime()) / (1000 * 60 * 60 * 24)
-        );
-
-        priceChangeInfo = {
-          price_diff: priceDiff,
-          price_diff_percent: priceDiffPercent,
-          days_since_change: daysSinceChange,
-          changed_at: latestPriceChange.recorded_at,
-        };
-      }
+      // Price history not available in database yet
+      const priceChangeInfo = null;
 
       return NextResponse.json({
         success: true,
@@ -109,7 +93,7 @@ export async function GET(request: Request) {
           current_price: property.price,
           current_price_per_m2: property.price_per_m2,
           price_change: priceChangeInfo,
-          price_history: property.priceHistory,
+          price_history: [], // priceHistory not available yet
         },
       });
     }
@@ -123,12 +107,13 @@ export async function GET(request: Request) {
         where: {
           city: { in: citiesToFilter },
         },
-        include: {
-          priceHistory: {
-            orderBy: { recorded_at: "desc" },
-            take: 1,
-          },
-        },
+        // priceHistory may not exist in database yet
+        // include: {
+        //   priceHistory: {
+        //     orderBy: { recorded_at: "desc" },
+        //     take: 1,
+        //   },
+        // },
         orderBy: {
           days_on_market: "desc",
         },
@@ -141,26 +126,8 @@ export async function GET(request: Request) {
           (Date.now() - new Date(firstListed).getTime()) / (1000 * 60 * 60 * 24)
         );
 
-        const latestPriceChange = property.priceHistory[0];
-        let priceChangeInfo = null;
-
-        if (latestPriceChange) {
-          // Porovnáme s aktuálnou cenou
-          const priceDiff = property.price - latestPriceChange.price;
-          const priceDiffPercent = latestPriceChange.price > 0 
-            ? ((priceDiff / latestPriceChange.price) * 100) 
-            : 0;
-          const daysSinceChange = Math.floor(
-            (Date.now() - new Date(latestPriceChange.recorded_at).getTime()) / (1000 * 60 * 60 * 24)
-          );
-
-          priceChangeInfo = {
-            price_diff: priceDiff,
-            price_diff_percent: priceDiffPercent,
-            days_since_change: daysSinceChange,
-            changed_at: latestPriceChange.recorded_at,
-          };
-        }
+        // Price change info not available until PriceHistory table is populated
+        const priceChangeInfo = null;
 
         return {
           propertyId: property.id,
@@ -187,12 +154,13 @@ export async function GET(request: Request) {
 
     const allProperties = await prisma.property.findMany({
       where: whereClause,
-      include: {
-        priceHistory: {
-          orderBy: { recorded_at: "desc" },
-          take: 1,
-        },
-      },
+      // priceHistory may not exist in database yet
+      // include: {
+      //   priceHistory: {
+      //     orderBy: { recorded_at: "desc" },
+      //     take: 1,
+      //   },
+      // },
       orderBy: {
         createdAt: "asc", // Oldest first
       },
@@ -207,25 +175,8 @@ export async function GET(request: Request) {
           (Date.now() - new Date(firstListed).getTime()) / (1000 * 60 * 60 * 24)
         );
 
-        const latestPriceChange = property.priceHistory[0];
-        let priceChangeInfo = null;
-
-        if (latestPriceChange) {
-          const priceDiff = property.price - latestPriceChange.price;
-          const priceDiffPercent = latestPriceChange.price > 0 
-            ? ((priceDiff / latestPriceChange.price) * 100) 
-            : 0;
-          const daysSinceChange = Math.floor(
-            (Date.now() - new Date(latestPriceChange.recorded_at).getTime()) / (1000 * 60 * 60 * 24)
-          );
-
-          priceChangeInfo = {
-            price_diff: priceDiff,
-            price_diff_percent: priceDiffPercent,
-            days_since_change: daysSinceChange,
-            changed_at: latestPriceChange.recorded_at,
-          };
-        }
+        // Price change info not available until PriceHistory table is populated
+        const priceChangeInfo = null;
 
         return {
           propertyId: property.id,
