@@ -38,24 +38,35 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
 
       if (existingById) {
         duplicateCount++;
-        // Aktualizuj ak sa zmenila cena
-        if (existingById.price !== prop.price) {
+        // Aktualizuj ak sa zmenila cena alebo fotky
+        const hasPhotoChanges = prop.imageUrls && prop.imageUrls.length > 0 && 
+          (!existingById.photos || existingById.photos === "[]");
+        
+        if (existingById.price !== prop.price || hasPhotoChanges) {
           await prisma.property.update({
             where: { id: existingById.id },
             data: {
               price: prop.price,
               price_per_m2: prop.pricePerM2,
+              // Aktualizuj fotky ak existujú a chýbajú v DB
+              ...(hasPhotoChanges && {
+                photos: JSON.stringify(prop.imageUrls),
+                thumbnail_url: prop.imageUrls![0],
+                photo_count: prop.imageUrls!.length,
+              }),
               updatedAt: new Date(),
             },
           });
           
-          await prisma.priceHistory.create({
-            data: {
-              propertyId: existingById.id,
-              price: prop.price,
-              price_per_m2: prop.pricePerM2,
-            },
-          });
+          if (existingById.price !== prop.price) {
+            await prisma.priceHistory.create({
+              data: {
+                propertyId: existingById.id,
+                price: prop.price,
+                price_per_m2: prop.pricePerM2,
+              },
+            });
+          }
           
           updatedCount++;
         }
@@ -69,12 +80,20 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
 
       if (existingByUrl) {
         duplicateCount++;
-        if (existingByUrl.price !== prop.price) {
+        const hasPhotoChanges = prop.imageUrls && prop.imageUrls.length > 0 && 
+          (!existingByUrl.photos || existingByUrl.photos === "[]");
+        
+        if (existingByUrl.price !== prop.price || hasPhotoChanges) {
           await prisma.property.update({
             where: { id: existingByUrl.id },
             data: {
               price: prop.price,
               price_per_m2: prop.pricePerM2,
+              ...(hasPhotoChanges && {
+                photos: JSON.stringify(prop.imageUrls),
+                thumbnail_url: prop.imageUrls![0],
+                photo_count: prop.imageUrls!.length,
+              }),
               updatedAt: new Date(),
             },
           });
@@ -113,6 +132,10 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
           energy_certificate: "NONE",
           source_url: prop.sourceUrl,
           is_distressed: false,
+          // Fotky
+          photos: prop.imageUrls && prop.imageUrls.length > 0 ? JSON.stringify(prop.imageUrls) : "[]",
+          thumbnail_url: prop.imageUrls && prop.imageUrls.length > 0 ? prop.imageUrls[0] : null,
+          photo_count: prop.imageUrls?.length || 0,
         },
       });
       
