@@ -109,7 +109,7 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
       if (!hasPhotos) {
         continue;
       }
-      
+
       // Nová nehnuteľnosť - vytvor unikátny slug
       const baseSlug = prop.title
         .toLowerCase()

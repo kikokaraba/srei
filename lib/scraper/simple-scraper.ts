@@ -590,11 +590,17 @@ export async function scrapeNehnutelnosti(options: {
           $container.find("img").each((_, img) => {
             const src = $(img).attr("src") || $(img).attr("data-src") || "";
             // Filtruj len fotky inzerátov (nie ikony, loga, placeholdery)
+            // DÔLEŽITÉ: nehnutelnosti.sk používa img.unitedclassifieds.sk pre obrázky!
             if (src && 
-                (src.includes("nehnutelnosti.sk") || src.includes("cdn.") || src.includes("images.")) && 
+                (src.includes("nehnutelnosti.sk") || 
+                 src.includes("unitedclassifieds.sk") || 
+                 src.includes("cdn.") || 
+                 src.includes("images.") ||
+                 src.includes("img.")) && 
                 !src.includes("logo") && 
                 !src.includes("icon") &&
                 !src.includes("placeholder") &&
+                !src.includes("/_next/static") &&
                 src.length > 30) {
               // Skús získať väčšiu verziu ak je thumbnail
               const fullSrc = src.replace("/thumb/", "/").replace("_thumb", "").replace("_small", "");

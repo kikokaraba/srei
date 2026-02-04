@@ -10,6 +10,10 @@ const ALLOWED_HOSTNAMES = [
   "www.nehnutelnosti.sk",
   "img.nehnutelnosti.sk",
   "cdn.nehnutelnosti.sk",
+  // Nehnutelnosti.sk používa United Classifieds pre obrázky
+  "unitedclassifieds.sk",
+  "img.unitedclassifieds.sk",
+  "cdn.unitedclassifieds.sk",
   "bazos.sk",
   "www.bazos.sk",
   "reality.bazos.sk",
