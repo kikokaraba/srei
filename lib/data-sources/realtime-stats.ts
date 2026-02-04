@@ -205,15 +205,22 @@ export async function getMarketSummaryLive(): Promise<{
   const stats = await getRealtimeMarketStats();
   const regions = stats.regions;
 
-  const yieldAgg = await prisma.investmentMetrics.aggregate({
-    _avg: { gross_yield: true },
-    _count: { id: true },
-    where: { gross_yield: { gt: 0 } },
-  });
-  const avgYield =
-    (yieldAgg._count.id > 0 && yieldAgg._avg.gross_yield != null)
-      ? Math.round(yieldAgg._avg.gross_yield * 10) / 10
-      : null;
+  // Try to get yield data, fallback to null if InvestmentMetrics table doesn't exist
+  let avgYield: number | null = null;
+  try {
+    const yieldAgg = await prisma.investmentMetrics.aggregate({
+      _avg: { gross_yield: true },
+      _count: { id: true },
+      where: { gross_yield: { gt: 0 } },
+    });
+    avgYield =
+      (yieldAgg._count.id > 0 && yieldAgg._avg.gross_yield != null)
+        ? Math.round(yieldAgg._avg.gross_yield * 10) / 10
+        : null;
+  } catch (error) {
+    console.log("InvestmentMetrics table not available, using fallback yield");
+    avgYield = null; // Fallback when table doesn't exist
+  }
 
   const withChange = regions.filter((r) => r.changeVsLastMonth != null);
   const hottest =
@@ -287,13 +294,19 @@ export async function getAnalyticsSnapshotLive(): Promise<{
   newLast7d: number;
   timestamp: string;
 }> {
-  const [stats, metricsRows] = await Promise.all([
-    getRealtimeMarketStats(),
-    prisma.investmentMetrics.findMany({
+  const stats = await getRealtimeMarketStats();
+  
+  // Try to get investment metrics, fallback to empty array if table doesn't exist
+  let metricsRows: Array<{ gross_yield: number; property: { city: string } | null }> = [];
+  try {
+    metricsRows = await prisma.investmentMetrics.findMany({
       where: { gross_yield: { gt: 0 } },
       select: { gross_yield: true, property: { select: { city: true } } },
-    }),
-  ]);
+    });
+  } catch (error) {
+    console.log("InvestmentMetrics table not available for analytics snapshot");
+    metricsRows = []; // Fallback when table doesn't exist
+  }
 
   const yieldByCity = new Map<string, { sum: number; count: number }>();
   for (const m of metricsRows) {
