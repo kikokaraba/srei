@@ -420,30 +420,6 @@ export function PriceHistory() {
                     )}
                   </g>
                 ))}
-                {/* Naše dáta 2025 - bod SRIA (odlišná farba pre porovnanie s NBS) */}
-                {chartData.ourPoint && (
-                  <g>
-                    <circle
-                      cx={chartData.ourPoint.x}
-                      cy={chartData.ourPoint.y}
-                      r="1.8"
-                      fill="#f59e0b"
-                      stroke="#0f0f0f"
-                      strokeWidth="0.4"
-                      className="opacity-100"
-                    />
-                    <circle
-                      cx={chartData.ourPoint.x}
-                      cy={chartData.ourPoint.y}
-                      r="2.8"
-                      fill="none"
-                      stroke="#f59e0b"
-                      strokeWidth="0.25"
-                      strokeDasharray="1,1"
-                      opacity="0.9"
-                    />
-                  </g>
-                )}
               </svg>
               
               {/* Tooltip */}
@@ -534,16 +510,11 @@ export function PriceHistory() {
           </div>
         )}
 
-        {/* Legend */}
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-zinc-500">
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block w-2 h-2 rounded-full bg-zinc-500" /> NBS trend
-          </span>
-          {chartData?.ourPoint && (
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block w-2 h-2 rounded-full bg-amber-500" style={{ boxShadow: "0 0 0 1px #f59e0b" }} /> SRIA dnes
-            </span>
-          )}
+        {/* Legend – reálne dáta SRIA sú v hlavičke vpravo (oranžové) */}
+        <div className="mt-3 text-center text-[11px] text-zinc-500">
+          <span className="inline-block w-2 h-2 rounded-full bg-zinc-500 align-middle mr-1" /> NBS trend
+          <span className="mx-2 text-zinc-600">·</span>
+          Reálne dáta SRIA v hlavičke vpravo
         </div>
       </div>
     </div>
