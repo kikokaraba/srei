@@ -250,31 +250,33 @@ export async function GET(request: Request) {
     // Načítaj nehnuteľnosti s filtrami a stránkovaním
     const properties = await prisma.property.findMany({
       where,
-      include: {
-        investmentMetrics: true,
-        priceHistory: {
-          orderBy: { recorded_at: "desc" },
-          take: 1,
-        },
-      },
+      // TODO: investmentMetrics and priceHistory tables don't exist yet
+      // include: {
+      //   investmentMetrics: true,
+      //   priceHistory: {
+      //     orderBy: { recorded_at: "desc" },
+      //     take: 1,
+      //   },
+      // },
       skip,
       take: limit,
       orderBy,
     });
 
     // Filtruj podľa výnosu (ak je zadaný) – query params majú prednosť, inak preferencie pri usePreferences
-    const effectiveMinYield = minYield ?? (useUserPreferences && preferences ? (preferences.minYield != null ? String(preferences.minYield) : preferences.minGrossYield != null ? String(preferences.minGrossYield) : null) : null);
-    const effectiveMaxYield = maxYield ?? (useUserPreferences && preferences?.maxYield != null ? String(preferences.maxYield) : null);
+    // TODO: investmentMetrics table doesn't exist yet, yield filtering disabled
+    // const effectiveMinYield = minYield ?? (useUserPreferences && preferences ? (preferences.minYield != null ? String(preferences.minYield) : preferences.minGrossYield != null ? String(preferences.minGrossYield) : null) : null);
+    // const effectiveMaxYield = maxYield ?? (useUserPreferences && preferences?.maxYield != null ? String(preferences.maxYield) : null);
     let filteredProperties = properties;
-    if (effectiveMinYield || effectiveMaxYield) {
-      filteredProperties = filteredProperties.filter((p) => {
-        const yieldValue = p.investmentMetrics?.gross_yield;
-        if (!yieldValue) return !effectiveMinYield;
-        if (effectiveMinYield && yieldValue < parseFloat(effectiveMinYield)) return false;
-        if (effectiveMaxYield && yieldValue > parseFloat(effectiveMaxYield)) return false;
-        return true;
-      });
-    }
+    // if (effectiveMinYield || effectiveMaxYield) {
+    //   filteredProperties = filteredProperties.filter((p) => {
+    //     const yieldValue = p.investmentMetrics?.gross_yield;
+    //     if (!yieldValue) return !effectiveMinYield;
+    //     if (effectiveMinYield && yieldValue < parseFloat(effectiveMinYield)) return false;
+    //     if (effectiveMaxYield && yieldValue > parseFloat(effectiveMaxYield)) return false;
+    //     return true;
+    //   });
+    // }
 
     return NextResponse.json({
       success: true,
