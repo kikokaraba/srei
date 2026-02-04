@@ -6,6 +6,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
+import { fetchNBSNationalAverage } from "./nbs";
 
 // Mapovanie miest na kraje
 const CITY_TO_REGION: Record<string, string> = {
@@ -230,19 +231,21 @@ export async function getMarketSummaryLive(): Promise<{
 
   const withChange = regions.filter((r) => r.changeVsLastMonth != null);
   const hottest =
-    withChange.length > 0
-      ? withChange.reduce((a, b) =>
-          (a.changeVsLastMonth ?? 0) >= (b.changeVsLastMonth ?? 0) ? a : b
-        ).city
-      : regions.reduce((a, b) =>
-          a.propertyCount >= b.propertyCount ? a : b
-        ).city;
+    regions.length === 0
+      ? "—"
+      : withChange.length > 0
+        ? withChange.reduce((a, b) =>
+            (a.changeVsLastMonth ?? 0) >= (b.changeVsLastMonth ?? 0) ? a : b
+          ).city
+        : regions.reduce((a, b) =>
+            a.propertyCount >= b.propertyCount ? a : b
+          ).city;
   const cheapest =
     regions.length > 0
       ? regions.reduce((a, b) =>
           a.avgPricePerM2 <= b.avgPricePerM2 ? a : b
         ).city
-      : "BRATISLAVA";
+      : "—";
 
   return {
     nationalAvgPrice: stats.nationalAvg,
@@ -360,20 +363,35 @@ export async function getAnalyticsSnapshotLive(): Promise<{
 
 /**
  * Porovnanie: Naše dáta vs NBS (pre transparentnosť)
+ * Vracia null ak nie sú dostupné NBS dáta
  */
 export async function getDataComparison(): Promise<{
   ourData: { avg: number; source: string; freshness: string };
-  nbsData: { avg: number; source: string; period: string };
-  difference: number;
-  differencePercent: number;
+  nbsData: { avg: number; source: string; period: string } | null;
+  difference: number | null;
+  differencePercent: number | null;
 }> {
   const ourStats = await getRealtimeMarketStats();
-  
-  // NBS Q3 2025 dáta (hardcoded - aktuálne najnovšie dostupné)
-  const nbsAvg = 2500; // Priemer zo všetkých regiónov
-  
-  const difference = ourStats.nationalAvg - nbsAvg;
-  const differencePercent = Math.round((difference / nbsAvg) * 1000) / 10;
+  const nbsAvg = await fetchNBSNationalAverage();
+
+  if (!nbsAvg) {
+    return {
+      ourData: {
+        avg: ourStats.nationalAvg,
+        source: "SRIA scraped data",
+        freshness: "Real-time",
+      },
+      nbsData: null,
+      difference: null,
+      differencePercent: null,
+    };
+  }
+
+  const difference = ourStats.nationalAvg - nbsAvg.all;
+  const differencePercent =
+    nbsAvg.all > 0
+      ? Math.round((difference / nbsAvg.all) * 1000) / 10
+      : null;
 
   return {
     ourData: {
@@ -382,9 +400,9 @@ export async function getDataComparison(): Promise<{
       freshness: "Real-time",
     },
     nbsData: {
-      avg: nbsAvg,
+      avg: nbsAvg.all,
       source: "NBS",
-      period: "Q3 2025",
+      period: "štvrťročné",
     },
     difference,
     differencePercent,

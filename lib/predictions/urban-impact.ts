@@ -64,77 +64,8 @@ const IMPACT_MULTIPLIERS: Record<InfrastructureType, {
   BUSINESS_DISTRICT: { baseImpact: 18, maxRadius: 4, timeToImpact: 18 },
 };
 
-// Plánované projekty na Slovensku (mock data - v produkcii by bolo z DB)
-const KNOWN_PROJECTS: UrbanProject[] = [
-  {
-    id: "metro-ba-1",
-    name: "D4/R7 obchvat Bratislavy",
-    type: "HIGHWAY",
-    city: "BRATISLAVA",
-    status: "in_progress",
-    completionDate: new Date("2026-06-01"),
-    estimatedImpact: 12,
-    radius: 5,
-    description: "Diaľničný obchvat - lepšia dostupnosť okrajových častí",
-  },
-  {
-    id: "nivy-ba",
-    name: "Nivy Mall & Business District",
-    type: "BUSINESS_DISTRICT",
-    city: "BRATISLAVA",
-    district: "Ružinov",
-    status: "completed",
-    completionDate: new Date("2023-01-01"),
-    estimatedImpact: 18,
-    radius: 2,
-    description: "Nové obchodné a biznis centrum",
-  },
-  {
-    id: "southcity-ba",
-    name: "Southcity Petržalka",
-    type: "BUSINESS_DISTRICT",
-    city: "BRATISLAVA",
-    district: "Petržalka",
-    status: "in_progress",
-    completionDate: new Date("2027-01-01"),
-    estimatedImpact: 15,
-    radius: 2,
-    description: "Rozvoj južnej časti Petržalky",
-  },
-  {
-    id: "r2-ke",
-    name: "R2 Rýchlostná cesta Košice",
-    type: "HIGHWAY",
-    city: "KOSICE",
-    status: "planned",
-    completionDate: new Date("2028-01-01"),
-    estimatedImpact: 10,
-    radius: 8,
-    description: "Napojenie na diaľničnú sieť",
-  },
-  {
-    id: "aupark-za",
-    name: "Aupark Žilina - rozšírenie",
-    type: "SHOPPING_CENTER",
-    city: "ZILINA",
-    status: "planned",
-    completionDate: new Date("2026-12-01"),
-    estimatedImpact: 8,
-    radius: 3,
-    description: "Rozšírenie nákupného centra",
-  },
-  {
-    id: "hospital-bb",
-    name: "Nová nemocnica Banská Bystrica",
-    type: "HOSPITAL",
-    city: "BANSKA_BYSTRICA",
-    status: "planned",
-    completionDate: new Date("2028-06-01"),
-    estimatedImpact: 7,
-    radius: 4,
-    description: "Moderné regionálne zdravotnícke centrum",
-  },
-];
+// Plánované projekty – načítavajú sa z DB (prázdne do implementácie)
+const KNOWN_PROJECTS: UrbanProject[] = [];
 
 // ============================================
 // IMPACT CALCULATION

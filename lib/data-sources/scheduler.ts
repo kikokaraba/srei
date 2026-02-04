@@ -107,10 +107,14 @@ export async function syncEconomicIndicators(): Promise<{ success: boolean; erro
   try {
     const result = await fetchEconomicIndicators();
     
-    if (!result.success || !result.data || result.data.length === 0) {
-      throw new Error(result.error || "No economic data received");
+    if (!result.success) {
+      throw new Error(result.error || "Failed to fetch economic data");
     }
-    
+
+    if (!result.data || result.data.length === 0) {
+      return { success: true };
+    }
+
     const data = result.data[0];
     
     await prisma.economicIndicator.create({
