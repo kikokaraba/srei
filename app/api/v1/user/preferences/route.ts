@@ -119,6 +119,9 @@ export async function POST(request: Request) {
       trackedStreets,
       investmentType,
       investmentTypes,
+      investmentGoal,
+      riskTolerance,
+      budget,
       minYield,
       maxYield,
       minPrice,
@@ -223,6 +226,9 @@ export async function POST(request: Request) {
     if (investmentTypes !== undefined) {
       updateData.investmentTypes = investmentTypes ? (Array.isArray(investmentTypes) ? JSON.stringify(investmentTypes) : investmentTypes) : JSON.stringify([]);
     }
+    if (investmentGoal !== undefined) updateData.investmentGoal = (investmentGoal as string) || null;
+    if (riskTolerance !== undefined) updateData.riskTolerance = (riskTolerance as string) || null;
+    if (budget !== undefined) updateData.budget = toFloat(budget);
     if (minYield !== undefined) updateData.minYield = toFloat(minYield);
     if (maxYield !== undefined) updateData.maxYield = toFloat(maxYield);
     if (minPrice !== undefined) updateData.minPrice = toFloat(minPrice);

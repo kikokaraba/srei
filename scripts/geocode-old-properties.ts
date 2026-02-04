@@ -8,6 +8,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { enrichAddressWithAI } from "@/lib/ai/address-enrichment";
+import { extractLocationWithAI } from "@/lib/ai/location-extraction";
 import { geocodeAddressToCoords } from "@/lib/monitoring/geocoding";
 
 const NOMINATIM_DELAY_MS = 1100;
@@ -26,13 +27,15 @@ function buildRawContext(p: {
   city?: string | null;
   district?: string | null;
   description?: string | null;
+  title?: string | null;
 }): string {
   const parts: string[] = [];
+  if (p.title) parts.push(String(p.title).trim());
   if (p.address) parts.push(String(p.address).trim());
   if (p.city) parts.push(String(p.city).trim());
   if (p.district) parts.push(String(p.district).trim());
   if (p.description)
-    parts.push(String(p.description).trim().slice(0, 200));
+    parts.push(String(p.description).trim().slice(0, 500));
   return parts.filter(Boolean).join("\n\n");
 }
 
@@ -56,6 +59,7 @@ async function main() {
       district: true,
       street: true,
       description: true,
+      title: true,
     },
     take: limit,
   });
@@ -72,7 +76,7 @@ async function main() {
       let street: string | undefined = p.street?.trim() || undefined;
 
       if (useAi) {
-        const raw = buildRawContext(p);
+        const raw = buildRawContext({ ...p, title: p.title });
         if (raw) {
           const enriched = await enrichAddressWithAI(raw);
           if (enriched?.city) {
@@ -82,6 +86,18 @@ async function main() {
               .filter(Boolean)
               .join(" ");
             if (s) street = s;
+          }
+        }
+        if ((!city || city === "Slovensko") && (p.title || p.description)) {
+          const loc = await extractLocationWithAI({
+            title: p.title ?? "",
+            description: p.description ?? undefined,
+            address: p.address ?? undefined,
+            locationText: p.district ?? undefined,
+          });
+          if (loc?.city) {
+            city = loc.city;
+            district = loc.district ?? undefined;
           }
         }
       }
@@ -100,16 +116,27 @@ async function main() {
 
       if (coords) {
         if (!dryRun) {
+          const updateData: {
+            latitude: number;
+            longitude: number;
+            city?: string;
+            district?: string;
+          } = {
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+          };
+          if (city && (p.city === "Slovensko" || !p.city?.trim())) {
+            updateData.city = city;
+            if (district) updateData.district = district;
+          }
           await prisma.property.update({
             where: { id: p.id },
-            data: {
-              latitude: coords.latitude,
-              longitude: coords.longitude,
-            },
+            data: updateData,
           });
         }
         geocoded++;
-        console.log(`  ✅ ${p.city} → ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`);
+        const locInfo = city !== (p.city ?? "") ? ` (city: ${p.city ?? "?"} → ${city})` : "";
+        console.log(`  ✅ ${city} → ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}${locInfo}`);
       } else {
         failed++;
       }

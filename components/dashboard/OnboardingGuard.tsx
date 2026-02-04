@@ -4,33 +4,38 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
-async function checkOnboarding() {
+async function checkOnboarding(): Promise<boolean> {
   try {
     const response = await fetch("/api/v1/user/preferences", {
-      credentials: "include", // Ensure cookies are sent
+      credentials: "include",
     });
-    
+
     if (!response.ok) {
-      console.error("Failed to check onboarding status:", response.status, response.statusText);
-      // If unauthorized, user should be redirected to sign in by middleware
+      // 401: not signed in – middleware will redirect to sign-in
+      if (response.status === 401) return false;
+      // 500: treat as incomplete so user can continue to onboarding
+      if (response.status === 500) {
+        const body = await response.json().catch(() => ({}));
+        if (process.env.NODE_ENV === "development" && body?.details) {
+          console.warn("Onboarding check failed (500):", body.details);
+        }
+        return false;
+      }
       return false;
     }
-    
+
     const data = await response.json();
-    
+
     if (!data.success) {
-      console.error("API returned error:", data.error);
       return false;
     }
-    
-    // If preferences don't exist, onboarding is not completed
+
     if (!data.data) {
       return false;
     }
-    
+
     return data.data.onboardingCompleted === true;
-  } catch (error) {
-    console.error("Error checking onboarding status:", error);
+  } catch {
     return false;
   }
 }

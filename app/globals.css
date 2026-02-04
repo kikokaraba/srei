@@ -1,5 +1,5 @@
 /* Premium 2M€ Design System */
-/* Fonts are loaded via next/font in layout.tsx for better performance */
+/* Fonts: Inter & JetBrains Mono loaded via next/font in app/layout.tsx (no external request, CSP-safe) */
 @import "tailwindcss";
 
 :root {

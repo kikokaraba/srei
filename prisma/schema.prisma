@@ -120,6 +120,7 @@ model User {
   subscription      Subscription?
   commissionsAsPartner Commission[] @relation("CommissionPartner")
   commissionsAsPayer   Commission[] @relation("CommissionPayer")
+  aiAlerts          AIAlert[]
 }
 
 model Commission {
@@ -290,6 +291,7 @@ model Property {
   fingerprint       PropertyFingerprint?
   primaryMatches    PropertyMatch[] @relation("PrimaryProperty")
   matchedBy         PropertyMatch[] @relation("MatchedProperty")
+  aiAlerts          AIAlert[]
 }
 
 model MarketAnalytics {
@@ -437,6 +439,22 @@ model SavedProperty {
   @@index([propertyId])
 }
 
+// AI Alerty - proaktívne notifikácie (price drop, better match)
+model AIAlert {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String    // PRICE_DROP, BETTER_MATCH
+  propertyId  String
+  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  metadata    String    @db.Text // JSON: oldPrice, newPrice, percentChange, investmentScore, etc.
+  readAt      DateTime? // Kedy používateľ prečítal
+  createdAt   DateTime  @default(now())
+  
+  @@index([userId])
+  @@index([userId, readAt])
+}
+
 // Snímka nehnuteľnosti v čase - pre sledovanie zmien
 model PropertySnapshot {
   id          String   @id @default(cuid())
@@ -528,6 +546,9 @@ model UserPreferences {
   // Typ investície
   investmentType        String?  // Legacy: "future-potential", "high-yield", "stable-growth", "flip", "rental"
   investmentTypes       String   @default("[]") @db.Text // JSON array of investment types
+  investmentGoal        String?  // AI profil: RENTAL_YIELD, CAPITAL_GROWTH, FLIP, BALANCED
+  riskTolerance         String?  // AI profil: LOW, MEDIUM, HIGH
+  budget                Float?   // AI profil: preferovaný rozpočet v EUR
   minYield              Float?   // Minimálny požadovaný výnos
   maxYield              Float?   // Maximálny výnos
   minPrice              Float?   // Minimálna cena

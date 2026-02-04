@@ -417,7 +417,7 @@ function PropertyCard({
           <h3 className="text-sm font-medium text-zinc-100 group-hover:text-white transition-colors">{property.name}</h3>
           <div className="flex items-center gap-1 text-xs text-zinc-500 mt-0.5">
             <MapPin className="w-3 h-3" />
-            {property.district ? `${property.district}, ` : ""}{getCityRegionLabel(property.city)}
+            {property.district ? `${property.district}, ` : ""}{getCityRegionLabel(property.city, property.district)}
           </div>
         </div>
         <span className={`px-2 py-0.5 rounded-lg text-[10px] font-medium ${status.color}`}>

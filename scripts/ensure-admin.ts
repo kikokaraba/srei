@@ -33,20 +33,15 @@ async function ensureAdmin() {
 
     let adminUser;
     if (existingUser) {
-      // Aktualizuj len ak nemá heslo alebo ak chceme resetnúť heslo
-      if (!existingUser.password) {
-        adminUser = await prisma.user.update({
-          where: { email: adminEmail },
-          data: {
-            password: hashedPassword,
-            role: "ADMIN",
-          },
-        });
-        console.log("✅ Admin používateľ aktualizovaný (pridané heslo):", adminUser.email);
-      } else {
-        console.log("✅ Admin používateľ už existuje:", existingUser.email);
-        adminUser = existingUser;
-      }
+      // Vždy nastav heslo a rolu ADMIN (umožní reset hesla / obnovu admin prístupu)
+      adminUser = await prisma.user.update({
+        where: { email: adminEmail },
+        data: {
+          password: hashedPassword,
+          role: "ADMIN",
+        },
+      });
+      console.log("✅ Admin používateľ aktualizovaný:", adminUser.email);
     } else {
       // Vytvor nového admin používateľa
       adminUser = await prisma.user.create({

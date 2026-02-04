@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { getNBSContextForPrompt } from "@/lib/ai/nbs-context";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -90,6 +91,9 @@ export async function GET(request: NextRequest) {
       })),
     };
 
+    // NBS makro dáta
+    const nbsContext = await getNBSContextForPrompt();
+
     // Get AI prediction
     const prompt = `Analyzuj slovenský realitný trh pre mesto ${city} a vytvor predikciu vývoja cien.
 
@@ -106,6 +110,7 @@ ${marketContext.byCondition.map(c => `- ${c.condition}: ${c.count} inzerátov, �
 
 POROVNANIE MIEST:
 ${marketContext.allCities.map(c => `- ${c.city}: ${c.count} inzerátov, €${c.avgPricePerM2}/m²`).join("\n")}
+${nbsContext ? `\n${nbsContext}\n` : ""}
 
 Vytvor JSON odpoveď:
 {

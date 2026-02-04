@@ -63,6 +63,9 @@ export default function SettingsPage() {
     trackedDistricts: [] as string[],
     trackedCities: [] as string[],
     investmentTypes: [] as string[],
+    investmentGoal: null as string | null,
+    riskTolerance: null as string | null,
+    budget: null as number | null,
     minYield: null as number | null,
     maxPrice: null as number | null,
     minGrossYield: null as number | null,
@@ -102,11 +105,15 @@ export default function SettingsPage() {
       const trackedDistricts = safeJsonParse(preferences.trackedDistricts, []) as string[];
       const trackedCities = safeJsonParse(preferences.trackedCities, []) as string[];
 
+      const prefsRecord = preferences as Record<string, unknown>;
       setFormData({
         trackedRegions,
         trackedDistricts,
         trackedCities,
         investmentTypes,
+        investmentGoal: (prefsRecord.investmentGoal as string) ?? null,
+        riskTolerance: (prefsRecord.riskTolerance as string) ?? null,
+        budget: (prefsRecord.budget as number) ?? null,
         minYield: preferences.minYield ?? null,
         maxPrice: preferences.maxPrice ?? null,
         minGrossYield: preferences.minGrossYield ?? null,
@@ -127,6 +134,9 @@ export default function SettingsPage() {
       trackedDistricts: formData.trackedDistricts,
       trackedCities: formData.trackedCities,
       investmentTypes: formData.investmentTypes,
+      investmentGoal: formData.investmentGoal,
+      riskTolerance: formData.riskTolerance,
+      budget: formData.budget,
       minYield: formData.minYield,
       maxPrice: formData.maxPrice,
       minGrossYield: formData.minGrossYield,
@@ -160,25 +170,7 @@ export default function SettingsPage() {
     });
   }, [formData, saveMutation, showSuccess]);
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800 p-8">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-zinc-800 rounded-lg w-1/3" />
-            <div className="h-4 bg-zinc-800 rounded w-1/2" />
-          </div>
-        </div>
-        <div className="grid gap-6">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="h-48 bg-zinc-900 rounded-2xl animate-pulse" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // Prehľad uložených filtrov – čo sa reálne používa pri vyhľadávaní a na dashboarde
+  // Prehľad uložených filtrov – čo sa reálne používa pri vyhľadávaní a na dashboarde (hook pred akýmkoľvek return)
   const activeSummary = useMemo(() => {
     const items: { label: string; value: string; desc?: string }[] = [];
     if (!preferences) return items;
@@ -261,6 +253,24 @@ export default function SettingsPage() {
     }
     return items;
   }, [preferences]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800 p-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-zinc-800 rounded-lg w-1/3" />
+            <div className="h-4 bg-zinc-800 rounded w-1/2" />
+          </div>
+        </div>
+        <div className="grid gap-6">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-48 bg-zinc-900 rounded-2xl animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const notifications = [
     { id: "notifyMarketGaps", title: "Index skrytého potenciálu", desc: "Podhodnotené nehnuteľnosti", icon: "🎯" },
@@ -387,6 +397,9 @@ export default function SettingsPage() {
               <h2 className="text-xl font-bold text-white">Typ investície</h2>
             </div>
 
+            <p className="text-sm text-zinc-400 mb-3">
+              Podľa zvoleného typu systém pri vyhľadávaní <strong className="text-zinc-300">uprednostní ponuky, ktoré vám sedia</strong>: pri „Vysoký výnos“ / „Dlhodobý nájom“ zoradí podľa výnosu, pri „Flip“ podľa čerstvosti ponuky (dni v ponuke). Odporúčame doplniť nižšie min. výnos a max. cenu.
+            </p>
             <p className="text-xs text-zinc-500 mb-3">Môžete vybrať viac možností</p>
             <div className="space-y-2">
               {INVESTMENT_TYPES.map((type) => {
@@ -453,6 +466,62 @@ export default function SettingsPage() {
                   step="1000"
                   className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white text-sm
                              focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* AI Profil - pre Investičného asistenta a Chat */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-violet-950/20 p-6">
+          <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-10 bg-violet-500" />
+          <div className="relative">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">AI Profil</h2>
+                <p className="text-sm text-zinc-400">Pre Investičného asistenta a AI Chat – personalizované odporúčania</p>
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Investičný cieľ</label>
+                <select
+                  value={formData.investmentGoal ?? ""}
+                  onChange={(e) => setFormData({ ...formData, investmentGoal: e.target.value || null })}
+                  className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                >
+                  <option value="">Nevybraté</option>
+                  <option value="RENTAL_YIELD">Prenájom (výnos)</option>
+                  <option value="CAPITAL_GROWTH">Rast hodnoty</option>
+                  <option value="FLIP">Flip</option>
+                  <option value="BALANCED">Vyvážená</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Tolerancia rizika</label>
+                <select
+                  value={formData.riskTolerance ?? ""}
+                  onChange={(e) => setFormData({ ...formData, riskTolerance: e.target.value || null })}
+                  className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                >
+                  <option value="">Nevybraté</option>
+                  <option value="LOW">Nízka</option>
+                  <option value="MEDIUM">Stredná</option>
+                  <option value="HIGH">Vysoká</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Rozpočet (€)</label>
+                <input
+                  type="number"
+                  value={formData.budget ?? ""}
+                  onChange={(e) => setFormData({ ...formData, budget: e.target.value ? parseFloat(e.target.value) : null })}
+                  placeholder="150000"
+                  step="10000"
+                  className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/50"
                 />
               </div>
             </div>

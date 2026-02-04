@@ -187,7 +187,7 @@ export default function AdminPropertiesPage() {
                         <div className="font-medium text-slate-100 line-clamp-1">{property.title}</div>
                         <div className="flex items-center gap-1 text-sm text-slate-400">
                           <MapPin className="w-3 h-3" />
-                          {property.district}, {getCityRegionLabel(property.city)}
+                          {property.district}, {getCityRegionLabel(property.city, property.district)}
                         </div>
                       </div>
                     </td>

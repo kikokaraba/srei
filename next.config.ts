@@ -64,12 +64,13 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               // Script: unsafe-inline needed for Next.js, unsafe-eval for some maps
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-              // Styles: unsafe-inline needed for styled-jsx and Tailwind
-              "style-src 'self' 'unsafe-inline'",
+              // Styles: unsafe-inline for Tailwind; Google Fonts for next/font or link stylesheet
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com",
               // Images: Real estate portals, maps, and data URIs
               "img-src 'self' data: blob: https://*.bazos.sk https://*.nehnutelnosti.sk https://*.reality.sk https://*.sdn.cz https://*.mapbox.com https://*.openstreetmap.org https://tile.openstreetmap.org https://api.mapbox.com https:",
-              // Fonts: Self-hosted via next/font
-              "font-src 'self' data:",
+              // Fonts: self + next/font; fonts.gstatic.com when Google Fonts stylesheet is used
+              "font-src 'self' data: https://fonts.gstatic.com",
               // Connect: APIs and services
               "connect-src 'self' https://api.upstash.io https://raw.githubusercontent.com https://*.githubusercontent.com https://api.mapbox.com https://*.mapbox.com https://nominatim.openstreetmap.org https://api.telegram.org https://api.anthropic.com",
               // Workers: For map tiles

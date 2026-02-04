@@ -25,6 +25,7 @@ import {
   Users,
   PiggyBank,
   Trophy,
+  FileDown,
 } from "lucide-react";
 import { YieldCard } from "@/components/YieldCard";
 import { PropertyImage } from "@/components/property/PropertyImage";
@@ -148,6 +149,64 @@ export default function PropertyDetailPage() {
   const [marketComparison, setMarketComparison] = useState<MarketComparison | null>(null);
   const [estimatedRent, setEstimatedRent] = useState<EstimatedRent | null>(null);
   const [yieldData, setYieldData] = useState<YieldResponse | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [negotiationData, setNegotiationData] = useState<{
+    suggestedOfferLow: number;
+    suggestedOfferHigh: number;
+    initialOffer: number;
+    reasoning: string;
+    tips: string[];
+  } | null>(null);
+  const [negotiationLoading, setNegotiationLoading] = useState(false);
+  const [maxBudget, setMaxBudget] = useState<string>("");
+
+  const handleDownloadReport = async () => {
+    if (!property?.id || pdfLoading) return;
+    setPdfLoading(true);
+    try {
+      const res = await fetch("/api/v1/ai/property-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ propertyId: property.id }),
+      });
+      if (!res.ok) throw new Error("Failed to generate report");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `sria-report-${property.id.slice(0, 8)}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF report error:", err);
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
+  const handleGetNegotiationAdvice = async () => {
+    if (!property?.id || negotiationLoading) return;
+    setNegotiationLoading(true);
+    setNegotiationData(null);
+    try {
+      const res = await fetch("/api/v1/ai/negotiation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          propertyId: property.id,
+          maxBudget: maxBudget ? parseFloat(maxBudget.replace(/\s/g, "")) : undefined,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNegotiationData(data.data);
+      }
+    } catch (err) {
+      console.error("Negotiation error:", err);
+    } finally {
+      setNegotiationLoading(false);
+    }
+  };
 
   useEffect(() => {
     const id = typeof params.id === "string" ? params.id : Array.isArray(params.id) ? params.id[0] : undefined;
@@ -381,6 +440,18 @@ export default function PropertyDetailPage() {
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
+            onClick={handleDownloadReport}
+            disabled={pdfLoading || property.listing_type !== "PREDAJ"}
+            className="p-2.5 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-500 hover:text-zinc-200 hover:border-zinc-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Stiahnuť AI report (PDF)"
+          >
+            {pdfLoading ? (
+              <span className="w-4 h-4 border-2 border-zinc-600 border-t-zinc-400 rounded-full animate-spin block" />
+            ) : (
+              <FileDown className="w-4 h-4" />
+            )}
+          </button>
+          <button
             onClick={() => setIsSaved(!isSaved)}
             className={`p-2.5 rounded-lg border transition-all ${
               isSaved 
@@ -504,6 +575,63 @@ export default function PropertyDetailPage() {
               <Globe className="w-5 h-5" />
               Pôvodný zdroj
             </a>
+          )}
+        </div>
+      )}
+
+      {/* AI Odporúčanie pri vyjednávaní - len pre predaj */}
+      {property.listing_type === "PREDAJ" && property.price > 0 && (
+        <div className="rounded-2xl border border-violet-500/30 bg-violet-500/5 p-5">
+          <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+            <Target className="w-5 h-5 text-violet-400" />
+            AI Odporúčanie pri vyjednávaní
+          </h3>
+          <p className="text-sm text-zinc-400 mb-4">
+            Zadajte svoj max. rozpočet (voliteľné) a AI vám odporučí vhodnú počiatočnú ponuku
+          </p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            <input
+              type="number"
+              placeholder="Max. rozpočet (€)"
+              value={maxBudget}
+              onChange={(e) => setMaxBudget(e.target.value)}
+              className="px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm w-48 focus:outline-none focus:border-violet-500"
+            />
+            <button
+              onClick={handleGetNegotiationAdvice}
+              disabled={negotiationLoading}
+              className="px-5 py-2 bg-violet-600 hover:bg-violet-500 text-white font-medium text-sm rounded-lg transition-colors disabled:opacity-50"
+            >
+              {negotiationLoading ? "Analyzujem..." : "Získať odporúčanie"}
+            </button>
+          </div>
+          {negotiationData && (
+            <div className="space-y-4 pt-4 border-t border-zinc-700/50">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="p-3 bg-zinc-800/50 rounded-lg">
+                  <p className="text-xs text-zinc-500">Odporúčaná ponuka</p>
+                  <p className="text-lg font-semibold text-violet-400">€{negotiationData.initialOffer.toLocaleString()}</p>
+                </div>
+                <div className="p-3 bg-zinc-800/50 rounded-lg">
+                  <p className="text-xs text-zinc-500">Rozsah</p>
+                  <p className="text-sm text-zinc-300">€{negotiationData.suggestedOfferLow.toLocaleString()} - €{negotiationData.suggestedOfferHigh.toLocaleString()}</p>
+                </div>
+              </div>
+              <p className="text-sm text-zinc-300">{negotiationData.reasoning}</p>
+              {negotiationData.tips.length > 0 && (
+                <div>
+                  <p className="text-xs text-zinc-500 mb-2">Tipy na vyjednávanie:</p>
+                  <ul className="space-y-1">
+                    {negotiationData.tips.map((tip, i) => (
+                      <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
+                        <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                        {tip}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}

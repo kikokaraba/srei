@@ -8,6 +8,8 @@ import type { PropertySource, ListingType } from "@/generated/prisma/client";
 import type { ScrapedProperty } from "./ingestion-pipeline";
 import { parseListingUrl } from "./url-parser";
 import { parseDescription } from "./parser";
+import { getCityFromPsc } from "./psc-map";
+import { extractLocationWithAI } from "@/lib/ai/location-extraction";
 
 const USER_AGENTS = [
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
@@ -65,14 +67,17 @@ function parseArea(text: string): number {
 
 function parseCity(text: string): { city: string; district: string } {
   const normalized = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  
+
   for (const [key, city] of Object.entries(SLOVAK_CITIES)) {
     if (normalized.includes(key)) {
       const districtMatch = text.match(/([^,]+)/);
       return { city, district: districtMatch?.[1]?.trim() || city };
     }
   }
-  
+
+  const pscCity = getCityFromPsc(text);
+  if (pscCity) return { city: pscCity, district: pscCity };
+
   const words = text.split(/[\s,;]+/).filter((w) => w.length > 2);
   for (const word of words) {
     if (word[0] === word[0].toUpperCase() && word.length > 3) {
@@ -192,11 +197,12 @@ async function scrapeBazosDetail(url: string): Promise<ScrapedProperty | null> {
   let areaM2 = parseArea(fullText);
   if (areaM2 === 0) areaM2 = parseArea(title);
   if (areaM2 === 0 || areaM2 < 5) areaM2 = 50;
-  
+
+  const rawDesc = $(".popis, .description, [class*='popis']").first().text().trim();
+
   // Lokalita
-  let { city, district } = parseCity(
-    $(".lokalita, .inzeratlok, [class*='lokalit']").first().text() || fullText
-  );
+  const locationElText = $(".lokalita, .inzeratlok, [class*='lokalit']").first().text();
+  let { city, district } = parseCity(locationElText || fullText);
   if (city === "Slovensko") {
     const fromTitle = parseCity(title);
     if (fromTitle.city !== "Slovensko") {
@@ -204,9 +210,19 @@ async function scrapeBazosDetail(url: string): Promise<ScrapedProperty | null> {
       district = fromTitle.district;
     }
   }
-  
-  // Popis – vyčistený od skriptov a boilerplate
-  const rawDesc = $(".popis, .description, [class*='popis']").first().text().trim();
+  if (city === "Slovensko") {
+    const aiLocation = await extractLocationWithAI({
+      title,
+      description: rawDesc,
+      locationText: locationElText,
+      address: undefined,
+    });
+    if (aiLocation?.city) {
+      city = aiLocation.city;
+      district = aiLocation.district ?? city;
+    }
+  }
+
   const description = sanitizeDescription(rawDesc, 5000);
   const { condition } = parseDescription(description + " " + title, title);
   
@@ -303,13 +319,19 @@ async function scrapeNehnutelnostiDetail(url: string): Promise<ScrapedProperty |
   let areaM2 = parseArea(fullText);
   if (areaM2 === 0) areaM2 = parseArea(title);
   if (areaM2 === 0 || areaM2 < 5) areaM2 = 50;
-  
-  const ldLocality = jsonLd?.address?.addressLocality;
-  let { city, district } = parseCity(
-    ldLocality || 
-    $(".location, .advertisement-location, [class*='location']").first().text() || 
-    fullText
-  );
+
+  const ldDesc = jsonLd?.description;
+  const rawDesc = (
+    ldDesc ||
+    $(".description, .advertisement-description, [class*='description']").first().text() ||
+    ""
+  ).trim();
+
+  const locationElText =
+    jsonLd?.address?.addressLocality ||
+    $(".location, .advertisement-location, [class*='location']").first().text() ||
+    "";
+  let { city, district } = parseCity(locationElText || fullText);
   if (city === "Slovensko") {
     const fromTitle = parseCity(title);
     if (fromTitle.city !== "Slovensko") {
@@ -317,13 +339,19 @@ async function scrapeNehnutelnostiDetail(url: string): Promise<ScrapedProperty |
       district = fromTitle.district;
     }
   }
-  
-  const ldDesc = jsonLd?.description;
-  const rawDesc = (
-    ldDesc ||
-    $(".description, .advertisement-description, [class*='description']").first().text() ||
-    ""
-  ).trim();
+  if (city === "Slovensko") {
+    const aiLocation = await extractLocationWithAI({
+      title,
+      description: rawDesc,
+      locationText: locationElText,
+      address: undefined,
+    });
+    if (aiLocation?.city) {
+      city = aiLocation.city;
+      district = aiLocation.district ?? city;
+    }
+  }
+
   const description = sanitizeDescription(rawDesc, 5000);
   const { condition } = parseDescription(description + " " + title, title);
   

@@ -38,8 +38,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Check if user is admin
-    fetch("/api/v1/admin/stats")
+    // Check if user is admin (credentials: include ensures session cookie is sent)
+    fetch("/api/v1/admin/stats", { credentials: "include" })
       .then((res) => {
         if (res.status === 403 || res.status === 401) {
           router.push("/dashboard");

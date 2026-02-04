@@ -1,12 +1,16 @@
 /**
  * Property Fingerprint Generator
- * Generuje unikátny fingerprint pre každú nehnuteľnosť pre matching duplicít
- * 
- * VYLEPŠENIA v2:
- * - Fuzzy matching pre detekciu podobných nehnuteľností
- * - Tolerance pre drobnú zmenu plochy (±2m²)
- * - Detekcia re-listingov (rovnaká nehnuteľnosť, nové ID)
- * - Similarity score pre ranking zhôd
+ * Generuje unikátny fingerprint pre každú nehnuteľnosť pre matching duplicít.
+ *
+ * STRICT HASH (100% zhoda):
+ * - Hash spája LEN nehnuteľnosti s úplne rovnakými atribútmi.
+ * - Adresa: plná normalizácia S ČÍSLOV DOMU (inak byt 15 a 17 = rovnaký).
+ * - Plocha: presne na 1 desatinné miesto (52.4 ≠ 53.0).
+ * - Mesto, okres, izby, poschodie: presná zhoda.
+ * - Žiadne rozsahy (area range, floor range), žiadne fuzzy matching v hashi.
+ *
+ * Automatické spájanie v findBestMatch: LEN (1) source+external_id alebo (2) strict hash.
+ * Fuzzy matching sa NEPOUŽÍVA na auto-spájanie (len na návrhy pre človeka).
  */
 
 import { createHash } from "crypto";
@@ -44,31 +48,45 @@ export function removeDiacritics(text: string): string {
 }
 
 /**
- * Normalizuje adresu pre porovnanie
- * - Lowercase
- * - Bez diakritiky
- * - Odstráni čísla domov, PSČ
- * - Normalizuje medzery
+ * Normalizuje adresu pre „mäkké“ porovnanie (fuzzy, návrhy).
+ * Odstraňuje čísla domov a PSČ – NEPOUŽÍVAŤ pre strict hash.
  */
 export function normalizeAddress(address: string): string {
   let normalized = removeDiacritics(address).toLowerCase();
-  
-  // Odstráň PSČ (5 číslic)
   normalized = normalized.replace(/\d{3}\s?\d{2}/g, "");
-  
-  // Odstráň čísla domov (napr. "15", "15/A", "15A")
   normalized = normalized.replace(/\d+[\/]?[a-z]?/gi, "");
-  
-  // Normalizuj medzery
   normalized = normalized.replace(/\s+/g, " ").trim();
-  
-  // Odstráň bežné slová
   const stopWords = ["ulica", "ul", "nam", "namestie", "cesta", "trieda", "ulice"];
   for (const word of stopWords) {
     normalized = normalized.replace(new RegExp(`\\b${word}\\b`, "gi"), "");
   }
-  
   return normalized.replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Striktná normalizácia adresy pre 100% matching.
+ * - Lowercase, bez diakritiky, zjednotené medzery.
+ * - ČÍSLO DOMU SA ZACHOVÁVA (Hlavná 15 vs Hlavná 17 = rôzne nehnuteľnosti).
+ * - Odstráni len PSČ (5 číslic v tvare XXX XX).
+ * - Stop-slová (ul., ulica, nám.) sa normalizujú na jednotný tvar, čísla ostávajú.
+ */
+export function normalizeAddressStrict(address: string): string {
+  let out = removeDiacritics(address).toLowerCase().trim();
+  // Odstráň len PSČ: 5 číslic (optional space)
+  out = out.replace(/\b\d{3}\s?\d{2}\b/g, "");
+  // Zjednoť medzery a čiarky/oddeľovače na jednu medzeru
+  out = out.replace(/[\s,;]+/g, " ").trim();
+  // Voliteľne: skrátené tvary ulica -> ul (konzistentný tvar, čísla nech na mieste)
+  const stopToCanonical: Record<string, string> = {
+    "ulica": "ul", "ul.": "ul", "ul": "ul",
+    "namestie": "nam", "nam.": "nam", "nam": "nam",
+    "cesta": "c", "trieda": "tr",
+  };
+  for (const [word, canon] of Object.entries(stopToCanonical)) {
+    const re = new RegExp(`\\b${word.replace(".", "\\.")}\\b`, "gi");
+    out = out.replace(re, canon);
+  }
+  return out.replace(/\s+/g, " ").trim();
 }
 
 /**
@@ -134,22 +152,45 @@ export function getFloorRange(floor: number | null | undefined): string {
  */
 export function getDescriptionHash(description: string | null | undefined): string {
   if (!description) return "";
-  
   const normalized = removeDiacritics(description)
     .toLowerCase()
     .replace(/\s+/g, " ")
     .substring(0, 500)
     .trim();
-  
   return createHash("md5").update(normalized).digest("hex").substring(0, 16);
 }
 
 /**
- * Vytvorí city-district kombináciu
+ * Vytvorí city-district kombináciu (normalized)
  */
 export function getCityDistrict(city: string, district: string): string {
-  const normalizedDistrict = removeDiacritics(district).toLowerCase().replace(/\s+/g, "-");
-  return `${city}-${normalizedDistrict}`;
+  const c = removeDiacritics(city).toLowerCase().trim();
+  const d = removeDiacritics(district).toLowerCase().replace(/\s+/g, "-").trim();
+  return `${c}|${d}`;
+}
+
+/**
+ * Presná hodnota pre strict hash: plocha na 1 desatinné miesto.
+ * Rovnaký byt = rovnaká plocha (52.4 vs 52.4); 52.4 vs 53.0 = iné.
+ */
+function toStrictArea(areaM2: number): string {
+  return Number(areaM2).toFixed(1);
+}
+
+/**
+ * Presná hodnota pre strict hash: poschodie alebo "X" ak neznáme.
+ */
+function toStrictFloor(floor: number | null | undefined): string {
+  if (floor === null || floor === undefined) return "X";
+  return String(Math.floor(Number(floor)));
+}
+
+/**
+ * Presná hodnota pre strict hash: izby alebo "X" ak neznáme.
+ */
+function toStrictRooms(rooms: number | null | undefined): string {
+  if (rooms === null || rooms === undefined) return "X";
+  return String(Math.floor(Number(rooms)));
 }
 
 // ============================================================================
@@ -169,7 +210,8 @@ export interface FingerprintData {
 }
 
 /**
- * Vytvorí fingerprint pre nehnuteľnosť
+ * Vytvorí fingerprint pre nehnuteľnosť.
+ * fingerprintHash = STRICT hash – zhoduje len 100% totožné nehnuteľnosti.
  */
 export function createFingerprint(property: {
   address: string;
@@ -183,6 +225,7 @@ export function createFingerprint(property: {
   description?: string | null;
 }): FingerprintData {
   const addressNormalized = normalizeAddress(property.address);
+  const addressStrict = normalizeAddressStrict(property.address);
   const cityDistrict = getCityDistrict(property.city, property.district);
   const areaRange = getAreaRange(property.area_m2);
   const roomsRange = property.rooms ? property.rooms.toString() : null;
@@ -190,17 +233,17 @@ export function createFingerprint(property: {
   const floorRange = getFloorRange(property.floor);
   const titleNormalized = normalizeTitle(property.title);
   const descriptionHash = getDescriptionHash(property.description);
-  
-  // Vytvor hash z kľúčových hodnôt
-  const hashInput = [
+
+  // STRICT hash: len presné hodnoty, plná adresa s číslom domu, žiadne rozsahy
+  const strictParts = [
     cityDistrict,
-    areaRange,
-    roomsRange || "",
-    addressNormalized.substring(0, 50),
-  ].join("|");
-  
-  const fingerprintHash = createHash("md5").update(hashInput).digest("hex");
-  
+    addressStrict,
+    toStrictArea(property.area_m2),
+    toStrictRooms(property.rooms),
+    toStrictFloor(property.floor),
+  ];
+  const fingerprintHash = createHash("md5").update(strictParts.join("|")).digest("hex");
+
   return {
     addressNormalized,
     cityDistrict,
@@ -485,13 +528,13 @@ export async function findMatchCandidates(
 }
 
 /**
- * Hlavná funkcia pre matching - nájde najlepšiu zhodu alebo vytvorí novú
- * 
+ * Hlavná funkcia pre matching – spája LEN 100% zhodné nehnuteľnosti.
+ *
  * LOGIKA:
- * 1. Hľadaj existujúcu nehnuteľnosť podľa source + external_id (presná zhoda)
- * 2. Ak nenájdeš, hľadaj podľa fingerprint hash (rýchle)
- * 3. Ak nenájdeš, použi fuzzy matching (pomalšie ale presnejšie)
- * 4. Ak nájdeš zhodu s vysokým skóre (>85), označ ako re-listing
+ * 1. Presná zhoda podľa source + external_id (ten istý inzerát z toho istého zdroja).
+ * 2. Presná zhoda podľa fingerprint hash (mesto, obvod, adresa s číslom, plocha, izby, poschodie).
+ * Žiadny fuzzy matching – podobné, ale nie identické záznamy sa automaticky nespájajú.
+ * findMatchCandidates() môže slúžiť na návrhy pre človeka (UI), nie na auto-spájanie.
  */
 export async function findBestMatch(
   newProperty: {
@@ -566,42 +609,16 @@ export async function findBestMatch(
     return {
       isMatch: true,
       matchedPropertyId: fingerprintMatch.property.id,
-      similarityScore: 95,
-      matchReasons: ["Fingerprint hash match"],
+      similarityScore: 100,
+      matchReasons: ["100% zhoda (fingerprint hash)"],
       isReListing: wasInactive && daysSinceLastSeen > 7,
     };
   }
+
+  // Žiadny fuzzy matching – spájame len 100% zhodné (source+external_id alebo fingerprintHash).
+  // findMatchCandidates() môže slúžiť na návrhy pre používateľa, nie na auto-spájanie.
   
-  // 3. Fuzzy matching
-  const candidates = await findMatchCandidates(newProperty, {
-    minSimilarity: 85, // Vysoká hranica pre automatické matching
-  });
-  
-  if (candidates.length > 0) {
-    const bestCandidate = candidates[0];
-    
-    // Získaj info o property
-    const candidateProperty = await prisma.property.findUnique({
-      where: { id: bestCandidate.propertyId },
-      select: { status: true, last_seen_at: true },
-    });
-    
-    const wasInactive = candidateProperty?.status === "REMOVED" || 
-                        candidateProperty?.status === "EXPIRED";
-    const daysSinceLastSeen = candidateProperty?.last_seen_at 
-      ? Math.floor((Date.now() - candidateProperty.last_seen_at.getTime()) / (1000 * 60 * 60 * 24))
-      : 0;
-    
-    return {
-      isMatch: true,
-      matchedPropertyId: bestCandidate.propertyId,
-      similarityScore: bestCandidate.similarityScore,
-      matchReasons: bestCandidate.matchReasons,
-      isReListing: wasInactive && daysSinceLastSeen > 7,
-    };
-  }
-  
-  // 4. Žiadna zhoda - nová nehnuteľnosť
+  // Žiadna zhoda - nová nehnuteľnosť
   return {
     isMatch: false,
     matchedPropertyId: null,

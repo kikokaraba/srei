@@ -27,17 +27,58 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const criteria: InvestmentCriteria = await request.json();
+    let criteria: Partial<InvestmentCriteria> = {};
+    try {
+      criteria = (await request.json()) || {};
+    } catch {
+      criteria = {};
+    }
+
+    // Fallback to UserPreferences when criteria not sent or partial
+    const prefs = await prisma.userPreferences.findUnique({
+      where: { userId: session.user.id! },
+    });
+    if (prefs) {
+      if (!criteria.budget) criteria.budget = prefs.budget ?? prefs.maxPrice ?? 150000;
+      if (!criteria.investmentType) {
+        const goal = prefs.investmentGoal as InvestmentCriteria["investmentType"] | null;
+        if (goal) criteria.investmentType = goal;
+        else if (prefs.investmentTypes) {
+          try {
+            const types = JSON.parse(prefs.investmentTypes) as string[];
+            if (types.includes("high-yield") || types.includes("rental")) criteria.investmentType = "RENTAL_YIELD";
+            else if (types.includes("flip")) criteria.investmentType = "FLIP";
+            else if (types.includes("stable-growth") || types.includes("future-potential")) criteria.investmentType = "CAPITAL_GROWTH";
+            else criteria.investmentType = "BALANCED";
+          } catch {
+            criteria.investmentType = "BALANCED";
+          }
+        } else criteria.investmentType = "BALANCED";
+      }
+      if (!criteria.riskTolerance) criteria.riskTolerance = (prefs.riskTolerance as InvestmentCriteria["riskTolerance"]) ?? "MEDIUM";
+      if (!criteria.preferredCities && prefs.trackedCities) {
+        try {
+          criteria.preferredCities = JSON.parse(prefs.trackedCities) as string[];
+        } catch {
+          // ignore
+        }
+      }
+      if (criteria.minYield == null) criteria.minYield = prefs.minYield ?? prefs.minGrossYield ?? undefined;
+    }
+
+    const budget = criteria.budget ?? 150000;
+    const investmentType = criteria.investmentType ?? "BALANCED";
+    const riskTolerance = criteria.riskTolerance ?? "MEDIUM";
 
     // Get properties within budget
-    const maxPrice = criteria.budget * 1.1; // 10% tolerance
-    const minPrice = criteria.budget * 0.5; // Don't show too cheap
+    const maxPrice = budget * 1.1; // 10% tolerance
+    const minPrice = budget * 0.5; // Don't show too cheap
 
     const properties = await prisma.property.findMany({
       where: {
         price: { gte: minPrice, lte: maxPrice },
         listing_type: "PREDAJ",
-        ...(criteria.preferredCities?.length ? { city: { in: criteria.preferredCities as string[] } } : {}),
+        ...(criteria.preferredCities?.length ? { city: { in: criteria.preferredCities } } : {}),
       },
       include: {
         investmentMetrics: true,
@@ -122,9 +163,9 @@ export async function POST(request: NextRequest) {
     const prompt = `Analyzuj tieto investičné príležitosti pre klienta:
 
 KRITÉRIÁ KLIENTA:
-- Rozpočet: €${criteria.budget.toLocaleString()}
-- Investičný cieľ: ${investmentTypeLabels[criteria.investmentType]}
-- Tolerancia rizika: ${riskLabels[criteria.riskTolerance]}
+- Rozpočet: €${budget.toLocaleString()}
+- Investičný cieľ: ${investmentTypeLabels[investmentType]}
+- Tolerancia rizika: ${riskLabels[riskTolerance]}
 ${criteria.minYield ? `- Minimálny požadovaný výnos: ${criteria.minYield}%` : ""}
 ${criteria.preferredCities?.length ? `- Preferované mestá: ${criteria.preferredCities.join(", ")}` : ""}
 

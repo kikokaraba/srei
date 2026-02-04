@@ -98,11 +98,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token.id && token.role) {
+      if (session.user && token.id) {
         session.user = {
           ...session.user,
           id: String(token.id),
-          role: token.role,
+          role: (token.role as UserRole) ?? "FREE_USER",
         };
       }
       return session;

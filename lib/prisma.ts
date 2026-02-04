@@ -2,6 +2,18 @@ import { PrismaClient } from "../generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
+// Pri remote DB (Railway atď.) a v dev: akceptovať self-signed TLS hneď pri štarte, pred prvým pripojením
+const _dbUrl = process.env.DATABASE_URL ?? "";
+if (
+  _dbUrl &&
+  !_dbUrl.includes("localhost") &&
+  !_dbUrl.includes("127.0.0.1") &&
+  process.env.NODE_ENV === "development" &&
+  process.env.DATABASE_VERIFY_SSL !== "true"
+) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+}
+
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
@@ -25,32 +37,21 @@ function createPrismaClient(): PrismaClient {
     });
   }
 
-  // Remote DBs (Railway, Neon, etc.) often use TLS with self-signed certs → "self-signed certificate in certificate chain".
-  // Use SSL and accept cert unless DATABASE_VERIFY_SSL=true. Skip SSL only for localhost.
-  let ssl: { rejectUnauthorized: boolean } | undefined;
-  try {
-    const url = new URL(connectionString.replace(/^postgres(ql)?:\/\//, "https://"));
-    const host = (url.hostname || "").toLowerCase();
-    const isLocal =
-      host === "localhost" || host === "127.0.0.1" || host === "::1" || host === "";
-    if (!isLocal) {
-      ssl = { rejectUnauthorized: process.env.DATABASE_VERIFY_SSL === "true" };
-    }
-  } catch {
-    // Fallback: enable SSL for known remote patterns
-    if (
-      connectionString.includes("sslmode=require") ||
-      connectionString.includes("rlwy.net") ||
-      connectionString.includes("railway") ||
-      connectionString.includes("neon.tech") ||
-      connectionString.includes("supabase.co")
-    ) {
-      ssl = { rejectUnauthorized: process.env.DATABASE_VERIFY_SSL === "true" };
-    }
-  }
+  // Railway/Neon atď. používajú TLS so self-signed certom → "self-signed certificate in certificate chain".
+  // 1) pg môže brať sslmode z URL a overovať cert – odstránime sslmode a predáme vlastnú SSL konfiguráciu.
+  // 2) Záložne je NODE_TLS_REJECT_UNAUTHORIZED=0 nastavené hore pri načítaní modulu (dev + remote DB).
+  const isLocal =
+    connectionString.includes("localhost") || connectionString.includes("127.0.0.1");
+  const verifySSL = process.env.DATABASE_VERIFY_SSL === "true";
+  const ssl: false | { rejectUnauthorized: boolean } =
+    !isLocal ? { rejectUnauthorized: verifySSL } : false;
+  const urlWithoutSslMode = connectionString
+    .replace(/\?sslmode=[^&]+&?/, "?")
+    .replace(/&sslmode=[^&]+/, "")
+    .replace(/\?$/, "");
   const pool = new Pool({
-    connectionString,
-    ...(ssl !== undefined && { ssl }),
+    connectionString: urlWithoutSslMode,
+    ssl: ssl || undefined,
   });
   const adapter = new PrismaPg(pool);
 

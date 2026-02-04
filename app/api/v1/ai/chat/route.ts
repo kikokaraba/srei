@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { getRelevantProperties, formatPropertiesForPrompt } from "@/lib/ai/chat-retrieval";
+import { getNBSContextForPrompt } from "@/lib/ai/nbs-context";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -79,6 +81,23 @@ export async function POST(request: NextRequest) {
     // Get market context
     const context = await getMarketContext();
 
+    // NBS makro dáta
+    const nbsContext = await getNBSContextForPrompt();
+
+    // User profile for personalization
+    const prefs = await prisma.userPreferences.findUnique({
+      where: { userId: session.user.id! },
+    });
+    const profileSection = prefs && (prefs.investmentGoal || prefs.riskTolerance || prefs.budget || prefs.maxPrice)
+      ? `\nPROFIL POUŽÍVATEĽA (pre personalizáciu):\n- Rozpočet: ${prefs.budget ?? prefs.maxPrice ?? "neuvedené"} €\n- Investičný cieľ: ${prefs.investmentGoal ?? "neuvedené"}\n- Tolerancia rizika: ${prefs.riskTolerance ?? "neuvedené"}\n`
+      : "";
+
+    // RAG: fetch relevant properties based on message
+    const relevantProperties = await getRelevantProperties(message);
+    const relevantSection = relevantProperties.length > 0
+      ? `\nRELEVANTNÉ NEHNUTEĽNOSTI (na základe otázky):\n${formatPropertiesForPrompt(relevantProperties)}\n`
+      : "";
+
     const systemPrompt = `Si SRIA - inteligentný asistent pre slovenský realitný trh. Pomáhaš užívateľom s otázkami o nehnuteľnostiach na Slovensku.
 
 AKTUÁLNE DÁTA Z DATABÁZY:
@@ -88,11 +107,14 @@ ${context ? `
 - Štatistiky podľa miest:
 ${context.cityCounts.map(c => `  • ${c.city}: ${c.count} nehnuteľností, priem. €${c.avgPricePerM2}/m²`).join("\n")}
 ` : "Dáta momentálne nedostupné."}
+${nbsContext ? nbsContext + "\n" : ""}
+${profileSection}
+${relevantSection}
 
 PRAVIDLÁ:
 1. Odpovedaj vždy po slovensky
 2. Buď stručný a vecný (max 2-3 odseky)
-3. Používaj reálne dáta z databázy keď sú relevantné
+3. Keď sú uvedené RELEVANTNÉ NEHNUTEĽNOSTI, použi ich pri odpovedi - uvádzaj konkrétne príklady
 4. Pri cenách uvádzaj € a formátuj čísla s medzerami (napr. 150 000 €)
 5. Ak si nie si istý, povedz to
 6. Môžeš odporúčať kde na webe nájdu viac info (Nehnuteľnosti, Kalkulačky, Mapa)

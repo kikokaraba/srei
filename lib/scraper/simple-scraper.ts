@@ -59,6 +59,7 @@ async function fetchPage(url: string): Promise<string | null> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
     
+    const isBazos = url.includes("bazos.sk");
     const response = await fetch(url, {
       headers: {
         "User-Agent": getRandomUA(),
@@ -70,9 +71,10 @@ async function fetchPage(url: string): Promise<string | null> {
         "Upgrade-Insecure-Requests": "1",
         "Sec-Fetch-Dest": "document",
         "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-Site": isBazos ? "same-origin" : "none",
         "Sec-Fetch-User": "?1",
         "Cache-Control": "max-age=0",
+        ...(isBazos ? { "Referer": "https://reality.bazos.sk/" } : {}),
       },
       signal: controller.signal,
     });
@@ -292,11 +294,10 @@ export async function scrapeBazos(options: {
   const properties: ScrapedProperty[] = [];
   let pagesScraped = 0;
   
-  // Kategórie - PREDAJ
+  // Kategórie – len byty (ostatné typy prídeme neskôr)
   const categories = [
-    { path: "/predam/byt/", listingType: "PREDAJ" as ListingType, name: "Byty" },
-    { path: "/predam/dom/", listingType: "PREDAJ" as ListingType, name: "Domy" },
-    { path: "/predam/pozemok/", listingType: "PREDAJ" as ListingType, name: "Pozemky" },
+    { path: "/predam/byt/", listingType: "PREDAJ" as ListingType, name: "Byty predaj" },
+    { path: "/prenajmu/byt/", listingType: "PRENAJOM" as ListingType, name: "Byty prenájom" },
   ];
   
   const categoriesToScrape = options.listingType 
@@ -339,17 +340,23 @@ export async function scrapeBazos(options: {
       
       let foundOnPage = 0;
       
-      // Hľadaj všetky linky na inzeráty
-      const links = $("a[href*='/inzerat/']");
+      // Hľadaj všetky linky na inzeráty (relatívne aj absolútne URL)
+      const links = $("a[href*='inzerat/']");
       const processedIds = new Set<string>();
+      if (page === 0 && links.length === 0) {
+        const hasInzerat = html.includes("inzerat");
+        console.log(`  ⚠️ No links found (${html.length} bytes, contains 'inzerat': ${hasInzerat}) - check selectors or blocking`);
+      } else if (page === 0) {
+        console.log(`  📎 Found ${links.length} links with 'inzerat/' in href`);
+      }
       
       links.each((_, el) => {
         try {
           const $link = $(el);
           const href = $link.attr("href") || "";
           
-          // Extrahuj ID z URL
-          const idMatch = href.match(/\/inzerat\/(\d+)\//);
+          // Extrahuj ID z URL – podpora /inzerat/123/ aj /inzerat/123/slug.php
+          const idMatch = href.match(/\/inzerat\/(\d+)(?:\/|\.php)/);
           if (!idMatch) return;
           
           const externalId = idMatch[1];
@@ -362,11 +369,16 @@ export async function scrapeBazos(options: {
           const title = $link.text().trim();
           if (!title || title.length < 5 || title.length > 300) return;
           
-          // Nájdi parent container
-          const $container = $link.closest("div, article, section").first();
-          const containerText = $container.length ? $container.text() : "";
+          // Kontajner: rad, blok inzerátu alebo najbliší div/section
+          const $container = $link.closest("tr, .inzerat, .listitem, [class*='inzerat'], [class*='list']").first();
+          const $fallback = $container.length ? $container : $link.closest("div, article, section").first();
+          let containerText = ($fallback.length ? $fallback.text() : "") || "";
+          // Ak je málo textu (cena môže byť v súrodencoch), zober aj rodičov
+          if (containerText.length < 50 && $fallback.length) {
+            containerText = $fallback.parent().text() || containerText;
+          }
           
-          // Cena - hľadaj v okolí
+          // Cena – hľadaj v kontajneri alebo v rodičovi
           let price = 0;
           const pricePatterns = [
             /(\d[\d\s,.]*)\s*€/g,
@@ -383,7 +395,8 @@ export async function scrapeBazos(options: {
             }
           }
           
-          if (price < 10000) return; // Filter príliš lacné
+          // "V texte" / dohodou – ak je aspoň titulok a rozumná plocha, nech prejde s cenou 0 a neskôr sa vyfiltruje alebo nastaví dohodou
+          if (price < 10000 && price !== -1) return; // Filter príliš lacné (okrem dohodou)
           
           // Plocha z titulu alebo kontextu
           let areaM2 = parseArea(title);

@@ -7,6 +7,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
 import type { PropertyCondition } from "@/generated/prisma/client";
+import { getNBSContextForPrompt } from "./nbs-context";
 
 // Inicializácia Claude
 const anthropic = new Anthropic({
@@ -337,12 +338,16 @@ ${comparables.slice(0, 10).map(c =>
 ).join("\n")}
   `.trim() : "Žiadne porovnateľné nehnuteľnosti v databáze.";
 
-  // 3. Zavolaj Claude pre analýzu
+  // 3. NBS kontext (makro dáta)
+  const nbsContext = await getNBSContextForPrompt();
+
+  // 4. Zavolaj Claude pre analýzu
   const prompt = `Si expert na slovenský realitný trh. Na základe poskytnutých dát urč realistickú trhovú hodnotu nehnuteľnosti.
 
 ${propertyDescription}
 
 ${comparablesDescription}
+${nbsContext ? `\n${nbsContext}\n` : ""}
 
 Vytvor detailnú analýzu a odhad ceny. Odpovedz PRESNE v tomto JSON formáte (bez markdown, len čistý JSON):
 {
