@@ -265,7 +265,7 @@ export function PriceHistory() {
             {data?.ourData && (
               <div className="pt-2 border-t border-zinc-700/50">
                 <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">SRIA (naše dáta)</div>
-                <div className="text-lg font-semibold text-emerald-400/90 tabular-nums">
+                <div className="text-lg font-semibold text-amber-400 tabular-nums">
                   {data.ourData.avgPricePerM2.toLocaleString()}
                   <span className="text-sm text-zinc-400 ml-1">€/m²</span>
                 </div>
@@ -420,14 +420,14 @@ export function PriceHistory() {
                     )}
                   </g>
                 ))}
-                {/* Naše dáta 2025 - bod SRIA */}
+                {/* Naše dáta 2025 - bod SRIA (odlišná farba pre porovnanie s NBS) */}
                 {chartData.ourPoint && (
                   <g>
                     <circle
                       cx={chartData.ourPoint.x}
                       cy={chartData.ourPoint.y}
                       r="1.8"
-                      fill="#34d399"
+                      fill="#f59e0b"
                       stroke="#0f0f0f"
                       strokeWidth="0.4"
                       className="opacity-100"
@@ -437,7 +437,7 @@ export function PriceHistory() {
                       cy={chartData.ourPoint.y}
                       r="2.8"
                       fill="none"
-                      stroke="#34d399"
+                      stroke="#f59e0b"
                       strokeWidth="0.25"
                       strokeDasharray="1,1"
                       opacity="0.9"
@@ -537,7 +537,7 @@ export function PriceHistory() {
           {chartData?.ourPoint && (
             <div className="flex items-center justify-center gap-4 text-xs text-zinc-500">
               <span className="flex items-center gap-1.5">
-                <span className="inline-block w-2 h-2 rounded-full bg-emerald-500/80" style={{ boxShadow: "0 0 0 1px #34d399" }} />
+                <span className="inline-block w-2 h-2 rounded-full bg-amber-500" style={{ boxShadow: "0 0 0 1px #f59e0b" }} />
                 SRIA – priemer €/m² z našich inzerátov (2025)
               </span>
               <span className="flex items-center gap-1.5">
