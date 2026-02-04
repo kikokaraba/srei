@@ -2,36 +2,62 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
-// SlovakCity enum removed - now using string for city field
+
+/** Coerce to number or null; preserves 0. */
+function toFloat(v: unknown): number | null {
+  if (v === null || v === undefined || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** Coerce to integer or null; preserves 0. */
+function toInt(v: unknown): number | null {
+  if (v === null || v === undefined || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.floor(n) : null;
+}
 
 export async function GET() {
+  let session;
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      console.error("GET /api/v1/user/preferences: Unauthorized - No session or user ID");
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+    session = await auth();
+  } catch (authError) {
+    console.error("GET /api/v1/user/preferences: auth() failed", authError);
+    const msg = authError instanceof Error ? authError.message : "Auth failed";
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Authentication error",
+        details: process.env.NODE_ENV === "development" ? msg : undefined,
+      },
+      { status: 500 }
+    );
+  }
 
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  try {
     const preferences = await prisma.userPreferences.findUnique({
       where: { userId: session.user.id },
     });
 
-    // Return null if preferences don't exist yet (not an error)
     return NextResponse.json({
       success: true,
-      data: preferences || null,
+      data: preferences ?? null,
     });
   } catch (error) {
     console.error("Error fetching user preferences:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: "Internal server error",
-        details: process.env.NODE_ENV === "development" ? errorMessage : undefined
+        details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
       },
       { status: 500 }
     );
@@ -39,28 +65,31 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  let session;
   try {
-    const session = await auth();
-    console.log("POST /api/v1/user/preferences - Session check:", {
-      hasSession: !!session,
-      hasUser: !!session?.user,
-      userId: session?.user?.id,
-      userEmail: session?.user?.email,
-    });
-    
-    if (!session?.user?.id) {
-      console.error("Unauthorized: No session or user ID", {
-        session: session ? "exists" : "null",
-        user: session?.user ? "exists" : "null",
-        userId: session?.user?.id,
-      });
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+    session = await auth();
+  } catch (authError) {
+    console.error("POST /api/v1/user/preferences: auth() failed", authError);
+    const msg = authError instanceof Error ? authError.message : "Auth failed";
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Authentication error",
+        details: process.env.NODE_ENV === "development" ? msg : undefined,
+      },
+      { status: 500 }
+    );
+  }
 
-    let body;
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    let body: unknown;
     try {
       body = await request.json();
     } catch (error) {
@@ -70,6 +99,13 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+    if (body == null || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json(
+        { success: false, error: "Invalid request body" },
+        { status: 400 }
+      );
+    }
+
     const {
       primaryCity,
       trackedRegions,
@@ -124,7 +160,40 @@ export async function POST(request: Request) {
       sortOrder,
       savedFilters,
       onboardingCompleted,
-    } = body;
+    } = body as Record<string, unknown>;
+
+    // Skip onboarding only: minimal upsert to avoid missing/undefined fields on create
+    const onlyOnboarding =
+      onboardingCompleted === true &&
+      primaryCity === undefined &&
+      trackedRegions === undefined &&
+      trackedCities === undefined &&
+      trackedDistricts === undefined &&
+      trackedStreets === undefined;
+
+    if (onlyOnboarding) {
+      const minimalCreate: Prisma.UserPreferencesUncheckedCreateInput = {
+        userId: session.user.id,
+        onboardingCompleted: true,
+        trackedRegions: "[]",
+        trackedCities: "[]",
+        trackedDistricts: "[]",
+        trackedStreets: "[]",
+        investmentTypes: "[]",
+        propertyTypes: "[]",
+        condition: "[]",
+        energyCertificates: "[]",
+        infrastructureTypes: "[]",
+        ownershipTypes: "[]",
+        savedFilters: "[]",
+      };
+      const preferences = await prisma.userPreferences.upsert({
+        where: { userId: session.user.id },
+        update: { onboardingCompleted: true },
+        create: minimalCreate,
+      });
+      return NextResponse.json({ success: true, data: preferences });
+    }
 
     // Build update data object with proper types
     // primaryCity is now a string field - no enum validation needed
@@ -145,49 +214,49 @@ export async function POST(request: Request) {
     if (trackedStreets !== undefined) {
       updateData.trackedStreets = trackedStreets ? JSON.stringify(trackedStreets) : JSON.stringify([]);
     }
-    if (investmentType !== undefined) updateData.investmentType = investmentType || null;
+    if (investmentType !== undefined) updateData.investmentType = (investmentType as string) || null;
     if (investmentTypes !== undefined) {
       updateData.investmentTypes = investmentTypes ? (Array.isArray(investmentTypes) ? JSON.stringify(investmentTypes) : investmentTypes) : JSON.stringify([]);
     }
-    if (minYield !== undefined) updateData.minYield = minYield || null;
-    if (maxYield !== undefined) updateData.maxYield = maxYield || null;
-    if (minPrice !== undefined) updateData.minPrice = minPrice || null;
-    if (maxPrice !== undefined) updateData.maxPrice = maxPrice || null;
-    if (minPricePerM2 !== undefined) updateData.minPricePerM2 = minPricePerM2 || null;
-    if (maxPricePerM2 !== undefined) updateData.maxPricePerM2 = maxPricePerM2 || null;
-    if (minArea !== undefined) updateData.minArea = minArea || null;
-    if (maxArea !== undefined) updateData.maxArea = maxArea || null;
+    if (minYield !== undefined) updateData.minYield = toFloat(minYield);
+    if (maxYield !== undefined) updateData.maxYield = toFloat(maxYield);
+    if (minPrice !== undefined) updateData.minPrice = toFloat(minPrice);
+    if (maxPrice !== undefined) updateData.maxPrice = toFloat(maxPrice);
+    if (minPricePerM2 !== undefined) updateData.minPricePerM2 = toFloat(minPricePerM2);
+    if (maxPricePerM2 !== undefined) updateData.maxPricePerM2 = toFloat(maxPricePerM2);
+    if (minArea !== undefined) updateData.minArea = toFloat(minArea);
+    if (maxArea !== undefined) updateData.maxArea = toFloat(maxArea);
     if (propertyTypes !== undefined) {
       updateData.propertyTypes = propertyTypes ? (Array.isArray(propertyTypes) ? JSON.stringify(propertyTypes) : propertyTypes) : JSON.stringify([]);
     }
-    if (minRooms !== undefined) updateData.minRooms = minRooms || null;
-    if (maxRooms !== undefined) updateData.maxRooms = maxRooms || null;
+    if (minRooms !== undefined) updateData.minRooms = toInt(minRooms);
+    if (maxRooms !== undefined) updateData.maxRooms = toInt(maxRooms);
     if (condition !== undefined) {
       updateData.condition = condition ? (Array.isArray(condition) ? JSON.stringify(condition) : condition) : JSON.stringify([]);
     }
     if (energyCertificates !== undefined) {
       updateData.energyCertificates = energyCertificates ? (Array.isArray(energyCertificates) ? JSON.stringify(energyCertificates) : energyCertificates) : JSON.stringify([]);
     }
-    if (minFloor !== undefined) updateData.minFloor = minFloor || null;
-    if (maxFloor !== undefined) updateData.maxFloor = maxFloor || null;
+    if (minFloor !== undefined) updateData.minFloor = toInt(minFloor);
+    if (maxFloor !== undefined) updateData.maxFloor = toInt(maxFloor);
     if (onlyDistressed !== undefined) updateData.onlyDistressed = onlyDistressed ?? false;
-    if (minGrossYield !== undefined) updateData.minGrossYield = minGrossYield || null;
-    if (maxGrossYield !== undefined) updateData.maxGrossYield = maxGrossYield || null;
-    if (minNetYield !== undefined) updateData.minNetYield = minNetYield || null;
-    if (maxNetYield !== undefined) updateData.maxNetYield = maxNetYield || null;
-    if (minCashOnCash !== undefined) updateData.minCashOnCash = minCashOnCash || null;
-    if (maxCashOnCash !== undefined) updateData.maxCashOnCash = maxCashOnCash || null;
-    if (maxPriceToRentRatio !== undefined) updateData.maxPriceToRentRatio = maxPriceToRentRatio || null;
-    if (maxDaysOnMarket !== undefined) updateData.maxDaysOnMarket = maxDaysOnMarket || null;
-    if (minPriceDrop !== undefined) updateData.minPriceDrop = minPriceDrop || null;
+    if (minGrossYield !== undefined) updateData.minGrossYield = toFloat(minGrossYield);
+    if (maxGrossYield !== undefined) updateData.maxGrossYield = toFloat(maxGrossYield);
+    if (minNetYield !== undefined) updateData.minNetYield = toFloat(minNetYield);
+    if (maxNetYield !== undefined) updateData.maxNetYield = toFloat(maxNetYield);
+    if (minCashOnCash !== undefined) updateData.minCashOnCash = toFloat(minCashOnCash);
+    if (maxCashOnCash !== undefined) updateData.maxCashOnCash = toFloat(maxCashOnCash);
+    if (maxPriceToRentRatio !== undefined) updateData.maxPriceToRentRatio = toFloat(maxPriceToRentRatio);
+    if (maxDaysOnMarket !== undefined) updateData.maxDaysOnMarket = toInt(maxDaysOnMarket);
+    if (minPriceDrop !== undefined) updateData.minPriceDrop = toFloat(minPriceDrop);
     if (requirePriceHistory !== undefined) updateData.requirePriceHistory = requirePriceHistory ?? false;
-    if (minUrbanImpact !== undefined) updateData.minUrbanImpact = minUrbanImpact || null;
-    if (maxDistanceToInfra !== undefined) updateData.maxDistanceToInfra = maxDistanceToInfra || null;
+    if (minUrbanImpact !== undefined) updateData.minUrbanImpact = toFloat(minUrbanImpact);
+    if (maxDistanceToInfra !== undefined) updateData.maxDistanceToInfra = toFloat(maxDistanceToInfra);
     if (infrastructureTypes !== undefined) {
       updateData.infrastructureTypes = infrastructureTypes ? (Array.isArray(infrastructureTypes) ? JSON.stringify(infrastructureTypes) : infrastructureTypes) : JSON.stringify([]);
     }
-    if (minGapPercentage !== undefined) updateData.minGapPercentage = minGapPercentage || null;
-    if (minPotentialProfit !== undefined) updateData.minPotentialProfit = minPotentialProfit || null;
+    if (minGapPercentage !== undefined) updateData.minGapPercentage = toFloat(minGapPercentage);
+    if (minPotentialProfit !== undefined) updateData.minPotentialProfit = toFloat(minPotentialProfit);
     if (ownershipTypes !== undefined) {
       updateData.ownershipTypes = ownershipTypes ? (Array.isArray(ownershipTypes) ? JSON.stringify(ownershipTypes) : ownershipTypes) : JSON.stringify([]);
     }
@@ -200,7 +269,7 @@ export async function POST(request: Request) {
     if (notifyDistressed !== undefined) updateData.notifyDistressed = notifyDistressed ?? false;
     if (notificationFrequency !== undefined) updateData.notificationFrequency = notificationFrequency || "daily";
     if (defaultView !== undefined) updateData.defaultView = defaultView || "dashboard";
-    if (itemsPerPage !== undefined) updateData.itemsPerPage = itemsPerPage || 20;
+    if (itemsPerPage !== undefined) updateData.itemsPerPage = toInt(itemsPerPage) ?? 20;
     if (sortBy !== undefined) updateData.sortBy = sortBy || "price";
     if (sortOrder !== undefined) updateData.sortOrder = sortOrder || "asc";
     if (savedFilters !== undefined) {
@@ -211,44 +280,44 @@ export async function POST(request: Request) {
     // For create, we need to ensure all required fields are present with correct types
     const createData: Prisma.UserPreferencesUncheckedCreateInput = {
       userId: session.user.id,
-      primaryCity: primaryCity !== undefined ? (primaryCity || null) : null,
+      primaryCity: primaryCity !== undefined ? ((primaryCity as string) || null) : null,
       trackedRegions: trackedRegions !== undefined ? (trackedRegions ? JSON.stringify(trackedRegions) : JSON.stringify([])) : JSON.stringify([]),
       trackedCities: trackedCities !== undefined ? (trackedCities ? JSON.stringify(trackedCities) : JSON.stringify([])) : JSON.stringify([]),
       trackedDistricts: trackedDistricts !== undefined ? (trackedDistricts ? JSON.stringify(trackedDistricts) : JSON.stringify([])) : JSON.stringify([]),
       trackedStreets: trackedStreets !== undefined ? (trackedStreets ? JSON.stringify(trackedStreets) : JSON.stringify([])) : JSON.stringify([]),
-      investmentType: investmentType !== undefined ? (investmentType || null) : null,
+      investmentType: investmentType !== undefined ? ((investmentType as string) || null) : null,
       investmentTypes: investmentTypes !== undefined ? (investmentTypes ? (Array.isArray(investmentTypes) ? JSON.stringify(investmentTypes) : investmentTypes) : JSON.stringify([])) : JSON.stringify([]),
-      minYield: minYield !== undefined ? (minYield || null) : null,
-      maxYield: maxYield !== undefined ? (maxYield || null) : null,
-      minPrice: minPrice !== undefined ? (minPrice || null) : null,
-      maxPrice: maxPrice !== undefined ? (maxPrice || null) : null,
-      minPricePerM2: minPricePerM2 !== undefined ? (minPricePerM2 || null) : null,
-      maxPricePerM2: maxPricePerM2 !== undefined ? (maxPricePerM2 || null) : null,
-      minArea: minArea !== undefined ? (minArea || null) : null,
-      maxArea: maxArea !== undefined ? (maxArea || null) : null,
+      minYield: toFloat(minYield),
+      maxYield: toFloat(maxYield),
+      minPrice: toFloat(minPrice),
+      maxPrice: toFloat(maxPrice),
+      minPricePerM2: toFloat(minPricePerM2),
+      maxPricePerM2: toFloat(maxPricePerM2),
+      minArea: toFloat(minArea),
+      maxArea: toFloat(maxArea),
       propertyTypes: propertyTypes !== undefined ? (propertyTypes ? (Array.isArray(propertyTypes) ? JSON.stringify(propertyTypes) : propertyTypes) : JSON.stringify([])) : JSON.stringify([]),
-      minRooms: minRooms !== undefined ? (minRooms || null) : null,
-      maxRooms: maxRooms !== undefined ? (maxRooms || null) : null,
+      minRooms: toInt(minRooms),
+      maxRooms: toInt(maxRooms),
       condition: condition !== undefined ? (condition ? (Array.isArray(condition) ? JSON.stringify(condition) : condition) : JSON.stringify([])) : JSON.stringify([]),
       energyCertificates: energyCertificates !== undefined ? (energyCertificates ? (Array.isArray(energyCertificates) ? JSON.stringify(energyCertificates) : energyCertificates) : JSON.stringify([])) : JSON.stringify([]),
-      minFloor: minFloor !== undefined ? (minFloor || null) : null,
-      maxFloor: maxFloor !== undefined ? (maxFloor || null) : null,
+      minFloor: toInt(minFloor),
+      maxFloor: toInt(maxFloor),
       onlyDistressed: onlyDistressed !== undefined ? (onlyDistressed ?? false) : false,
-      minGrossYield: minGrossYield !== undefined ? (minGrossYield || null) : null,
-      maxGrossYield: maxGrossYield !== undefined ? (maxGrossYield || null) : null,
-      minNetYield: minNetYield !== undefined ? (minNetYield || null) : null,
-      maxNetYield: maxNetYield !== undefined ? (maxNetYield || null) : null,
-      minCashOnCash: minCashOnCash !== undefined ? (minCashOnCash || null) : null,
-      maxCashOnCash: maxCashOnCash !== undefined ? (maxCashOnCash || null) : null,
-      maxPriceToRentRatio: maxPriceToRentRatio !== undefined ? (maxPriceToRentRatio || null) : null,
-      maxDaysOnMarket: maxDaysOnMarket !== undefined ? (maxDaysOnMarket || null) : null,
-      minPriceDrop: minPriceDrop !== undefined ? (minPriceDrop || null) : null,
+      minGrossYield: toFloat(minGrossYield),
+      maxGrossYield: toFloat(maxGrossYield),
+      minNetYield: toFloat(minNetYield),
+      maxNetYield: toFloat(maxNetYield),
+      minCashOnCash: toFloat(minCashOnCash),
+      maxCashOnCash: toFloat(maxCashOnCash),
+      maxPriceToRentRatio: toFloat(maxPriceToRentRatio),
+      maxDaysOnMarket: toInt(maxDaysOnMarket),
+      minPriceDrop: toFloat(minPriceDrop),
       requirePriceHistory: requirePriceHistory !== undefined ? (requirePriceHistory ?? false) : false,
-      minUrbanImpact: minUrbanImpact !== undefined ? (minUrbanImpact || null) : null,
-      maxDistanceToInfra: maxDistanceToInfra !== undefined ? (maxDistanceToInfra || null) : null,
+      minUrbanImpact: toFloat(minUrbanImpact),
+      maxDistanceToInfra: toFloat(maxDistanceToInfra),
       infrastructureTypes: infrastructureTypes !== undefined ? (infrastructureTypes ? (Array.isArray(infrastructureTypes) ? JSON.stringify(infrastructureTypes) : infrastructureTypes) : JSON.stringify([])) : JSON.stringify([]),
-      minGapPercentage: minGapPercentage !== undefined ? (minGapPercentage || null) : null,
-      minPotentialProfit: minPotentialProfit !== undefined ? (minPotentialProfit || null) : null,
+      minGapPercentage: toFloat(minGapPercentage),
+      minPotentialProfit: toFloat(minPotentialProfit),
       ownershipTypes: ownershipTypes !== undefined ? (ownershipTypes ? (Array.isArray(ownershipTypes) ? JSON.stringify(ownershipTypes) : ownershipTypes) : JSON.stringify([])) : JSON.stringify([]),
       requireTaxExemption: requireTaxExemption !== undefined ? (requireTaxExemption ?? false) : false,
       notifyMarketGaps: notifyMarketGaps !== undefined ? (notifyMarketGaps ?? true) : true,
@@ -257,11 +326,11 @@ export async function POST(request: Request) {
       notifyUrbanDevelopment: notifyUrbanDevelopment !== undefined ? (notifyUrbanDevelopment ?? true) : true,
       notifyHighYield: notifyHighYield !== undefined ? (notifyHighYield ?? false) : false,
       notifyDistressed: notifyDistressed !== undefined ? (notifyDistressed ?? false) : false,
-      notificationFrequency: notificationFrequency !== undefined ? (notificationFrequency || "daily") : "daily",
-      defaultView: defaultView !== undefined ? (defaultView || "dashboard") : "dashboard",
-      itemsPerPage: itemsPerPage !== undefined ? (itemsPerPage || 20) : 20,
-      sortBy: sortBy !== undefined ? (sortBy || "price") : "price",
-      sortOrder: sortOrder !== undefined ? (sortOrder || "asc") : "asc",
+      notificationFrequency: notificationFrequency !== undefined ? (String(notificationFrequency) || "daily") : "daily",
+      defaultView: defaultView !== undefined ? (String(defaultView) || "dashboard") : "dashboard",
+      itemsPerPage: toInt(itemsPerPage) ?? 20,
+      sortBy: sortBy !== undefined ? (String(sortBy) || "price") : "price",
+      sortOrder: sortOrder !== undefined ? (String(sortOrder) || "asc") : "asc",
       savedFilters: savedFilters !== undefined ? (savedFilters ? (Array.isArray(savedFilters) ? JSON.stringify(savedFilters) : savedFilters) : JSON.stringify([])) : JSON.stringify([]),
       onboardingCompleted: onboardingCompleted !== undefined ? (onboardingCompleted ?? false) : false,
     };

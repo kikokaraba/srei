@@ -120,32 +120,40 @@ export function OnboardingFlow() {
   const handleSave = useCallback(async () => {
     setIsSaving(true);
     try {
+      const num = (v: number | null | undefined): number | null =>
+        v === null || v === undefined ? null : Number(v);
+      const int = (v: number | null | undefined): number | null => {
+        if (v === null || v === undefined) return null;
+        const n = Math.floor(Number(v));
+        return Number.isFinite(n) ? n : null;
+      };
+
       const response = await fetch("/api/v1/user/preferences", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // Ensure cookies are sent
+        credentials: "include",
         body: JSON.stringify({
           trackedRegions: data.trackedRegions,
           trackedCities: [],
           trackedDistricts: [],
-          investmentType: data.investmentTypes[0] || null, // Hlavný typ (legacy)
-          investmentTypes: data.investmentTypes, // Všetky typy
-          minYield: data.minYield,
+          investmentType: data.investmentTypes[0] ?? null,
+          investmentTypes: data.investmentTypes,
+          minYield: num(data.minYield),
           maxYield: null,
-          minPrice: data.minPrice,
-          maxPrice: data.maxPrice,
-          minPricePerM2: data.minPricePerM2,
-          maxPricePerM2: data.maxPricePerM2,
-          minArea: data.minArea,
-          maxArea: data.maxArea,
-          minRooms: data.minRooms,
-          maxRooms: data.maxRooms,
+          minPrice: num(data.minPrice),
+          maxPrice: num(data.maxPrice),
+          minPricePerM2: num(data.minPricePerM2),
+          maxPricePerM2: num(data.maxPricePerM2),
+          minArea: num(data.minArea),
+          maxArea: num(data.maxArea),
+          minRooms: int(data.minRooms),
+          maxRooms: int(data.maxRooms),
           condition: data.condition,
           energyCertificates: data.energyCertificates,
-          minGrossYield: data.minGrossYield,
-          minCashOnCash: data.minCashOnCash,
-          maxDaysOnMarket: data.maxDaysOnMarket,
-          minGapPercentage: data.minGapPercentage,
+          minGrossYield: num(data.minGrossYield),
+          minCashOnCash: num(data.minCashOnCash),
+          maxDaysOnMarket: int(data.maxDaysOnMarket),
+          minGapPercentage: num(data.minGapPercentage),
           onlyDistressed: data.onlyDistressed,
           notifyMarketGaps: data.notifyMarketGaps,
           notifyPriceDrops: data.notifyPriceDrops,
@@ -155,21 +163,21 @@ export function OnboardingFlow() {
         }),
       });
 
+      const errorData = await response.json().catch(() => ({}));
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const msg =
+          (typeof errorData?.error === "string" && errorData.error) ||
+          (typeof errorData?.details === "string" && errorData.details) ||
+          `HTTP ${response.status}`;
         console.error("Failed to save preferences:", response.status, errorData);
-        throw new Error(errorData.error || `HTTP ${response.status}: Failed to save preferences`);
+        throw new Error(response.status === 401 ? `${msg}. Skúste sa znova prihlásiť.` : msg);
       }
 
-      const result = await response.json();
-      console.log("Preferences saved successfully:", result);
-
-      // Reload page to apply preferences
       window.location.href = "/dashboard";
     } catch (error) {
       console.error("Error saving preferences:", error);
       const errorMessage = error instanceof Error ? error.message : "Neznáma chyba";
-      alert(`Chyba pri ukladaní preferencií: ${errorMessage}. Skúste to znova.`);
+      alert(`Chyba pri ukladaní preferencií: ${errorMessage}`);
     } finally {
       setIsSaving(false);
     }
