@@ -121,6 +121,16 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
       // Pridaj random suffix pre unikátnosť
       const uniqueSlug = `${baseSlug}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 
+      // Detekuj typ nehnuteľnosti z titulku alebo URL
+      const titleLower = prop.title.toLowerCase();
+      const urlLower = prop.sourceUrl.toLowerCase();
+      let propertyType: "BYT" | "DOM" = "BYT";
+      if (titleLower.includes("dom") || titleLower.includes("rodinný") || 
+          titleLower.includes("chata") || titleLower.includes("vila") ||
+          urlLower.includes("/domy/")) {
+        propertyType = "DOM";
+      }
+      
       await prisma.property.create({
         data: {
           external_id: prop.externalId,
@@ -136,6 +146,7 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
           address: `${prop.city}${prop.district ? `, ${prop.district}` : ""}`,
           rooms: prop.rooms,
           listing_type: prop.listingType,
+          property_type: propertyType,
           condition: "POVODNY",
           energy_certificate: "NONE",
           source_url: prop.sourceUrl,
