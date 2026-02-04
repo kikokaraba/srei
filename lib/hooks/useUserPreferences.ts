@@ -6,6 +6,9 @@ export interface UserPreferences {
   trackedDistricts: string[];
   trackedCities: string[];
   investmentType: string | null;
+  investmentGoal: string | null;
+  riskTolerance: string | null;
+  budget: number | null;
   minYield: number | null;
   maxPrice: number | null;
   minPrice: number | null;
@@ -98,31 +101,34 @@ async function fetchPreferences(): Promise<UserPreferences | null> {
 
     const prefs = data.data as Record<string, unknown>;
     return {
-      primaryCity: prefs.primaryCity as string | null,
+      primaryCity: (prefs.primaryCity as string | null) ?? null,
       trackedRegions: safeParseArray(prefs.trackedRegions),
       trackedDistricts: safeParseArray(prefs.trackedDistricts),
       trackedCities: safeParseArray(prefs.trackedCities),
-      investmentType: prefs.investmentType as string | null,
-      minYield: prefs.minYield as number | null,
-      maxPrice: prefs.maxPrice as number | null,
-      minPrice: prefs.minPrice as number | null,
-      minPricePerM2: prefs.minPricePerM2 as number | null | undefined,
-      maxPricePerM2: prefs.maxPricePerM2 as number | null | undefined,
-      minArea: prefs.minArea as number | null | undefined,
-      maxArea: prefs.maxArea as number | null | undefined,
-      minRooms: prefs.minRooms as number | null | undefined,
-      maxRooms: prefs.maxRooms as number | null | undefined,
+      investmentType: (prefs.investmentType as string | null) ?? null,
+      investmentGoal: prefs.investmentGoal != null ? (prefs.investmentGoal as string) : null,
+      riskTolerance: prefs.riskTolerance != null ? (prefs.riskTolerance as string) : null,
+      budget: ((prefs as Record<string, unknown>).budget as number | null | undefined) ?? null,
+      minYield: (prefs.minYield as number | null) ?? null,
+      maxPrice: (prefs.maxPrice as number | null) ?? null,
+      minPrice: (prefs.minPrice as number | null) ?? null,
+      minPricePerM2: (prefs.minPricePerM2 as number | null | undefined) ?? null,
+      maxPricePerM2: (prefs.maxPricePerM2 as number | null | undefined) ?? null,
+      minArea: (prefs.minArea as number | null | undefined) ?? null,
+      maxArea: (prefs.maxArea as number | null | undefined) ?? null,
+      minRooms: (prefs.minRooms as number | null | undefined) ?? null,
+      maxRooms: (prefs.maxRooms as number | null | undefined) ?? null,
       condition: prefs.condition as string | undefined,
       energyCertificates: prefs.energyCertificates as string | undefined,
-      minFloor: prefs.minFloor as number | null | undefined,
-      maxFloor: prefs.maxFloor as number | null | undefined,
+      minFloor: (prefs.minFloor as number | null | undefined) ?? null,
+      maxFloor: (prefs.maxFloor as number | null | undefined) ?? null,
       onlyDistressed: prefs.onlyDistressed as boolean | undefined,
-      maxYield: prefs.maxYield as number | null | undefined,
-      minGrossYield: prefs.minGrossYield as number | null | undefined,
-      maxGrossYield: prefs.maxGrossYield as number | null | undefined,
-      minCashOnCash: prefs.minCashOnCash as number | null | undefined,
-      maxDaysOnMarket: prefs.maxDaysOnMarket as number | null | undefined,
-      minGapPercentage: prefs.minGapPercentage as number | null | undefined,
+      maxYield: (prefs.maxYield as number | null | undefined) ?? null,
+      minGrossYield: (prefs.minGrossYield as number | null | undefined) ?? null,
+      maxGrossYield: (prefs.maxGrossYield as number | null | undefined) ?? null,
+      minCashOnCash: (prefs.minCashOnCash as number | null | undefined) ?? null,
+      maxDaysOnMarket: (prefs.maxDaysOnMarket as number | null | undefined) ?? null,
+      minGapPercentage: (prefs.minGapPercentage as number | null | undefined) ?? null,
       notifyMarketGaps: Boolean(prefs.notifyMarketGaps ?? true),
       notifyPriceDrops: Boolean(prefs.notifyPriceDrops ?? true),
       notifyNewProperties: Boolean(prefs.notifyNewProperties ?? true),

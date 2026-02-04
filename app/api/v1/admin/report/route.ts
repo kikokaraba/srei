@@ -102,10 +102,10 @@ export async function GET() {
       const comp = await getDataComparison();
       liveVsNbs = {
         ourAvgPricePerM2: comp.ourData.avg,
-        nbsAvgPricePerM2: comp.nbsData.avg,
-        differencePercent: comp.differencePercent,
+        nbsAvgPricePerM2: comp.nbsData?.avg ?? 0,
+        differencePercent: comp.differencePercent ?? 0,
         source: comp.ourData.source,
-        nbsPeriod: comp.nbsData.period,
+        nbsPeriod: comp.nbsData?.period ?? "—",
       };
     } catch (e) {
       console.warn("[admin/report] getDataComparison:", e);
