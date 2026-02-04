@@ -8,8 +8,6 @@ import {
   ExternalLink,
   MapPin,
   Home,
-  TrendingUp,
-  TrendingDown,
   Bookmark,
   BookmarkCheck,
   Phone,
@@ -58,6 +56,7 @@ interface Property {
   photo_count?: number;
   seller_phone?: string | null;
   seller_name?: string | null;
+  seller_type?: string | null;
   investmentSummary?: string | null;
   top3_facts?: string | null;
   investmentMetrics: {
@@ -111,12 +110,6 @@ interface EstimatedRent {
   }[];
 }
 
-interface TimelineEvent {
-  type: string;
-  date: string;
-  description: string;
-}
-
 interface YieldData {
   averageRent: number;
   rentRange: { min: number; max: number };
@@ -143,22 +136,6 @@ interface YieldResponse {
   comparison: YieldComparison;
 }
 
-interface PropertyTimeline {
-  priceHistory: {
-    price: number;
-    date: string;
-    changePercent: number | null;
-  }[];
-  events: TimelineEvent[];
-  summary: {
-    totalPriceChange: number;
-    totalPriceChangePercent: number;
-    daysOnMarket: number;
-    priceDrops: number;
-    reListings: number;
-  };
-}
-
 export default function PropertyDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -168,7 +145,6 @@ export default function PropertyDetailPage() {
   const [duplicates, setDuplicates] = useState<DuplicateInfo | null>(null);
   const [marketComparison, setMarketComparison] = useState<MarketComparison | null>(null);
   const [estimatedRent, setEstimatedRent] = useState<EstimatedRent | null>(null);
-  const [timeline, setTimeline] = useState<PropertyTimeline | null>(null);
   const [yieldData, setYieldData] = useState<YieldResponse | null>(null);
 
   useEffect(() => {
@@ -182,7 +158,6 @@ export default function PropertyDetailPage() {
     setDuplicates(null);
     setMarketComparison(null);
     setEstimatedRent(null);
-    setTimeline(null);
     setYieldData(null);
     setLoading(true);
 
@@ -196,7 +171,7 @@ export default function PropertyDetailPage() {
           fetchDuplicates(data.data);
           fetchMarketComparison(data.data);
           fetchEstimatedRent(data.data);
-          fetchTimeline(data.data);
+          // Timeline sa nevolá – história ceny nie je overená/dohľadateľná, nezobrazujeme ju
           fetchYieldData(data.data);
         } else if (res.status === 401) {
           setProperty(null);
@@ -245,18 +220,6 @@ export default function PropertyDetailPage() {
       }
     };
 
-    const fetchTimeline = async (prop: Property) => {
-      try {
-        const response = await fetch(`/api/v1/properties/${prop.id}/timeline`);
-        if (response.ok) {
-          const data = await response.json();
-          setTimeline(data.data);
-        }
-      } catch (error) {
-        console.error("Error fetching timeline:", error);
-      }
-    };
-
     const fetchYieldData = async (prop: Property) => {
       // Yield len pre nehnuteľnosti na predaj s cenou
       if (prop.listing_type !== "PREDAJ" || prop.price <= 0) return;
@@ -276,19 +239,6 @@ export default function PropertyDetailPage() {
 
     fetchProperty();
   }, [params.id]);
-
-  const priceChange = useMemo(() => {
-    if (!property) return null;
-    const hist = property.priceHistory ?? [];
-    if (hist.length < 2) return null;
-    const sortedHistory = [...hist].sort((a, b) =>
-      new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime()
-    );
-    const firstPrice = sortedHistory[0]?.price;
-    const currentPrice = property.price;
-    if (!firstPrice || firstPrice === currentPrice || firstPrice === 0) return null;
-    return ((currentPrice - firstPrice) / firstPrice) * 100;
-  }, [property?.priceHistory, property?.price]);
 
   const calculateInvestorScore = (prop: Property): number => {
     let score = 50;
@@ -393,6 +343,15 @@ export default function PropertyDetailPage() {
   const hasTop3 = top3Facts.length > 0;
   const showSummaryBox = hasVerdikt || hasTop3;
 
+  const isDeveloperProject = (() => {
+    const url = (property.source_url || "").toLowerCase();
+    return (
+      property.seller_type === "developer" ||
+      url.includes("developersky-projekt") ||
+      url.includes("/developer/")
+    );
+  })();
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Header */}
@@ -431,6 +390,19 @@ export default function PropertyDetailPage() {
           </button>
         </div>
       </div>
+
+      {/* Developerský projekt – neškrapujeme */}
+      {isDeveloperProject && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 flex items-start gap-3">
+          <Building2 className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-amber-200">Developerský projekt</p>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Tieto inzeráty neškrapujeme (veľa zbytočných údajov). Tento záznam môže byť starší alebo z iného zdroja.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Gallery */}
       <div className="premium-card overflow-hidden p-0">
@@ -552,12 +524,6 @@ export default function PropertyDetailPage() {
                     <p className="text-3xl font-semibold text-zinc-100 font-mono tracking-tight">€{property.price.toLocaleString()}</p>
                     <p className="text-sm text-zinc-500 font-mono mt-1">€{property.price_per_m2.toLocaleString()}/m²</p>
                   </>
-                )}
-                {priceChange !== null && priceChange !== 0 && (
-                  <div className={`flex items-center gap-1 mt-2 text-xs font-mono ${priceChange < 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                    {priceChange < 0 ? <TrendingDown className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />}
-                    <span>{Math.abs(priceChange).toFixed(1)}% od pôvodnej ceny</span>
-                  </div>
                 )}
               </div>
               <div className={`px-3 py-2 rounded-lg border ${getScoreColor(score).replace('text-', 'text-').replace('bg-', 'bg-').replace('border-', 'border-')}`}>
@@ -710,163 +676,16 @@ export default function PropertyDetailPage() {
             )}
           </div>
 
-          {/* Price History Timeline */}
-          {timeline && timeline.priceHistory.length > 1 && (
-            <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/30 rounded-xl p-6">
-              <h2 className="text-lg font-bold text-indigo-400 mb-4 flex items-center gap-2">
-                <History className="w-5 h-5" />
-                História ceny
-              </h2>
-              
-              {/* Summary Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-zinc-800/50 rounded-lg p-3 text-center">
-                  <p className="text-2xl font-bold text-white">{timeline.summary.daysOnMarket}</p>
-                  <p className="text-xs text-zinc-400">Dní na trhu</p>
-                </div>
-                <div className="bg-zinc-800/50 rounded-lg p-3 text-center">
-                  <p className="text-2xl font-bold text-white">{timeline.summary.priceDrops}</p>
-                  <p className="text-xs text-zinc-400">Zníženia ceny</p>
-                </div>
-                <div className={`rounded-lg p-3 text-center ${
-                  timeline.summary.totalPriceChangePercent < 0 
-                    ? "bg-emerald-500/20" 
-                    : timeline.summary.totalPriceChangePercent > 0 
-                    ? "bg-rose-500/20" 
-                    : "bg-zinc-800/50"
-                }`}>
-                  <p className={`text-2xl font-bold ${
-                    timeline.summary.totalPriceChangePercent < 0 
-                      ? "text-emerald-400" 
-                      : timeline.summary.totalPriceChangePercent > 0 
-                      ? "text-rose-400" 
-                      : "text-white"
-                  }`}>
-                    {timeline.summary.totalPriceChangePercent > 0 ? "+" : ""}{timeline.summary.totalPriceChangePercent}%
-                  </p>
-                  <p className="text-xs text-zinc-400">Celková zmena</p>
-                </div>
-                <div className={`rounded-lg p-3 text-center ${
-                  timeline.summary.totalPriceChange < 0 ? "bg-emerald-500/20" : "bg-zinc-800/50"
-                }`}>
-                  <p className={`text-2xl font-bold ${
-                    timeline.summary.totalPriceChange < 0 ? "text-emerald-400" : "text-white"
-                  }`}>
-                    €{Math.abs(timeline.summary.totalPriceChange).toLocaleString()}
-                  </p>
-                  <p className="text-xs text-zinc-400">
-                    {timeline.summary.totalPriceChange < 0 ? "Úspora" : "Navýšenie"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Timeline Events */}
-              <div className="relative">
-                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-zinc-700"></div>
-                <div className="space-y-4">
-                  {timeline.events.map((event, index) => (
-                    <div key={index} className="relative pl-10">
-                      <div className={`absolute left-2 w-4 h-4 rounded-full border-2 ${
-                        event.type === "LISTED" 
-                          ? "bg-blue-500 border-blue-400" 
-                          : event.type === "PRICE_DROP"
-                          ? "bg-emerald-500 border-emerald-400"
-                          : event.type === "PRICE_INCREASE"
-                          ? "bg-rose-500 border-rose-400"
-                          : event.type === "RELISTED"
-                          ? "bg-amber-500 border-amber-400"
-                          : "bg-zinc-500 border-zinc-400"
-                      }`}></div>
-                      <div className="bg-zinc-800/50 rounded-lg p-3">
-                        <div className="flex items-center justify-between">
-                          <span className={`text-sm font-medium ${
-                            event.type === "PRICE_DROP" 
-                              ? "text-emerald-400" 
-                              : event.type === "PRICE_INCREASE"
-                              ? "text-rose-400"
-                              : event.type === "RELISTED"
-                              ? "text-amber-400"
-                              : "text-white"
-                          }`}>
-                            {event.type === "LISTED" && "🆕 Pridané na trh"}
-                            {event.type === "PRICE_DROP" && "📉 Zníženie ceny"}
-                            {event.type === "PRICE_INCREASE" && "📈 Zvýšenie ceny"}
-                            {event.type === "RELISTED" && "🔄 Návrat na trh"}
-                            {event.type === "REMOVED" && "❌ Odstránené"}
-                          </span>
-                          <span className="text-xs text-zinc-500">
-                            {new Date(event.date).toLocaleDateString("sk-SK")}
-                          </span>
-                        </div>
-                        <p className="text-sm text-zinc-300 mt-1">{event.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Price Chart (simple) */}
-              {timeline.priceHistory.length > 2 && (
-                <div className="mt-6 pt-4 border-t border-zinc-700">
-                  <p className="text-sm text-zinc-400 mb-3">Vývoj ceny:</p>
-                  <div className="flex items-end gap-1 h-24">
-                    {timeline.priceHistory.map((ph, index) => {
-                      const maxPrice = Math.max(...timeline.priceHistory.map(p => p.price));
-                      const minPrice = Math.min(...timeline.priceHistory.map(p => p.price));
-                      const range = maxPrice - minPrice || 1;
-                      const heightPercent = ((ph.price - minPrice) / range) * 80 + 20;
-                      
-                      return (
-                        <div
-                          key={index}
-                          className="flex-1 flex flex-col items-center group relative"
-                        >
-                          <div
-                            className={`w-full rounded-t transition-all ${
-                              index === timeline.priceHistory.length - 1
-                                ? "bg-indigo-500"
-                                : ph.changePercent && ph.changePercent < 0
-                                ? "bg-emerald-500/60"
-                                : "bg-zinc-600"
-                            }`}
-                            style={{ height: `${heightPercent}%` }}
-                          ></div>
-                          {/* Tooltip */}
-                          <div className="absolute bottom-full mb-2 hidden group-hover:block z-10">
-                            <div className="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-xs whitespace-nowrap">
-                              <p className="text-white font-medium">€{ph.price.toLocaleString()}</p>
-                              <p className="text-zinc-400">
-                                {new Date(ph.date).toLocaleDateString("sk-SK")}
-                              </p>
-                              {ph.changePercent && (
-                                <p className={ph.changePercent < 0 ? "text-emerald-400" : "text-rose-400"}>
-                                  {ph.changePercent > 0 ? "+" : ""}{ph.changePercent}%
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="flex justify-between text-xs text-zinc-500 mt-2">
-                    <span>{new Date(timeline.priceHistory[0].date).toLocaleDateString("sk-SK", { month: "short", year: "2-digit" })}</span>
-                    <span>{new Date(timeline.priceHistory[timeline.priceHistory.length - 1].date).toLocaleDateString("sk-SK", { month: "short", year: "2-digit" })}</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Investor Insight */}
-              {timeline.summary.priceDrops >= 2 && (
-                <div className="mt-4 p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/30">
-                  <p className="text-sm text-emerald-300">
-                    💡 <strong>Zúfalý predajca:</strong> Cena bola znížená {timeline.summary.priceDrops}x za {timeline.summary.daysOnMarket} dní. 
-                    Vysoká šanca na vyjednanie ďalšej zľavy!
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+          {/* História ceny – nezobrazujeme; údaje nie sú overené ani dohľadateľné */}
+          <div className="bg-zinc-800/50 border border-zinc-600 rounded-xl p-5">
+            <h2 className="text-lg font-bold text-zinc-300 mb-2 flex items-center gap-2">
+              <History className="w-5 h-5 text-zinc-500" />
+              História ceny
+            </h2>
+            <p className="text-sm text-zinc-400">
+              Zmeny ceny na tejto stránke nezobrazujeme. Údaje z nášho sledovania nie sú overené inzerentom ani dohľadateľné – na stránke uvádzame len údaje, ktoré vieme potvrdiť.
+            </p>
+          </div>
 
           {/* Cross-Portal Price Comparison - "Dostupné u partnerov" */}
           {duplicates && duplicates.count > 1 && (
@@ -1047,17 +866,6 @@ export default function PropertyDetailPage() {
                       <p className="font-medium text-white">Priestor na vyjednávanie</p>
                       <p className="text-sm text-zinc-400">
                         Po {property.days_on_market} dňoch môže byť predajca otvorený zľave 5-10%.
-                      </p>
-                    </div>
-                  </div>
-                )}
-                {priceChange !== null && priceChange < 0 && (
-                  <div className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-lg">
-                    <TrendingDown className="w-5 h-5 text-emerald-400 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-white">Cena už klesla</p>
-                      <p className="text-sm text-zinc-400">
-                        Predajca už znížil cenu o {Math.abs(priceChange).toFixed(1)}%. Môže byť ochotný ísť ešte nižšie.
                       </p>
                     </div>
                   </div>
