@@ -66,8 +66,28 @@ interface PortfolioProperty {
   photos: string;
   createdAt: string;
   updatedAt: string;
-  transactions: any[];
-  valuations: any[];
+  transactions: PortfolioTransaction[];
+  valuations: PropertyValuation[];
+}
+
+interface PortfolioTransaction {
+  id: string;
+  type: string;
+  amount: number;
+  date: string;
+  description: string | null;
+  category: string | null;
+  isRecurring: boolean;
+  recurringFrequency: string | null;
+  createdAt: string;
+}
+
+interface PropertyValuation {
+  id: string;
+  value: number;
+  source: string | null;
+  notes: string | null;
+  valuationDate: string;
 }
 
 interface PortfolioMetrics {
@@ -1214,7 +1234,7 @@ function PropertyDetailModal({
               <p className="text-zinc-600 text-xs">Žiadne transakcie</p>
             ) : (
               <div className="space-y-1">
-                {property.transactions.slice(0, 5).map((t: any) => (
+                {property.transactions.slice(0, 5).map((t) => (
                   <div key={t.id} className="flex items-center justify-between py-2 border-b border-zinc-800/50 last:border-0">
                     <div>
                       <div className="text-xs text-zinc-300">{t.description || t.type}</div>

@@ -26,7 +26,6 @@ function HeatmapLayer({ points }: { points: [number, number, number][] }) {
   useEffect(() => {
     if (!points || points.length === 0) return;
     
-    // @ts-ignore - leaflet.heat types
     const heat = L.heatLayer(points, {
       radius: 25,
       blur: 15,

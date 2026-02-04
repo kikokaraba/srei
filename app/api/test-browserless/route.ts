@@ -2,12 +2,28 @@
  * Test Browserless BaaS connection
  * Uses Playwright connectOverCDP with stealth mode
  * Docs: https://docs.browserless.io/baas/quick-start
+ * 
+ * ADMIN ONLY - requires admin authentication
  */
 
 import { NextResponse } from "next/server";
 import { testBrowserlessConnection } from "@/lib/scraper/browserless-scraper";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
+  // Admin auth check
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  if (user?.role !== "ADMIN") {
+    return NextResponse.json({ error: "Forbidden - Admin only" }, { status: 403 });
+  }
   const endpoint = process.env.BROWSER_WS_ENDPOINT || "";
   
   // Extract token

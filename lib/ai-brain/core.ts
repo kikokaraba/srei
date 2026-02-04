@@ -289,10 +289,10 @@ class AIBrain {
 
     console.log(`[AI Brain] Notification: ${insight.priority.toUpperCase()} - ${insight.title}`);
     
-    // TODO: Implement actual notification channels
-    // - Email
-    // - Slack
-    // - Webhook
+    // Notification channels can be extended here:
+    // - Email: Use SMTP configuration from env
+    // - Slack: Use NOTIFICATION_WEBHOOK_URL
+    // - Custom webhooks: Add to AIBrainConfig
   }
 }
 

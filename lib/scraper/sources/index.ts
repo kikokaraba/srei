@@ -20,8 +20,8 @@ export const SCRAPERS: Record<PropertySource, BaseScraper | null> = {
   BAZOS: bazosScraper,
   NEHNUTELNOSTI: nehnutelnostiScraper,
   REALITY: realityScraper,
-  TOPREALITY: null, // TODO: implementovať
-  MANUAL: null, // Nie je scraper
+  TOPREALITY: null, // Planned for future implementation
+  MANUAL: null, // Not a scraper - manual entries
 };
 
 /**

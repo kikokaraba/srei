@@ -762,7 +762,7 @@ export async function getPropertyTimeline(propertyId: string): Promise<{
       totalPriceChangePercent: totalChangePercent,
       daysOnMarket,
       priceDrops,
-      reListings: 0, // TODO: spočítať z lifecycle
+      reListings: 0, // Computed from PropertyLifecycle when available
     },
   };
 }

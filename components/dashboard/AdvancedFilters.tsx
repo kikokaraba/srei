@@ -42,7 +42,33 @@ const INFRASTRUCTURE_TYPES = [
   { value: "BUSINESS_DISTRICT", label: "Obchodná zóna" },
 ] as const;
 
-async function savePreferences(preferences: any) {
+interface UserPreferencesInput {
+  trackedRegions?: string[];
+  minPrice?: number | null;
+  maxPrice?: number | null;
+  minPricePerM2?: number | null;
+  maxPricePerM2?: number | null;
+  minArea?: number | null;
+  maxArea?: number | null;
+  minRooms?: number | null;
+  maxRooms?: number | null;
+  condition?: string;
+  energyCertificates?: string;
+  minFloor?: number | null;
+  maxFloor?: number | null;
+  onlyDistressed?: boolean;
+  minYield?: number | null;
+  maxYield?: number | null;
+  minGrossYield?: number | null;
+  maxGrossYield?: number | null;
+  minCashOnCash?: number | null;
+  maxDaysOnMarket?: number | null;
+  minGapPercentage?: number | null;
+  onboardingCompleted?: boolean;
+  [key: string]: unknown;
+}
+
+async function savePreferences(preferences: UserPreferencesInput) {
   const response = await fetch("/api/v1/user/preferences", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

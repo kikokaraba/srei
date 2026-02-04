@@ -1,11 +1,27 @@
 /**
  * Debug endpoint - check database tables and columns
+ * 
+ * ADMIN ONLY - requires admin authentication
  */
 
 import { NextResponse } from "next/server";
 import { Pool } from "pg";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
+  // Admin auth check
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  if (user?.role !== "ADMIN") {
+    return NextResponse.json({ error: "Forbidden - Admin only" }, { status: 403 });
+  }
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
     return NextResponse.json({ error: "No DATABASE_URL" }, { status: 500 });

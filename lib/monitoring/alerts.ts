@@ -194,7 +194,23 @@ export async function checkWatchdogMatches(userId: string): Promise<PropertyAler
   if (!preferences) return [];
 
   // Build query based on preferences
-  const where: any = {
+  interface RangeFilter {
+    gte?: number;
+    lte?: number;
+  }
+
+  interface WatchdogWhereInput {
+    status: string;
+    listing_type: string;
+    price?: RangeFilter;
+    area_m2?: RangeFilter;
+    rooms?: RangeFilter;
+    city?: { in: string[] };
+    createdAt?: { gte: Date };
+    id?: { notIn: string[] };
+  }
+
+  const where: WatchdogWhereInput = {
     status: "ACTIVE",
     listing_type: "PREDAJ",
   };
@@ -218,7 +234,7 @@ export async function checkWatchdogMatches(userId: string): Promise<PropertyAler
   }
 
   // Location filters
-  const trackedCities = JSON.parse(preferences.trackedCities || "[]");
+  const trackedCities = JSON.parse(preferences.trackedCities || "[]") as string[];
   if (trackedCities.length > 0) {
     where.city = { in: trackedCities };
   }
@@ -257,12 +273,14 @@ export async function checkWatchdogMatches(userId: string): Promise<PropertyAler
 
 /**
  * Create in-app notification
+ * Note: Currently logs to console. To enable persistent notifications,
+ * add a Notification model to the Prisma schema and uncomment the code below.
  */
 async function createInAppNotification(alert: UserAlert): Promise<void> {
-  // For now, we'll just log it - you can add a Notification model later
+  // Log notification (placeholder until Notification model is added)
   console.log(`📬 In-app notification for ${alert.userId}: ${alert.title}`);
   
-  // TODO: Create Notification record in database
+  // Future: Uncomment when Notification model is added to schema
   // await prisma.notification.create({
   //   data: {
   //     userId: alert.userId,

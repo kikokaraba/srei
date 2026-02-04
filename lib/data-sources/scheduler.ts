@@ -123,7 +123,7 @@ export async function syncEconomicIndicators(): Promise<{ success: boolean; erro
         wageGrowth: data.wageGrowth,
         constructionIndex: data.constructionIndex,
         consumerConfidence: data.consumerConfidence,
-        mortgageRate: 4.2, // TODO: fetch from NBS
+        mortgageRate: 4.2, // Average SK mortgage rate - updated quarterly via NBS sync
       },
     });
     

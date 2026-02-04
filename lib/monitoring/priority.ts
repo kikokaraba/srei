@@ -11,7 +11,7 @@
  * - 0-19: Check every 2-3 days (cold properties)
  */
 
-import type { Property, ListingStatus } from "@/generated/prisma/client";
+import type { Property, ListingStatus, PrismaClient } from "@/generated/prisma/client";
 
 interface PriorityFactors {
   // Time-based
@@ -224,7 +224,7 @@ export function extractPriorityFactors(
  * Batch update priority scores for properties
  */
 export async function updatePriorityScores(
-  prisma: any,
+  prisma: PrismaClient,
   propertyIds?: string[]
 ): Promise<{ updated: number }> {
   // Get properties with related data

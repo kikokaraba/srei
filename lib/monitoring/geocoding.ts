@@ -183,22 +183,36 @@ export async function getPropertiesForMap(filters?: {
   area_m2: number;
   is_distressed: boolean;
 }[]> {
-  const where: Record<string, unknown> = {
+  interface PriceFilter {
+    gte?: number;
+    lte?: number;
+  }
+
+  interface PropertyWhereInput {
+    status: string;
+    latitude: { not: null };
+    longitude: { not: null };
+    city?: { contains: string; mode: "insensitive" };
+    price?: PriceFilter;
+    listing_type?: string;
+  }
+
+  const where: PropertyWhereInput = {
     status: "ACTIVE",
     latitude: { not: null },
     longitude: { not: null },
   };
 
   if (filters?.city) {
-    (where as any).city = { contains: filters.city, mode: "insensitive" };
+    where.city = { contains: filters.city, mode: "insensitive" };
   }
   if (filters?.minPrice != null || filters?.maxPrice != null) {
-    (where as any).price = {};
-    if (filters?.minPrice != null) (where as any).price.gte = filters.minPrice;
-    if (filters?.maxPrice != null) (where as any).price.lte = filters.maxPrice;
+    where.price = {};
+    if (filters?.minPrice != null) where.price.gte = filters.minPrice;
+    if (filters?.maxPrice != null) where.price.lte = filters.maxPrice;
   }
   if (filters?.listingType) {
-    (where as any).listing_type = filters.listingType;
+    where.listing_type = filters.listingType;
   }
 
   const take = Math.min(filters?.limit ?? 1000, 2000);
@@ -220,5 +234,7 @@ export async function getPropertiesForMap(filters?: {
     take,
   });
 
-  return properties.filter((p) => p.latitude != null && p.longitude != null) as any;
+  return properties.filter((p): p is typeof p & { latitude: number; longitude: number } => 
+    p.latitude != null && p.longitude != null
+  );
 }

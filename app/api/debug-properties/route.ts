@@ -1,11 +1,26 @@
 /**
  * Debug endpoint - zobrazí surové dáta z DB
+ * 
+ * ADMIN ONLY - requires admin authentication
  */
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 
 export async function GET() {
+  // Admin auth check
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  if (user?.role !== "ADMIN") {
+    return NextResponse.json({ error: "Forbidden - Admin only" }, { status: 403 });
+  }
   try {
     // Posledných 20 nehnuteľností
     const properties = await prisma.property.findMany({
