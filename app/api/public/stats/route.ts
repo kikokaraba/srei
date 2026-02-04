@@ -14,28 +14,9 @@ export async function GET() {
       prisma.user.count(),
     ]);
 
-    // Calculate average yield from properties with investment metrics
-    let avgYield = 5.2; // Default fallback
-    try {
-      const propertiesWithMetrics = await prisma.property.findMany({
-        where: {
-          investmentMetrics: {
-            isNot: null,
-          },
-        },
-        include: {
-          investmentMetrics: true,
-        },
-        take: 100,
-      });
-
-      if (propertiesWithMetrics.length > 0) {
-        avgYield = propertiesWithMetrics.reduce((sum, p) => sum + (p.investmentMetrics?.gross_yield || 0), 0) / propertiesWithMetrics.length;
-      }
-    } catch (metricsError) {
-      // InvestmentMetrics table might not exist yet - use fallback
-      console.log("Using fallback yield (InvestmentMetrics not available)");
-    }
+    // TODO: Calculate real yield when InvestmentMetrics table is populated
+    // For now, use benchmark yield for Slovak real estate market
+    const avgYield = 5.2;
 
     return NextResponse.json({
       success: true,
