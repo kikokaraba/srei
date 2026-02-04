@@ -25,7 +25,21 @@ function createPrismaClient(): PrismaClient {
     });
   }
 
-  const pool = new Pool({ connectionString });
+  // Railway (and similar) use TLS with certs that can trigger "self-signed certificate in certificate chain".
+  // Only verify when explicitly requested via DATABASE_VERIFY_SSL=true; otherwise accept to avoid 500s.
+  const useSSL =
+    connectionString.includes("sslmode=require") ||
+    connectionString.includes("proxy.rlwy.net") ||
+    connectionString.includes(".railway.app");
+  const verifySSL = process.env.DATABASE_VERIFY_SSL === "true";
+  const pool = new Pool({
+    connectionString,
+    ...(useSSL && {
+      ssl: {
+        rejectUnauthorized: verifySSL,
+      },
+    }),
+  });
   const adapter = new PrismaPg(pool);
 
   return new PrismaClient({
