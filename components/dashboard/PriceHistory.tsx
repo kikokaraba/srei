@@ -238,42 +238,39 @@ export function PriceHistory() {
             <h3 className="text-lg font-semibold text-white">
               {REGION_FULL_NAMES[selectedRegion]}
             </h3>
-            <p className="text-xs text-zinc-500 mt-1 max-w-xs">
-              Referenčný trend (NBS) vs. aktuálny trh (SRIA). Porovnajte, či sú ceny nad alebo pod trendom.
+            <p className="text-xs text-zinc-500 mt-0.5" title="Referenčný trend NBS vs. aktuálny priemer z našich inzerátov (SRIA).">
+              Trend vs. trh dnes
             </p>
           </div>
           
           {/* Current price badge: referenčný trend NBS + aktuálny trh SRIA */}
-          <div className="text-right space-y-2">
-            <div>
-              <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Referenčný trend (NBS)</div>
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 text-right">
+            <div className="min-w-[100px]">
+              <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">NBS trend</div>
               <div className="text-xl font-semibold text-white tabular-nums">
                 {currentPrice.toLocaleString()}
-                <span className="text-lg text-zinc-400 ml-1">€/m²</span>
+                <span className="text-base text-zinc-400 ml-0.5">€/m²</span>
               </div>
-              <div className={`flex items-center justify-end gap-1 mt-1 ${
+              <div className={`flex items-center justify-end gap-1 mt-0.5 text-xs ${
                 isPositive ? "text-emerald-400" : "text-rose-400"
               }`}>
-                {isPositive ? (
-                  <ArrowUp className="w-4 h-4" />
-                ) : (
-                  <ArrowDown className="w-4 h-4" />
-                )}
-                <span className="font-semibold tabular-nums text-xs">
-                  {isPositive ? "+" : ""}{priceChange.toFixed(1)}%
-                </span>
-                <span className="text-zinc-500 text-xs">/ rok</span>
+                {isPositive ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
+                <span className="font-semibold tabular-nums">{isPositive ? "+" : ""}{priceChange.toFixed(1)}%</span>
+                <span className="text-zinc-500">/rok</span>
               </div>
             </div>
             {data?.ourData && (
-              <div className="pt-2 border-t border-zinc-700/50">
-                <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Aktuálny trh (SRIA)</div>
-                <div className="text-lg font-semibold text-amber-400 tabular-nums">
+              <div className="min-w-[100px] pt-2 sm:pt-0 sm:pl-4 border-t border-l-0 sm:border-t-0 sm:border-l border-zinc-700/50">
+                <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">SRIA (trh dnes)</div>
+                <div className="text-xl font-semibold text-amber-400 tabular-nums">
                   {data.ourData.avgPricePerM2.toLocaleString()}
-                  <span className="text-sm text-zinc-400 ml-1">€/m²</span>
+                  <span className="text-base text-zinc-400 ml-0.5">€/m²</span>
                 </div>
                 <div className="text-[10px] text-zinc-500 mt-0.5">
-                  z {data.ourData.propertyCount.toLocaleString()} inzerátov
+                  {data.ourData.propertyCount.toLocaleString()} inzerátov
+                  {data.ourData.propertyCount < 50 && (
+                    <span className="block text-amber-500/80 mt-0.5">Pri viac inzerátoch údaj reprezentatívnejší.</span>
+                  )}
                 </div>
               </div>
             )}
@@ -308,7 +305,7 @@ export function PriceHistory() {
 
         {/* Chart */}
         {chartData && (
-          <div className="relative h-56 mt-4">
+          <div className="relative min-h-[200px] h-64 mt-2">
             {/* Y-axis labels */}
             <div className="absolute left-0 top-0 bottom-8 w-12 flex flex-col justify-between text-xs text-zinc-500 font-medium">
               <span>{formatPrice(chartData.maxPrice)} €</span>
@@ -490,10 +487,8 @@ export function PriceHistory() {
           </div>
         )}
 
-        {/* Period selector – ako ďaleko dozadu zobrazovať referenčný trend */}
-        <div className="flex flex-col items-center gap-2 mt-6">
-          <span className="text-[10px] text-zinc-500 uppercase tracking-wider">Obdobie referenčného trendu</span>
-          <div className="flex items-center justify-center gap-2">
+        {/* Period selector */}
+        <div className="flex items-center justify-center gap-2 mt-4">
             {[5, 10, 20].map((p) => (
               <button
                 key={p}
@@ -507,16 +502,14 @@ export function PriceHistory() {
                 {p} rokov
               </button>
             ))}
-          </div>
         </div>
 
-        {/* Stats footer – všetky údaje z referenčného trendu NBS (nie z SRIA) */}
+        {/* Stats footer – z referenčného trendu NBS */}
         {data?.stats && (
-          <div className="mt-6 pt-6 border-t border-zinc-800/50">
-            <div className="text-[10px] text-zinc-500 uppercase tracking-wider text-center mb-3">Z referenčného trendu (NBS)</div>
-            <div className="grid grid-cols-3 gap-4">
+          <div className="mt-4 pt-4 border-t border-zinc-800/50">
+            <div className="grid grid-cols-3 gap-3">
               <div className="text-center">
-                <div className="text-xs text-zinc-500 mb-1">5 rokov</div>
+                <div className="text-[10px] text-zinc-500 mb-1">5 r (NBS)</div>
                 <div className={`text-lg font-bold ${
                   (data.stats.priceChange5Y || 0) >= 0 ? "text-emerald-400" : "text-rose-400"
                 }`}>
@@ -524,13 +517,13 @@ export function PriceHistory() {
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-xs text-zinc-500 mb-1">Maximum</div>
+                <div className="text-[10px] text-zinc-500 mb-1">Max (NBS)</div>
                 <div className="text-lg font-bold text-white">
                   {data.stats.allTimeHigh?.toLocaleString()} €
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-xs text-zinc-500 mb-1">10 rokov</div>
+                <div className="text-[10px] text-zinc-500 mb-1">10 r (NBS)</div>
                 <div className={`text-lg font-bold ${
                   (data.stats.priceChange10Y || 0) >= 0 ? "text-emerald-400" : "text-rose-400"
                 }`}>
@@ -541,25 +534,16 @@ export function PriceHistory() {
           </div>
         )}
 
-        {/* Legend + Source */}
-        <div className="mt-4 space-y-2">
+        {/* Legend */}
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-zinc-500">
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-2 h-2 rounded-full bg-zinc-500" /> NBS trend
+          </span>
           {chartData?.ourPoint && (
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-zinc-500">
-              <span className="flex items-center gap-1.5">
-                <span className="inline-block w-2 h-2 rounded-full bg-amber-500" style={{ boxShadow: "0 0 0 1px #f59e0b" }} />
-                SRIA – aktuálny priemer €/m² z inzerátov (len dnešný bod)
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="inline-block w-2 h-2 rounded-full bg-zinc-500" />
-                Krivka: referenčný vývoj (NBS)
-              </span>
-            </div>
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block w-2 h-2 rounded-full bg-amber-500" style={{ boxShadow: "0 0 0 1px #f59e0b" }} /> SRIA dnes
+            </span>
           )}
-          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-zinc-600">
-            <span>NBS: referenčný trend cien</span>
-            <span>•</span>
-            <span>SRIA: reálne ceny z našej databázy (aktuálny stav)</span>
-          </div>
         </div>
       </div>
     </div>
