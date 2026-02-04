@@ -15,21 +15,27 @@ export async function GET() {
     ]);
 
     // Calculate average yield from properties with investment metrics
-    const propertiesWithMetrics = await prisma.property.findMany({
-      where: {
-        investmentMetrics: {
-          isNot: null,
+    let avgYield = 5.2; // Default fallback
+    try {
+      const propertiesWithMetrics = await prisma.property.findMany({
+        where: {
+          investmentMetrics: {
+            isNot: null,
+          },
         },
-      },
-      include: {
-        investmentMetrics: true,
-      },
-      take: 100,
-    });
+        include: {
+          investmentMetrics: true,
+        },
+        take: 100,
+      });
 
-    const avgYield = propertiesWithMetrics.length > 0
-      ? propertiesWithMetrics.reduce((sum, p) => sum + (p.investmentMetrics?.gross_yield || 0), 0) / propertiesWithMetrics.length
-      : 5.2;
+      if (propertiesWithMetrics.length > 0) {
+        avgYield = propertiesWithMetrics.reduce((sum, p) => sum + (p.investmentMetrics?.gross_yield || 0), 0) / propertiesWithMetrics.length;
+      }
+    } catch (metricsError) {
+      // InvestmentMetrics table might not exist yet - use fallback
+      console.log("Using fallback yield (InvestmentMetrics not available)");
+    }
 
     return NextResponse.json({
       success: true,
