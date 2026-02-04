@@ -14,6 +14,7 @@ import {
   Bookmark,
   BarChart3,
 } from "lucide-react";
+import { TrackByUrlForm } from "./TrackByUrlForm";
 
 interface PriceHistoryItem {
   id: string;
@@ -152,13 +153,15 @@ export function SavedProperties({ onSelectProperty }: SavedPropertiesProps) {
 
   return (
     <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Bookmark className="w-5 h-5 text-emerald-400" />
           <h2 className="text-base font-semibold text-zinc-100">Sledované nehnuteľnosti</h2>
         </div>
         <span className="text-sm text-zinc-400">{savedProperties.length} uložených</span>
       </div>
+
+      <TrackByUrlForm onSuccess={fetchSavedProperties} />
 
       {savedProperties.length === 0 ? (
         <div className="text-center py-8">

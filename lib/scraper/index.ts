@@ -3,6 +3,10 @@
 // Types
 export * from "./types";
 
+// URL Parser & Single Listing Scraper
+export { parseListingUrl, SUPPORTED_PORTALS } from "./url-parser";
+export { scrapeSingleListing } from "./single-listing-scraper";
+
 // Parser
 export {
   parseCondition,
