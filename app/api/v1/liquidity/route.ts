@@ -121,7 +121,6 @@ export async function GET(request: Request) {
       // Získame všetky nehnuteľnosti v mestách s liquidity dátami
       const properties = await prisma.property.findMany({
         where: {
-          status: "ACTIVE",
           city: { in: citiesToFilter },
         },
         include: {
@@ -181,7 +180,7 @@ export async function GET(request: Request) {
     }
 
     // Ak nie je zadaný propertyId ani city, vrátime nehnuteľnosti s dlhým časom na trhu
-    const whereClause: Prisma.PropertyWhereInput = { status: "ACTIVE" };
+    const whereClause: Prisma.PropertyWhereInput = {};
     if (uniqueCities.length > 0) {
       whereClause.city = { in: uniqueCities };
     }
