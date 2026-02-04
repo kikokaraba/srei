@@ -6,6 +6,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getPropertiesForMap } from "@/lib/monitoring/geocoding";
+import { ListingType } from "@/generated/prisma/client";
 
 export async function GET(request: Request) {
   try {
@@ -20,7 +21,8 @@ export async function GET(request: Request) {
     const maxP = searchParams.get("maxPrice") ?? searchParams.get("priceMax");
     const minPrice = minP != null && minP !== "" && !Number.isNaN(parseFloat(minP)) ? parseFloat(minP) : undefined;
     const maxPrice = maxP != null && maxP !== "" && !Number.isNaN(parseFloat(maxP)) ? parseFloat(maxP) : undefined;
-    const listingType = searchParams.get("listingType") || undefined;
+    const listingTypeParam = searchParams.get("listingType");
+    const listingType = (listingTypeParam === "PREDAJ" || listingTypeParam === "PRENAJOM") ? listingTypeParam as ListingType : undefined;
     const limitParam = searchParams.get("limit");
     const limit = limitParam ? Math.min(parseInt(limitParam, 10) || 1000, 2000) : undefined;
 

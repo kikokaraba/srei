@@ -7,6 +7,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { normalizeCityName, getCityCoordinates } from "@/lib/constants/cities";
+import { Prisma, ListingType } from "@/generated/prisma/client";
 
 interface GeocodingResult {
   latitude: number;
@@ -169,7 +170,7 @@ export async function getPropertiesForMap(filters?: {
   city?: string;
   minPrice?: number;
   maxPrice?: number;
-  listingType?: string;
+  listingType?: ListingType;
   limit?: number;
 }): Promise<{
   id: string;
@@ -183,21 +184,7 @@ export async function getPropertiesForMap(filters?: {
   area_m2: number;
   is_distressed: boolean;
 }[]> {
-  interface PriceFilter {
-    gte?: number;
-    lte?: number;
-  }
-
-  interface PropertyWhereInput {
-    status: string;
-    latitude: { not: null };
-    longitude: { not: null };
-    city?: { contains: string; mode: "insensitive" };
-    price?: PriceFilter;
-    listing_type?: string;
-  }
-
-  const where: PropertyWhereInput = {
+  const where: Prisma.PropertyWhereInput = {
     status: "ACTIVE",
     latitude: { not: null },
     longitude: { not: null },

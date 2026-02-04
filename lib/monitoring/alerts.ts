@@ -6,6 +6,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 
 export interface PropertyAlert {
   propertyId: string;
@@ -194,43 +195,30 @@ export async function checkWatchdogMatches(userId: string): Promise<PropertyAler
   if (!preferences) return [];
 
   // Build query based on preferences
-  interface RangeFilter {
-    gte?: number;
-    lte?: number;
-  }
-
-  interface WatchdogWhereInput {
-    status: string;
-    listing_type: string;
-    price?: RangeFilter;
-    area_m2?: RangeFilter;
-    rooms?: RangeFilter;
-    city?: { in: string[] };
-    createdAt?: { gte: Date };
-    id?: { notIn: string[] };
-  }
-
-  const where: WatchdogWhereInput = {
+  const where: Prisma.PropertyWhereInput = {
     status: "ACTIVE",
     listing_type: "PREDAJ",
   };
 
   // Price filters
-  if (preferences.minPrice) where.price = { gte: preferences.minPrice };
-  if (preferences.maxPrice) {
-    where.price = { ...where.price, lte: preferences.maxPrice };
+  if (preferences.minPrice || preferences.maxPrice) {
+    where.price = {};
+    if (preferences.minPrice) where.price.gte = preferences.minPrice;
+    if (preferences.maxPrice) where.price.lte = preferences.maxPrice;
   }
 
   // Area filters
-  if (preferences.minArea) where.area_m2 = { gte: preferences.minArea };
-  if (preferences.maxArea) {
-    where.area_m2 = { ...where.area_m2, lte: preferences.maxArea };
+  if (preferences.minArea || preferences.maxArea) {
+    where.area_m2 = {};
+    if (preferences.minArea) where.area_m2.gte = preferences.minArea;
+    if (preferences.maxArea) where.area_m2.lte = preferences.maxArea;
   }
 
   // Rooms filters
-  if (preferences.minRooms) where.rooms = { gte: preferences.minRooms };
-  if (preferences.maxRooms) {
-    where.rooms = { ...where.rooms, lte: preferences.maxRooms };
+  if (preferences.minRooms || preferences.maxRooms) {
+    where.rooms = {};
+    if (preferences.minRooms) where.rooms.gte = preferences.minRooms;
+    if (preferences.maxRooms) where.rooms.lte = preferences.maxRooms;
   }
 
   // Location filters
