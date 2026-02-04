@@ -82,6 +82,69 @@ function parseCity(text: string): { city: string; district: string } {
   return { city: "Slovensko", district: "Neznáme" };
 }
 
+/** Odstráni zo textu skripty, právne texty a boilerplate; vráti prvý riadok/vetu vhodnú ako titulok */
+function sanitizeTitle(raw: string, maxLen = 150): string {
+  if (!raw || !raw.trim()) return "";
+  let t = raw
+    .replace(/\s+/g, " ")
+    .trim();
+  // Odstrániť bloky vyzerajúce ako JS/skripty
+  t = t
+    .replace(/requestAnimationFrame\s*\([^)]*\)[^;]*;?/gi, " ")
+    .replace(/\$RT\s*=\s*[^;]+;?/g, " ")
+    .replace(/function\s*\([^)]*\)\s*\{[^}]*\}/g, " ")
+    .replace(/<[^>]+>/g, " ");
+  // Odstrániť známe footer/právne reťazce
+  const junk = [
+    "United Classifieds",
+    "s.r.o.",
+    "GDPR",
+    "Ochrana osobných údajov",
+    "Ochrana údajov",
+    "Všeobecné obchodné podmienky",
+    "Cookies",
+    "Súhlasím",
+    "©",
+    "všetky práva vyhradené",
+  ];
+  for (const j of junk) {
+    const re = new RegExp(j.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+    t = t.replace(re, " ");
+  }
+  t = t.replace(/\s+/g, " ").trim();
+  // Prvý riadok resp. prvých maxLen znakov
+  const firstLine = t.split(/\n/)[0]?.trim() || t;
+  const out = firstLine.substring(0, maxLen).trim();
+  return out.length >= 3 ? out : "";
+}
+
+/** Vyčistí popis od skriptov a boilerplate; obmedzí dĺžku */
+function sanitizeDescription(raw: string, maxLen = 5000): string {
+  if (!raw || !raw.trim()) return "";
+  let t = raw
+    .replace(/\s+/g, " ")
+    .trim();
+  t = t
+    .replace(/requestAnimationFrame\s*\([^)]*\)[^;]*;?/gi, " ")
+    .replace(/\$RT\s*=\s*[^;]+;?/g, " ")
+    .replace(/function\s*\([^)]*\)\s*\{[^}]*\}/g, " ");
+  const junk = [
+    "United Classifieds",
+    "s.r.o.",
+    "GDPR",
+    "Ochrana osobných údajov",
+    "Všeobecné obchodné podmienky",
+    "©",
+    "všetky práva vyhradené",
+  ];
+  for (const j of junk) {
+    const re = new RegExp(j.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+    t = t.replace(re, " ");
+  }
+  t = t.replace(/\s+/g, " ").trim();
+  return t.substring(0, maxLen);
+}
+
 /**
  * Scrapuje detail Bazoš inzerátu
  */
@@ -92,11 +155,12 @@ async function scrapeBazosDetail(url: string): Promise<ScrapedProperty | null> {
   const $ = cheerio.load(html);
   const fullText = $("body").text();
   
-  // Titulok
-  const title =
+  // Titulok – len z nadpisu, nie z body (môže obsahovať skripty)
+  const rawTitle =
     $("h1").first().text().trim() ||
     $(".nadpis").first().text().trim() ||
     $("title").text().split("|")[0].trim();
+  const title = sanitizeTitle(rawTitle, 200);
   if (!title || title.length < 5) return null;
   
   // Cena
@@ -124,8 +188,9 @@ async function scrapeBazosDetail(url: string): Promise<ScrapedProperty | null> {
     }
   }
   
-  // Popis
-  const description = $(".popis, .description, [class*='popis']").first().text().trim().substring(0, 5000);
+  // Popis – vyčistený od skriptov a boilerplate
+  const rawDesc = $(".popis, .description, [class*='popis']").first().text().trim();
+  const description = sanitizeDescription(rawDesc, 5000);
   const { condition } = parseDescription(description + " " + title, title);
   
   // Izby
@@ -199,11 +264,12 @@ async function scrapeNehnutelnostiDetail(url: string): Promise<ScrapedProperty |
     }
   }
   
-  const title =
+  const rawTitle =
     (jsonLd?.name ?? null) ||
     $("h1").first().text().trim() ||
     $("[data-testid='listing-title'], .property-title, .advertisement-title").first().text().trim() ||
     $("title").text().split("|")[0].trim();
+  const title = sanitizeTitle(String(rawTitle || ""), 200);
   if (!title || title.length < 5) return null;
   
   let price = 0;
@@ -236,11 +302,12 @@ async function scrapeNehnutelnostiDetail(url: string): Promise<ScrapedProperty |
   }
   
   const ldDesc = jsonLd?.description;
-  const description = (
+  const rawDesc = (
     ldDesc ||
     $(".description, .advertisement-description, [class*='description']").first().text() ||
     ""
-  ).trim().substring(0, 5000);
+  ).trim();
+  const description = sanitizeDescription(rawDesc, 5000);
   const { condition } = parseDescription(description + " " + title, title);
   
   const roomsMatch = (title + fullText).match(/(\d)\s*[-\s]?izb/i);

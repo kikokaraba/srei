@@ -13,6 +13,7 @@ import {
   Link2,
   X,
 } from "lucide-react";
+import { formatPropertyTitle } from "@/lib/display-utils";
 
 interface TimelineEvent {
   type: "listed" | "price_change" | "update";
@@ -155,8 +156,8 @@ export function PropertyTimeline({ propertyId, onClose }: PropertyTimelineProps)
       <div className="p-6 border-b border-zinc-800">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-base font-semibold text-zinc-100 mb-1">
-              {data.property.title}
+            <h2 className="text-base font-semibold text-zinc-100 mb-1" title={data.property.title}>
+              {formatPropertyTitle(data.property.title, 80)}
             </h2>
             <p className="text-zinc-400">
               {data.property.district}, {data.property.city}
@@ -338,8 +339,8 @@ export function PropertyTimeline({ propertyId, onClose }: PropertyTimelineProps)
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-medium text-zinc-100">
-                          {match.property.title}
+                        <h4 className="font-medium text-zinc-100" title={match.property.title}>
+                          {formatPropertyTitle(match.property.title, 80)}
                         </h4>
                         <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                           match.matchScore >= 80 ? "bg-emerald-500/20 text-emerald-400" :
