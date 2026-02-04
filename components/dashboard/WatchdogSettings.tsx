@@ -124,7 +124,7 @@ export function WatchdogSettings() {
   // Count matching properties
   const countMatching = useCallback(async () => {
     try {
-      const params = new URLSearchParams({ limit: "1" });
+      const params = new URLSearchParams({ propertyType: "BYT", limit: "1" });
       
       if (config.minPrice) params.set("minPrice", config.minPrice.toString());
       if (config.maxPrice) params.set("maxPrice", config.maxPrice.toString());

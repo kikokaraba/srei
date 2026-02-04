@@ -39,6 +39,7 @@ export async function GET(request: Request) {
     const search = searchParams.get("search");
     const onlyDistressed = searchParams.get("onlyDistressed") === "true";
     const useUserPreferences = searchParams.get("usePreferences") === "true";
+    const propertyTypeParam = searchParams.get("propertyType")?.trim() ?? "";
 
     // Načítaj preferencie používateľa len ak je to vyžiadané
     const preferences = useUserPreferences
@@ -76,8 +77,13 @@ export async function GET(request: Request) {
       }
     }
 
-    // Kategória: aplikácia zobrazuje len byty (ostatné typy prídeme neskôr)
-    where.property_type = "BYT";
+    // Kategória: zobrazujeme len keď je explicitne zvolený typ (momentálne len Byty); inak prázdny zoznam
+    if (propertyTypeParam === "BYT") {
+      where.property_type = "BYT";
+    } else {
+      if (!where.AND) where.AND = [];
+      (where.AND as Prisma.PropertyWhereInput[]).push({ id: { in: [] } });
+    }
 
     // Mesto - prioritne z query, potom z preferencií (regióny + okresy + mestá)
     // Case-insensitive matching - databáza má "Bratislava" ale frontend môže poslať "BRATISLAVA"

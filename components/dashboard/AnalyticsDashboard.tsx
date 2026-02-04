@@ -56,7 +56,7 @@ export function AnalyticsDashboard() {
     try {
       setLoading(true);
 
-      const response = await fetch("/api/v1/properties/filtered?limit=1000");
+      const response = await fetch("/api/v1/properties/filtered?propertyType=BYT&limit=1000");
       if (!response.ok) throw new Error("Failed to fetch");
 
       const data = await response.json();
@@ -87,8 +87,8 @@ export function AnalyticsDashboard() {
       const regionMap: Record<string, { count: number; totalPrice: number; totalPricePerM2: number; totalYield: number; totalArea: number; yieldCount: number }> = {};
       
       for (const p of properties) {
-        // Map city to region using getCityRegionLabel which returns region name
-        const regionLabel = getCityRegionLabel(p.city);
+        // Map city to region – pri Slovensko/neznáme skús odvodiť kraj z okresu
+        const regionLabel = getCityRegionLabel(p.city, p.district);
         
         if (!regionMap[regionLabel]) {
           regionMap[regionLabel] = { count: 0, totalPrice: 0, totalPricePerM2: 0, totalYield: 0, totalArea: 0, yieldCount: 0 };
@@ -113,7 +113,14 @@ export function AnalyticsDashboard() {
         avgArea: Math.round(stats.totalArea / stats.count),
       }));
 
-      setRegionStats(regionStatsArray.sort((a, b) => b.count - a.count));
+      // Zoraď podľa počtu, "Lokalita neznáma" vždy na koniec
+      setRegionStats(
+        regionStatsArray.sort((a, b) => {
+          if (a.regionLabel === "Lokalita neznáma") return 1;
+          if (b.regionLabel === "Lokalita neznáma") return -1;
+          return b.count - a.count;
+        })
+      );
 
       // Calculate condition stats
       const conditionMap: Record<string, number> = {};

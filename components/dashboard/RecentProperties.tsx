@@ -74,6 +74,7 @@ export function RecentProperties() {
       
       // Pridaj filtre podľa preferencií
       const params = new URLSearchParams({
+        propertyType: "BYT",
         sortBy: "createdAt",
         sortOrder: "desc",
         limit: "3",

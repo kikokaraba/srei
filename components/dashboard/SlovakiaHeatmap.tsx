@@ -148,7 +148,7 @@ export function SlovakiaHeatmap() {
       setLoading(true);
 
       // Fetch property counts per city
-      const response = await fetch("/api/v1/properties/filtered?limit=1000");
+      const response = await fetch("/api/v1/properties/filtered?propertyType=BYT&limit=1000");
       if (response.ok) {
         const data = await response.json();
         const properties = data.data || [];

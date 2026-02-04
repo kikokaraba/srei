@@ -64,7 +64,7 @@ export function PropertyComparison() {
 
     try {
       setSearching(true);
-      const response = await fetch(`/api/v1/properties/filtered?search=${encodeURIComponent(query)}&limit=10`);
+      const response = await fetch(`/api/v1/properties/filtered?propertyType=BYT&search=${encodeURIComponent(query)}&limit=10`);
       if (response.ok) {
         const data = await response.json();
         // Filter out already selected properties
@@ -152,7 +152,7 @@ export function PropertyComparison() {
               </h3>
               <div className="flex items-center gap-1 text-sm text-zinc-400 mb-4">
                 <MapPin className="w-4 h-4" />
-                <span>{property.district}, {getCityRegionLabel(property.city)}</span>
+                <span>{property.district}, {getCityRegionLabel(property.city, property.district)}</span>
               </div>
               <div className="text-lg font-semibold text-zinc-100">
                 €{property.price.toLocaleString()}
