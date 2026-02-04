@@ -31,6 +31,9 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
 
   for (const prop of properties) {
     try {
+      // Preskočiť inzeráty bez fotiek (lazy loading - scraper ich nevidí)
+      const hasPhotos = prop.imageUrls && prop.imageUrls.length > 0;
+      
       // Skontroluj či už existuje podľa external_id
       const existingById = await prisma.property.findFirst({
         where: { external_id: prop.externalId },
@@ -102,6 +105,11 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
         continue;
       }
 
+      // Preskočiť nové inzeráty bez fotiek
+      if (!hasPhotos) {
+        continue;
+      }
+      
       // Nová nehnuteľnosť - vytvor unikátny slug
       const baseSlug = prop.title
         .toLowerCase()
