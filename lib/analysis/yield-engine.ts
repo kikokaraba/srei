@@ -64,6 +64,32 @@ export function computeGrossYield(price: number, monthlyRentEur: number): number
   return (monthlyRentEur * 12 / price) * 100;
 }
 
+/**
+ * Vypočíta investičné metriky z ceny a mesačného nájmu (pre batch ukladanie do DB).
+ * Používa rovnaké nákladové sadzby ako calculateYieldMetrics.
+ */
+export function computeInvestmentMetricsFromRent(
+  price: number,
+  monthlyRentEur: number
+): { gross_yield: number; net_yield: number; cash_on_cash: number; price_to_rent_ratio: number } {
+  if (price <= 0 || monthlyRentEur <= 0) {
+    return { gross_yield: 0, net_yield: 0, cash_on_cash: 0, price_to_rent_ratio: 0 };
+  }
+  const annualRent = monthlyRentEur * 12;
+  const monthlyExpenses = monthlyRentEur * TOTAL_EXPENSE_RATE;
+  const netAnnualIncome = annualRent - monthlyExpenses * 12;
+  const gross_yield = (annualRent / price) * 100;
+  const net_yield = (netAnnualIncome / price) * 100;
+  const price_to_rent_ratio = price / annualRent;
+  const cash_on_cash = net_yield * 0.8;
+  return {
+    gross_yield: Math.round(gross_yield * 100) / 100,
+    net_yield: Math.round(net_yield * 100) / 100,
+    cash_on_cash: Math.round(cash_on_cash * 100) / 100,
+    price_to_rent_ratio: Math.round(price_to_rent_ratio * 10) / 10,
+  };
+}
+
 // ============================================================================
 // HLAVNÉ FUNKCIE
 // ============================================================================
@@ -126,9 +152,21 @@ export async function calculateYieldForLocation(
 }
 
 /**
+ * Základný where pre nájomné inzeráty – mesto case-insensitive (dáta môžu mať rôznu diakritiku/veľkosť).
+ */
+function baseRentalWhere(city: string) {
+  return {
+    listing_type: "PRENAJOM" as const,
+    city: { contains: city.trim(), mode: "insensitive" as const },
+    price: { gt: 100, lt: 5000 },
+    status: "ACTIVE" as const,
+  };
+}
+
+/**
  * Získa priemerné nájmy v lokalite.
- * Priorita: mesto + okres + počet izieb + plocha (±20%). Scraping je zameraný na byty,
- * takže PRENAJOM dáta sú z bytov; pri zavedení property_type môžeme filtrovať výhradne BYT.
+ * Priorita: mesto + okres + počet izieb + plocha (±20%) → mesto + izby → len mesto.
+ * Mesto sa matchuje case-insensitive (contains), aby sa zachytili aj varianty ako "Bratislava - Staré Mesto".
  */
 export async function getComparableRents(
   city: string,
@@ -140,44 +178,33 @@ export async function getComparableRents(
   rentRange: { min: number; max: number };
   sampleSize: number;
 } | null> {
-  // Základný filter
-  const baseWhere = {
-    listing_type: "PRENAJOM" as const,
-    city,
-    price: { gt: 100, lt: 5000 }, // Rozumný rozsah pre nájmy
-    status: "ACTIVE" as const,
-  };
+  const baseWhere = baseRentalWhere(city);
 
-  // Najprv skús presný match
+  // Najprv skús presný match (okres, izby, plocha ±20%)
   let rentals = await prisma.property.findMany({
     where: {
       ...baseWhere,
-      ...(district && { district }),
-      ...(rooms && { rooms }),
-      ...(area_m2 && {
-        area_m2: {
-          gte: area_m2 * 0.8,
-          lte: area_m2 * 1.2,
-        },
+      ...(district && district.trim() !== "" && { district: { contains: district.trim(), mode: "insensitive" as const } }),
+      ...(rooms != null && { rooms }),
+      ...(area_m2 != null && area_m2 > 0 && {
+        area_m2: { gte: area_m2 * 0.8, lte: area_m2 * 1.2 },
       }),
     },
     select: { price: true },
     take: 100,
   });
 
-  // Ak málo výsledkov, rozšír na celé mesto
   if (rentals.length < 5 && district) {
     rentals = await prisma.property.findMany({
       where: {
         ...baseWhere,
-        ...(rooms && { rooms }),
+        ...(rooms != null && { rooms }),
       },
       select: { price: true },
       take: 100,
     });
   }
 
-  // Ak stále málo, vezmi len mesto a približnú plochu
   if (rentals.length < 3) {
     rentals = await prisma.property.findMany({
       where: baseWhere,
@@ -186,21 +213,29 @@ export async function getComparableRents(
     });
   }
 
-  if (rentals.length === 0) {
-    return null;
-  }
+  if (rentals.length === 0) return null;
 
   const prices = rentals.map((r) => r.price);
   const averageRent = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
-
   return {
     averageRent,
-    rentRange: {
-      min: Math.min(...prices),
-      max: Math.max(...prices),
-    },
+    rentRange: { min: Math.min(...prices), max: Math.max(...prices) },
     sampleSize: rentals.length,
   };
+}
+
+/**
+ * Priemerný mesačný nájom v meste (všetky aktívne PRENAJOM v meste).
+ * Fallback keď getComparableRents nevráti žiadne podobné inzeráty.
+ */
+export async function getCityAverageRent(city: string): Promise<number | null> {
+  const agg = await prisma.property.aggregate({
+    where: baseRentalWhere(city),
+    _avg: { price: true },
+    _count: { id: true },
+  });
+  if (agg._count.id < 1 || agg._avg.price == null) return null;
+  return Math.round(agg._avg.price);
 }
 
 /**

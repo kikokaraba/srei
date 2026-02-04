@@ -1,8 +1,14 @@
 /**
- * Post-Processing - Calculate and update property metrics after scraping
+ * Post-Processing - Calculate and update property metrics after scraping.
+ * Výnos sa počíta z dostupných nájomných inzerátov (getComparableRents + fallback na priemer mesta).
  */
 
 import { prisma } from "@/lib/prisma";
+import {
+  getComparableRents,
+  getCityAverageRent,
+  computeInvestmentMetricsFromRent,
+} from "@/lib/analysis/yield-engine";
 import { geocodeProperties } from "./geocoding";
 
 interface ProcessingResult {
@@ -81,76 +87,75 @@ async function updateDaysOnMarket(): Promise<number> {
 }
 
 /**
- * Calculate investment metrics for properties without them
+ * Vypočíta investičné metriky pre predajné nehnuteľnosti bez metrík.
+ * Odhad nájmu: najprv podobné nájomné inzeráty (mesto, okres, izby, plocha ±20%), potom fallback na priemer mesta.
  */
 async function calculateInvestmentMetrics(): Promise<number> {
-  // Get sale properties without investment metrics
   const properties = await prisma.property.findMany({
     where: {
       status: "ACTIVE",
       listing_type: "PREDAJ",
       investmentMetrics: null,
+      price: { gt: 0 },
     },
     select: {
       id: true,
       price: true,
       area_m2: true,
       city: true,
+      district: true,
       rooms: true,
     },
-    take: 100, // Process in batches
+    take: 150,
   });
 
   let calculated = 0;
 
   for (const prop of properties) {
     try {
-      // Find similar rentals to estimate yield
-      const similarRentals = await prisma.property.findMany({
-        where: {
-          listing_type: "PRENAJOM",
-          status: "ACTIVE",
-          city: { contains: prop.city, mode: "insensitive" },
-          area_m2: { gte: prop.area_m2 * 0.8, lte: prop.area_m2 * 1.2 },
-          ...(prop.rooms ? { rooms: prop.rooms } : {}),
-        },
-        select: { price: true },
-        take: 10,
-      });
+      if (!prop.city?.trim()) continue;
 
-      if (similarRentals.length === 0) continue;
+      // 1) Podobné nájomné inzeráty (mesto, okres, izby, plocha ±20%) s fallbackmi v getComparableRents
+      let monthlyRent: number | null = null;
+      const rentData = await getComparableRents(
+        prop.city,
+        prop.district ?? null,
+        prop.rooms ?? null,
+        prop.area_m2 ?? null
+      );
+      if (rentData && rentData.sampleSize > 0) {
+        monthlyRent = rentData.averageRent;
+      }
 
-      // Calculate average rent
-      const avgMonthlyRent = similarRentals.reduce((sum, r) => sum + r.price, 0) / similarRentals.length;
-      const annualRent = avgMonthlyRent * 12;
+      // 2) Fallback: priemerný nájom v meste (všetky PRENAJOM v meste)
+      if (monthlyRent == null) {
+        monthlyRent = await getCityAverageRent(prop.city);
+      }
 
-      // Calculate metrics
-      const grossYield = (annualRent / prop.price) * 100;
-      const netYield = grossYield * 0.75; // Assume 25% expenses
-      const cashOnCash = netYield * 0.8; // Simplified
-      const priceToRentRatio = prop.price / annualRent;
+      if (monthlyRent == null || monthlyRent <= 0) continue;
 
-      // Create or update investment metrics
+      const metrics = computeInvestmentMetricsFromRent(prop.price, monthlyRent);
+      if (metrics.gross_yield <= 0) continue;
+
       await prisma.investmentMetrics.upsert({
         where: { propertyId: prop.id },
         create: {
           propertyId: prop.id,
-          gross_yield: grossYield,
-          net_yield: netYield,
-          cash_on_cash: cashOnCash,
-          price_to_rent_ratio: priceToRentRatio,
+          gross_yield: metrics.gross_yield,
+          net_yield: metrics.net_yield,
+          cash_on_cash: metrics.cash_on_cash,
+          price_to_rent_ratio: metrics.price_to_rent_ratio,
         },
         update: {
-          gross_yield: grossYield,
-          net_yield: netYield,
-          cash_on_cash: cashOnCash,
-          price_to_rent_ratio: priceToRentRatio,
+          gross_yield: metrics.gross_yield,
+          net_yield: metrics.net_yield,
+          cash_on_cash: metrics.cash_on_cash,
+          price_to_rent_ratio: metrics.price_to_rent_ratio,
           calculated_at: new Date(),
         },
       });
-
       calculated++;
-    } catch (error) {
+    } catch {
       // Skip this property
     }
   }
