@@ -251,13 +251,15 @@ export function PropertyList() {
 
   const { preferences, isLoading: prefsLoading } = useUserPreferences();
 
-  // Predvyplnenie filtrov z preferencií pri prvom načítaní (ak má používateľ lokalitu / yield / cenu)
+  // Predvyplnenie filtrov z preferencií a zapnutie "Môj profil" – aby sa zobrazovalo len to, čo má používateľ v nastaveniach
   useEffect(() => {
     if (prefillDone.current || !preferences || prefsLoading) return;
     const hasLoc = (preferences.trackedRegions?.length || 0) > 0 || (preferences.trackedDistricts?.length || 0) > 0 || (preferences.trackedCities?.length || 0) > 0;
     const hasYield = preferences.minYield != null && preferences.minYield > 0;
     const hasPrice = preferences.maxPrice != null && preferences.maxPrice > 0;
-    if (!hasLoc && !hasYield && !hasPrice) return;
+    const hasOther = (preferences.minGrossYield != null && preferences.minGrossYield > 0) || (preferences.minPrice != null) || (preferences.maxPrice != null) || (preferences.minArea != null) || (preferences.minRooms != null);
+    const hasAnyPrefs = hasLoc || hasYield || hasPrice || hasOther;
+    if (!hasAnyPrefs) return;
     prefillDone.current = true;
     setFilters((prev) => {
       const next = { ...prev };
@@ -273,6 +275,8 @@ export function PropertyList() {
       if (hasPrice) next.maxPrice = String(preferences.maxPrice!);
       return next;
     });
+    // Predvolene zapnúť "Môj profil" – výsledky podľa nastavení z /dashboard/settings
+    setMyProfileOn(true);
   }, [preferences, prefsLoading]);
 
   useEffect(() => {
@@ -653,7 +657,7 @@ export function PropertyList() {
                   ? "bg-amber-500/15 border-amber-500/50 text-amber-400"
                   : "bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-700"
               }`}
-              title={myProfileOn ? "Dashboard filtrovaný podľa vášho profilu" : "Použiť moje nastavenia z Nastavení"}
+              title={myProfileOn ? "Zobrazujú sa len nehnuteľnosti podľa vašich nastavení (Nastavenia → filtre)" : "Zapnúť: zobrazovať len ponuky podľa kritérií z Nastavení"}
             >
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Môj profil</span>

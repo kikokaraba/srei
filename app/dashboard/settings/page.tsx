@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { TrendingUp, Bell, Save, Settings as SettingsIcon, Check, Sparkles, Map, Crosshair } from "lucide-react";
+import { TrendingUp, Bell, Save, Settings as SettingsIcon, Check, Sparkles, Map, Crosshair, Filter, Eye } from "lucide-react";
 import { AdvancedFilters } from "@/components/dashboard/AdvancedFilters";
 import { LocationPickerV2 } from "@/components/ui/LocationPickerV2";
 import { TelegramSettings } from "@/components/dashboard/TelegramSettings";
 import { useToast } from "@/lib/hooks/useToast";
 import type { NormalizedSelection } from "@/lib/location-utils";
+import { REGION_LABELS, INVESTMENT_TYPE_LABELS, CONDITION_OPTIONS, ENERGY_CERTIFICATE_OPTIONS } from "@/lib/constants/labels";
+import { DISTRICTS } from "@/lib/constants/slovakia-locations";
 
 const INVESTMENT_TYPES = [
   { id: "future-potential", label: "Investície s budúcim potenciálom", icon: "🚀" },
@@ -88,8 +90,6 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (preferences) {
-      console.log("Loading preferences:", preferences);
-      
       // Handle both old single investmentType and new investmentTypes array
       let investmentTypes: string[] = [];
       if (preferences.investmentTypes) {
@@ -97,13 +97,11 @@ export default function SettingsPage() {
       } else if (preferences.investmentType) {
         investmentTypes = [preferences.investmentType];
       }
-      
+
       const trackedRegions = safeJsonParse(preferences.trackedRegions, []) as string[];
       const trackedDistricts = safeJsonParse(preferences.trackedDistricts, []) as string[];
       const trackedCities = safeJsonParse(preferences.trackedCities, []) as string[];
-      
-      console.log("Parsed locations:", { trackedRegions, trackedDistricts, trackedCities });
-      
+
       setFormData({
         trackedRegions,
         trackedDistricts,
@@ -180,6 +178,90 @@ export default function SettingsPage() {
     );
   }
 
+  // Prehľad uložených filtrov – čo sa reálne používa pri vyhľadávaní a na dashboarde
+  const activeSummary = useMemo(() => {
+    const items: { label: string; value: string; desc?: string }[] = [];
+    if (!preferences) return items;
+
+    const regions = safeJsonParse(preferences.trackedRegions, []) as string[];
+    const districts = safeJsonParse(preferences.trackedDistricts, []) as string[];
+    const cities = safeJsonParse(preferences.trackedCities, []) as string[];
+    const investmentTypes = safeJsonParse(preferences.investmentTypes, []) as string[];
+    if (preferences.investmentType && !investmentTypes.length) investmentTypes.push(preferences.investmentType as string);
+    const condition = safeJsonParse(preferences.condition, []) as string[];
+    const energyCertificates = safeJsonParse(preferences.energyCertificates, []) as string[];
+
+    if (regions.length > 0) {
+      const names = regions.map((id: string) => REGION_LABELS[id] || id).join(", ");
+      items.push({ label: "Kraje", value: names, desc: "Nehnuteľnosti len z týchto krajov" });
+    }
+    if (districts.length > 0) {
+      const names = districts.map((id: string) => DISTRICTS[id]?.name || id).join(", ");
+      items.push({ label: "Okresy", value: names, desc: "Z týchto okresov" });
+    }
+    if (cities.length > 0) {
+      items.push({ label: "Mestá / obce", value: cities.slice(0, 8).join(", ") + (cities.length > 8 ? "…" : ""), desc: "Konkrétne lokality" });
+    }
+    if (investmentTypes.length > 0) {
+      const names = investmentTypes.map((id: string) => INVESTMENT_TYPE_LABELS[id as keyof typeof INVESTMENT_TYPE_LABELS] || id).join(", ");
+      items.push({ label: "Typ investície", value: names, desc: "Váš investičný zameranie" });
+    }
+    if (preferences.minYield != null && preferences.minYield > 0) {
+      items.push({ label: "Min. výnos", value: `${preferences.minYield}%`, desc: "Ponuky s výnosom od tohto %" });
+    }
+    if (preferences.maxPrice != null && preferences.maxPrice > 0) {
+      items.push({ label: "Max. cena", value: `${Number(preferences.maxPrice).toLocaleString("sk-SK")} €`, desc: "Neprevyšujte túto sumu" });
+    }
+    if (preferences.minGrossYield != null && preferences.minGrossYield > 0) {
+      items.push({ label: "Min. hrubý výnos", value: `${preferences.minGrossYield}%`, desc: "Pre notifikácie a Hunter" });
+    }
+    if (preferences.minPriceDrop != null && preferences.minPriceDrop > 0) {
+      items.push({ label: "Min. pokles ceny", value: `${preferences.minPriceDrop}%`, desc: "Upozorniť pri poklese" });
+    }
+    if (preferences.minGapPercentage != null && preferences.minGapPercentage > 0) {
+      items.push({ label: "Min. podhodnotenie (Market Gap)", value: `${preferences.minGapPercentage}%`, desc: "Index skrytého potenciálu" });
+    }
+    if (preferences.onlyDistressed) {
+      items.push({ label: "Len v núdzi", value: "Áno", desc: "Exekúcie / problémové" });
+    }
+    if (preferences.minPrice != null || preferences.maxPrice != null) {
+      const parts = [];
+      if (preferences.minPrice != null) parts.push(`od ${Number(preferences.minPrice).toLocaleString("sk-SK")} €`);
+      if (preferences.maxPrice != null) parts.push(`do ${Number(preferences.maxPrice).toLocaleString("sk-SK")} €`);
+      items.push({ label: "Cena (pokročilé)", value: parts.join(" "), desc: "Rozsah cien" });
+    }
+    if (preferences.minArea != null || preferences.maxArea != null) {
+      const parts = [];
+      if (preferences.minArea != null) parts.push(`${preferences.minArea} m²`);
+      if (preferences.maxArea != null) parts.push(`– ${preferences.maxArea} m²`);
+      items.push({ label: "Plocha", value: parts.join(" "), desc: "Rozsah plochy" });
+    }
+    if (preferences.minRooms != null || preferences.maxRooms != null) {
+      const parts = [];
+      if (preferences.minRooms != null) parts.push(String(preferences.minRooms));
+      if (preferences.maxRooms != null) parts.push(`– ${preferences.maxRooms}`);
+      items.push({ label: "Počet izieb", value: parts.join(" "), desc: "Rozsah izieb" });
+    }
+    if (condition.length > 0) {
+      const names = condition.map((c: string) => CONDITION_OPTIONS.find((x) => x.value === c)?.label ?? c).join(", ");
+      items.push({ label: "Stav nehnuteľnosti", value: names, desc: "Povolené stavy" });
+    }
+    if (energyCertificates.length > 0) {
+      const names = energyCertificates.map((c: string) => ENERGY_CERTIFICATE_OPTIONS.find((x) => x.value === c)?.label ?? c).join(", ");
+      items.push({ label: "Energetická trieda", value: names, desc: "Povolené triedy" });
+    }
+    if (preferences.minFloor != null || preferences.maxFloor != null) {
+      const parts = [];
+      if (preferences.minFloor != null) parts.push(String(preferences.minFloor));
+      if (preferences.maxFloor != null) parts.push(`– ${preferences.maxFloor}`);
+      items.push({ label: "Poschodie", value: parts.join(" "), desc: "Rozsah poschodia" });
+    }
+    if (preferences.maxDaysOnMarket != null && preferences.maxDaysOnMarket > 0) {
+      items.push({ label: "Max. dni v ponuke", value: String(preferences.maxDaysOnMarket), desc: "Čerstvosť ponuky" });
+    }
+    return items;
+  }, [preferences]);
+
   const notifications = [
     { id: "notifyMarketGaps", title: "Index skrytého potenciálu", desc: "Podhodnotené nehnuteľnosti", icon: "🎯" },
     { id: "notifyPriceDrops", title: "Poklesy cien", desc: "Keď cena nehnuteľnosti klesne", icon: "📉" },
@@ -222,6 +304,43 @@ export default function SettingsPage() {
             {saved ? <Check className="w-5 h-5" /> : <Save className="w-5 h-5" />}
             {saveMutation.isPending ? "Ukladám..." : saved ? "Uložené!" : "Uložiť zmeny"}
           </button>
+        </div>
+      </div>
+
+      {/* Váš investičný profil – prehľad aktívnych filtrov */}
+      <div className="relative overflow-hidden rounded-2xl border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-950/40 via-zinc-900 to-zinc-900 p-6">
+        <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl opacity-20 bg-emerald-500" />
+        <div className="relative flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
+            <Eye className="w-6 h-6 text-emerald-400" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-1">
+              <Filter className="w-5 h-5 text-emerald-400" />
+              Čo sa vám zobrazuje
+            </h2>
+            <p className="text-sm text-zinc-400 mb-4">
+              Na základe týchto nastavení sa na dashboarde a pri vyhľadávaní zobrazujú len nehnuteľnosti, ktoré spĺňajú vaše kritériá. Nižšie môžete upraviť lokality, typ investície a pokročilé filtre.
+            </p>
+            {activeSummary.length > 0 ? (
+              <div className="flex flex-wrap gap-3">
+                {activeSummary.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="inline-flex flex-col gap-0.5 px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-left"
+                  >
+                    <span className="text-[10px] uppercase tracking-wider text-emerald-400/90 font-semibold">{item.label}</span>
+                    <span className="text-sm font-medium text-white">{item.value}</span>
+                    {item.desc && <span className="text-[11px] text-zinc-500">{item.desc}</span>}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-xl bg-zinc-800/50 border border-zinc-700/50 px-4 py-3 text-sm text-zinc-400">
+                Nemáte nastavené žiadne filtre. Vyberte nižšie <strong className="text-zinc-300">sledované lokality</strong>, <strong className="text-zinc-300">typ investície</strong> a prípadne <strong className="text-zinc-300">pokročilé filtre</strong> – potom sa vám bude zobrazovať len to, čo hľadáte.
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
