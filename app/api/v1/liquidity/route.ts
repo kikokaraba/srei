@@ -62,21 +62,23 @@ export async function GET(request: Request) {
       // Získame liquidity dáta pre konkrétnu nehnuteľnosť
       const property = await prisma.property.findUnique({
         where: { id: propertyId },
-        // priceHistory may not exist in database yet
-        // include: {
-        //   priceHistory: {
-        //     orderBy: { recorded_at: "desc" },
-        //     take: 10, // Posledných 10 zmien
-        //   },
-        // },
+        select: {
+          id: true,
+          title: true,
+          address: true,
+          price: true,
+          price_per_m2: true,
+          createdAt: true,
+          days_on_market: true,
+        },
       });
 
       if (!property) {
         return NextResponse.json({ error: "Property not found" }, { status: 404 });
       }
 
-      // Vypočítame dni v ponuke
-      const firstListed = property.first_listed_at || property.createdAt;
+      // Vypočítame dni v ponuke (first_listed_at may not exist)
+      const firstListed = property.createdAt;
       const daysOnMarket = Math.floor(
         (Date.now() - new Date(firstListed).getTime()) / (1000 * 60 * 60 * 24)
       );
@@ -107,13 +109,15 @@ export async function GET(request: Request) {
         where: {
           city: { in: citiesToFilter },
         },
-        // priceHistory may not exist in database yet
-        // include: {
-        //   priceHistory: {
-        //     orderBy: { recorded_at: "desc" },
-        //     take: 1,
-        //   },
-        // },
+        select: {
+          id: true,
+          title: true,
+          address: true,
+          city: true,
+          price: true,
+          createdAt: true,
+          days_on_market: true,
+        },
         orderBy: {
           days_on_market: "desc",
         },
@@ -121,7 +125,8 @@ export async function GET(request: Request) {
       });
 
       const liquidityData = properties.map((property) => {
-        const firstListed = property.first_listed_at || property.createdAt;
+        // first_listed_at may not exist
+        const firstListed = property.createdAt;
         const daysOnMarket = Math.floor(
           (Date.now() - new Date(firstListed).getTime()) / (1000 * 60 * 60 * 24)
         );
@@ -154,13 +159,16 @@ export async function GET(request: Request) {
 
     const allProperties = await prisma.property.findMany({
       where: whereClause,
-      // priceHistory may not exist in database yet
-      // include: {
-      //   priceHistory: {
-      //     orderBy: { recorded_at: "desc" },
-      //     take: 1,
-      //   },
-      // },
+      select: {
+        id: true,
+        title: true,
+        address: true,
+        city: true,
+        price: true,
+        createdAt: true,
+        first_listed_at: true,
+        days_on_market: true,
+      },
       orderBy: {
         createdAt: "asc", // Oldest first
       },
@@ -170,7 +178,8 @@ export async function GET(request: Request) {
     // Calculate days on market for each property and filter those 60+ days
     const liquidityData = allProperties
       .map((property) => {
-        const firstListed = property.first_listed_at || property.createdAt;
+        // first_listed_at may not exist
+        const firstListed = property.createdAt;
         const daysOnMarket = property.days_on_market || Math.floor(
           (Date.now() - new Date(firstListed).getTime()) / (1000 * 60 * 60 * 24)
         );
