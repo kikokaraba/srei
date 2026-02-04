@@ -18,15 +18,7 @@ export async function GET() {
     const savedProperties = await prisma.savedProperty.findMany({
       where: { userId: session.user.id },
       include: {
-        property: {
-          include: {
-            investmentMetrics: true,
-            priceHistory: {
-              orderBy: { recorded_at: "desc" },
-              take: 10,
-            },
-          },
-        },
+        property: true, // Simplified - investmentMetrics and priceHistory may not exist
       },
       orderBy: { savedAt: "desc" },
     });
