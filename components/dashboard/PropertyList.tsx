@@ -292,29 +292,26 @@ export function PropertyList() {
       params.append("sortBy", filters.sortBy);
       params.append("sortOrder", filters.sortOrder);
 
-      if (myProfileOn) {
-        params.append("usePreferences", "true");
-        if (filters.search) params.append("search", filters.search);
-      } else {
-        if (filters.search) params.append("search", filters.search);
-        if (filters.listingType) params.append("listingType", filters.listingType);
-        if (filters.propertyType) params.append("propertyType", filters.propertyType);
-        if (filters.source) params.append("source", filters.source);
-        if (filters.city) {
-          params.append("city", filters.city);
-        } else if (filters.region) {
-          const region = REGIONS.find((r) => r.value === filters.region);
-          if (region) params.append("cities", region.cities.join(","));
-        }
-        if (filters.minPrice) params.append("minPrice", filters.minPrice);
-        if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
-        if (filters.minArea) params.append("minArea", filters.minArea);
-        if (filters.maxArea) params.append("maxArea", filters.maxArea);
-        if (filters.minRooms) params.append("minRooms", filters.minRooms);
-        if (filters.maxRooms) params.append("maxRooms", filters.maxRooms);
-        if (filters.condition) params.append("condition", filters.condition);
-        if (filters.minYield) params.append("minYield", filters.minYield);
+      if (myProfileOn) params.append("usePreferences", "true");
+      // Vždy posielame všetky explicitné filtre (typ, lokalita, cena, …), aby sa zobrazovali len vybrané typy (byt/dom/…)
+      if (filters.search) params.append("search", filters.search);
+      if (filters.listingType) params.append("listingType", filters.listingType);
+      if (filters.propertyType) params.append("propertyType", filters.propertyType);
+      if (filters.source) params.append("source", filters.source);
+      if (filters.city) {
+        params.append("city", filters.city);
+      } else if (filters.region) {
+        const region = REGIONS.find((r) => r.value === filters.region);
+        if (region) params.append("cities", region.cities.join(","));
       }
+      if (filters.minPrice) params.append("minPrice", filters.minPrice);
+      if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
+      if (filters.minArea) params.append("minArea", filters.minArea);
+      if (filters.maxArea) params.append("maxArea", filters.maxArea);
+      if (filters.minRooms) params.append("minRooms", filters.minRooms);
+      if (filters.maxRooms) params.append("maxRooms", filters.maxRooms);
+      if (filters.condition) params.append("condition", filters.condition);
+      if (filters.minYield) params.append("minYield", filters.minYield);
 
       const response = await fetch(`/api/v1/properties/filtered?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch properties");
