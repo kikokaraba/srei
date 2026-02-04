@@ -8,7 +8,7 @@ set -e
 echo "🗄️  Inicializujem databázu..."
 
 # Skúsi vytvoriť schému
-npx prisma db push --accept-data-loss || {
+pnpm exec prisma db push --accept-data-loss || {
     echo "⚠️  Databáza už existuje alebo nastala chyba"
 }
 
@@ -16,7 +16,7 @@ echo "✅ Databáza inicializovaná"
 
 # Spusti seed (vytvorí admin používateľa)
 echo "🌱 Spúšťam seed..."
-npm run db:seed || {
+pnpm run db:seed || {
     echo "⚠️  Seed zlyhal alebo už bol spustený"
 }
 

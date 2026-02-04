@@ -2,9 +2,10 @@
   "name": "sria",
   "version": "0.3.0",
   "private": true,
+  "packageManager": "pnpm@10.28.2",
   "scripts": {
     "dev": "next dev",
-    "build": "rm -rf generated node_modules/.prisma 2>/dev/null; rm -rf .next/cache 2>/dev/null || true; npx prisma generate --schema=./prisma/schema.prisma && bash scripts/vercel-db-push.sh && next build",
+    "build": "rm -rf generated node_modules/.prisma 2>/dev/null; rm -rf .next/cache 2>/dev/null || true; pnpm exec prisma generate --schema=./prisma/schema.prisma && bash scripts/vercel-db-push.sh && next build",
     "start": "node .next/standalone/server.js",
     "start:prod": "next start",
     "lint": "next lint",
@@ -39,6 +40,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
+    "@prisma/client-runtime-utils": "^7.3.0",
     "@tanstack/react-query": "^5.90.16",
     "@types/leaflet.heat": "^0.2.5",
     "@upstash/ratelimit": "^2.0.8",
@@ -82,8 +84,17 @@
     "vite-tsconfig-paths": "^6.0.5",
     "vitest": "^4.0.18"
   },
-  "overrides": {
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+  "pnpm": {
+    "overrides": {
+      "react": "^19.2.0",
+      "react-dom": "^19.2.0"
+    },
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "prisma",
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }
