@@ -186,7 +186,7 @@ export function SavedProperties({ onSelectProperty }: SavedPropertiesProps) {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold text-zinc-100 truncate" title={saved.property.title}>
+                      <h3 className="font-semibold text-zinc-100 truncate" title={formatPropertyTitle(saved.property.title, 120)}>
                         {formatPropertyTitle(saved.property.title, 80)}
                       </h3>
                       {saved.isFavorite && (
