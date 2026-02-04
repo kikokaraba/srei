@@ -1,6 +1,7 @@
 "use client";
 
 import { CustomizableDashboard } from "@/components/dashboard/CustomizableDashboard";
+import { RentalDashboard } from "@/components/dashboard/RentalDashboard";
 import { UrbanImpactAlert } from "@/components/dashboard/UrbanImpactAlert";
 import { ListingModeToggle } from "@/components/ListingModeToggle";
 import { LiveMarketTicker } from "@/components/dashboard/LiveMarketTicker";
@@ -33,10 +34,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Urban Impact Alert - infraštruktúrne príležitosti */}
-      <UrbanImpactAlert />
+      {/* Urban Impact Alert - len pre investičný režim */}
+      {isBuying && <UrbanImpactAlert />}
 
-      <CustomizableDashboard />
+      {/* Investičný: widgety; Nájomný: priemerné nájmy a filtre */}
+      {isBuying ? <CustomizableDashboard /> : <RentalDashboard />}
     </div>
   );
 }
