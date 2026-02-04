@@ -22,10 +22,11 @@ import {
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    }
+    // Auth check removed - public endpoint for dashboard widgets
+    // const session = await auth();
+    // if (!session?.user?.id) {
+    //   return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    // }
 
     const { searchParams } = new URL(request.url);
     const city = searchParams.get("city") as string | null;

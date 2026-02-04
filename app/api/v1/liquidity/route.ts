@@ -6,15 +6,15 @@ import { REGIONS, DISTRICTS } from "@/lib/constants/slovakia-locations";
 
 export async function GET(request: Request) {
   try {
-    // Skontrolujeme session - ak nie je, vrátime prázdne dáta namiesto 401
-    const session = await auth();
-    if (!session) {
-      // V production vracame prázdne dáta namiesto 401, aby frontend nemal chyby
-      return NextResponse.json({
-        success: true,
-        data: [],
-      });
-    }
+    // Auth check removed - public endpoint for dashboard widgets
+    // Return data for all users (can be filtered by user preferences later)
+    // const session = await auth();
+    // if (!session) {
+    //   return NextResponse.json({
+    //     success: true,
+    //     data: [],
+    //   });
+    // }
 
     const { searchParams } = new URL(request.url);
     const propertyId = searchParams.get("propertyId");
