@@ -383,7 +383,7 @@ export function PropertyList() {
   };
 
   const clearFilters = () => {
-    setFilters({ ...defaultFilters, propertyType: "" });
+    setFilters(defaultFilters);
     setPage(1);
   };
 
@@ -482,8 +482,6 @@ export function PropertyList() {
       } else if (key === "minArea" || key === "maxArea") {
         next.minArea = "";
         next.maxArea = "";
-      } else if (key === "propertyType") {
-        next.propertyType = "";
       } else {
         next[key] = defaults[key];
       }
@@ -939,18 +937,6 @@ export function PropertyList() {
                   Vypnúť Môj profil
                 </button>
               </div>
-            </>
-          ) : !filters.propertyType ? (
-            <>
-              <p className="text-zinc-500 text-sm max-w-md mx-auto mb-5">
-                Momentálne zobrazujeme len byty. Vyberte <strong className="text-zinc-400">Typ: Byty</strong> v paneli filtrov alebo nižšie pre zobrazenie výsledkov. Ostatné typy nehnuteľností plánujeme neskôr.
-              </p>
-              <button
-                onClick={() => handleFilterChange("propertyType", "BYT")}
-                className="px-5 py-2.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 rounded-xl hover:bg-emerald-500/30 transition-colors text-sm font-medium"
-              >
-                Zobraziť byty
-              </button>
             </>
           ) : (
             <>
