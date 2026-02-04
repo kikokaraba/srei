@@ -97,9 +97,17 @@ function SignInForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Heslo
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-slate-300">
+                  Heslo
+                </label>
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+                >
+                  Zabudnuté heslo?
+                </Link>
+              </div>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input

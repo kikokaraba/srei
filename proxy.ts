@@ -2,11 +2,10 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 
-// Zero Trust Middleware - Validates sessions and sanitizes headers
-// Nastavujeme runtime na Node.js aby sme mohli použiť Prisma Client
-export const runtime = "nodejs";
+// Zero Trust Proxy - Validates sessions and sanitizes headers
+// Proxy defaults to Node.js runtime (no runtime export in proxy files)
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes that don't require authentication
@@ -29,7 +28,7 @@ export async function middleware(request: NextRequest) {
 
   // Sanitize headers for security
   const response = NextResponse.next();
-  
+
   // Remove sensitive headers
   response.headers.delete("x-powered-by");
   response.headers.delete("server");
