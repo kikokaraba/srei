@@ -25,20 +25,32 @@ function createPrismaClient(): PrismaClient {
     });
   }
 
-  // Railway (and similar) use TLS with certs that can trigger "self-signed certificate in certificate chain".
-  // Only verify when explicitly requested via DATABASE_VERIFY_SSL=true; otherwise accept to avoid 500s.
-  const useSSL =
-    connectionString.includes("sslmode=require") ||
-    connectionString.includes("proxy.rlwy.net") ||
-    connectionString.includes(".railway.app");
-  const verifySSL = process.env.DATABASE_VERIFY_SSL === "true";
+  // Remote DBs (Railway, Neon, etc.) often use TLS with self-signed certs → "self-signed certificate in certificate chain".
+  // Use SSL and accept cert unless DATABASE_VERIFY_SSL=true. Skip SSL only for localhost.
+  let ssl: { rejectUnauthorized: boolean } | undefined;
+  try {
+    const url = new URL(connectionString.replace(/^postgres(ql)?:\/\//, "https://"));
+    const host = (url.hostname || "").toLowerCase();
+    const isLocal =
+      host === "localhost" || host === "127.0.0.1" || host === "::1" || host === "";
+    if (!isLocal) {
+      ssl = { rejectUnauthorized: process.env.DATABASE_VERIFY_SSL === "true" };
+    }
+  } catch {
+    // Fallback: enable SSL for known remote patterns
+    if (
+      connectionString.includes("sslmode=require") ||
+      connectionString.includes("rlwy.net") ||
+      connectionString.includes("railway") ||
+      connectionString.includes("neon.tech") ||
+      connectionString.includes("supabase.co")
+    ) {
+      ssl = { rejectUnauthorized: process.env.DATABASE_VERIFY_SSL === "true" };
+    }
+  }
   const pool = new Pool({
     connectionString,
-    ...(useSSL && {
-      ssl: {
-        rejectUnauthorized: verifySSL,
-      },
-    }),
+    ...(ssl !== undefined && { ssl }),
   });
   const adapter = new PrismaPg(pool);
 
