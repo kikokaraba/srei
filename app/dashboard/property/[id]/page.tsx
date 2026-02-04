@@ -77,6 +77,8 @@ interface DuplicateProperty {
   price: number;
   title: string;
   source_url: string | null;
+  city?: string;
+  district?: string;
 }
 
 interface DuplicateInfo {
@@ -698,7 +700,7 @@ export default function PropertyDetailPage() {
                     Dostupné u partnerov
                   </h2>
                   <p className="text-sm text-zinc-400 mt-1">
-                    Rovnaká nehnuteľnosť na {duplicates.count} portáloch
+                    Tá istá nehnuteľnosť na {duplicates.count} portáloch (overená zhoda mesta a atribútov)
                   </p>
                 </div>
                 {duplicates.savings && duplicates.savings > 0 && (
@@ -733,6 +735,11 @@ export default function PropertyDetailPage() {
                         <p className="text-xl font-bold text-white mt-1">
                           {(property.price === 0 || property.is_negotiable) ? "Cena dohodou" : `€${property.price.toLocaleString()}`}
                         </p>
+                        {(property.city || property.district) && (
+                          <p className="text-xs text-zinc-500 mt-0.5">
+                            {[property.city, property.district].filter(Boolean).join(", ")}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -792,6 +799,11 @@ export default function PropertyDetailPage() {
                                   </span>
                                 )}
                               </p>
+                              {(dup.city ?? dup.district) && (
+                                <p className="text-xs text-zinc-500 mt-0.5">
+                                  {[dup.city, dup.district].filter(Boolean).join(", ")}
+                                </p>
+                              )}
                             </div>
                           </div>
                           <div className="flex items-center gap-2 ml-3">
