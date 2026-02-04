@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-interface UserPreferences {
+export interface UserPreferences {
   primaryCity: string | null;
   trackedRegions: string[];
   trackedDistricts: string[];
@@ -9,6 +9,23 @@ interface UserPreferences {
   minYield: number | null;
   maxPrice: number | null;
   minPrice: number | null;
+  minPricePerM2?: number | null;
+  maxPricePerM2?: number | null;
+  minArea?: number | null;
+  maxArea?: number | null;
+  minRooms?: number | null;
+  maxRooms?: number | null;
+  condition?: string; // JSON array string
+  energyCertificates?: string; // JSON array string
+  minFloor?: number | null;
+  maxFloor?: number | null;
+  onlyDistressed?: boolean;
+  maxYield?: number | null;
+  minGrossYield?: number | null;
+  maxGrossYield?: number | null;
+  minCashOnCash?: number | null;
+  maxDaysOnMarket?: number | null;
+  minGapPercentage?: number | null;
   notifyMarketGaps: boolean;
   notifyPriceDrops: boolean;
   notifyNewProperties: boolean;
@@ -79,21 +96,38 @@ async function fetchPreferences(): Promise<UserPreferences | null> {
       return null;
     }
 
-    const prefs = data.data;
+    const prefs = data.data as Record<string, unknown>;
     return {
-      primaryCity: prefs.primaryCity,
+      primaryCity: prefs.primaryCity as string | null,
       trackedRegions: safeParseArray(prefs.trackedRegions),
       trackedDistricts: safeParseArray(prefs.trackedDistricts),
       trackedCities: safeParseArray(prefs.trackedCities),
-      investmentType: prefs.investmentType,
-      minYield: prefs.minYield,
-      maxPrice: prefs.maxPrice,
-      minPrice: prefs.minPrice,
-      notifyMarketGaps: prefs.notifyMarketGaps ?? true,
-      notifyPriceDrops: prefs.notifyPriceDrops ?? true,
-      notifyNewProperties: prefs.notifyNewProperties ?? true,
-      notifyUrbanDevelopment: prefs.notifyUrbanDevelopment ?? true,
-      onboardingCompleted: prefs.onboardingCompleted ?? false,
+      investmentType: prefs.investmentType as string | null,
+      minYield: prefs.minYield as number | null,
+      maxPrice: prefs.maxPrice as number | null,
+      minPrice: prefs.minPrice as number | null,
+      minPricePerM2: prefs.minPricePerM2 as number | null | undefined,
+      maxPricePerM2: prefs.maxPricePerM2 as number | null | undefined,
+      minArea: prefs.minArea as number | null | undefined,
+      maxArea: prefs.maxArea as number | null | undefined,
+      minRooms: prefs.minRooms as number | null | undefined,
+      maxRooms: prefs.maxRooms as number | null | undefined,
+      condition: prefs.condition as string | undefined,
+      energyCertificates: prefs.energyCertificates as string | undefined,
+      minFloor: prefs.minFloor as number | null | undefined,
+      maxFloor: prefs.maxFloor as number | null | undefined,
+      onlyDistressed: prefs.onlyDistressed as boolean | undefined,
+      maxYield: prefs.maxYield as number | null | undefined,
+      minGrossYield: prefs.minGrossYield as number | null | undefined,
+      maxGrossYield: prefs.maxGrossYield as number | null | undefined,
+      minCashOnCash: prefs.minCashOnCash as number | null | undefined,
+      maxDaysOnMarket: prefs.maxDaysOnMarket as number | null | undefined,
+      minGapPercentage: prefs.minGapPercentage as number | null | undefined,
+      notifyMarketGaps: Boolean(prefs.notifyMarketGaps ?? true),
+      notifyPriceDrops: Boolean(prefs.notifyPriceDrops ?? true),
+      notifyNewProperties: Boolean(prefs.notifyNewProperties ?? true),
+      notifyUrbanDevelopment: Boolean(prefs.notifyUrbanDevelopment ?? true),
+      onboardingCompleted: Boolean(prefs.onboardingCompleted ?? false),
     };
   } catch (error) {
     console.error("Error fetching preferences:", error);

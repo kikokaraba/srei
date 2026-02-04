@@ -1,10 +1,24 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { Filter, Save, ChevronDown, ChevronUp, Check, MapPin } from "lucide-react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { Filter, Save, ChevronDown, ChevronUp, Check, MapPin, X } from "lucide-react";
 import { useUserPreferences } from "@/lib/hooks/useUserPreferences";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CONDITION_OPTIONS } from "@/lib/constants";
+
+function safeParseJsonArray(val: unknown): string[] {
+  if (!val) return [];
+  if (Array.isArray(val)) return val as string[];
+  if (typeof val === "string") {
+    try {
+      const p = JSON.parse(val);
+      return Array.isArray(p) ? p : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
 
 // Slovenské kraje
 const SLOVAK_REGIONS = [
@@ -92,7 +106,7 @@ export function AdvancedFilters() {
     },
   });
 
-  const [filters, setFilters] = useState({
+  const defaultFilters = {
     trackedRegions: [] as string[],
     minPrice: null as number | null,
     maxPrice: null as number | null,
@@ -114,7 +128,40 @@ export function AdvancedFilters() {
     minCashOnCash: null as number | null,
     maxDaysOnMarket: null as number | null,
     minGapPercentage: null as number | null,
-  });
+  };
+
+  const [filters, setFilters] = useState(defaultFilters);
+  const initFromPrefsDone = useRef(false);
+
+  // Inicializácia z uložených preferencií pri prvom načítaní
+  useEffect(() => {
+    if (initFromPrefsDone.current || isLoading || !preferences) return;
+    initFromPrefsDone.current = true;
+    const prefs = preferences as unknown as Record<string, unknown>;
+    setFilters({
+      trackedRegions: Array.isArray(prefs.trackedRegions) ? prefs.trackedRegions : safeParseJsonArray(prefs.trackedRegions),
+      minPrice: (prefs.minPrice as number | null) ?? null,
+      maxPrice: (prefs.maxPrice as number | null) ?? null,
+      minPricePerM2: (prefs.minPricePerM2 as number | null) ?? null,
+      maxPricePerM2: (prefs.maxPricePerM2 as number | null) ?? null,
+      minArea: (prefs.minArea as number | null) ?? null,
+      maxArea: (prefs.maxArea as number | null) ?? null,
+      minRooms: (prefs.minRooms as number | null) ?? null,
+      maxRooms: (prefs.maxRooms as number | null) ?? null,
+      condition: safeParseJsonArray(prefs.condition),
+      energyCertificates: safeParseJsonArray(prefs.energyCertificates),
+      minFloor: (prefs.minFloor as number | null) ?? null,
+      maxFloor: (prefs.maxFloor as number | null) ?? null,
+      onlyDistressed: (prefs.onlyDistressed as boolean) ?? false,
+      minYield: (prefs.minYield as number | null) ?? null,
+      maxYield: (prefs.maxYield as number | null) ?? null,
+      minGrossYield: (prefs.minGrossYield as number | null) ?? null,
+      maxGrossYield: (prefs.maxGrossYield as number | null) ?? null,
+      minCashOnCash: (prefs.minCashOnCash as number | null) ?? null,
+      maxDaysOnMarket: (prefs.maxDaysOnMarket as number | null) ?? null,
+      minGapPercentage: (prefs.minGapPercentage as number | null) ?? null,
+    });
+  }, [isLoading, preferences]);
 
   // Count active filters
   const countActiveFilters = useCallback(() => {
@@ -167,29 +214,115 @@ export function AdvancedFilters() {
   }, [filters, preferences, saveMutation]);
 
   const handleReset = useCallback(() => {
-    setFilters({
-      trackedRegions: [],
-      minPrice: null,
-      maxPrice: null,
-      minPricePerM2: null,
-      maxPricePerM2: null,
-      minArea: null,
-      maxArea: null,
-      minRooms: null,
-      maxRooms: null,
-      condition: [],
-      energyCertificates: [],
-      minFloor: null,
-      maxFloor: null,
-      onlyDistressed: false,
-      minYield: null,
-      maxYield: null,
-      minGrossYield: null,
-      maxGrossYield: null,
-      minCashOnCash: null,
-      maxDaysOnMarket: null,
-      minGapPercentage: null,
-    });
+    setFilters({ ...defaultFilters });
+  }, []);
+
+  /** Prehľad aktívnych filtrov – zobrazenie aj keď je panel zbalený */
+  const activeFilterChips = useMemo(() => {
+    const chips: { label: string; value: string; clearKey?: keyof typeof filters }[] = [];
+    if (filters.trackedRegions.length > 0) {
+      const names = filters.trackedRegions.map((id) => SLOVAK_REGIONS.find((r) => r.id === id)?.shortName ?? id).join(", ");
+      chips.push({ label: "Kraje", value: names, clearKey: "trackedRegions" });
+    }
+    if (filters.minPrice != null || filters.maxPrice != null) {
+      const parts = [];
+      if (filters.minPrice != null) parts.push(`od €${filters.minPrice.toLocaleString()}`);
+      if (filters.maxPrice != null) parts.push(`do €${filters.maxPrice.toLocaleString()}`);
+      chips.push({ label: "Cena", value: parts.join(" "), clearKey: "minPrice" });
+    }
+    if (filters.minPricePerM2 != null || filters.maxPricePerM2 != null) {
+      const parts = [];
+      if (filters.minPricePerM2 != null) parts.push(`${filters.minPricePerM2} €/m²`);
+      if (filters.maxPricePerM2 != null) parts.push(`– ${filters.maxPricePerM2} €/m²`);
+      chips.push({ label: "Cena/m²", value: parts.join(" "), clearKey: "minPricePerM2" });
+    }
+    if (filters.minArea != null || filters.maxArea != null) {
+      const parts = [];
+      if (filters.minArea != null) parts.push(`${filters.minArea} m²`);
+      if (filters.maxArea != null) parts.push(`– ${filters.maxArea} m²`);
+      chips.push({ label: "Plocha", value: parts.join(" "), clearKey: "minArea" });
+    }
+    if (filters.minRooms != null || filters.maxRooms != null) {
+      const parts = [];
+      if (filters.minRooms != null) parts.push(String(filters.minRooms));
+      if (filters.maxRooms != null) parts.push(`– ${filters.maxRooms}`);
+      chips.push({ label: "Izby", value: parts.join(" "), clearKey: "minRooms" });
+    }
+    if (filters.condition.length > 0) {
+      const names = filters.condition.map((c) => PROPERTY_CONDITIONS.find((x) => x.value === c)?.label ?? c).join(", ");
+      chips.push({ label: "Stav", value: names, clearKey: "condition" });
+    }
+    if (filters.energyCertificates.length > 0) {
+      const names = filters.energyCertificates.map((c) => ENERGY_CERTIFICATES.find((x) => x.value === c)?.label ?? c).join(", ");
+      chips.push({ label: "Energet. trieda", value: names, clearKey: "energyCertificates" });
+    }
+    if (filters.minFloor != null || filters.maxFloor != null) {
+      const parts = [];
+      if (filters.minFloor != null) parts.push(String(filters.minFloor));
+      if (filters.maxFloor != null) parts.push(`– ${filters.maxFloor}`);
+      chips.push({ label: "Poschodie", value: parts.join(" "), clearKey: "minFloor" });
+    }
+    if (filters.onlyDistressed) chips.push({ label: "Len v núdzi", value: "Áno", clearKey: "onlyDistressed" });
+    if (filters.minYield != null || filters.maxYield != null) {
+      const parts = [];
+      if (filters.minYield != null) parts.push(`od ${filters.minYield}%`);
+      if (filters.maxYield != null) parts.push(`do ${filters.maxYield}%`);
+      chips.push({ label: "Výnos", value: parts.join(" "), clearKey: "minYield" });
+    }
+    if (filters.minGrossYield != null || filters.maxGrossYield != null) {
+      const parts = [];
+      if (filters.minGrossYield != null) parts.push(`od ${filters.minGrossYield}%`);
+      if (filters.maxGrossYield != null) parts.push(`do ${filters.maxGrossYield}%`);
+      chips.push({ label: "Hrubý výnos", value: parts.join(" "), clearKey: "minGrossYield" });
+    }
+    if (filters.minCashOnCash != null) chips.push({ label: "Cash-on-Cash", value: `od ${filters.minCashOnCash}%`, clearKey: "minCashOnCash" });
+    if (filters.maxDaysOnMarket != null) chips.push({ label: "Dni v ponuke", value: `max ${filters.maxDaysOnMarket}`, clearKey: "maxDaysOnMarket" });
+    if (filters.minGapPercentage != null) chips.push({ label: "Market Gap", value: `min ${filters.minGapPercentage}%`, clearKey: "minGapPercentage" });
+    return chips;
+  }, [filters]);
+
+  const clearSingleFilter = useCallback((clearKey: keyof typeof filters) => {
+    if (clearKey === "trackedRegions") {
+      setFilters((prev) => ({ ...prev, trackedRegions: [] }));
+      return;
+    }
+    if (clearKey === "condition") {
+      setFilters((prev) => ({ ...prev, condition: [] }));
+      return;
+    }
+    if (clearKey === "energyCertificates") {
+      setFilters((prev) => ({ ...prev, energyCertificates: [] }));
+      return;
+    }
+    if (clearKey === "minPrice") {
+      setFilters((prev) => ({ ...prev, minPrice: null, maxPrice: null }));
+      return;
+    }
+    if (clearKey === "minPricePerM2") {
+      setFilters((prev) => ({ ...prev, minPricePerM2: null, maxPricePerM2: null }));
+      return;
+    }
+    if (clearKey === "minArea") {
+      setFilters((prev) => ({ ...prev, minArea: null, maxArea: null }));
+      return;
+    }
+    if (clearKey === "minRooms") {
+      setFilters((prev) => ({ ...prev, minRooms: null, maxRooms: null }));
+      return;
+    }
+    if (clearKey === "minFloor") {
+      setFilters((prev) => ({ ...prev, minFloor: null, maxFloor: null }));
+      return;
+    }
+    if (clearKey === "minYield") {
+      setFilters((prev) => ({ ...prev, minYield: null, maxYield: null }));
+      return;
+    }
+    if (clearKey === "minGrossYield") {
+      setFilters((prev) => ({ ...prev, minGrossYield: null, maxGrossYield: null }));
+      return;
+    }
+    setFilters((prev) => ({ ...prev, [clearKey]: defaultFilters[clearKey] }));
   }, []);
 
   if (isLoading) {
@@ -229,6 +362,25 @@ export function AdvancedFilters() {
           </button>
         </div>
       </div>
+
+      {/* Prehľad aktívnych filtrov – vždy viditeľný keď niečo je zapnuté */}
+      {activeFilterChips.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mb-4 pb-4 border-b border-zinc-800">
+          <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-medium mr-1">Zapnuté:</span>
+          {activeFilterChips.map((chip, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => chip.clearKey != null && clearSingleFilter(chip.clearKey)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-colors text-left"
+            >
+              <span className="text-zinc-500">{chip.label}:</span>
+              <span className="max-w-[160px] truncate" title={chip.value}>{chip.value}</span>
+              <X className="w-3 h-3 flex-shrink-0 opacity-70" />
+            </button>
+          ))}
+        </div>
+      )}
 
       {isExpanded && (
         <div className="space-y-6 pt-4 border-t border-zinc-800">

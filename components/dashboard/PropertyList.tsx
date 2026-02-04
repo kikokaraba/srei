@@ -436,6 +436,94 @@ export function PropertyList() {
     return count;
   }, [filters]);
 
+  /** Zoznam aktívnych filtrov na zobrazenie ako chips – používateľ vidí, čo je zapnuté */
+  const activeFilterChips = useMemo(() => {
+    const chips: { key: keyof Filters; label: string; value: string }[] = [];
+    if (filters.search.trim()) {
+      chips.push({ key: "search", label: "Hľadám", value: filters.search.trim() });
+    }
+    if (filters.region) {
+      const r = REGIONS.find((x) => x.value === filters.region);
+      chips.push({ key: "region", label: "Kraj", value: r?.label ?? filters.region });
+    }
+    if (filters.city) {
+      chips.push({ key: "city", label: "Mesto", value: filters.city });
+    }
+    if (filters.propertyType) {
+      const p = PROPERTY_TYPES.find((x) => x.value === filters.propertyType);
+      if (p?.label && p.label !== "Všetky") {
+        chips.push({ key: "propertyType", label: "Typ", value: p.label });
+      }
+    }
+    if (filters.source) {
+      chips.push({ key: "source", label: "Zdroj", value: filters.source });
+    }
+    if (filters.minPrice || filters.maxPrice) {
+      const parts = [];
+      if (filters.minPrice) parts.push(`od €${Number(filters.minPrice).toLocaleString()}`);
+      if (filters.maxPrice) parts.push(`do €${Number(filters.maxPrice).toLocaleString()}`);
+      chips.push({ key: "minPrice", label: "Cena", value: parts.join(" ") });
+    }
+    if (filters.minArea || filters.maxArea) {
+      const parts = [];
+      if (filters.minArea) parts.push(`${filters.minArea} m²`);
+      if (filters.maxArea) parts.push(`– ${filters.maxArea} m²`);
+      chips.push({ key: "minArea", label: "Plocha", value: parts.join(" ") });
+    }
+    if (filters.minRooms || filters.maxRooms) {
+      const parts = [];
+      if (filters.minRooms) parts.push(filters.minRooms);
+      if (filters.maxRooms) parts.push(`– ${filters.maxRooms}`);
+      chips.push({ key: "minRooms", label: "Izby", value: parts.join(" ") });
+    }
+    if (filters.condition) {
+      const c = CONDITIONS.find((x) => x.value === filters.condition);
+      chips.push({ key: "condition", label: "Stav", value: c?.label ?? filters.condition });
+    }
+    if (filters.minYield) {
+      chips.push({ key: "minYield", label: "Min. výnos", value: `${filters.minYield}%` });
+    }
+    return chips;
+  }, [filters]);
+
+  const clearSingleFilter = useCallback((key: keyof Filters) => {
+    const defaults: Record<keyof Filters, string> = {
+      search: "",
+      region: "",
+      city: "",
+      listingType: "PREDAJ",
+      propertyType: "BYT",
+      source: "",
+      minPrice: "",
+      maxPrice: "",
+      minArea: "",
+      maxArea: "",
+      minRooms: "",
+      maxRooms: "",
+      condition: "",
+      minYield: "",
+      sortBy: "createdAt",
+      sortOrder: "desc",
+    };
+    setFilters((prev) => {
+      const next = { ...prev };
+      if (key === "minPrice" || key === "maxPrice") {
+        next.minPrice = "";
+        next.maxPrice = "";
+      } else if (key === "minArea" || key === "maxArea") {
+        next.minArea = "";
+        next.maxArea = "";
+      } else if (key === "minRooms" || key === "maxRooms") {
+        next.minRooms = "";
+        next.maxRooms = "";
+      } else {
+        next[key] = defaults[key];
+      }
+      return next;
+    });
+    setPage(1);
+  }, []);
+
   const getRegionLabel = (city: string) => {
     const normalized = normalizeCityName(city);
     const cityInfo = getCityInfo(normalized);
@@ -675,52 +763,79 @@ export function PropertyList() {
           </div>
         </div>
 
+          {/* Aktívne filtre – chips, vždy viditeľné keď niečo je zapnuté */}
+          {activeFilterChips.length > 0 && (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-medium mr-1">Aktívne filtre:</span>
+              {activeFilterChips.map((chip) => (
+                <button
+                  key={chip.key}
+                  type="button"
+                  onClick={() => clearSingleFilter(chip.key)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-colors"
+                >
+                  <span className="text-zinc-500">{chip.label}:</span>
+                  <span className="max-w-[140px] truncate" title={chip.value}>{chip.value}</span>
+                  <X className="w-3 h-3 flex-shrink-0 opacity-70" />
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Expanded Filters */}
           {showFilters && (
             <div className="mt-4 pt-4 border-t border-zinc-800/50">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 <div>
-                  <label className="block text-[10px] text-zinc-600 mb-1.5 uppercase tracking-widest font-medium">Min. cena</label>
+                  <label className={`block text-[10px] mb-1.5 uppercase tracking-widest font-medium ${filters.minPrice ? "text-emerald-500/80" : "text-zinc-600"}`}>Min. cena</label>
                   <input
                     type="number"
                     placeholder="€0"
                     value={filters.minPrice}
                     onChange={(e) => handleFilterChange("minPrice", e.target.value)}
-                    className="w-full px-3 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-200 text-sm focus:outline-none focus:border-zinc-700 font-mono"
+                    className={`w-full px-3 py-2.5 rounded-lg text-zinc-200 text-sm focus:outline-none font-mono border transition-colors ${
+                      filters.minPrice ? "bg-emerald-500/5 border-emerald-500/40 focus:border-emerald-500/60" : "bg-zinc-900/50 border-zinc-800 focus:border-zinc-700"
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-zinc-600 mb-1.5 uppercase tracking-widest font-medium">Max. cena</label>
+                  <label className={`block text-[10px] mb-1.5 uppercase tracking-widest font-medium ${filters.maxPrice ? "text-emerald-500/80" : "text-zinc-600"}`}>Max. cena</label>
                   <input
                     type="number"
                     placeholder="€∞"
                     value={filters.maxPrice}
                     onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
-                    className="w-full px-3 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-200 text-sm focus:outline-none focus:border-zinc-700 font-mono"
+                    className={`w-full px-3 py-2.5 rounded-lg text-zinc-200 text-sm focus:outline-none font-mono border transition-colors ${
+                      filters.maxPrice ? "bg-emerald-500/5 border-emerald-500/40 focus:border-emerald-500/60" : "bg-zinc-900/50 border-zinc-800 focus:border-zinc-700"
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-zinc-600 mb-1.5 uppercase tracking-widest font-medium">Min. plocha</label>
+                  <label className={`block text-[10px] mb-1.5 uppercase tracking-widest font-medium ${filters.minArea ? "text-emerald-500/80" : "text-zinc-600"}`}>Min. plocha</label>
                   <input
                     type="number"
                     placeholder="0 m²"
                     value={filters.minArea}
                     onChange={(e) => handleFilterChange("minArea", e.target.value)}
-                    className="w-full px-3 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-200 text-sm focus:outline-none focus:border-zinc-700 font-mono"
+                    className={`w-full px-3 py-2.5 rounded-lg text-zinc-200 text-sm focus:outline-none font-mono border transition-colors ${
+                      filters.minArea ? "bg-emerald-500/5 border-emerald-500/40 focus:border-emerald-500/60" : "bg-zinc-900/50 border-zinc-800 focus:border-zinc-700"
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-zinc-600 mb-1.5 uppercase tracking-widest font-medium">Max. plocha</label>
+                  <label className={`block text-[10px] mb-1.5 uppercase tracking-widest font-medium ${filters.maxArea ? "text-emerald-500/80" : "text-zinc-600"}`}>Max. plocha</label>
                   <input
                     type="number"
                     placeholder="∞ m²"
                     value={filters.maxArea}
                     onChange={(e) => handleFilterChange("maxArea", e.target.value)}
-                    className="w-full px-3 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-200 text-sm focus:outline-none focus:border-zinc-700 font-mono"
+                    className={`w-full px-3 py-2.5 rounded-lg text-zinc-200 text-sm focus:outline-none font-mono border transition-colors ${
+                      filters.maxArea ? "bg-emerald-500/5 border-emerald-500/40 focus:border-emerald-500/60" : "bg-zinc-900/50 border-zinc-800 focus:border-zinc-700"
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-zinc-600 mb-1.5 uppercase tracking-widest font-medium">Izby</label>
+                  <label className={`block text-[10px] mb-1.5 uppercase tracking-widest font-medium ${(filters.minRooms || filters.maxRooms) ? "text-emerald-500/80" : "text-zinc-600"}`}>Izby</label>
                   <div className="flex gap-2">
                     <input
                       type="number"
@@ -728,7 +843,9 @@ export function PropertyList() {
                       min="1"
                       value={filters.minRooms}
                       onChange={(e) => handleFilterChange("minRooms", e.target.value)}
-                      className="w-full px-3 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-200 text-sm focus:outline-none focus:border-zinc-700 font-mono"
+                      className={`w-full px-3 py-2.5 rounded-lg text-zinc-200 text-sm focus:outline-none font-mono border transition-colors ${
+                        filters.minRooms ? "bg-emerald-500/5 border-emerald-500/40 focus:border-emerald-500/60" : "bg-zinc-900/50 border-zinc-800 focus:border-zinc-700"
+                      }`}
                     />
                     <input
                       type="number"
@@ -736,22 +853,39 @@ export function PropertyList() {
                       min="1"
                       value={filters.maxRooms}
                       onChange={(e) => handleFilterChange("maxRooms", e.target.value)}
-                      className="w-full px-3 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-200 text-sm focus:outline-none focus:border-zinc-700 font-mono"
+                      className={`w-full px-3 py-2.5 rounded-lg text-zinc-200 text-sm focus:outline-none font-mono border transition-colors ${
+                        filters.maxRooms ? "bg-emerald-500/5 border-emerald-500/40 focus:border-emerald-500/60" : "bg-zinc-900/50 border-zinc-800 focus:border-zinc-700"
+                      }`}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] text-zinc-600 mb-1.5 uppercase tracking-widest font-medium">Stav</label>
+                  <label className={`block text-[10px] mb-1.5 uppercase tracking-widest font-medium ${filters.condition ? "text-emerald-500/80" : "text-zinc-600"}`}>Stav</label>
                   <select
                     value={filters.condition}
                     onChange={(e) => handleFilterChange("condition", e.target.value)}
-                    className="w-full px-3 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-200 text-sm focus:outline-none focus:border-zinc-700 cursor-pointer"
+                    className={`w-full px-3 py-2.5 rounded-lg text-zinc-200 text-sm focus:outline-none cursor-pointer border transition-colors ${
+                      filters.condition ? "bg-emerald-500/5 border-emerald-500/40 focus:border-emerald-500/60" : "bg-zinc-900/50 border-zinc-800 focus:border-zinc-700"
+                    }`}
                   >
                     <option value="">Všetky</option>
                     {CONDITIONS.map((cond) => (
                       <option key={cond.value} value={cond.value}>{cond.label}</option>
                     ))}
                   </select>
+                </div>
+                <div>
+                  <label className={`block text-[10px] mb-1.5 uppercase tracking-widest font-medium ${filters.minYield ? "text-emerald-500/80" : "text-zinc-600"}`}>Min. výnos %</label>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    step="0.1"
+                    value={filters.minYield}
+                    onChange={(e) => handleFilterChange("minYield", e.target.value)}
+                    className={`w-full px-3 py-2.5 rounded-lg text-zinc-200 text-sm focus:outline-none font-mono border transition-colors ${
+                      filters.minYield ? "bg-emerald-500/5 border-emerald-500/40 focus:border-emerald-500/60" : "bg-zinc-900/50 border-zinc-800 focus:border-zinc-700"
+                    }`}
+                  />
                 </div>
               </div>
 
