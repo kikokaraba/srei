@@ -26,12 +26,18 @@ interface RegionStats {
   averagePrice: number;
 }
 
+interface OurData {
+  avgPricePerM2: number;
+  propertyCount: number;
+}
+
 interface HistoryData {
   region: string;
   name: string;
   yearly: YearlyData[];
   stats: RegionStats;
   source: string;
+  ourData: OurData | null;
 }
 
 const ALL_REGIONS = [
@@ -121,6 +127,7 @@ export function PriceHistory() {
           yearly: result.data.yearly,
           stats: statsResult.data?.stats || {},
           source: result.data.source,
+          ourData: statsResult.data?.ourData ?? result.data?.ourData ?? null,
         });
       }
     } catch (err) {
@@ -134,8 +141,11 @@ export function PriceHistory() {
     if (!data?.yearly?.length) return null;
     
     const prices = data.yearly.map(d => d.avgPrice);
-    const maxPrice = Math.max(...prices);
-    const minPrice = Math.min(...prices);
+    const withOurs = data.ourData
+      ? [...prices, data.ourData.avgPricePerM2]
+      : prices;
+    const maxPrice = Math.max(...withOurs);
+    const minPrice = Math.min(...withOurs);
     const padding = (maxPrice - minPrice) * 0.1;
     const adjustedMax = maxPrice + padding;
     const adjustedMin = minPrice - padding;
@@ -145,6 +155,7 @@ export function PriceHistory() {
       ...d,
       x: (i / (data.yearly.length - 1)) * 100,
       y: 100 - ((d.avgPrice - adjustedMin) / range) * 100,
+      isOurs: false,
     }));
     
     // Smooth curve path
@@ -159,6 +170,18 @@ export function PriceHistory() {
     // Area path (for gradient fill)
     const areaD = `${pathD} L 100 100 L 0 100 Z`;
     
+    // Bod "SRIA 2025" na konci grafu (rovnaká x ako posledný rok)
+    const ourPoint =
+      data.ourData && points.length > 0
+        ? {
+            year: 2025,
+            avgPrice: data.ourData.avgPricePerM2,
+            x: points[points.length - 1].x,
+            y: 100 - ((data.ourData.avgPricePerM2 - adjustedMin) / range) * 100,
+            isOurs: true,
+          }
+        : null;
+    
     return {
       points,
       pathD,
@@ -167,6 +190,7 @@ export function PriceHistory() {
       minPrice,
       isUp: prices[prices.length - 1] > prices[0],
       changePercent: ((prices[prices.length - 1] - prices[0]) / prices[0]) * 100,
+      ourPoint,
     };
   }, [data]);
 
@@ -216,25 +240,40 @@ export function PriceHistory() {
             </h3>
           </div>
           
-          {/* Current price badge */}
-          <div className="text-right">
-            <div className="text-xl font-semibold text-white tabular-nums">
-              {currentPrice.toLocaleString()}
-              <span className="text-lg text-zinc-400 ml-1">€/m²</span>
+          {/* Current price badge: NBS + naše dáta */}
+          <div className="text-right space-y-2">
+            <div>
+              <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">NBS</div>
+              <div className="text-xl font-semibold text-white tabular-nums">
+                {currentPrice.toLocaleString()}
+                <span className="text-lg text-zinc-400 ml-1">€/m²</span>
+              </div>
+              <div className={`flex items-center justify-end gap-1 mt-1 ${
+                isPositive ? "text-emerald-400" : "text-rose-400"
+              }`}>
+                {isPositive ? (
+                  <ArrowUp className="w-4 h-4" />
+                ) : (
+                  <ArrowDown className="w-4 h-4" />
+                )}
+                <span className="font-semibold tabular-nums text-xs">
+                  {isPositive ? "+" : ""}{priceChange.toFixed(1)}%
+                </span>
+                <span className="text-zinc-500 text-xs">/ rok</span>
+              </div>
             </div>
-            <div className={`flex items-center justify-end gap-1 mt-1 ${
-              isPositive ? "text-emerald-400" : "text-rose-400"
-            }`}>
-              {isPositive ? (
-                <ArrowUp className="w-4 h-4" />
-              ) : (
-                <ArrowDown className="w-4 h-4" />
-              )}
-              <span className="font-semibold tabular-nums">
-                {isPositive ? "+" : ""}{priceChange.toFixed(1)}%
-              </span>
-              <span className="text-zinc-500 text-sm">/ rok</span>
-            </div>
+            {data?.ourData && (
+              <div className="pt-2 border-t border-zinc-700/50">
+                <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">SRIA (naše dáta)</div>
+                <div className="text-lg font-semibold text-emerald-400/90 tabular-nums">
+                  {data.ourData.avgPricePerM2.toLocaleString()}
+                  <span className="text-sm text-zinc-400 ml-1">€/m²</span>
+                </div>
+                <div className="text-[10px] text-zinc-500 mt-0.5">
+                  z {data.ourData.propertyCount.toLocaleString()} inzerátov
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -381,6 +420,30 @@ export function PriceHistory() {
                     )}
                   </g>
                 ))}
+                {/* Naše dáta 2025 - bod SRIA */}
+                {chartData.ourPoint && (
+                  <g>
+                    <circle
+                      cx={chartData.ourPoint.x}
+                      cy={chartData.ourPoint.y}
+                      r="1.8"
+                      fill="#34d399"
+                      stroke="#0f0f0f"
+                      strokeWidth="0.4"
+                      className="opacity-100"
+                    />
+                    <circle
+                      cx={chartData.ourPoint.x}
+                      cy={chartData.ourPoint.y}
+                      r="2.8"
+                      fill="none"
+                      stroke="#34d399"
+                      strokeWidth="0.25"
+                      strokeDasharray="1,1"
+                      opacity="0.9"
+                    />
+                  </g>
+                )}
               </svg>
               
               {/* Tooltip */}
@@ -469,11 +532,25 @@ export function PriceHistory() {
           </div>
         )}
 
-        {/* Source tag */}
-        <div className="flex items-center justify-center gap-2 mt-4 text-xs text-zinc-600">
-          <span>Zdroj: NBS</span>
-          <span>•</span>
-          <span>Aktualizované Q3 2025</span>
+        {/* Legend + Source */}
+        <div className="mt-4 space-y-2">
+          {chartData?.ourPoint && (
+            <div className="flex items-center justify-center gap-4 text-xs text-zinc-500">
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block w-2 h-2 rounded-full bg-emerald-500/80" style={{ boxShadow: "0 0 0 1px #34d399" }} />
+                SRIA – priemer €/m² z našich inzerátov (2025)
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block w-2 h-2 rounded-full bg-zinc-500" />
+                Krivka: NBS vývoj cien
+              </span>
+            </div>
+          )}
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-zinc-600">
+            <span>NBS: oficiálne štatistiky (Q3 2025)</span>
+            <span>•</span>
+            <span>SRIA: naša databáza inzerátov</span>
+          </div>
         </div>
       </div>
     </div>

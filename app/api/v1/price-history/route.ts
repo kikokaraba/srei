@@ -9,7 +9,9 @@ import {
   HISTORICAL_DATA,
   REGION_LABELS,
   CITY_TO_REGION,
+  REGION_TO_CITY,
 } from "@/lib/data-sources/historical-prices";
+import { getRealtimeMarketStats } from "@/lib/data-sources/realtime-stats";
 
 /**
  * GET /api/v1/price-history
@@ -99,6 +101,18 @@ export async function GET(request: Request) {
         );
       }
 
+      const realtime = await getRealtimeMarketStats();
+      const city = REGION_TO_CITY[targetRegion];
+      const ourRegion = targetRegion === "SLOVENSKO"
+        ? null
+        : realtime.regions.find((r) => r.city === city);
+      const ourData =
+        targetRegion === "SLOVENSKO"
+          ? { avgPricePerM2: realtime.nationalAvg, propertyCount: realtime.totalProperties }
+          : ourRegion
+            ? { avgPricePerM2: ourRegion.avgPricePerM2, propertyCount: ourRegion.propertyCount }
+            : null;
+
       return NextResponse.json({
         success: true,
         data: {
@@ -106,6 +120,9 @@ export async function GET(request: Request) {
           name: REGION_LABELS[targetRegion],
           stats,
           source: "NBS - Národná banka Slovenska",
+          ourData: ourData
+            ? { avgPricePerM2: ourData.avgPricePerM2, propertyCount: ourData.propertyCount }
+            : null,
         },
       });
     }
@@ -117,6 +134,18 @@ export async function GET(request: Request) {
         (d) => d.year >= fromYear && d.year <= toYear
       );
 
+      const realtime = await getRealtimeMarketStats();
+      const city = REGION_TO_CITY[targetRegion];
+      const ourRegion = targetRegion === "SLOVENSKO"
+        ? null
+        : realtime.regions.find((r) => r.city === city);
+      const ourData =
+        targetRegion === "SLOVENSKO"
+          ? { avgPricePerM2: realtime.nationalAvg, propertyCount: realtime.totalProperties }
+          : ourRegion
+            ? { avgPricePerM2: ourRegion.avgPricePerM2, propertyCount: ourRegion.propertyCount }
+            : null;
+
       return NextResponse.json({
         success: true,
         data: {
@@ -124,6 +153,9 @@ export async function GET(request: Request) {
           name: REGION_LABELS[targetRegion],
           yearly: filteredData,
           source: "NBS - Národná banka Slovenska",
+          ourData: ourData
+            ? { avgPricePerM2: ourData.avgPricePerM2, propertyCount: ourData.propertyCount }
+            : null,
         },
       });
     }

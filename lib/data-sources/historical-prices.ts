@@ -33,6 +33,18 @@ export const CITY_TO_REGION: Record<string, string> = {
   NITRA: "NITRIANSKY",
 };
 
+/** Mapovanie kódu kraja (NBS) na mesto pre DB dotazy */
+export const REGION_TO_CITY: Record<string, string> = {
+  BRATISLAVSKY: "BRATISLAVA",
+  KOSICKY: "KOSICE",
+  PRESOVSKY: "PRESOV",
+  ZILINSKY: "ZILINA",
+  BANSKOBYSTRICKY: "BANSKA_BYSTRICA",
+  TRNAVSKY: "TRNAVA",
+  TRENCIANSKY: "TRENCIN",
+  NITRIANSKY: "NITRA",
+};
+
 export const REGION_LABELS: Record<string, string> = {
   BRATISLAVSKY: "Bratislavský kraj",
   KOSICKY: "Košický kraj",
