@@ -53,6 +53,8 @@ const CONDITIONS = [
 const SORT_OPTIONS = [
   { value: "createdAt", label: "Najnovšie" },
   { value: "price", label: "Cena" },
+  { value: "yield", label: "Výnos" },
+  { value: "days_on_market", label: "Dni v ponuke" },
   { value: "area", label: "Plocha" },
   { value: "price_per_m2", label: "Cena/m²" },
 ];
@@ -216,7 +218,7 @@ const defaultFilters: Filters = {
   region: "",
   city: "",
   listingType: "PREDAJ",
-  propertyType: "BYT",
+  propertyType: "",
   source: "",
   minPrice: "",
   maxPrice: "",
@@ -247,37 +249,8 @@ export function PropertyList() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [batchMetrics, setBatchMetrics] = useState<Record<string, BatchMetrics>>({});
   const [myProfileOn, setMyProfileOn] = useState(false);
-  const prefillDone = useRef(false);
 
-  const { preferences, isLoading: prefsLoading } = useUserPreferences();
-
-  // Predvyplnenie filtrov z preferencií a zapnutie "Môj profil" – aby sa zobrazovalo len to, čo má používateľ v nastaveniach
-  useEffect(() => {
-    if (prefillDone.current || !preferences || prefsLoading) return;
-    const hasLoc = (preferences.trackedRegions?.length || 0) > 0 || (preferences.trackedDistricts?.length || 0) > 0 || (preferences.trackedCities?.length || 0) > 0;
-    const hasYield = preferences.minYield != null && preferences.minYield > 0;
-    const hasPrice = preferences.maxPrice != null && preferences.maxPrice > 0;
-    const hasOther = (preferences.minGrossYield != null && preferences.minGrossYield > 0) || (preferences.minPrice != null) || (preferences.maxPrice != null) || (preferences.minArea != null) || (preferences.minRooms != null);
-    const hasAnyPrefs = hasLoc || hasYield || hasPrice || hasOther;
-    if (!hasAnyPrefs) return;
-    prefillDone.current = true;
-    setFilters((prev) => {
-      const next = { ...prev };
-      if (preferences.trackedRegions?.length === 1) {
-        const r = REGIONS.find((x) => x.value === preferences.trackedRegions![0]);
-        if (r) next.region = r.value;
-      }
-      if (preferences.trackedCities?.length === 1 && CITIES.includes(preferences.trackedCities[0])) {
-        next.city = preferences.trackedCities[0];
-        if (next.region) next.region = "";
-      }
-      if (hasYield) next.minYield = String(preferences.minYield!);
-      if (hasPrice) next.maxPrice = String(preferences.maxPrice!);
-      return next;
-    });
-    // Predvolene zapnúť "Môj profil" – výsledky podľa nastavení z /dashboard/settings
-    setMyProfileOn(true);
-  }, [preferences, prefsLoading]);
+  useUserPreferences(); // načítanie preferencií pre iné komponenty; filtre a "Môj profil" sú na začiatku vypnuté
 
   useEffect(() => {
     if (!filtersInitialized) {
@@ -493,7 +466,7 @@ export function PropertyList() {
       region: "",
       city: "",
       listingType: "PREDAJ",
-      propertyType: "BYT",
+      propertyType: "",
       source: "",
       minPrice: "",
       maxPrice: "",
@@ -764,10 +737,21 @@ export function PropertyList() {
           </div>
         </div>
 
-          {/* Aktívne filtre – chips, vždy viditeľné keď niečo je zapnuté */}
-          {activeFilterChips.length > 0 && (
+          {/* Aktívne filtre – chips; "Môj profil" má vlastný chip, odstránenie len vypne profil bez vymazania ostatných */}
+          {(myProfileOn || activeFilterChips.length > 0) && (
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-medium mr-1">Aktívne filtre:</span>
+              {myProfileOn && (
+                <button
+                  type="button"
+                  onClick={toggleMyProfile}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-medium hover:bg-amber-500/20 hover:border-amber-500/50 transition-colors"
+                >
+                  <span className="text-zinc-500">Môj profil:</span>
+                  <span className="max-w-[140px] truncate">Nastavenia</span>
+                  <X className="w-3 h-3 flex-shrink-0 opacity-70" />
+                </button>
+              )}
               {activeFilterChips.map((chip) => (
                 <button
                   key={chip.key}
