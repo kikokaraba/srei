@@ -163,16 +163,7 @@ export function getCityCenter(city: string): { lat: number; lng: number } | null
   return getCityCoordinates(normalized);
 }
 
-/**
- * Get all properties with coordinates for map display
- */
-export async function getPropertiesForMap(filters?: {
-  city?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  listingType?: ListingType;
-  limit?: number;
-}): Promise<{
+export type MapProperty = {
   id: string;
   title: string;
   price: number;
@@ -183,29 +174,48 @@ export async function getPropertiesForMap(filters?: {
   rooms: number | null;
   area_m2: number;
   is_distressed: boolean;
-}[]> {
-  const where: Prisma.PropertyWhereInput = {
+  source_url: string | null;
+  /** True when coords are from city center (property had no lat/lng) */
+  approximate?: boolean;
+};
+
+/**
+ * Get all properties for map display.
+ * With includeWithoutCoords, also returns properties without coordinates using city center.
+ */
+export async function getPropertiesForMap(filters?: {
+  city?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  listingType?: ListingType;
+  limit?: number;
+  includeWithoutCoords?: boolean;
+}): Promise<MapProperty[]> {
+  const limit = Math.min(filters?.limit ?? 5000, 10000);
+
+  const whereWithCoords: Prisma.PropertyWhereInput = {
     status: "ACTIVE",
     latitude: { not: null },
     longitude: { not: null },
   };
-
-  if (filters?.city) {
-    where.city = { contains: filters.city, mode: "insensitive" };
+  if (filters?.minPrice != null && filters?.maxPrice != null) {
+    whereWithCoords.price = { gte: filters.minPrice, lte: filters.maxPrice };
+  } else if (filters?.minPrice != null) {
+    whereWithCoords.price = { gte: filters.minPrice };
+  } else if (filters?.maxPrice != null) {
+    whereWithCoords.price = { lte: filters.maxPrice };
+  } else {
+    whereWithCoords.price = { gt: 0 };
   }
-  if (filters?.minPrice != null || filters?.maxPrice != null) {
-    where.price = {};
-    if (filters?.minPrice != null) where.price.gte = filters.minPrice;
-    if (filters?.maxPrice != null) where.price.lte = filters.maxPrice;
+  if (filters?.city) {
+    whereWithCoords.city = { contains: filters.city, mode: "insensitive" };
   }
   if (filters?.listingType) {
-    where.listing_type = filters.listingType;
+    whereWithCoords.listing_type = filters.listingType;
   }
 
-  const take = Math.min(filters?.limit ?? 1000, 2000);
-
-  const properties = await prisma.property.findMany({
-    where,
+  const propertiesWithCoords = await prisma.property.findMany({
+    where: whereWithCoords,
     select: {
       id: true,
       title: true,
@@ -217,11 +227,87 @@ export async function getPropertiesForMap(filters?: {
       rooms: true,
       area_m2: true,
       is_distressed: true,
+      source_url: true,
     },
-    take,
+    take: limit,
   });
 
-  return properties.filter((p): p is typeof p & { latitude: number; longitude: number } => 
-    p.latitude != null && p.longitude != null
-  );
+  const result: MapProperty[] = propertiesWithCoords
+    .filter((p): p is typeof p & { latitude: number; longitude: number } => p.latitude != null && p.longitude != null)
+    .map((p) => ({
+      id: p.id,
+      title: p.title,
+      price: p.price,
+      price_per_m2: p.price_per_m2,
+      latitude: p.latitude,
+      longitude: p.longitude,
+      city: p.city,
+      rooms: p.rooms,
+      area_m2: p.area_m2,
+      is_distressed: p.is_distressed,
+      source_url: p.source_url ?? null,
+    }));
+
+  if (filters?.includeWithoutCoords && result.length < limit) {
+    const whereWithoutCoords: Prisma.PropertyWhereInput = {
+      status: "ACTIVE",
+      OR: [{ latitude: null }, { longitude: null }],
+    };
+    if (filters?.minPrice != null && filters?.maxPrice != null) {
+      whereWithoutCoords.price = { gte: filters.minPrice, lte: filters.maxPrice };
+    } else if (filters?.minPrice != null) {
+      whereWithoutCoords.price = { gte: filters.minPrice };
+    } else if (filters?.maxPrice != null) {
+      whereWithoutCoords.price = { lte: filters.maxPrice };
+    } else {
+      whereWithoutCoords.price = { gt: 0 };
+    }
+    if (filters?.city) {
+      whereWithoutCoords.city = { contains: filters.city, mode: "insensitive" };
+    }
+    if (filters?.listingType) {
+      whereWithoutCoords.listing_type = filters.listingType;
+    }
+
+    const withoutCoords = await prisma.property.findMany({
+      where: whereWithoutCoords,
+      select: {
+        id: true,
+        title: true,
+        price: true,
+        price_per_m2: true,
+        city: true,
+        rooms: true,
+        area_m2: true,
+        is_distressed: true,
+        source_url: true,
+      },
+      take: limit - result.length,
+    });
+
+    const ids = new Set(result.map((p) => p.id));
+    for (const p of withoutCoords) {
+      if (ids.has(p.id)) continue;
+      const coords = getCityCenter(p.city);
+      if (coords) {
+        ids.add(p.id);
+        result.push({
+          id: p.id,
+          title: p.title,
+          price: p.price,
+          price_per_m2: p.price_per_m2,
+          latitude: coords.lat,
+          longitude: coords.lng,
+          city: p.city,
+          rooms: p.rooms,
+          area_m2: p.area_m2,
+          is_distressed: p.is_distressed,
+          source_url: p.source_url ?? null,
+          approximate: true,
+        });
+      }
+    }
+  }
+
+  return result;
 }

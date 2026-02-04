@@ -49,13 +49,6 @@ function HeatmapLayer({ points }: { points: [number, number, number][] }) {
   
   return null;
 }
-import { 
-  normalizeCityName, 
-  getCityCoordinates, 
-  TRACKED_CITIES,
-  type CityInfo 
-} from "@/lib/constants/cities";
-
 // Fix Leaflet icons
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: () => string })._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -64,12 +57,17 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
-// Extended city data for map display
-interface CityMapData extends CityInfo {
+// City data from API or for map display
+interface CityMapData {
+  name: string;
+  lat: number;
+  lng: number;
   properties: number;
   avgPrice: number;
   hotDeals: number;
-  priceChange: number;
+  priceChange?: number;
+  region?: string;
+  population?: number;
 }
 
 // Calculate bubble size based on property count
@@ -110,9 +108,12 @@ interface Property {
   listing_type?: string;
   is_distressed?: boolean;
   source_url?: string | null;
+  approximate?: boolean;
 }
 
 type ViewMode = "bubbles" | "heatmap" | "markers";
+
+const MAP_LIMIT = 5000;
 
 export default function InteractiveMap() {
   const [selectedCity, setSelectedCity] = useState<CityMapData | null>(null);
@@ -120,109 +121,78 @@ export default function InteractiveMap() {
   const [mapZoom, setMapZoom] = useState(7);
   const [hoveredCity, setHoveredCity] = useState<string | null>(null);
   const [properties, setProperties] = useState<Property[]>([]);
+  const [cityStats, setCityStats] = useState<CityMapData[]>([]);
   const [loading, setLoading] = useState(true);
   const [dbConnected, setDbConnected] = useState<boolean | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("bubbles");
 
-  // Initialize city stats from TRACKED_CITIES
-  const [cityStats, setCityStats] = useState<CityMapData[]>(
-    TRACKED_CITIES.map(city => ({
-      ...city,
-      properties: 0,
-      avgPrice: 0,
-      hotDeals: 0,
-      priceChange: 0,
-    }))
-  );
+  const [filterCity, setFilterCity] = useState("");
+  const [filterMinPrice, setFilterMinPrice] = useState<string>("");
+  const [filterMaxPrice, setFilterMaxPrice] = useState<string>("");
+  const [includeWithoutCoords, setIncludeWithoutCoords] = useState(true);
 
-  // Check database and load properties
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        // Check DB connection
-        const dbRes = await fetch("/api/db-test", { 
-          signal: AbortSignal.timeout(5000) 
-        });
-        const dbData = await dbRes.json();
-        setDbConnected(dbData.ok);
-        
-        if (dbData.ok) {
-          // Load properties
-          const propsRes = await fetch("/api/v1/properties/map", {
-            signal: AbortSignal.timeout(15000)
-          });
-          const propsData = await propsRes.json();
-          
-          if (propsData.data && Array.isArray(propsData.data)) {
-            const validProps = propsData.data.filter(
-              (p: Property) => p.latitude && p.longitude && p.price > 0
-            );
-            setProperties(validProps);
-            console.log(`Map: Loaded ${validProps.length} properties`);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to load map data:", error);
-        setDbConnected(false);
-      } finally {
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const dbRes = await fetch("/api/db-test", { signal: AbortSignal.timeout(5000) });
+      const dbData = await dbRes.json();
+      setDbConnected(dbData.ok);
+
+      if (!dbData.ok) {
         setLoading(false);
+        return;
       }
-    };
-    
-    loadData();
-  }, []);
 
-  // Calculate city stats from loaded properties
-  useEffect(() => {
-    if (properties.length === 0) return;
-    
-    // Group properties by normalized city name
-    const cityData: Record<string, { 
-      count: number; 
-      totalPrice: number; 
-      hotDeals: number;
-      totalPricePerM2: number;
-    }> = {};
-    
-    for (const prop of properties) {
-      const normalizedCity = normalizeCityName(prop.city);
-      if (!normalizedCity) continue; // Skip invalid cities
-      
-      if (!cityData[normalizedCity]) {
-        cityData[normalizedCity] = { count: 0, totalPrice: 0, hotDeals: 0, totalPricePerM2: 0 };
+      const params = new URLSearchParams();
+      params.set("limit", String(MAP_LIMIT));
+      if (includeWithoutCoords) params.set("includeWithoutCoords", "true");
+      if (filterCity.trim()) params.set("city", filterCity.trim());
+      const minP = filterMinPrice.trim() ? parseFloat(filterMinPrice) : NaN;
+      const maxP = filterMaxPrice.trim() ? parseFloat(filterMaxPrice) : NaN;
+      if (!Number.isNaN(minP)) params.set("minPrice", String(minP));
+      if (!Number.isNaN(maxP)) params.set("maxPrice", String(maxP));
+
+      const propsRes = await fetch(`/api/v1/properties/map?${params.toString()}`, {
+        signal: AbortSignal.timeout(20000),
+      });
+      const propsData = await propsRes.json();
+
+      if (propsData.data && Array.isArray(propsData.data)) {
+        const validProps = propsData.data.filter(
+          (p: Property) => p.latitude && p.longitude && p.price > 0
+        ) as Property[];
+        setProperties(validProps);
+      } else {
+        setProperties([]);
       }
-      
-      cityData[normalizedCity].count++;
-      cityData[normalizedCity].totalPrice += prop.price;
-      
-      // Calculate price per m2
-      const pricePerM2 = prop.price_per_m2 || (prop.area_m2 > 0 ? prop.price / prop.area_m2 : 0);
-      if (pricePerM2 > 0 && pricePerM2 < 50000) { // Sanity check
-        cityData[normalizedCity].totalPricePerM2 += pricePerM2;
+
+      if (propsData.citySummary && Array.isArray(propsData.citySummary)) {
+        setCityStats(
+          propsData.citySummary.map((c: { name: string; lat: number; lng: number; properties: number; avgPrice: number; hotDeals: number }) => ({
+            name: c.name,
+            lat: c.lat,
+            lng: c.lng,
+            properties: c.properties,
+            avgPrice: c.avgPrice ?? 0,
+            hotDeals: c.hotDeals ?? 0,
+          }))
+        );
+      } else {
+        setCityStats([]);
       }
-      
-      if (prop.is_distressed) {
-        cityData[normalizedCity].hotDeals++;
-      }
+    } catch (error) {
+      console.error("Failed to load map data:", error);
+      setDbConnected(false);
+      setProperties([]);
+      setCityStats([]);
+    } finally {
+      setLoading(false);
     }
-    
-    console.log("City aggregation:", Object.keys(cityData).map(k => `${k}: ${cityData[k].count}`).join(", "));
-    
-    // Update city stats
-    setCityStats(prev => prev.map(city => {
-      const data = cityData[city.name];
-      if (data && data.count > 0) {
-        return {
-          ...city,
-          properties: data.count,
-          avgPrice: Math.round(data.totalPricePerM2 / data.count),
-          hotDeals: data.hotDeals,
-        };
-      }
-      return { ...city, properties: 0, avgPrice: 0, hotDeals: 0 };
-    }));
-  }, [properties]);
+  }, [filterCity, filterMinPrice, filterMaxPrice, includeWithoutCoords]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // Handle city click
   const handleCityClick = (city: CityMapData) => {
@@ -251,7 +221,10 @@ export default function InteractiveMap() {
   }, [cityStats]);
   
   // Max properties for bubble sizing
-  const maxProps = useMemo(() => Math.max(...cityStats.map(c => c.properties), 1), [cityStats]);
+  const maxProps = useMemo(() => {
+    const counts = cityStats.map(c => c.properties);
+    return counts.length > 0 ? Math.max(...counts, 1) : 1;
+  }, [cityStats]);
 
   // Cities with properties for display
   const citiesWithProperties = useMemo(
@@ -306,9 +279,63 @@ export default function InteractiveMap() {
             Mapa Slovenska
           </h2>
           <p className="text-sm text-zinc-400 mt-1">
-            Klikni na mesto pre detail
+            Klikni na mesto alebo bod pre detail
           </p>
-          
+
+          {/* Filters */}
+          <div className="mt-3 space-y-2">
+            <input
+              type="text"
+              placeholder="Mesto (filter)"
+              value={filterCity}
+              onChange={(e) => setFilterCity(e.target.value)}
+              onBlur={loadData}
+              onKeyDown={(e) => e.key === "Enter" && loadData()}
+              className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            />
+            <div className="flex gap-2">
+              <input
+                type="number"
+                placeholder="Min €"
+                value={filterMinPrice}
+                onChange={(e) => setFilterMinPrice(e.target.value)}
+                onBlur={loadData}
+                min={0}
+                className="flex-1 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+              <input
+                type="number"
+                placeholder="Max €"
+                value={filterMaxPrice}
+                onChange={(e) => setFilterMaxPrice(e.target.value)}
+                onBlur={loadData}
+                min={0}
+                className="flex-1 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm text-zinc-400 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={includeWithoutCoords}
+                onChange={(e) => {
+                  setIncludeWithoutCoords(e.target.checked);
+                  setTimeout(loadData, 0);
+                }}
+                className="rounded border-zinc-600 bg-zinc-800 text-emerald-500 focus:ring-emerald-500"
+              />
+              Zobraziť aj bez presnej polohy (stred mesta)
+            </label>
+            <button
+              type="button"
+              onClick={loadData}
+              disabled={loading}
+              className="w-full py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              Obnoviť dáta
+            </button>
+          </div>
+
           {/* DB Status */}
           <div className="mt-3 flex items-center gap-2 text-xs">
             <div className={`w-2 h-2 rounded-full ${
@@ -352,7 +379,9 @@ export default function InteractiveMap() {
               </button>
               
               <h3 className="text-base font-semibold text-white mb-1">{selectedCity.name}</h3>
-              <p className="text-sm text-zinc-500 mb-4">{selectedCity.region} kraj</p>
+              {selectedCity.region && (
+                <p className="text-sm text-zinc-500 mb-4">{selectedCity.region} kraj</p>
+              )}
               
               <div className="space-y-3">
                 <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
@@ -362,9 +391,9 @@ export default function InteractiveMap() {
                       <span className="text-white font-semibold">
                         {selectedCity.avgPrice > 0 ? `€${selectedCity.avgPrice.toLocaleString()}/m²` : "-"}
                       </span>
-                      {selectedCity.priceChange !== 0 && (
-                        <span className={`text-xs flex items-center gap-0.5 ${selectedCity.priceChange >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                          {selectedCity.priceChange >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                      {(selectedCity.priceChange ?? 0) !== 0 && (
+                        <span className={`text-xs flex items-center gap-0.5 ${(selectedCity.priceChange ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                          {(selectedCity.priceChange ?? 0) >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                           {selectedCity.priceChange}%
                         </span>
                       )}
@@ -594,7 +623,7 @@ export default function InteractiveMap() {
               return distance < 0.15;
             }
             return true;
-          }).slice(0, 500).map((property) => (
+          }).map((property) => (
             <CircleMarker
               key={property.id}
               center={[property.latitude, property.longitude]}
@@ -608,6 +637,9 @@ export default function InteractiveMap() {
             >
               <Popup>
                 <div className="p-2 min-w-[200px]">
+                  {property.approximate && (
+                    <p className="text-[10px] text-amber-600 mb-1">Približná poloha (stred mesta)</p>
+                  )}
                   <h3 className="font-semibold text-zinc-900 text-sm mb-2 line-clamp-2">
                     {property.title}
                   </h3>
