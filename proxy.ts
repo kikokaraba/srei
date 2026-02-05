@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { getToken } from "next-auth/jwt";
 
-// Zero Trust Proxy - Validates sessions and sanitizes headers
-// Proxy defaults to Node.js runtime (no runtime export in proxy files)
+// Zero Trust Proxy - Validates sessions and sanitizes headers.
+// Uses getToken (JWT only) so we do NOT import @/lib/auth or Prisma in the proxy bundle
+// (middleware/proxy cannot resolve generated Prisma client).
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Public routes that don't require authentication
   const publicRoutes = [
     "/",
     "/auth/signin",
@@ -19,24 +19,17 @@ export async function proxy(request: NextRequest) {
     "/api/auth",
   ];
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
-
-  // API routes
   const isApiRoute = pathname.startsWith("/api");
 
-  // Protected routes require authentication
   if (!isPublicRoute && !isApiRoute) {
-    try {
-      const session = await auth();
-      if (!session) {
-        const signInUrl = new URL("/auth/signin", request.url);
-        signInUrl.searchParams.set("callbackUrl", pathname);
-        return NextResponse.redirect(signInUrl);
-      }
-    } catch (error) {
-      console.error("[proxy] auth check failed:", error);
+    const secret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
+    const token = await getToken({
+      req: request,
+      secret,
+    });
+    if (!token) {
       const signInUrl = new URL("/auth/signin", request.url);
       signInUrl.searchParams.set("callbackUrl", pathname);
-      signInUrl.searchParams.set("error", "SessionExpired");
       return NextResponse.redirect(signInUrl);
     }
   }
