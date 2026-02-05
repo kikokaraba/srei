@@ -9,7 +9,15 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes that don't require authentication
-  const publicRoutes = ["/", "/auth/signin", "/auth/error", "/api/auth"];
+  const publicRoutes = [
+    "/",
+    "/auth/signin",
+    "/auth/signup",
+    "/auth/error",
+    "/auth/forgot-password",
+    "/auth/reset-password",
+    "/api/auth",
+  ];
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
   // API routes
@@ -17,11 +25,18 @@ export async function proxy(request: NextRequest) {
 
   // Protected routes require authentication
   if (!isPublicRoute && !isApiRoute) {
-    const session = await auth();
-
-    if (!session) {
+    try {
+      const session = await auth();
+      if (!session) {
+        const signInUrl = new URL("/auth/signin", request.url);
+        signInUrl.searchParams.set("callbackUrl", pathname);
+        return NextResponse.redirect(signInUrl);
+      }
+    } catch (error) {
+      console.error("[proxy] auth check failed:", error);
       const signInUrl = new URL("/auth/signin", request.url);
       signInUrl.searchParams.set("callbackUrl", pathname);
+      signInUrl.searchParams.set("error", "SessionExpired");
       return NextResponse.redirect(signInUrl);
     }
   }
