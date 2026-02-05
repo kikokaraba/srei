@@ -108,7 +108,7 @@ export async function GET() {
       targets: stats,
       database: {
         totalProperties,
-        bySource: dbStats.reduce((acc, s) => ({ ...acc, [s.source]: s._count }), {}),
+        bySource: dbStats.reduce((acc: Record<string, number>, s) => ({ ...acc, [s.source ?? "unknown"]: s._count }), {}),
         lastUpdate: lastScrape?.updatedAt,
       },
       usage: {
