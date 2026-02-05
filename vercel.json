@@ -19,6 +19,12 @@
     "app/api/cron/scrape-paginated/route.ts": {
       "maxDuration": 300
     },
+    "app/api/cron/scrape-slovakia/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/cron/process-apify/route.ts": {
+      "maxDuration": 300
+    },
     "app/api/v1/scraper/stealth/route.ts": {
       "maxDuration": 300
     },

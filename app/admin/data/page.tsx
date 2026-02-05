@@ -86,9 +86,18 @@ export default function DataManagementPage() {
 
     try {
       // 1. Spusti Apify run
-      const startRes = await fetch("/api/cron/scrape-slovakia?portal=nehnutelnosti&limit=10", {
-        method: "POST"
-      });
+      const scrapeUrl = "/api/cron/scrape-slovakia?portal=nehnutelnosti&limit=10";
+      const startRes = await fetch(scrapeUrl, { method: "POST" });
+
+      if (!startRes.ok) {
+        addLog(`❌ API vrátilo ${startRes.status}: ${scrapeUrl}`);
+        throw new Error(
+          startRes.status === 404
+            ? "Endpoint scrapingu neexistuje (404). Skontrolujte deploy alebo cestu."
+            : `Server odpovedal ${startRes.status}. Skontrolujte konzolu (F12 → Network).`
+        );
+      }
+
       const startData = await startRes.json();
 
       if (!startData.success) {
@@ -136,7 +145,12 @@ export default function DataManagementPage() {
 
     const checkStatus = async (): Promise<boolean> => {
       try {
-        const res = await fetch(`/api/v1/admin/apify-status?runId=${runId}`);
+        const statusUrl = `/api/v1/admin/apify-status?runId=${encodeURIComponent(runId)}`;
+        const res = await fetch(statusUrl);
+        if (!res.ok) {
+          addLog(`❌ Stav Apify vrátil ${res.status}. Skontrolujte Network tab.`);
+          return false;
+        }
         const data = await res.json();
 
         if (data.status === "SUCCEEDED") {
@@ -177,9 +191,17 @@ export default function DataManagementPage() {
     addLog("📥 Spracovávam výsledky...");
 
     try {
-      const res = await fetch(`/api/cron/process-apify?runId=${runId}&portal=nehnutelnosti`, {
-        method: "POST"
-      });
+      const processUrl = `/api/cron/process-apify?runId=${encodeURIComponent(runId)}&portal=nehnutelnosti`;
+      const res = await fetch(processUrl, { method: "POST" });
+
+      if (!res.ok) {
+        addLog(`❌ Spracovanie výsledkov vrátilo ${res.status}: ${processUrl}`);
+        throw new Error(
+          res.status === 404
+            ? "Endpoint process-apify neexistuje (404). Skontrolujte deploy."
+            : `Server odpovedal ${res.status}.`
+        );
+      }
       const data = await res.json();
 
       if (data.success) {
