@@ -26,6 +26,7 @@ import {
   PiggyBank,
   Trophy,
   FileDown,
+  RefreshCw,
 } from "lucide-react";
 import { YieldCard } from "@/components/YieldCard";
 
@@ -158,6 +159,34 @@ export default function PropertyDetailPage() {
   } | null>(null);
   const [negotiationLoading, setNegotiationLoading] = useState(false);
   const [maxBudget, setMaxBudget] = useState<string>("");
+  const [refreshFromSourceLoading, setRefreshFromSourceLoading] = useState(false);
+
+  const handleRefreshFromSource = async () => {
+    if (!property?.id || refreshFromSourceLoading) return;
+    setRefreshFromSourceLoading(true);
+    try {
+      const res = await fetch(`/api/v1/properties/${property.id}/refresh-from-source`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Obnovenie zlyhalo");
+      }
+      const data = await res.json();
+      if (data.success && property) {
+        const refetch = await fetch(`/api/v1/properties/${property.id}`);
+        if (refetch.ok) {
+          const refetchData = await refetch.json();
+          setProperty(refetchData.data);
+        }
+      }
+    } catch (e) {
+      console.error("Refresh from source:", e);
+      alert(e instanceof Error ? e.message : "Obnovenie zlyhalo");
+    } finally {
+      setRefreshFromSourceLoading(false);
+    }
+  };
 
   const handleDownloadReport = async () => {
     if (!property?.id || pdfLoading) return;
@@ -449,19 +478,34 @@ export default function PropertyDetailPage() {
           <p className="text-zinc-400 text-center text-sm max-w-md">
             Fotky a celý inzerát sú na pôvodnom portáli. Kliknite nižšie a otvoríte ich priamo u zdroja.
           </p>
-          {property.source_url ? (
-            <a
-              href={property.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm transition-colors"
-            >
-              <Globe className="w-5 h-5" />
-              Otvoriť pôvodný inzerát (fotky, kontakt)
-            </a>
-          ) : (
-            <span className="text-zinc-500 text-sm">Tento záznam nemá odkaz na pôvodný inzerát.</span>
-          )}
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {property.source_url && (
+              <>
+                <a
+                  href={property.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm transition-colors"
+                >
+                  <Globe className="w-5 h-5" />
+                  Otvoriť pôvodný inzerát (fotky, kontakt)
+                </a>
+                <button
+                  type="button"
+                  onClick={handleRefreshFromSource}
+                  disabled={refreshFromSourceLoading}
+                  className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-zinc-700 hover:bg-zinc-600 text-zinc-200 font-medium text-sm border border-zinc-600 transition-colors disabled:opacity-50"
+                  title="Znova načítať cenu, m² a titulok z pôvodného inzerátu"
+                >
+                  <RefreshCw className={`w-5 h-5 ${refreshFromSourceLoading ? "animate-spin" : ""}`} />
+                  {refreshFromSourceLoading ? "Obnovujem…" : "Obnoviť údaje zo zdroja"}
+                </button>
+              </>
+            )}
+            {!property.source_url && (
+              <span className="text-zinc-500 text-sm">Tento záznam nemá odkaz na pôvodný inzerát.</span>
+            )}
+          </div>
         </div>
       </div>
 

@@ -495,12 +495,13 @@ export async function scrapeNehnutelnosti(options: {
   const properties: ScrapedProperty[] = [];
   let pagesScraped = 0;
   
-  // Kategórie – len byty (ostatné typy prídeme neskôr)
+  // Kategórie – len byty predaj a prenájom, celé Slovensko
   const categories = [
-    { path: "/predaj/byty/", name: "Byty" },
+    { path: "/byty/predaj/", name: "Byty predaj", listingType: "PREDAJ" as ListingType },
+    { path: "/byty/prenajom/", name: "Byty prenájom", listingType: "PRENAJOM" as ListingType },
   ];
   
-  console.log(`\n🚀 Starting Nehnutelnosti.sk Scraper (2026 selectors)`);
+  console.log(`\n🚀 Starting Nehnutelnosti.sk Scraper (byty predaj + prenájom)`);
   console.log(`📂 Categories: ${categories.map(c => c.name).join(", ")}`);
   console.log(`📄 Max pages per category: ${maxPages}`);
   
@@ -550,13 +551,22 @@ export async function scrapeNehnutelnosti(options: {
           if (processedIds.has(externalId) || externalId.length < 5) return;
           processedIds.add(externalId);
           
-          // Nájdi najväčší parent container
+          // DÔLEŽITÉ: kontajner musí byť len jedna karta, inak cena/plocha z iného inzerátu
+          // Nájdi najmenší predka, ktorý obsahuje práve jeden link na /detail/ ( = jedna karta)
           let $container = $link.parent();
-          for (let i = 0; i < 5 && $container.length; i++) {
-            if ($container.text().length > 100) break;
-            $container = $container.parent();
+          let $best = $container;
+          for (let i = 0; i < 12 && $container.length; i++) {
+            const detailLinks = $container.find("a[href*='/detail/']").length;
+            const textLen = $container.text().length;
+            if (detailLinks === 1 && textLen >= 30 && textLen <= 2500) {
+              $best = $container;
+            }
+            if (detailLinks > 1) break; // prekročili sme na wrapper viacerých kariet
+            const $next = $container.parent();
+            if (!$next.length || $next.get(0) === $("body").get(0)) break;
+            $container = $next;
           }
-          
+          $container = $best;
           const containerText = $container.text();
           
           // Titulok - hľadaj H2/H3 alebo text linku
@@ -636,7 +646,7 @@ export async function scrapeNehnutelnosti(options: {
             city,
             district,
             rooms,
-            listingType: "PREDAJ",
+            listingType: category.listingType,
             sourceUrl: href.startsWith("http") ? href : `https://www.nehnutelnosti.sk${href}`,
             imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
           });

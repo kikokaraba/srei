@@ -1,16 +1,21 @@
 /**
  * Cron Job - Scraping Nehnutelnosti.sk
- * 
- * Samostatný job pre Nehnutelnosti.sk - beží oddelene od Bazoš
+ *
+ * Samostatný job pre Nehnutelnosti.sk - beží oddelene od Bazoš.
+ * Pre nové záznamy dopĺňame dáta z detailu (cena, m²) aby sa nestávalo,
+ * že z listingu prečítame kontajner viacerých kariet a uložíme zlé údaje.
  */
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { scrapeNehnutelnosti, type ScrapedProperty } from "@/lib/scraper/simple-scraper";
+import { scrapeSingleListing } from "@/lib/scraper/single-listing-scraper";
 
 // Konfigurácia
 const CONFIG = {
   maxPagesPerCategory: 5, // 5 stránok × 2 kategórie = ~200 inzerátov
+  /** Pre nové inzeráty doplniť cenu/plochu z detailu (zdroj pravdy) */
+  enrichNewFromDetail: true,
 };
 
 /**
@@ -110,8 +115,27 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
         continue;
       }
 
-      // Nová nehnuteľnosť - vytvor unikátny slug
-      const baseSlug = prop.title
+      // Zdroj pravdy: pre nové záznamy načítaj detail a použij jeho cenu/plochu (listingu môže byť zlý kontajner)
+      let finalProp = prop;
+      if (CONFIG.enrichNewFromDetail && prop.sourceUrl?.includes("nehnutelnosti.sk")) {
+        try {
+          const { property: detailProp } = await scrapeSingleListing(prop.sourceUrl);
+          if (detailProp && detailProp.price > 0 && detailProp.areaM2 > 0) {
+            finalProp = {
+              ...prop,
+              price: detailProp.price,
+              pricePerM2: detailProp.pricePerM2,
+              areaM2: detailProp.areaM2,
+              title: detailProp.title?.length ? detailProp.title : prop.title,
+            };
+          }
+        } catch {
+          // ponechať listing dáta
+        }
+      }
+
+      // Nová nehnuteľnosť - vytvor unikátny slug (použiť finalProp = listing alebo detail)
+      const baseSlug = finalProp.title
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
@@ -122,36 +146,36 @@ async function saveProperties(properties: ScrapedProperty[]): Promise<{
       const uniqueSlug = `${baseSlug}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 
       // Detekuj typ nehnuteľnosti z titulku alebo URL
-      const titleLower = prop.title.toLowerCase();
-      const urlLower = prop.sourceUrl.toLowerCase();
+      const titleLower = finalProp.title.toLowerCase();
+      const urlLower = finalProp.sourceUrl.toLowerCase();
       let propertyType: "BYT" | "DOM" = "BYT";
-      if (titleLower.includes("dom") || titleLower.includes("rodinný") || 
+      if (titleLower.includes("dom") || titleLower.includes("rodinný") ||
           titleLower.includes("chata") || titleLower.includes("vila") ||
           urlLower.includes("/domy/")) {
         propertyType = "DOM";
       }
-      
+
       await prisma.property.create({
         data: {
-          external_id: prop.externalId,
-          source: prop.source,
-          title: prop.title,
+          external_id: finalProp.externalId,
+          source: finalProp.source,
+          title: finalProp.title,
           slug: uniqueSlug,
-          description: prop.description || "",
-          price: prop.price,
-          price_per_m2: prop.pricePerM2,
-          area_m2: prop.areaM2,
-          city: prop.city,
-          district: prop.district || prop.city,
-          address: `${prop.city}${prop.district ? `, ${prop.district}` : ""}`,
-          rooms: prop.rooms,
-          listing_type: prop.listingType,
+          description: finalProp.description || "",
+          price: finalProp.price,
+          price_per_m2: finalProp.pricePerM2,
+          area_m2: finalProp.areaM2,
+          city: finalProp.city,
+          district: finalProp.district || finalProp.city,
+          address: `${finalProp.city}${finalProp.district ? `, ${finalProp.district}` : ""}`,
+          rooms: finalProp.rooms,
+          listing_type: finalProp.listingType,
           property_type: propertyType,
           condition: "POVODNY",
           energy_certificate: "NONE",
-          source_url: prop.sourceUrl,
+          source_url: finalProp.sourceUrl,
           is_distressed: false,
-          // Fotky
+          // Fotky (z listingu, detail ich nemusí vracať)
           photos: prop.imageUrls && prop.imageUrls.length > 0 ? JSON.stringify(prop.imageUrls) : "[]",
           thumbnail_url: prop.imageUrls && prop.imageUrls.length > 0 ? prop.imageUrls[0] : null,
           photo_count: prop.imageUrls?.length || 0,
