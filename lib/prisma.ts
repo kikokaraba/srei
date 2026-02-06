@@ -16,43 +16,54 @@ if (
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
+  pool: InstanceType<typeof Pool> | undefined;
 };
 
+/** Max connections v pooli – jeden singleton pool na proces; nízka hodnota kvôli limitu DB (Railway ~20) */
+const POOL_MAX = Math.min(
+  parseInt(process.env.DATABASE_POOL_MAX ?? "3", 10),
+  10
+);
+
 function createPrismaClient(): PrismaClient {
-  // Pre Prisma 7: Musíme použiť adapter alebo accelerateUrl
-  // Používame adapter pre priame pripojenie k PostgreSQL
   const connectionString = process.env.DATABASE_URL;
-  
+
   if (!connectionString) {
-    // Fallback pre development alebo build time - použijeme dummy adapter
-    // Toto by sa nemalo stať v production, ale zabezpečí, že build prejde
-    const dummyPool = new Pool({ 
-      connectionString: "postgresql://user:password@localhost:5432/db?schema=public" 
-    });
-    const dummyAdapter = new PrismaPg(dummyPool);
-    
+    const dummyKey = "__dummy_pool";
+    const g = globalForPrisma as Record<string, InstanceType<typeof Pool> | undefined>;
+    let dummyPool = g[dummyKey];
+    if (!dummyPool) {
+      dummyPool = new Pool({
+        connectionString: "postgresql://user:password@localhost:5432/db?schema=public",
+        max: 1,
+      });
+      g[dummyKey] = dummyPool;
+    }
     return new PrismaClient({
-      adapter: dummyAdapter,
+      adapter: new PrismaPg(dummyPool),
       log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
     });
   }
 
-  // Railway/Neon atď. používajú TLS so self-signed certom → "self-signed certificate in certificate chain".
-  // 1) pg môže brať sslmode z URL a overovať cert – odstránime sslmode a predáme vlastnú SSL konfiguráciu.
-  // 2) Záložne je NODE_TLS_REJECT_UNAUTHORIZED=0 nastavené hore pri načítaní modulu (dev + remote DB).
-  const isLocal =
-    connectionString.includes("localhost") || connectionString.includes("127.0.0.1");
-  const verifySSL = process.env.DATABASE_VERIFY_SSL === "true";
-  const ssl: false | { rejectUnauthorized: boolean } =
-    !isLocal ? { rejectUnauthorized: verifySSL } : false;
-  const urlWithoutSslMode = connectionString
-    .replace(/\?sslmode=[^&]+&?/, "?")
-    .replace(/&sslmode=[^&]+/, "")
-    .replace(/\?$/, "");
-  const pool = new Pool({
-    connectionString: urlWithoutSslMode,
-    ssl: ssl || undefined,
-  });
+  let pool = globalForPrisma.pool;
+  if (!pool) {
+    const isLocal =
+      connectionString.includes("localhost") || connectionString.includes("127.0.0.1");
+    const verifySSL = process.env.DATABASE_VERIFY_SSL === "true";
+    const ssl: false | { rejectUnauthorized: boolean } =
+      !isLocal ? { rejectUnauthorized: verifySSL } : false;
+    const urlWithoutSslMode = connectionString
+      .replace(/\?sslmode=[^&]+&?/, "?")
+      .replace(/&sslmode=[^&]+/, "")
+      .replace(/\?$/, "");
+    pool = new Pool({
+      connectionString: urlWithoutSslMode,
+      ssl: ssl || undefined,
+      max: POOL_MAX,
+      idleTimeoutMillis: 10000,
+    });
+    globalForPrisma.pool = pool;
+  }
   const adapter = new PrismaPg(pool);
 
   return new PrismaClient({
@@ -64,6 +75,4 @@ function createPrismaClient(): PrismaClient {
 export const prisma: PrismaClient =
   globalForPrisma.prisma ?? createPrismaClient();
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+globalForPrisma.prisma = prisma;
