@@ -1448,8 +1448,11 @@ export async function runStealthScrape(
 /**
  * Scrapuje len konkrétny zdroj
  */
+const STEALTH_SOURCES = ["BAZOS", "NEHNUTELNOSTI"] as const;
+type StealthSource = (typeof STEALTH_SOURCES)[number];
+
 export async function runSourceScrape(
-  source: "BAZOS" | "NEHNUTELNOSTI",
+  source: StealthSource,
   cities?: string[],
   config?: Partial<StealthConfig>,
   options?: { listingTypes?: ("PREDAJ" | "PRENAJOM")[] }
