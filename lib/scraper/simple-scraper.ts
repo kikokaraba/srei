@@ -317,11 +317,11 @@ export async function scrapeBazos(options: {
       
       console.log(`  📄 Page ${page + 1}: ${url}`);
       
-      // Delay medzi requestami
+      // Delay medzi requestami (šetrné – zníženie rizika blokovania)
       if (page > 0) {
-        await new Promise(r => setTimeout(r, 800 + Math.random() * 400));
+        await new Promise(r => setTimeout(r, 1500 + Math.random() * 1000));
       }
-      
+
       const html = await fetchPage(url);
       
       if (!html) {
@@ -514,9 +514,9 @@ export async function scrapeNehnutelnosti(options: {
       console.log(`  📄 Page ${page}: ${url}`);
       
       if (page > 1) {
-        await new Promise(r => setTimeout(r, 1000 + Math.random() * 500));
+        await new Promise(r => setTimeout(r, 1800 + Math.random() * 800));
       }
-      
+
       const html = await fetchPage(url);
       
       if (!html) {

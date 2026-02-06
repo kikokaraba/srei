@@ -1,23 +1,29 @@
 /**
  * Paginated Scraper - Postupne scrapuje celý portál
- * 
- * Každý run scrapne viac stránok, potom pokračuje kde skončil.
- * Po prejdení všetkých stránok začne odznova.
- * 
- * Schedule: Každých 5 minút (vyšší objem pre plnú databázu)
+ *
+ * Častejšie behy v menších dávkach + náhodný delay = menej riziko blokovania.
+ * Schedule: každých 3 min, menší batch, delay s jitterom.
  */
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { runPostProcessing } from "@/lib/monitoring/post-processing";
 
-// Konfigurácia – vyšší objem pre obchodné použitie / plnú DB
+// Konfigurácia – častejšie behy, menšie dávky, bezpečný delay (anti-block)
 const CONFIG = {
-  pagesPerRun: 38,           // Stránok za jeden run (~38×1.2s + fetch < 300s)
-  delayBetweenPages: 1200,   // ms medzi stránkami
-  estimatedTotalPages: 775,  // Odhad celkových stránok
+  pagesPerRun: 18,                    // Menší batch na run
+  delayBetweenPagesMin: 2000,         // ms – minimálny delay medzi stránkami
+  delayBetweenPagesMax: 3500,         // ms – maximálny (náhodný = menej robotický)
+  estimatedTotalPages: 775,
   baseUrl: "https://www.nehnutelnosti.sk",
 };
+
+/** Náhodný delay v rozsahu min–max (jitter znižuje riziko blokovania) */
+function randomDelayMs(): number {
+  const min = CONFIG.delayBetweenPagesMin;
+  const max = CONFIG.delayBetweenPagesMax;
+  return Math.floor(min + Math.random() * (max - min + 1));
+}
 
 // Kategórie na scraping – prioritizujeme byty, 50:50 predaj/prenajom (Yield Engine)
 const CATEGORIES = [
@@ -118,9 +124,10 @@ export async function GET(request: Request) {
 
         currentPage++;
 
-        // Delay medzi stránkami
+        // Náhodný delay medzi stránkami (anti-block, ľudské správanie)
         if (i < CONFIG.pagesPerRun - 1) {
-          await new Promise(r => setTimeout(r, CONFIG.delayBetweenPages));
+          const delay = randomDelayMs();
+          await new Promise(r => setTimeout(r, delay));
         }
 
       } catch (error) {
