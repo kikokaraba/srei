@@ -80,12 +80,15 @@ export async function enrichLocations(options: {
       }
 
       if (city) {
+        const finalDistrict = district ?? city;
+        const displayAddress = finalDistrict === city ? city : `${finalDistrict}, ${city}`;
         if (!dryRun) {
           await prisma.property.update({
             where: { id: p.id },
             data: {
               city,
-              district: district ?? city,
+              district: finalDistrict,
+              address: displayAddress,
             },
           });
         }

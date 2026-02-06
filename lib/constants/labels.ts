@@ -229,7 +229,7 @@ export function getCityRegion(city: string): string {
 
 /** Hodnoty mesta, ktoré znamenajú „neznáma lokalita“ (nie skutočný región) */
 const UNKNOWN_LOCATION_VALUES = new Set([
-  "slovensko", "neznáme", "neznámo", "unknown", "",
+  "slovensko", "neznáme", "neznámo", "neznámy", "unknown", "",
 ]);
 
 function isUnknownLocation(val: string | null | undefined): boolean {

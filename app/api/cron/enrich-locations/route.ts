@@ -9,7 +9,7 @@ import { enrichLocations } from "@/lib/ai/enrich-locations";
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = Math.min(500, Math.max(1, parseInt(searchParams.get("limit") ?? "100", 10) || 100));
+    const limit = Math.min(500, Math.max(1, parseInt(searchParams.get("limit") ?? "200", 10) || 200));
 
     const result = await enrichLocations({ limit, dryRun: false });
 
