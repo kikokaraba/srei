@@ -1,20 +1,20 @@
 /**
  * Paginated Scraper - Postupne scrapuje celý portál
  * 
- * Každý run scrapne 20 stránok, potom pokračuje kde skončil.
+ * Každý run scrapne viac stránok, potom pokračuje kde skončil.
  * Po prejdení všetkých stránok začne odznova.
  * 
- * Schedule: Každých 10 minút počas budovania DB
+ * Schedule: Každých 5 minút (vyšší objem pre plnú databázu)
  */
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { runPostProcessing } from "@/lib/monitoring/post-processing";
 
-// Konfigurácia
+// Konfigurácia – vyšší objem pre obchodné použitie / plnú DB
 const CONFIG = {
-  pagesPerRun: 20,           // Stránok za jeden run
-  delayBetweenPages: 1500,   // ms medzi stránkami
+  pagesPerRun: 38,           // Stránok za jeden run (~38×1.2s + fetch < 300s)
+  delayBetweenPages: 1200,   // ms medzi stránkami
   estimatedTotalPages: 775,  // Odhad celkových stránok
   baseUrl: "https://www.nehnutelnosti.sk",
 };

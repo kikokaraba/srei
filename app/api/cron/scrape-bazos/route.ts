@@ -8,9 +8,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { scrapeBazos, type ScrapedProperty } from "@/lib/scraper/simple-scraper";
 
-// Konfigurácia
+// Konfigurácia – vyšší objem pre plnú databázu
 const CONFIG = {
-  maxPagesPerCategory: 5, // 5 stránok × 3 kategórie = ~300 inzerátov
+  maxPagesPerCategory: 10, // 10 stránok × 3 kategórie = ~600 inzerátov
 };
 
 /**

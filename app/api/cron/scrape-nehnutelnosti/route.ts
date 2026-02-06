@@ -11,9 +11,9 @@ import { prisma } from "@/lib/prisma";
 import { scrapeNehnutelnosti, type ScrapedProperty } from "@/lib/scraper/simple-scraper";
 import { scrapeSingleListing } from "@/lib/scraper/single-listing-scraper";
 
-// Konfigurácia
+// Konfigurácia – vyšší objem pre plnú databázu
 const CONFIG = {
-  maxPagesPerCategory: 5, // 5 stránok × 2 kategórie = ~200 inzerátov
+  maxPagesPerCategory: 8, // 8 stránok × 2 kategórie = ~320 inzerátov
   /** Pre nové inzeráty doplniť cenu/plochu z detailu (zdroj pravdy) */
   enrichNewFromDetail: true,
 };
