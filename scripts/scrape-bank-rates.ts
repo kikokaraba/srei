@@ -1,14 +1,17 @@
 #!/usr/bin/env tsx
 /**
  * CLI: Scrapovanie úrokových sadzieb bánk (hypotéky).
- * Použitie: pnpm exec tsx scripts/scrape-bank-rates.ts
+ * Použitie: pnpm run scrape:bank-rates
+ * Test bez DB: DRY_RUN=1 pnpm run scrape:bank-rates
  */
 
 import { scrapeAllBankRates } from "@/lib/data-sources/bank-rates-scraper";
 
+const dryRun = process.env.DRY_RUN === "1" || process.env.DRY_RUN === "true";
+
 async function main() {
-  console.log("🏦 Scrapovanie úrokových sadzieb bánk...\n");
-  const result = await scrapeAllBankRates();
+  console.log("🏦 Scrapovanie úrokových sadzieb bánk..." + (dryRun ? " (dry-run, bez DB)\n" : "\n"));
+  const result = await scrapeAllBankRates({ dryRun });
   console.log(`   Banky: ${result.banksScraped}/${result.banksScraped + result.banksFailed.length}`);
   console.log(`   Sadzieb uložených: ${result.totalRates}`);
   console.log(`   Čas: ${result.durationMs} ms`);

@@ -40,45 +40,34 @@ function parseRateText(text: string): number | null {
   return Number.isFinite(value) && value > 0 && value < 30 ? value : null;
 }
 
-/** VÚB – úrokové sadzby pre hypotekárne a spotrebné financovanie */
+/** VÚB – úrokové sadzby pre hypotekárne a spotrebné financovanie. Tabuľka: 1/3/4/5/10-ročná fixácia, 3. stĺpec = výsledná sadzba. */
 function parseVUB($: cheerio.CheerioAPI): ScrapedBankRate[] {
   const result: ScrapedBankRate[] = [];
   const mapping: { pattern: RegExp; product: (typeof PRODUCT_TYPES)[number] }[] = [
-    { pattern: /1\s*rok|1\s*ročn|1\s*Y|1Y/i, product: "MORTGAGE_1Y" },
-    { pattern: /3\s*roky|3\s*ročn|3\s*Y|3Y/i, product: "MORTGAGE_3Y" },
-    { pattern: /4\s*roky|4\s*ročn|4\s*Y|4Y/i, product: "MORTGAGE_4Y" },
-    { pattern: /5\s*rokov|5\s*ročn|5\s*Y|5Y/i, product: "MORTGAGE_5Y" },
-    { pattern: /10\s*rokov|10\s*ročn|10\s*Y|10Y/i, product: "MORTGAGE_10Y" },
+    { pattern: /1[- ]ročn/i, product: "MORTGAGE_1Y" },
+    { pattern: /3[- ]ročn/i, product: "MORTGAGE_3Y" },
+    { pattern: /4[- ]ročn/i, product: "MORTGAGE_4Y" },
+    { pattern: /5[- ]ročn/i, product: "MORTGAGE_5Y" },
+    { pattern: /10[- ]ročn/i, product: "MORTGAGE_10Y" },
   ];
 
-  $("table tbody tr, .table tr, [class*='rate']").each((_, row) => {
-    const cells = $(row).find("td, th");
+  $("table tbody tr").each((_, row) => {
+    const cells = $(row).find("td");
     const rowText = $(row).text();
     for (const { pattern, product } of mapping) {
       if (!pattern.test(rowText)) continue;
-      for (let i = 0; i < cells.length; i++) {
-        const rate = parseRateText($(cells[i]).text());
-        if (rate != null) {
-          result.push({ productType: product, ratePercent: rate });
-          break;
-        }
+      const rates: number[] = [];
+      cells.each((__, cell) => {
+        const r = parseRateText($(cell).text());
+        if (r != null) rates.push(r);
+      });
+      if (rates.length > 0) {
+        const rate = rates.length >= 3 ? rates[2] : Math.max(...rates);
+        if (rate >= 2 && rate <= 15) result.push({ productType: product, ratePercent: rate });
       }
+      break;
     }
   });
-
-  // Fallback: hľadaj ľubovoľné percentá v blízkosti slov "hypotek" / "fixácia"
-  if (result.length === 0) {
-    $("p, li, td, div").each((_, el) => {
-      const text = $(el).text();
-      if (!/hypotek|fixác|úrok/i.test(text)) return;
-      mapping.forEach(({ pattern, product }) => {
-        if (!pattern.test(text)) return;
-        const rate = parseRateText(text);
-        if (rate != null && !result.some((r) => r.productType === product))
-          result.push({ productType: product, ratePercent: rate });
-      });
-    });
-  }
   return result;
 }
 
@@ -235,8 +224,10 @@ export interface ScrapeBankRatesResult {
 /**
  * Scrapuje úrokové sadzby zo všetkých nakonfigurovaných bánk a uloží ich do DB.
  * Pre každú banku zachová len najnovší beh (staršie záznamy môžu ostať pre históriu).
+ * @param options.dryRun - ak true, len stiahne a parsuje, bez zápisu do DB (vhodné na test)
  */
-export async function scrapeAllBankRates(): Promise<ScrapeBankRatesResult> {
+export async function scrapeAllBankRates(options?: { dryRun?: boolean }): Promise<ScrapeBankRatesResult> {
+  const dryRun = options?.dryRun ?? false;
   const start = Date.now();
   const errors: string[] = [];
   const banksFailed: string[] = [];
@@ -261,27 +252,29 @@ export async function scrapeAllBankRates(): Promise<ScrapeBankRatesResult> {
 
       for (const r of rates) {
         if (!PRODUCT_TYPES.includes(r.productType as (typeof PRODUCT_TYPES)[number])) continue;
-        await prisma.bankInterestRate.upsert({
-          where: {
-            bankSlug_productType: {
+        if (!dryRun) {
+          await prisma.bankInterestRate.upsert({
+            where: {
+              bankSlug_productType: {
+                bankSlug: config.bankSlug,
+                productType: r.productType,
+              },
+            },
+            create: {
+              bankName: config.bankName,
               bankSlug: config.bankSlug,
               productType: r.productType,
+              ratePercent: r.ratePercent,
+              sourceUrl: config.url,
             },
-          },
-          create: {
-            bankName: config.bankName,
-            bankSlug: config.bankSlug,
-            productType: r.productType,
-            ratePercent: r.ratePercent,
-            sourceUrl: config.url,
-          },
-          update: {
-            bankName: config.bankName,
-            ratePercent: r.ratePercent,
-            sourceUrl: config.url,
-            scrapedAt: new Date(),
-          },
-        });
+            update: {
+              bankName: config.bankName,
+              ratePercent: r.ratePercent,
+              sourceUrl: config.url,
+              scrapedAt: new Date(),
+            },
+          });
+        }
         totalRates++;
       }
     } catch (e) {
@@ -291,15 +284,17 @@ export async function scrapeAllBankRates(): Promise<ScrapeBankRatesResult> {
     }
   }
 
-  await prisma.dataFetchLog.create({
-    data: {
-      source: "bank-rates-scraper",
-      status: banksFailed.length === 0 ? "success" : banksFailed.length < BANK_CONFIGS.length ? "partial" : "error",
-      recordsCount: totalRates,
-      error: errors.length > 0 ? errors.join("; ") : null,
-      duration_ms: Date.now() - start,
-    },
-  });
+  if (!dryRun) {
+    await prisma.dataFetchLog.create({
+      data: {
+        source: "bank-rates-scraper",
+        status: banksFailed.length === 0 ? "success" : banksFailed.length < BANK_CONFIGS.length ? "partial" : "error",
+        recordsCount: totalRates,
+        error: errors.length > 0 ? errors.join("; ") : null,
+        duration_ms: Date.now() - start,
+      },
+    });
+  }
 
   return {
     success: banksFailed.length < BANK_CONFIGS.length,
