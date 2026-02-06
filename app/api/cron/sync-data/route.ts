@@ -2,7 +2,7 @@
 // Nastavenie v vercel.json alebo externý scheduler
 
 import { NextRequest, NextResponse } from "next/server";
-import { runAllSync, syncNBSData, syncEconomicIndicators, syncCityMarketData } from "@/lib/data-sources/scheduler";
+import { runAllSync, syncNBSData, syncEconomicIndicators, syncCityMarketData, syncMortgageRates } from "@/lib/data-sources/scheduler";
 
 // Verifikácia cron tokenu (pre bezpečnosť)
 const CRON_SECRET = process.env.CRON_SECRET;
@@ -30,6 +30,9 @@ export async function GET(request: NextRequest) {
         break;
       case "market":
         result = await syncCityMarketData();
+        break;
+      case "mortgage":
+        result = await syncMortgageRates();
         break;
       case "all":
       default:

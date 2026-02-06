@@ -11,6 +11,7 @@ import {
   fetchDemographicData,
 } from "@/lib/data-sources";
 import { getMarketSummaryLive } from "@/lib/data-sources/realtime-stats";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -102,6 +103,32 @@ export async function GET(request: NextRequest) {
           success: true,
           data: economic.data?.[0] || null,
           source: "Štatistický úrad SR",
+          updatedAt: new Date().toISOString(),
+        });
+      }
+
+      case "mortgage": {
+        // Hypotekárne úrokové sadzby (SK) – pre porovnanie s výnosom
+        const latest = await prisma.mortgageRate.findFirst({
+          orderBy: { date: "desc" },
+        });
+        const history = await prisma.mortgageRate.findMany({
+          orderBy: { date: "desc" },
+          take: 24,
+        });
+        return NextResponse.json({
+          success: true,
+          data: {
+            latest: latest
+              ? { ratePct: latest.ratePct, date: latest.date.toISOString().slice(0, 7), source: latest.source }
+              : null,
+            history: history.map((r) => ({
+              date: r.date.toISOString().slice(0, 7),
+              ratePct: r.ratePct,
+              source: r.source,
+            })),
+          },
+          source: "ECB MIR",
           updatedAt: new Date().toISOString(),
         });
       }

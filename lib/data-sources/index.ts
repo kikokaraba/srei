@@ -19,6 +19,10 @@ export {
   runNBSDataCheck,
 } from "./nbs-scraper";
 
+// Hypotekárne sadzby (ECB)
+export { fetchSlovakMortgageRate } from "./mortgage-rates";
+export type { MortgageRateResult } from "./mortgage-rates";
+
 // Štatistický úrad SR
 export {
   getAvailableDatasets,

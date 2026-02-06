@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { fetchNBSPropertyPrices } from "./nbs";
 import { fetchEconomicIndicators, fetchDemographicData } from "./statistics-sk";
 import { getAggregatedMarketData } from "./aggregator";
+import { fetchSlovakMortgageRate } from "./mortgage-rates";
 
 // Mapovanie regiónov na enum hodnoty
 const REGION_ENUM_MAP: Record<string, "BRATISLAVSKY" | "TRNAVSKY" | "TRENCIANSKY" | "NITRIANSKY" | "ZILINSKY" | "BANSKOBYSTRICKY" | "PRESOVSKY" | "KOSICKY"> = {
@@ -116,7 +117,11 @@ export async function syncEconomicIndicators(): Promise<{ success: boolean; erro
     }
 
     const data = result.data[0];
-    
+    const latestMortgage = await prisma.mortgageRate.findFirst({
+      orderBy: { date: "desc" },
+      select: { ratePct: true },
+    });
+
     await prisma.economicIndicator.create({
       data: {
         date: new Date(),
@@ -127,7 +132,7 @@ export async function syncEconomicIndicators(): Promise<{ success: boolean; erro
         wageGrowth: data.wageGrowth,
         constructionIndex: data.constructionIndex,
         consumerConfidence: data.consumerConfidence,
-        mortgageRate: 4.2, // Average SK mortgage rate - updated quarterly via NBS sync
+        mortgageRate: latestMortgage?.ratePct ?? undefined,
       },
     });
     
@@ -286,6 +291,61 @@ export async function syncDemographicData(): Promise<{ success: boolean; records
 }
 
 /**
+ * Synchronizuje hypotekárne úrokové sadzby (ECB)
+ * Spúšťať: mesačne
+ */
+export async function syncMortgageRates(): Promise<{ success: boolean; recordsCount: number; error?: string }> {
+  const startTime = Date.now();
+  try {
+    const result = await fetchSlovakMortgageRate();
+    if (!result) {
+      await prisma.dataFetchLog.create({
+        data: {
+          source: "MORTGAGE_RATES",
+          status: "partial",
+          recordsCount: 0,
+          error: "No data from ECB",
+          duration_ms: Date.now() - startTime,
+        },
+      });
+      return { success: true, recordsCount: 0 };
+    }
+    const monthStart = new Date(result.date);
+    monthStart.setUTCDate(1);
+    monthStart.setUTCHours(0, 0, 0, 0);
+    await prisma.mortgageRate.upsert({
+      where: { date: monthStart },
+      update: { ratePct: result.ratePct, source: result.source, fetchedAt: new Date() },
+      create: {
+        date: monthStart,
+        ratePct: result.ratePct,
+        source: result.source,
+      },
+    });
+    await prisma.dataFetchLog.create({
+      data: {
+        source: "MORTGAGE_RATES",
+        status: "success",
+        recordsCount: 1,
+        duration_ms: Date.now() - startTime,
+      },
+    });
+    return { success: true, recordsCount: 1 };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    await prisma.dataFetchLog.create({
+      data: {
+        source: "MORTGAGE_RATES",
+        status: "error",
+        error: errorMessage,
+        duration_ms: Date.now() - startTime,
+      },
+    });
+    return { success: false, recordsCount: 0, error: errorMessage };
+  }
+}
+
+/**
  * Spustí všetky synchronizácie
  */
 export async function runAllSync(): Promise<{
@@ -293,13 +353,15 @@ export async function runAllSync(): Promise<{
   economic: { success: boolean };
   market: { success: boolean; recordsCount: number };
   demographics: { success: boolean; recordsCount: number };
+  mortgage: { success: boolean; recordsCount: number };
 }> {
-  const [nbs, economic, market, demographics] = await Promise.all([
+  const [nbs, economic, market, demographics, mortgage] = await Promise.all([
     syncNBSData(),
     syncEconomicIndicators(),
     syncCityMarketData(),
     syncDemographicData(),
+    syncMortgageRates(),
   ]);
   
-  return { nbs, economic, market, demographics };
+  return { nbs, economic, market, demographics, mortgage };
 }
