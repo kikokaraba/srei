@@ -26,11 +26,9 @@ import {
   Maximize2,
   DoorOpen,
   Zap,
-  Camera,
   User,
 } from "lucide-react";
 import { normalizeCityName, getCityInfo } from "@/lib/constants/cities";
-import { PropertyImage } from "@/components/property/PropertyImage";
 
 // Slovenské kraje
 const REGIONS = [
@@ -500,24 +498,6 @@ export function PropertyList() {
     return CONDITIONS.find((c) => c.value === condition)?.label || condition;
   };
 
-  // Helper pre získanie thumbnail URL (raw z API)
-  const getThumbnailUrl = (property: Property): string | null => {
-    if (property.thumbnail_url) return property.thumbnail_url;
-    if (property.photos) {
-      try {
-        const photosArray = JSON.parse(property.photos);
-        if (Array.isArray(photosArray) && photosArray.length > 0) {
-          const u = photosArray[0];
-          return typeof u === "string" ? (u.startsWith("//") ? `https:${u}` : u) : null;
-        }
-      } catch {
-        if (property.photos.startsWith("http")) return property.photos;
-        if (property.photos.startsWith("//")) return `https:${property.photos}`;
-      }
-    }
-    return null;
-  };
-
   // Investor-focused badges
   const getPropertyBadges = (property: Property, metrics?: BatchMetrics) => {
     const badges: { icon: React.ReactNode; label: string; color: string; priority: number }[] = [];
@@ -961,7 +941,6 @@ export function PropertyList() {
             const isSaving = savingId === property.id;
             const metrics = batchMetrics[property.id];
             const badges = getPropertyBadges(property, metrics);
-            const thumbnailUrl = getThumbnailUrl(property);
 
             return (
               <div
@@ -969,28 +948,8 @@ export function PropertyList() {
                 onClick={() => window.location.href = `/dashboard/property/${property.id}`}
                 className="group premium-card-interactive overflow-hidden"
               >
-                {/* Photo Section */}
-                <div className="relative h-44 bg-zinc-900 overflow-hidden">
-                  <PropertyImage
-                    url={thumbnailUrl}
-                    alt={property.title}
-                    fill
-                    className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
-                    aspectRatio="auto"
-                  />
-                  
-                  {/* Photo Count Badge */}
-                  {property.photo_count && property.photo_count > 1 && (
-                    <div className="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-1 bg-black/70 backdrop-blur-sm rounded-md text-[10px] text-zinc-300 font-medium">
-                      <Camera className="w-3 h-3" />
-                      {property.photo_count}
-                    </div>
-                  )}
-                  
-                  {/* Subtle Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent opacity-80" />
-                  
-                  {/* Top Badges - Redesigned */}
+                {/* Placeholder: preklik na pôvodný inzerát (fotky sú tam) */}
+                <div className="relative h-32 bg-zinc-800/80 flex flex-col items-center justify-center gap-2 px-4">
                   {badges.length > 0 && (
                     <div className="absolute top-2.5 left-2.5 z-10 flex flex-wrap gap-1.5">
                       {badges.map((badge, i) => (
@@ -1001,16 +960,10 @@ export function PropertyList() {
                       ))}
                     </div>
                   )}
-
-                  {/* Save Button - Minimal */}
                   <button
                     onClick={(e) => toggleSave(property.id, e)}
                     disabled={isSaving}
-                    className={`absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                      isSaved
-                        ? "bg-emerald-500 text-white"
-                        : "bg-black/50 backdrop-blur-sm text-zinc-300 hover:bg-black/70 hover:text-white"
-                    }`}
+                    className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-lg flex items-center justify-center transition-all bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700 hover:text-white"
                   >
                     {isSaving ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1020,6 +973,20 @@ export function PropertyList() {
                       <Bookmark className="w-3.5 h-3.5" />
                     )}
                   </button>
+                  {property.source_url ? (
+                    <a
+                      href={property.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 text-sm font-medium"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      Pozrieť fotky a pôvodný inzerát
+                    </a>
+                  ) : (
+                    <span className="text-zinc-500 text-sm">Bez odkazu na zdroj</span>
+                  )}
                 </div>
 
                 {/* Card Content */}
@@ -1130,7 +1097,6 @@ export function PropertyList() {
             const isSaving = savingId === property.id;
             const metrics = batchMetrics[property.id];
             const badges = getPropertyBadges(property, metrics);
-            const thumbnailUrl = getThumbnailUrl(property);
 
             return (
               <div
@@ -1139,24 +1105,6 @@ export function PropertyList() {
                 className="group relative bg-zinc-900/80 backdrop-blur rounded-xl border border-zinc-800/50 overflow-hidden hover:border-emerald-500/30 transition-all cursor-pointer hover:shadow-lg hover:shadow-emerald-500/5"
               >
                 <div className="flex">
-                  {/* Thumbnail */}
-                  <div className="relative w-40 h-28 flex-shrink-0 bg-zinc-800/50 overflow-hidden">
-                    <PropertyImage
-                      url={thumbnailUrl}
-                      alt={property.title}
-                      fill
-                      className="object-cover"
-                      aspectRatio="auto"
-                    />
-                    {/* Photo Count */}
-                    {property.photo_count && property.photo_count > 1 && (
-                      <div className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 bg-black/60 backdrop-blur rounded text-xs text-white">
-                        <Camera className="w-3 h-3" />
-                        {property.photo_count}
-                      </div>
-                    )}
-                  </div>
-
                   {/* Content */}
                   <div className="flex-1 p-4 flex items-center gap-6 min-w-0">
                     {/* Left: Badges + Info */}

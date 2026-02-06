@@ -28,7 +28,6 @@ import {
   FileDown,
 } from "lucide-react";
 import { YieldCard } from "@/components/YieldCard";
-import { PropertyImage } from "@/components/property/PropertyImage";
 
 interface Property {
   id: string;
@@ -356,39 +355,6 @@ export default function PropertyDetailPage() {
 
   const score = calculateInvestorScore(property);
 
-  const getThumbnailUrl = (): string | null => {
-    if (property.thumbnail_url) return property.thumbnail_url;
-    if (!property.photos) return null;
-    try {
-      const arr = JSON.parse(property.photos);
-      if (Array.isArray(arr) && arr.length > 0) {
-        const u = arr[0];
-        return typeof u === "string" ? (u.startsWith("//") ? `https:${u}` : u) : null;
-      }
-    } catch {
-      if (property.photos.startsWith("http")) return property.photos;
-      if (property.photos.startsWith("//")) return `https:${property.photos}`;
-    }
-    return null;
-  };
-
-  const getPhotoUrls = (): string[] => {
-    if (!property.photos) return [];
-    try {
-      const arr = JSON.parse(property.photos);
-      if (!Array.isArray(arr)) return [];
-      return arr
-        .filter((x): x is string => typeof x === "string")
-        .map((u) => (u.startsWith("//") ? `https:${u}` : u))
-        .filter((u) => u.startsWith("http"));
-    } catch {
-      return [];
-    }
-  };
-
-  const thumbnailUrl = getThumbnailUrl();
-  const photoUrls = getPhotoUrls();
-
   const top3Facts = ((): string[] => {
     const raw = property.top3_facts;
     if (!raw) return [];
@@ -477,34 +443,26 @@ export default function PropertyDetailPage() {
         </div>
       )}
 
-      {/* Gallery */}
+      {/* CTA: fotky len na pôvodnom inzeráte */}
       <div className="premium-card overflow-hidden p-0">
-        <div className="aspect-video bg-zinc-900 relative">
-          <PropertyImage
-            url={thumbnailUrl}
-            alt={property.title}
-            fill
-            className="object-cover"
-            aspectRatio="video"
-            loading="eager"
-          />
+        <div className="aspect-[2/1] bg-zinc-800/80 flex flex-col items-center justify-center gap-4 px-6">
+          <p className="text-zinc-400 text-center text-sm max-w-md">
+            Fotky a celý inzerát sú na pôvodnom portáli. Kliknite nižšie a otvoríte ich priamo u zdroja.
+          </p>
+          {property.source_url ? (
+            <a
+              href={property.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm transition-colors"
+            >
+              <Globe className="w-5 h-5" />
+              Otvoriť pôvodný inzerát (fotky, kontakt)
+            </a>
+          ) : (
+            <span className="text-zinc-500 text-sm">Tento záznam nemá odkaz na pôvodný inzerát.</span>
+          )}
         </div>
-        {photoUrls.length > 1 && (
-          <div className="flex gap-2 p-3 overflow-x-auto bg-zinc-900/30">
-            {photoUrls.slice(0, 8).map((url, i) => (
-              <div key={i} className="relative flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden bg-zinc-800">
-                <PropertyImage
-                  url={url}
-                  alt={`${property.title} – fotka ${i + 1}`}
-                  fill
-                  className="object-cover"
-                  aspectRatio="auto"
-                  loading="lazy"
-                />
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* AI Investičný Summary Box + Action Buttons */}
