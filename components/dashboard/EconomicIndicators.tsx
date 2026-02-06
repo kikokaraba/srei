@@ -9,6 +9,7 @@ import {
   Flame,
   Coins,
   Database,
+  Banknote,
 } from "lucide-react";
 
 interface EconomyLive {
@@ -18,6 +19,7 @@ interface EconomyLive {
   avgYield: number | null;
   hottest: string;
   cheapest: string;
+  mortgageRate: number | null;
   dataSource: string;
   generatedAt: string;
 }
@@ -99,6 +101,16 @@ export function EconomicIndicators() {
       icon: Percent,
       iconColor: "text-amber-400",
       bg: "bg-amber-500/5",
+    });
+  }
+  if (s.mortgageRate != null && s.mortgageRate > 0) {
+    liveIndicators.push({
+      label: "Hypo sadzba",
+      value: s.mortgageRate,
+      format: (v) => `${v.toFixed(2)}%`,
+      icon: Banknote,
+      iconColor: "text-violet-400",
+      bg: "bg-violet-500/5",
     });
   }
 

@@ -29,26 +29,38 @@ export async function fetchSlovakMortgageRate(): Promise<MortgageRateResult | nu
     if (!res.ok) return null;
 
     const data = (await res.json()) as EcbMirResponse;
+    let best: { ratePct: number; periodKey: string } | null = null;
+
     const dataSet = data?.dataSets?.[0];
     const series = dataSet?.series;
-    if (!series || typeof series !== "object") return null;
-
-    let best: { ratePct: number; periodKey: string } | null = null;
     const obsDim = data?.structure?.dimensions?.observation;
 
-    for (const seriesKey of Object.keys(series)) {
-      const obs = series[seriesKey]?.observations;
-      if (!obs || typeof obs !== "object") continue;
-      const keys = Object.keys(obs).sort((a, b) => Number(b) - Number(a));
-      for (const key of keys) {
-        const val = obs[key]?.[0];
-        if (val == null) continue;
-        const num = Number(val);
-        if (Number.isNaN(num)) continue;
-        const periodStr = obsDim?.[0]?.values?.[Number(key)]?.id ?? key;
-        if (!best || periodStr > best.periodKey) {
-          best = { ratePct: num, periodKey: String(periodStr) };
+    if (series && typeof series === "object") {
+      for (const seriesKey of Object.keys(series)) {
+        const obs = series[seriesKey]?.observations;
+        if (!obs || typeof obs !== "object") continue;
+        const keys = Object.keys(obs).sort((a, b) => Number(b) - Number(a));
+        for (const key of keys) {
+          const val = obs[key]?.[0];
+          if (val == null) continue;
+          const num = Number(val);
+          if (Number.isNaN(num) || num < 0 || num > 20) continue;
+          const periodStr = obsDim?.[0]?.values?.[Number(key)]?.id ?? key;
+          if (!best || String(periodStr) > best.periodKey) {
+            best = { ratePct: num, periodKey: String(periodStr) };
+          }
         }
+      }
+    }
+
+    if (!best && hasValue(data)) {
+      const values = data.value;
+      const lastNum = values.filter((v) => v != null && !Number.isNaN(Number(v)) && Number(v) >= 0 && Number(v) <= 20).pop();
+      if (lastNum != null) {
+        const idx = values.lastIndexOf(lastNum);
+        const periodIds = (data?.structure?.dimensions?.observation?.[0] as { values?: Array<{ id?: string }> })?.values;
+        const periodStr = periodIds?.[idx]?.id ?? `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+        best = { ratePct: Number(lastNum), periodKey: periodStr };
       }
     }
 
@@ -69,6 +81,7 @@ export async function fetchSlovakMortgageRate(): Promise<MortgageRateResult | nu
 }
 
 interface EcbMirResponse {
+  value?: (number | string | null)[];
   structure?: {
     dimensions?: {
       observation?: Array<{ values?: Array<{ id?: string }> }>;
@@ -77,4 +90,9 @@ interface EcbMirResponse {
   dataSets?: Array<{
     series?: Record<string, { observations?: Record<string, [string | number] | undefined> }>;
   }>;
+}
+
+/** Type guard: ECB odpoveď môže mať pole value (SDMX variant). */
+function hasValue(data: EcbMirResponse): data is EcbMirResponse & { value: (number | string | null)[] } {
+  return Array.isArray((data as { value?: unknown }).value);
 }

@@ -197,7 +197,7 @@ export async function getRealtimeCityStats(city: string): Promise<RealtimeRegion
 
 /**
  * Súhrn trhu výhradne z živých dát (DB) – pre widget Ekonomika.
- * Žiadne NBS/ŠÚ odhady, len scrapované inzeráty + InvestmentMetrics.
+ * Žiadne NBS/ŠÚ odhady, len scrapované inzeráty + InvestmentMetrics + hypotekárna sadzba z DB.
  */
 export async function getMarketSummaryLive(): Promise<{
   nationalAvgPrice: number;
@@ -206,10 +206,14 @@ export async function getMarketSummaryLive(): Promise<{
   avgYield: number | null;
   hottest: string;
   cheapest: string;
+  mortgageRate: number | null;
   dataSource: string;
   generatedAt: Date;
 }> {
-  const stats = await getRealtimeMarketStats();
+  const [stats, latestMortgage] = await Promise.all([
+    getRealtimeMarketStats(),
+    prisma.mortgageRate.findFirst({ orderBy: { date: "desc" }, select: { ratePct: true } }),
+  ]);
   const regions = stats.regions;
 
   // Try to get yield data, fallback to null if InvestmentMetrics table doesn't exist
@@ -254,6 +258,7 @@ export async function getMarketSummaryLive(): Promise<{
     avgYield,
     hottest,
     cheapest,
+    mortgageRate: latestMortgage?.ratePct ?? null,
     dataSource: stats.dataSource,
     generatedAt: stats.generatedAt,
   };

@@ -1,66 +1,135 @@
 // Agregátor dát zo všetkých zdrojov
 
+import { prisma } from "@/lib/prisma";
 import { fetchNBSPropertyPrices, fetchNBSNationalAverage, getHistoricalPriceData } from "./nbs";
 import { fetchEconomicIndicators, fetchDemographicData, fetchHousingConstructionData } from "./statistics-sk";
 import { MarketData, REGION_TO_CITIES } from "./types";
 
+const AGGREGATOR_CITIES = Object.values(REGION_TO_CITIES).flat();
+const UNIQUE_CITIES = [...new Set(AGGREGATOR_CITIES)];
+
+/**
+ * Agregované trhové dáta z DB (scrapované inzeráty) keď NBS dáta chýbajú
+ */
+async function getAggregatedMarketDataFromDB(): Promise<MarketData[]> {
+  const marketData: MarketData[] = [];
+  const now = new Date();
+  const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  for (const city of UNIQUE_CITIES) {
+    const cityMatch = { city: { equals: city, mode: "insensitive" as const } };
+    const [saleAgg, rentAgg, countSale, countRent] = await Promise.all([
+      prisma.property.aggregate({
+        where: { ...cityMatch, listing_type: "PREDAJ", price_per_m2: { gt: 0 } },
+        _avg: { price_per_m2: true, price: true },
+        _count: { id: true },
+      }),
+      prisma.property.aggregate({
+        where: { ...cityMatch, listing_type: "PRENAJOM", price_per_m2: { gt: 0 } },
+        _avg: { price_per_m2: true, price: true },
+        _count: { id: true },
+      }),
+      prisma.property.count({ where: { ...cityMatch, listing_type: "PREDAJ" } }),
+      prisma.property.count({ where: { ...cityMatch, listing_type: "PRENAJOM" } }),
+    ]);
+
+    const avgPricePerSqm = saleAgg._avg.price_per_m2 ?? 0;
+    if (avgPricePerSqm <= 0) continue;
+
+    const avgRentPerSqm = rentAgg._avg.price_per_m2 ?? 0;
+    const grossYield =
+      avgPricePerSqm > 0 && avgRentPerSqm > 0
+        ? Math.round((avgRentPerSqm * 12 / avgPricePerSqm) * 1000) / 10
+        : 0;
+
+    const prevMonthAgg = await prisma.property.aggregate({
+      where: {
+        ...cityMatch,
+        listing_type: "PREDAJ",
+        price_per_m2: { gt: 0 },
+        createdAt: { lte: oneMonthAgo },
+      },
+      _avg: { price_per_m2: true },
+    });
+    const prevAvg = prevMonthAgg._avg.price_per_m2;
+    const priceChangeYoY = prevAvg && prevAvg > 0
+      ? Math.round(((avgPricePerSqm - prevAvg) / prevAvg) * 1000) / 10
+      : 0;
+    const priceChangeQoQ = priceChangeYoY;
+
+    const demandIndex = countSale + countRent > 0
+      ? Math.min(100, Math.round((countSale / Math.max(1, countRent)) * 25))
+      : 0;
+    const supplyIndex = Math.min(100, Math.round((saleAgg._count.id / 50) * 100));
+
+    marketData.push({
+      city,
+      avgPricePerSqm: Math.round(avgPricePerSqm),
+      medianPricePerSqm: Math.round(avgPricePerSqm * 0.93),
+      avgRent: Math.round(avgRentPerSqm) || 0,
+      grossYield,
+      priceChangeYoY,
+      priceChangeQoQ,
+      listingsCount: saleAgg._count.id,
+      avgDaysOnMarket: 0,
+      demandIndex,
+      supplyIndex,
+      updatedAt: now,
+    });
+  }
+
+  return marketData;
+}
+
 /**
  * Agregované trhové dáta pre všetky mestá
- * Vracia prázdne pole ak nie sú dostupné NBS dáta
+ * Používa NBS ak sú dáta, inak živé dáta z DB (scrapované inzeráty)
  */
 export async function getAggregatedMarketData(): Promise<MarketData[]> {
   const nbsResult = await fetchNBSPropertyPrices();
 
-  if (!nbsResult.success || !nbsResult.data || nbsResult.data.length === 0) {
-    return [];
-  }
-
-  const marketData: MarketData[] = [];
-
-  Object.entries(REGION_TO_CITIES).forEach(([region, cities]) => {
-    const regionData = nbsResult.data!.filter((d) => d.region === region);
-
-    if (regionData.length === 0) return;
-
-    const apartmentData = regionData.find((d) => d.propertyType === "APARTMENT");
-    const houseData = regionData.find((d) => d.propertyType === "HOUSE");
-
-    cities.forEach((city) => {
-      const avgPrice =
-        apartmentData && houseData
-          ? apartmentData.pricePerSqm * 0.7 + houseData.pricePerSqm * 0.3
-          : apartmentData?.pricePerSqm || houseData?.pricePerSqm || 0;
-
-      if (avgPrice <= 0) return;
-
-      const medianPrice = avgPrice * 0.93;
-      const avgChangeYoY =
-        apartmentData && houseData
-          ? (apartmentData.changeYoY + houseData.changeYoY) / 2
-          : apartmentData?.changeYoY ?? houseData?.changeYoY ?? 0;
-      const avgChangeQoQ =
-        apartmentData && houseData
-          ? (apartmentData.changeQoQ + houseData.changeQoQ) / 2
-          : apartmentData?.changeQoQ ?? houseData?.changeQoQ ?? 0;
-
-      marketData.push({
-        city,
-        avgPricePerSqm: Math.round(avgPrice),
-        medianPricePerSqm: Math.round(medianPrice),
-        avgRent: 0,
-        grossYield: 0,
-        priceChangeYoY: Math.round(avgChangeYoY * 10) / 10,
-        priceChangeQoQ: Math.round(avgChangeQoQ * 10) / 10,
-        listingsCount: 0,
-        avgDaysOnMarket: 0,
-        demandIndex: 0,
-        supplyIndex: 0,
-        updatedAt: new Date(),
+  if (nbsResult.success && nbsResult.data && nbsResult.data.length > 0) {
+    const marketData: MarketData[] = [];
+    Object.entries(REGION_TO_CITIES).forEach(([region, cities]) => {
+      const regionData = nbsResult.data!.filter((d) => d.region === region);
+      if (regionData.length === 0) return;
+      const apartmentData = regionData.find((d) => d.propertyType === "APARTMENT");
+      const houseData = regionData.find((d) => d.propertyType === "HOUSE");
+      cities.forEach((city) => {
+        const avgPrice =
+          apartmentData && houseData
+            ? apartmentData.pricePerSqm * 0.7 + houseData.pricePerSqm * 0.3
+            : apartmentData?.pricePerSqm || houseData?.pricePerSqm || 0;
+        if (avgPrice <= 0) return;
+        const medianPrice = avgPrice * 0.93;
+        const avgChangeYoY =
+          apartmentData && houseData
+            ? (apartmentData.changeYoY + houseData.changeYoY) / 2
+            : apartmentData?.changeYoY ?? houseData?.changeYoY ?? 0;
+        const avgChangeQoQ =
+          apartmentData && houseData
+            ? (apartmentData.changeQoQ + houseData.changeQoQ) / 2
+            : apartmentData?.changeQoQ ?? houseData?.changeQoQ ?? 0;
+        marketData.push({
+          city,
+          avgPricePerSqm: Math.round(avgPrice),
+          medianPricePerSqm: Math.round(medianPrice),
+          avgRent: 0,
+          grossYield: 0,
+          priceChangeYoY: Math.round(avgChangeYoY * 10) / 10,
+          priceChangeQoQ: Math.round(avgChangeQoQ * 10) / 10,
+          listingsCount: 0,
+          avgDaysOnMarket: 0,
+          demandIndex: 0,
+          supplyIndex: 0,
+          updatedAt: new Date(),
+        });
       });
     });
-  });
+    return marketData;
+  }
 
-  return marketData;
+  return getAggregatedMarketDataFromDB();
 }
 
 /**
@@ -88,26 +157,30 @@ export async function getMarketSummary(): Promise<{
     mortgageRate: number;
   };
 }> {
-  const [marketData, nbsAvg, economicResult] = await Promise.all([
+  const [marketData, nbsAvg, economicResult, latestMortgage] = await Promise.all([
     getAggregatedMarketData(),
     fetchNBSNationalAverage(),
     fetchEconomicIndicators(),
+    prisma.mortgageRate.findFirst({ orderBy: { date: "desc" }, select: { ratePct: true } }),
   ]);
-  
-  // Nájdi najhorúcejšie a najlacnejšie mesto
+
   const sortedByDemand = [...marketData].sort((a, b) => b.demandIndex - a.demandIndex);
   const sortedByPrice = [...marketData].sort((a, b) => a.avgPricePerSqm - b.avgPricePerSqm);
-  
   const totalListings = marketData.reduce((sum, d) => sum + d.listingsCount, 0);
   const avgYieldSafe =
     marketData.length > 0
-      ? marketData.reduce((sum, d) => sum + d.grossYield, 0) /
-        marketData.length
+      ? marketData.reduce((sum, d) => sum + d.grossYield, 0) / marketData.length
       : 0;
 
   const economic = economicResult.data?.[0];
-  const nationalAvgPrice = nbsAvg?.all ?? 0;
-  const nationalPriceChange = nbsAvg?.changeYoY ?? 0;
+  const nationalAvgPrice = nbsAvg?.all ?? (marketData.length > 0
+    ? Math.round(
+        marketData.reduce((s, d) => s + d.avgPricePerSqm, 0) / marketData.length
+      )
+    : 0);
+  const nationalPriceChange = nbsAvg?.changeYoY ?? (marketData.length > 0
+    ? marketData.reduce((s, d) => s + d.priceChangeYoY, 0) / marketData.length
+    : 0);
 
   return {
     nationalAvgPrice,
@@ -120,7 +193,7 @@ export async function getMarketSummary(): Promise<{
       gdpGrowth: economic?.gdpGrowth ?? 0,
       inflation: economic?.inflation ?? 0,
       unemployment: economic?.unemployment ?? 0,
-      mortgageRate: 0,
+      mortgageRate: latestMortgage?.ratePct ?? 0,
     },
   };
 }
