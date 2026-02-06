@@ -36,3 +36,13 @@ export {
   getMarketSummary,
   getPriceTrends,
 } from "./aggregator";
+
+// Úrokové sadzby bánk (hypotéky)
+export {
+  scrapeAllBankRates,
+  getLatestBankRates,
+  type ScrapeBankRatesResult,
+  type ScrapedBankRate,
+  type BankRateScraperConfig,
+  PRODUCT_TYPES,
+} from "./bank-rates-scraper";

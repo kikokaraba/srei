@@ -774,6 +774,18 @@ model NBSPropertyPrice {
   @@index([region, year, quarter])
 }
 
+// Hypotekárne úrokové sadzby (SK) – pre porovnanie s výnosom, DSCR
+model MortgageRate {
+  id          String   @id @default(cuid())
+  date        DateTime @db.Date  // Mesiac ktorého sa údaj týka
+  ratePct     Float    // Priemerná úroková sadzba v %
+  source      String   @default("ECB")  // "ECB", "NBS"
+  fetchedAt   DateTime @default(now())
+
+  @@unique([date])
+  @@index([date])
+}
+
 // Ekonomické ukazovatele
 model EconomicIndicator {
   id                  String   @id @default(cuid())
@@ -785,7 +797,7 @@ model EconomicIndicator {
   wageGrowth          Float    // % medziročne
   constructionIndex   Float    // Index (100 = base year)
   consumerConfidence  Float    // Balance
-  mortgageRate        Float?   // Priemerná hypotekárna sadzba
+  mortgageRate        Float?   // Priemerná hypotekárna sadzba (legacy; prefer MortgageRate)
   fetchedAt           DateTime @default(now())
   
   @@index([date])
@@ -847,6 +859,21 @@ model DataFetchLog {
   fetchedAt        DateTime @default(now())
   
   @@index([source, fetchedAt])
+}
+
+// Úrokové sadzby bánk (hypotéky) – scrapované z webov bánk / NBS
+model BankInterestRate {
+  id           String   @id @default(cuid())
+  bankName     String   // napr. "VÚB", "Slovenská sporiteľňa"
+  bankSlug     String   // napr. "vub", "slsp" – pre stabilné porovnanie
+  productType  String   // "MORTGAGE_1Y", "MORTGAGE_3Y", "MORTGAGE_5Y", "MORTGAGE_10Y"
+  ratePercent  Float    // úroková sadzba v % p.a.
+  sourceUrl    String?  @db.Text
+  scrapedAt    DateTime @default(now())
+
+  @@unique([bankSlug, productType])
+  @@index([bankSlug, productType])
+  @@index([scrapedAt])
 }
 
 // Referral kódy pre partnerov (investičné skupiny)

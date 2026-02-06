@@ -26,6 +26,11 @@ const JOBS = [
     endpoint: "/api/cron/scrape-slovakia?portal=bazos",
     intervalMs: 30 * 60 * 1000, // 30 minutes - Bazoš (častejšie pre hot deals)
   },
+  {
+    name: "scrape-bank-rates",
+    endpoint: "/api/cron/scrape-bank-rates",
+    intervalMs: 24 * 60 * 60 * 1000, // 1x denne – úrokové sadzby bánk
+  },
 ];
 
 const BASE_URL = process.env.RAILWAY_URL || process.env.NEXTAUTH_URL || "http://localhost:3000";

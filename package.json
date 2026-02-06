@@ -28,6 +28,7 @@
     "db:fix-historical": "tsx scripts/fix-historical-data.ts",
     "db:railway-fix": "prisma db execute --file prisma/railway-fix-property-columns.sql",
     "cron:start": "tsx scripts/start-cron.ts",
+    "scrape:bank-rates": "tsx scripts/scrape-bank-rates.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "postinstall": "prisma generate",
