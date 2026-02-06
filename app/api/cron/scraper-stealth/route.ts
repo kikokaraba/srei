@@ -1,16 +1,13 @@
 // Cron Job: /api/cron/scraper-stealth
-// Automatický Multi-Source Stealth Scraper
-// Podporuje: Bazoš, Nehnutelnosti.sk, Reality.sk
-// Spúšťa sa o 6:00, 14:00 a 22:00 (UTC)
+// Stealth Scraper – Bazoš a Nehnutelnosti.sk (byty predaj + prenájom)
 
 import { NextRequest, NextResponse } from "next/server";
 import { runStealthScrape, runSourceScrape } from "@/lib/scraper/stealth-engine";
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
-// Validné zdroje
-const VALID_SOURCES = ["BAZOS", "NEHNUTELNOSTI", "REALITY"] as const;
-type SourceType = typeof VALID_SOURCES[number];
+const VALID_SOURCES = ["BAZOS", "NEHNUTELNOSTI"] as const;
+type SourceType = (typeof VALID_SOURCES)[number];
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,8 +31,7 @@ export async function GET(request: NextRequest) {
     const citiesParam = request.nextUrl.searchParams.get("cities");
     const typesParam = request.nextUrl.searchParams.get("types");
     
-    // Určenie zdrojov
-    let sources: SourceType[] = ["BAZOS", "NEHNUTELNOSTI", "REALITY"];
+    let sources: SourceType[] = ["BAZOS", "NEHNUTELNOSTI"];
     if (sourcesParam) {
       const requestedSources = sourcesParam.split(",").map(s => s.trim().toUpperCase());
       sources = requestedSources.filter(s => 

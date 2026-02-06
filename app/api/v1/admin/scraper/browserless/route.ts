@@ -95,18 +95,18 @@ export async function POST(request: NextRequest) {
       maxPages = 2,
       saveToDb = true,
     } = body as {
-      portal?: "NEHNUTELNOSTI" | "REALITY";
+      portal?: "NEHNUTELNOSTI" | "BAZOS";
       city?: string;
       listingType?: ListingType;
       maxPages?: number;
       saveToDb?: boolean;
     };
 
-    console.log(`\n🚀 Starting Browserless scrape: ${portal}`);
+    const validPortal = portal === "BAZOS" || portal === "NEHNUTELNOSTI" ? portal : "NEHNUTELNOSTI";
+    console.log(`\n🚀 Starting Browserless scrape: ${validPortal}`);
     console.log(`   City: ${city || "all"}, Type: ${listingType || "all"}, Pages: ${maxPages}`);
 
-    // Run scraping
-    const result = await scrapePortal(portal, {
+    const result = await scrapePortal(validPortal, {
       city,
       listingType,
       maxPages,

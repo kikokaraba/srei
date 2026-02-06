@@ -7,10 +7,9 @@
  * 3. Nastavuje webhooky pre automatické spracovanie výsledkov
  */
 
-import { 
-  NEHNUTELNOSTI_PAGE_FUNCTION, 
+import {
+  NEHNUTELNOSTI_PAGE_FUNCTION,
   BAZOS_PAGE_FUNCTION,
-  REALITY_PAGE_FUNCTION 
 } from "./nehnutelnosti-config";
 import type { ScrapingTarget } from "./slovakia-scraper";
 
@@ -81,8 +80,6 @@ function getPageFunction(portal: string): string {
       return NEHNUTELNOSTI_PAGE_FUNCTION;
     case "bazos":
       return BAZOS_PAGE_FUNCTION;
-    case "reality":
-      return REALITY_PAGE_FUNCTION;
     default:
       return NEHNUTELNOSTI_PAGE_FUNCTION;
   }

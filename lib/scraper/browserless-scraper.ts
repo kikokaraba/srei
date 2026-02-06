@@ -80,40 +80,6 @@ export const PORTAL_CONFIGS: Record<string, PortalConfig> = {
       { path: "/byty/prenajom/", listingType: "PRENAJOM", name: "Byty prenájom" },
     ],
   },
-  REALITY: {
-    name: "Reality.sk",
-    baseUrl: "https://www.reality.sk",
-    source: "REALITY",
-    listingSelector: ".estate-list__item, article.estate, .property-item",
-    selectors: {
-      title: ".estate-list__title a, h2 a, .title a",
-      price: ".estate-list__price, .price",
-      area: ".estate-list__area, .area",
-      location: ".estate-list__location, .location",
-      link: "a[href*='/detail/']",
-    },
-    categories: [
-      { path: "/byty/predaj/", listingType: "PREDAJ", name: "Byty predaj" },
-      { path: "/byty/prenajom/", listingType: "PRENAJOM", name: "Byty prenájom" },
-    ],
-  },
-  TOPREALITY: {
-    name: "TopReality.sk",
-    baseUrl: "https://www.topreality.sk",
-    source: "TOPREALITY",
-    listingSelector: ".property-item, .estate-item, article, [data-id]",
-    selectors: {
-      title: ".property-title a, h2 a, .title a",
-      price: ".property-price, .price",
-      area: ".property-area, .area",
-      location: ".property-location, .location",
-      link: "a[href*='/detail/'], a[href*='/inzerat/']",
-    },
-    categories: [
-      { path: "/vyhladavanie/predaj/byty/", listingType: "PREDAJ", name: "Byty predaj" },
-      { path: "/vyhladavanie/prenajom/byty/", listingType: "PRENAJOM", name: "Byty prenájom" },
-    ],
-  },
   BAZOS: {
     name: "Bazoš Reality",
     baseUrl: "https://reality.bazos.sk",
@@ -264,7 +230,7 @@ function buildBrowserlessUrl(): string {
 // ============================================
 
 export async function scrapePortal(
-  portalKey: "BAZOS" | "NEHNUTELNOSTI" | "REALITY" | "TOPREALITY",
+  portalKey: "BAZOS" | "NEHNUTELNOSTI",
   options: {
     city?: string;
     listingType?: ListingType;

@@ -1032,16 +1032,14 @@ interface CategoryOptions {
 /**
  * Získa selektory pre daný zdroj
  */
-function getSelectorsForSource(source: "BAZOS" | "NEHNUTELNOSTI" | "REALITY") {
+function getSelectorsForSource(source: "BAZOS" | "NEHNUTELNOSTI") {
   switch (source) {
     case "BAZOS":
       return {
         listing: [
-          // Nová štruktúra 2025/2026 - h2 s linkom na inzerát
           "h2:has(a[href*='/inzerat/'])",
-          // Fallback selektory
           ".inzeraty .inzerat",
-          ".vypis .inzerat", 
+          ".vypis .inzerat",
           ".inzeratynadpis",
           "[class*='inzerat']",
         ],
@@ -1051,28 +1049,13 @@ function getSelectorsForSource(source: "BAZOS" | "NEHNUTELNOSTI" | "REALITY") {
     case "NEHNUTELNOSTI":
       return {
         listing: [
-          // MUI-based selectors (2025/2026) - find grid items containing detail links
           "div.MuiGrid2-root:has(a[href*='/detail/'])",
           "div.MuiBox-root:has(a[href*='/detail/'])",
           "div.MuiStack-root:has(a[href*='/detail/'])",
-          // Fallback selectors
           "a[href*='/detail/']",
         ],
         nextPage: ["a[href*='page=']", "a[rel='next']", ".MuiPagination-ul a"],
         nextPageText: ["ďalšia", "další", "next", ">>", "›", "2", "3"],
-      };
-    case "REALITY":
-      return {
-        listing: [
-          ".estate-card",
-          ".property-card",
-          ".listing-item",
-          ".inzerat",
-          "article.estate",
-          "[data-id]",
-        ],
-        nextPage: [".pagination a", ".paging a", "a[rel='next']"],
-        nextPageText: ["ďalšia", "další", "next", ">>", "›"],
       };
   }
 }
@@ -1084,7 +1067,7 @@ function buildCategoryUrl(
   baseUrl: string, 
   path: string, 
   city: string | undefined, 
-  source: "BAZOS" | "NEHNUTELNOSTI" | "REALITY",
+  source: "BAZOS" | "NEHNUTELNOSTI",
   page?: number
 ): string {
   let url = `${baseUrl}${path}`;
@@ -1093,7 +1076,7 @@ function buildCategoryUrl(
     if (city) {
       url += `?hlokalita=${encodeURIComponent(city)}&humkreis=25`;
     }
-  } else if (source === "NEHNUTELNOSTI" || source === "REALITY") {
+  } else if (source === "NEHNUTELNOSTI") {
     if (city) {
       const slug = CITY_SLUGS[city] || city.toLowerCase().replace(/\s+/g, "-");
       url += `${slug}/`;
@@ -1208,9 +1191,6 @@ export async function scrapeCategory(
         case "NEHNUTELNOSTI":
           listing = parseNehnutelnostiElement($, element, baseUrl, listingType);
           break;
-        case "REALITY":
-          listing = parseRealityElement($, element, baseUrl, listingType);
-          break;
       }
       
       if (listing) {
@@ -1288,40 +1268,29 @@ export async function scrapeBazosCategory(
 }
 
 /**
- * Definícia kategórií pre scraping
- * Podporujeme viaceré zdroje: Bazoš, Nehnutelnosti.sk, Reality.sk
+ * Kategórie pre scraping – len Bazoš a Nehnutelnosti.sk, byty predaj + prenájom
  */
 interface ScrapingCategory {
   name: string;
   baseUrl: string;
   path: string;
   listingType: "PREDAJ" | "PRENAJOM";
-  source: "BAZOS" | "NEHNUTELNOSTI" | "REALITY";
+  source: "BAZOS" | "NEHNUTELNOSTI";
 }
 
-// Bazoš kategórie – len byty (ostatné typy prídeme neskôr)
 const BAZOS_CATEGORIES: ScrapingCategory[] = [
   { name: "Byty predaj", baseUrl: "https://reality.bazos.sk", path: "/predam/byt/", listingType: "PREDAJ", source: "BAZOS" },
   { name: "Byty prenájom", baseUrl: "https://reality.bazos.sk", path: "/prenajmu/byt/", listingType: "PRENAJOM", source: "BAZOS" },
 ];
 
-// Nehnutelnosti.sk kategórie – len byty
 const NEHNUTELNOSTI_CATEGORIES: ScrapingCategory[] = [
   { name: "Byty predaj", baseUrl: "https://www.nehnutelnosti.sk", path: "/byty/predaj/", listingType: "PREDAJ", source: "NEHNUTELNOSTI" },
   { name: "Byty prenájom", baseUrl: "https://www.nehnutelnosti.sk", path: "/byty/prenajom/", listingType: "PRENAJOM", source: "NEHNUTELNOSTI" },
 ];
 
-// Reality.sk kategórie – len byty
-const REALITY_CATEGORIES: ScrapingCategory[] = [
-  { name: "Byty predaj", baseUrl: "https://www.reality.sk", path: "/byty/predaj/", listingType: "PREDAJ", source: "REALITY" },
-  { name: "Byty prenájom", baseUrl: "https://www.reality.sk", path: "/byty/prenajom/", listingType: "PRENAJOM", source: "REALITY" },
-];
-
-// Všetky kategórie
 const SCRAPING_CATEGORIES: ScrapingCategory[] = [
   ...BAZOS_CATEGORIES,
   ...NEHNUTELNOSTI_CATEGORIES,
-  ...REALITY_CATEGORIES,
 ];
 
 // Slugy miest pre nehnutelnosti.sk a reality.sk
@@ -1344,7 +1313,7 @@ export async function runStealthScrape(
   config?: Partial<StealthConfig>,
   options?: { 
     listingTypes?: ("PREDAJ" | "PRENAJOM")[];
-    sources?: ("BAZOS" | "NEHNUTELNOSTI" | "REALITY")[];
+    sources?: ("BAZOS" | "NEHNUTELNOSTI")[];
   }
 ): Promise<{
   totalStats: ScraperStats;
@@ -1352,7 +1321,7 @@ export async function runStealthScrape(
 }> {
   const targetCities = cities || ["Bratislava", "Košice", "Žilina"];
   const allowedTypes = options?.listingTypes || ["PREDAJ", "PRENAJOM"];
-  const allowedSources = options?.sources || ["BAZOS", "NEHNUTELNOSTI", "REALITY"];
+  const allowedSources = options?.sources || ["BAZOS", "NEHNUTELNOSTI"];
   
   // Filtruj kategórie podľa požadovaných typov a zdrojov
   const categories = SCRAPING_CATEGORIES.filter(
@@ -1480,7 +1449,7 @@ export async function runStealthScrape(
  * Scrapuje len konkrétny zdroj
  */
 export async function runSourceScrape(
-  source: "BAZOS" | "NEHNUTELNOSTI" | "REALITY",
+  source: "BAZOS" | "NEHNUTELNOSTI",
   cities?: string[],
   config?: Partial<StealthConfig>,
   options?: { listingTypes?: ("PREDAJ" | "PRENAJOM")[] }
@@ -1510,6 +1479,5 @@ export {
   SCRAPING_CATEGORIES,
   BAZOS_CATEGORIES,
   NEHNUTELNOSTI_CATEGORIES,
-  REALITY_CATEGORIES,
 };
 export type { StealthConfig, ScraperStats, ParsedListing, ScrapingCategory };

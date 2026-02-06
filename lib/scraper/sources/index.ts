@@ -1,27 +1,24 @@
 /**
- * Export všetkých scraper implementácií
+ * Scraper implementácie – len Bazoš a Nehnutelnosti.sk (byty predaj + prenájom)
  */
 
 export { BazosScraper, bazosScraper } from "./bazos";
 export { NehnutelnostiScraper, nehnutelnostiScraper } from "./nehnutelnosti";
-export { RealityScraper, realityScraper } from "./reality";
-// export { ToprealityScraper, toprealityScraper } from "./topreality";
 
 import { bazosScraper } from "./bazos";
 import { nehnutelnostiScraper } from "./nehnutelnosti";
-import { realityScraper } from "./reality";
 import type { BaseScraper } from "../base-scraper";
 import type { PropertySource } from "@/generated/prisma/client";
 
 /**
- * Mapa všetkých dostupných scraperov
+ * Mapa scraperov – aktívne len BAZOS a NEHNUTELNOSTI
  */
 export const SCRAPERS: Record<PropertySource, BaseScraper | null> = {
   BAZOS: bazosScraper,
   NEHNUTELNOSTI: nehnutelnostiScraper,
-  REALITY: realityScraper,
-  TOPREALITY: null, // Planned for future implementation
-  MANUAL: null, // Not a scraper - manual entries
+  REALITY: null,
+  TOPREALITY: null,
+  MANUAL: null,
 };
 
 /**

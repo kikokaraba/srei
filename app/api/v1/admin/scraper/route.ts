@@ -9,46 +9,26 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { PropertySource, ListingType } from "@/generated/prisma/client";
 
-// Scraper sources configuration – len byty (ostatné typy prídeme neskôr)
+// Scraper sources – len Nehnutelnosti.sk a Bazoš, byty predaj + prenájom, celé Slovensko
 const SCRAPER_SOURCES = {
   BAZOS: {
     name: "Bazoš.sk",
     url: "https://reality.bazos.sk",
     enabled: true,
-    description: "Inzertný portál - byty",
+    description: "Inzertný portál - byty predaj a prenájom",
     categories: [
-      { path: "/byty/", type: "PREDAJ" as ListingType, name: "Byty predaj" },
-      { path: "/prenajom/byty/", type: "PRENAJOM" as ListingType, name: "Byty prenájom" },
+      { path: "/predam/byt/", type: "PREDAJ" as ListingType, name: "Byty predaj" },
+      { path: "/prenajmu/byt/", type: "PRENAJOM" as ListingType, name: "Byty prenájom" },
     ],
   },
   NEHNUTELNOSTI: {
     name: "Nehnutelnosti.sk",
     url: "https://www.nehnutelnosti.sk",
     enabled: true,
-    description: "Najväčší realitný portál - byty",
+    description: "Realitný portál - byty predaj a prenájom",
     categories: [
       { path: "/byty/predaj/", type: "PREDAJ" as ListingType, name: "Byty predaj" },
       { path: "/byty/prenajom/", type: "PRENAJOM" as ListingType, name: "Byty prenájom" },
-    ],
-  },
-  REALITY: {
-    name: "Reality.sk",
-    url: "https://www.reality.sk",
-    enabled: true,
-    description: "Druhý najväčší realitný portál - byty",
-    categories: [
-      { path: "/byty/predaj/", type: "PREDAJ" as ListingType, name: "Byty predaj" },
-      { path: "/byty/prenajom/", type: "PRENAJOM" as ListingType, name: "Byty prenájom" },
-    ],
-  },
-  TOPREALITY: {
-    name: "TopReality.sk",
-    url: "https://www.topreality.sk",
-    enabled: true,
-    description: "Tretí najväčší realitný portál - byty",
-    categories: [
-      { path: "/vyhladavanie/predaj/byty/", type: "PREDAJ" as ListingType, name: "Byty predaj" },
-      { path: "/vyhladavanie/prenajom/byty/", type: "PRENAJOM" as ListingType, name: "Byty prenájom" },
     ],
   },
 };
@@ -96,7 +76,7 @@ export async function GET(request: NextRequest) {
     // Get last scrape logs for each source
     const lastScrapes = await prisma.dataFetchLog.findMany({
       where: {
-        source: { in: ["BAZOS", "NEHNUTELNOSTI", "REALITY", "TOPREALITY", "STEALTH_BAZOS", "CRON_NEHNUTELNOSTI", "CRON_REALITY", "CRON_TOPREALITY"] },
+        source: { in: ["BAZOS", "NEHNUTELNOSTI", "CRON_BAZOS", "CRON_NEHNUTELNOSTI", "STEALTH_BAZOS"] },
       },
       orderBy: { fetchedAt: "desc" },
       take: 30,
@@ -299,12 +279,11 @@ async function runSourceScrape(
     errors: 0,
   };
 
-  // Pre NEHNUTELNOSTI, REALITY a TOPREALITY použijeme Browserless
-  if (sourceId === "NEHNUTELNOSTI" || sourceId === "REALITY" || sourceId === "TOPREALITY") {
+  // Pre NEHNUTELNOSTI použijeme Browserless (celé Slovensko)
+  if (sourceId === "NEHNUTELNOSTI") {
     try {
       const { scrapePortal } = await import("@/lib/scraper/browserless-scraper");
       
-      // Determine listing type from categories
       let listingType: ListingType | undefined;
       if (options.categories.some(c => c.includes("predaj"))) {
         listingType = "PREDAJ";
@@ -312,11 +291,10 @@ async function runSourceScrape(
         listingType = "PRENAJOM";
       }
       
-      // City je teraz string - pošleme priamo
       const city = options.cities[0] || undefined;
       
-      console.log(`🌐 Using Browserless for ${sourceId}...`);
-      const result = await scrapePortal(sourceId as "NEHNUTELNOSTI" | "REALITY" | "TOPREALITY", {
+      console.log(`🌐 Using Browserless for NEHNUTELNOSTI...`);
+      const result = await scrapePortal("NEHNUTELNOSTI", {
         city,
         listingType,
         maxPages: options.maxPages,
