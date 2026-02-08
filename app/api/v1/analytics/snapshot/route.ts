@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { getAggregatedMarketData } from "@/lib/data-sources";
 import { getAnalyticsSnapshotLive } from "@/lib/data-sources/realtime-stats";
 
+const NO_STORE = { "Cache-Control": "private, no-store, max-age=0, must-revalidate" };
+
 // Mapovanie miest na kódy krajov
 const CITY_TO_REGION: Record<string, string> = {
   BRATISLAVA: "BA",
@@ -36,12 +38,10 @@ export async function GET(request: NextRequest) {
 
     if (live) {
       const { data, newLast7d, timestamp } = await getAnalyticsSnapshotLive();
-      return NextResponse.json({
-        success: true,
-        data,
-        timestamp,
-        newLast7d,
-      });
+      return NextResponse.json(
+        { success: true, data, timestamp, newLast7d },
+        { headers: NO_STORE }
+      );
     }
     // Rate limiting - skip ak rate limiter nie je dostupný
     try {
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       if (!success) {
         return NextResponse.json(
           { error: "Rate limit exceeded" },
-          { status: 429 }
+          { status: 429, headers: NO_STORE }
         );
       }
     } catch (rateLimitError) {
@@ -116,16 +116,19 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({
-      success: true,
-      data: analyticsData,
-      timestamp: new Date().toISOString(),
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        data: analyticsData,
+        timestamp: new Date().toISOString(),
+      },
+      { headers: NO_STORE }
+    );
   } catch (error) {
     console.error("Analytics snapshot error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500, headers: NO_STORE }
     );
   }
 }

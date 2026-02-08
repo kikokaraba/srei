@@ -350,7 +350,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(json, {
       headers: {
-        'Cache-Control': 'private, s-maxage=60, stale-while-revalidate=120',
+        "Cache-Control": "private, no-store, max-age=0, must-revalidate",
       },
     });
   } catch (error) {

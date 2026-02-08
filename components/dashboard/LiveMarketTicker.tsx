@@ -46,7 +46,6 @@ export function LiveMarketTicker() {
     queryKey: ["market-realtime"],
     queryFn: fetchRealtime,
     refetchInterval: 60_000,
-    staleTime: 55_000,
   });
 
   const overview = data?.data?.overview;
