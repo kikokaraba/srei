@@ -5,15 +5,21 @@
  * Použite ho ak webhook nefunguje.
  * 
  * Query params:
- * - datasetId: ID Apify datasetu (required)
- * - portal: "bazos" (default: bazos)
+ * - runId alebo datasetId: ID behu / datasetu z Apify
+ * - portal: "bazos" | "nehnutelnosti" | "topreality" (default: bazos)
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getApifyDatasetItems, getApifyRunStatus } from "@/lib/scraper/apify-service";
+import {
+  getApifyDatasetItems,
+  getApifyDatasetItemsRaw,
+  getApifyRunStatus,
+  type TopRealityDatasetItem,
+} from "@/lib/scraper/apify-service";
 import { prisma } from "@/lib/prisma";
 import { generateCoreFingerprint } from "@/lib/matching/fingerprint";
 import { normalizeImages } from "@/lib/scraper/normalize-images";
+import { extractLocationWithAI } from "@/lib/ai/location-extraction";
 
 // Geocoding pomocou Nominatim (OpenStreetMap)
 async function geocodeAddress(city: string, district?: string, street?: string): Promise<{ lat: number; lng: number } | null> {
@@ -120,7 +126,11 @@ function extractExternalId(url: string): string {
   // Nehnutelnosti - hľadaj ID vo formáte Ju* (11 znakov, začína Ju)
   const nehnutIdMatch = url.match(/\/(Ju[A-Za-z0-9_-]{8,12})\/?/);
   if (nehnutIdMatch) return `nh-${nehnutIdMatch[1]}`;
-  
+
+  // TopReality.sk
+  const topRealityMatch = url.match(/\/detail\/(\d+)/) || url.match(/[?&]id=(\d+)/);
+  if (topRealityMatch) return `tr-${topRealityMatch[1]}`;
+
   // Fallback: ak nenájdeme Ju*, skús prvý segment po /detail/ ktorý nie je generický
   const pathAfterDetail = url.match(/\/detail\/([^?]+)/);
   if (pathAfterDetail) {
@@ -139,9 +149,10 @@ function extractExternalId(url: string): string {
   return `uk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+/** Bazos používa v ceste „prenajmu“ (reality.bazos.sk/prenajmu/byt/), nie „prenajom“. */
 function detectListingType(url: string): "PREDAJ" | "PRENAJOM" {
   const lower = url.toLowerCase();
-  if (lower.includes("/prenajom/") || lower.includes("prenájom")) return "PRENAJOM";
+  if (lower.includes("/prenajmu/") || lower.includes("prenájmu") || lower.includes("/prenajom/") || lower.includes("prenájom")) return "PRENAJOM";
   return "PREDAJ";
 }
 
@@ -301,12 +312,44 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
     
-    console.log(`📦 [ProcessApify] Fetching dataset: ${datasetId}`);
-    
-    // Stiahni dáta z Apify
-    const items = await getApifyDatasetItems(datasetId);
-    console.log(`📊 [ProcessApify] Received ${items.length} items`);
-    
+    console.log(`📦 [ProcessApify] Fetching dataset: ${datasetId}, portal: ${portal}`);
+
+    type NormalizedItem = {
+      url: string;
+      title: string;
+      price_raw?: string;
+      area_m2?: string;
+      rooms?: string;
+      floor?: string;
+      condition?: string;
+      description?: string;
+      location?: string | { city?: string; district?: string; full?: string; street?: string };
+      images?: string[];
+    };
+
+    let items: NormalizedItem[];
+
+    if (portal === "topreality") {
+      const rawItems = (await getApifyDatasetItemsRaw(datasetId)) as TopRealityDatasetItem[];
+      console.log(`📊 [ProcessApify] Received ${rawItems.length} Top Reality items`);
+      items = rawItems
+        .filter((r) => r.url && r.title && (r.price != null || r.area != null))
+        .map((r) => ({
+          url: r.url || "",
+          title: r.title || "",
+          price_raw: r.price != null ? String(r.price) : undefined,
+          area_m2: r.area != null ? String(r.area) : undefined,
+          location: typeof r.city === "string" ? r.city : (typeof r.location === "string" ? r.location : undefined),
+          description: r.description,
+          images: Array.isArray(r.images)
+            ? r.images.map((x) => (typeof x === "string" ? x : (x as { url?: string }).url ?? "")).filter(Boolean)
+            : undefined,
+        }));
+    } else {
+      items = (await getApifyDatasetItems(datasetId)) as NormalizedItem[];
+      console.log(`📊 [ProcessApify] Received ${items.length} items`);
+    }
+
     const stats = {
       total: items.length,
       created: 0,
@@ -314,19 +357,19 @@ export async function POST(request: NextRequest) {
       skipped: 0,
       errors: [] as string[],
     };
-    
+
     // Spracuj každý item
     for (const item of items) {
       try {
         const negotiable = isPriceNegotiable(item.price_raw);
         const price = parsePrice(item.price_raw);
         const area = parseArea(item.area_m2);
-        
+
         // Extrahuj mesto z location (môže byť string alebo objekt)
         let city = "Slovensko";
         let district = "";
         let street = "";
-        
+
         const loc = item.location as string | { city?: string; district?: string; full?: string; street?: string } | undefined;
         
         console.log(`🏠 [ProcessApify] Location raw:`, JSON.stringify(loc));
@@ -362,7 +405,27 @@ export async function POST(request: NextRequest) {
           const titleCity = extractCityFromText(item.title);
           if (titleCity) city = titleCity;
         }
-        
+
+        // AI doplnenie lokality – ak portál (Bazos) dal len „Slovensko“, skús z titulku + popisu
+        if (city === "Slovensko" && process.env.ANTHROPIC_API_KEY && (item.title?.trim() || item.description?.trim())) {
+          try {
+            const locText = typeof loc === "string" ? loc : (loc?.full ?? (loc as { city?: string })?.city ?? "");
+            const extracted = await extractLocationWithAI({
+              title: item.title ?? "",
+              description: item.description ?? undefined,
+              address: locText || undefined,
+              locationText: district || undefined,
+            });
+            if (extracted?.city) {
+              city = extracted.city;
+              if (extracted.district) district = extracted.district;
+            }
+            await new Promise((r) => setTimeout(r, 250));
+          } catch (e) {
+            console.warn("[ProcessApify] AI location extraction failed for item:", item.url, e);
+          }
+        }
+
         console.log(`📍 [ProcessApify] Parsed: city=${city}, district=${district}, street=${street}`);
         
         // Základná validácia - musí mať aspoň titulok
@@ -411,7 +474,7 @@ export async function POST(request: NextRequest) {
           photos: JSON.stringify(imageUrls),
           thumbnail_url: thumbnailUrl,
           photo_count: imageUrls.length,
-          source: portal.toUpperCase() === "BAZOS" ? "BAZOS" : "REALITY",
+          source: portal === "topreality" ? "TOPREALITY" : portal.toUpperCase() === "BAZOS" ? "BAZOS" : "REALITY",
           source_url: item.url,
           external_id: externalId,
           listing_type: listingType,
@@ -531,6 +594,6 @@ export async function GET() {
   return NextResponse.json({
     success: true,
     message: "Use POST with ?datasetId=xxx to process Apify results",
-    example: "/api/cron/process-apify?datasetId=abc123&portal=bazos",
+    example: "/api/cron/process-apify?runId=xxx&portal=topreality (alebo datasetId=abc&portal=bazos)",
   });
 }

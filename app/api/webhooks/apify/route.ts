@@ -164,13 +164,10 @@ function detectPropertyType(url: string, title: string): string {
 /**
  * Určí typ transakcie z URL
  */
+/** Bazos používa v ceste „prenajmu“ (reality.bazos.sk/prenajmu/byt/), nie „prenajom“. */
 function detectTransactionType(url: string): string {
   const lower = url.toLowerCase();
-  
-  if (lower.includes("/prenajom/") || lower.includes("prenájom")) {
-    return "PRENAJOM";
-  }
-  
+  if (lower.includes("/prenajmu/") || lower.includes("prenájmu") || lower.includes("/prenajom/") || lower.includes("prenájom")) return "PRENAJOM";
   return "PREDAJ";
 }
 
