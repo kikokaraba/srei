@@ -16,7 +16,8 @@ import {
   Globe,
   MapPin,
   Timer,
-  BarChart3
+  BarChart3,
+  Trash2,
 } from "lucide-react";
 
 interface ScrapingRun {
@@ -49,6 +50,7 @@ export default function DataManagementPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [isResetting, setIsResetting] = useState(false);
 
   // Pridaj log
   const addLog = useCallback((message: string) => {
@@ -223,6 +225,28 @@ export default function DataManagementPage() {
       setCurrentRun(prev => prev ? { ...prev, status: "failed" } : null);
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const resetAllProperties = async () => {
+    if (!window.confirm("Naozaj vymazať VŠETKY nehnuteľnosti z databázy? Táto akcia je nevratná.")) {
+      return;
+    }
+    setIsResetting(true);
+    addLog("🗑️ Volám reset všetkých nehnuteľností...");
+    try {
+      const res = await fetch("/api/admin/reset-properties", { method: "POST" });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        addLog(`✅ Vymazaných: ${data.deleted?.properties ?? 0} nehnuteľností a súvisiace záznamy.`);
+        await fetchDbStats();
+      } else {
+        addLog(`❌ Reset zlyhal: ${data.error ?? res.status}`);
+      }
+    } catch (e) {
+      addLog(`❌ Chyba: ${e instanceof Error ? e.message : "Neznáma"}`);
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -440,6 +464,26 @@ export default function DataManagementPage() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Reset DB - nebezpečná zóna */}
+      <div className="premium-card p-5 border border-red-500/20 bg-red-500/5">
+        <h3 className="text-sm font-medium text-red-400/90 mb-2 flex items-center gap-2">
+          <Trash2 className="w-4 h-4" />
+          Vymazať všetky nehnuteľnosti
+        </h3>
+        <p className="text-xs text-zinc-500 mb-4">
+          Odstráni z databázy všetky nehnuteľnosti, históriu cien, snapshoty, uložené a súvisiace záznamy. Mapa potom zobrazí 0 záznamov. Nevratné.
+        </p>
+        <button
+          type="button"
+          onClick={resetAllProperties}
+          disabled={isResetting}
+          className="flex items-center gap-2 px-4 py-2 bg-red-600/80 hover:bg-red-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
+        >
+          {isResetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+          {isResetting ? "Mažem..." : "Vymazať všetky nehnuteľnosti"}
+        </button>
       </div>
 
       {/* Logs */}
