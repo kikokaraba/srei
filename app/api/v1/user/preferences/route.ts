@@ -195,12 +195,39 @@ export async function POST(request: Request) {
         ownershipTypes: "[]",
         savedFilters: "[]",
       };
-      const preferences = await prisma.userPreferences.upsert({
-        where: { userId: session.user.id },
-        update: { onboardingCompleted: true },
-        create: minimalCreate,
-      });
-      return NextResponse.json({ success: true, data: preferences });
+      try {
+        const existing = await prisma.userPreferences.findUnique({
+          where: { userId: session.user.id },
+        });
+        const preferences = existing
+          ? await prisma.userPreferences.update({
+              where: { userId: session.user.id },
+              data: { onboardingCompleted: true },
+            })
+          : await prisma.userPreferences.create({
+              data: minimalCreate,
+            });
+        return NextResponse.json({ success: true, data: preferences });
+      } catch (skipError) {
+        console.error("Skip onboarding failed:", skipError);
+        const msg =
+          skipError instanceof Error ? skipError.message : "Save failed";
+        const code =
+          skipError &&
+          typeof skipError === "object" &&
+          "code" in skipError
+            ? (skipError as { code: string }).code
+            : undefined;
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Failed to save onboarding state",
+            details: process.env.NODE_ENV === "development" ? msg : undefined,
+            ...(process.env.NODE_ENV === "development" && code ? { code } : {}),
+          },
+          { status: 500 }
+        );
+      }
     }
 
     // Build update data object with proper types
@@ -359,11 +386,18 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error saving user preferences:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorCode =
+      error && typeof error === "object" && "code" in error
+        ? String((error as { code: unknown }).code)
+        : undefined;
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: "Internal server error",
-        details: process.env.NODE_ENV === "development" ? errorMessage : undefined
+        details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
+        ...(process.env.NODE_ENV === "development" && errorCode
+          ? { code: errorCode }
+          : {}),
       },
       { status: 500 }
     );

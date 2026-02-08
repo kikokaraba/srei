@@ -207,8 +207,8 @@ export function OnboardingFlow() {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         const message =
-          (typeof errorData?.error === "string" && errorData.error) ||
           (typeof errorData?.details === "string" && errorData.details) ||
+          (typeof errorData?.error === "string" && errorData.error) ||
           `HTTP ${response.status}: Nepodarilo sa preskočiť nastavenie`;
         if (process.env.NODE_ENV === "development") {
           console.error("Failed to skip onboarding:", response.status, errorData);
