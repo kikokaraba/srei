@@ -12,6 +12,8 @@ async function main() {
   const [
     total,
     byType,
+    byListingType,
+    rentalDashboardCount,
     nullType,
     nullLat,
     nullLng,
@@ -24,6 +26,10 @@ async function main() {
   ] = await Promise.all([
     prisma.property.count(),
     prisma.property.groupBy({ by: ["property_type"], _count: true }),
+    prisma.property.groupBy({ by: ["listing_type"], _count: true }),
+    prisma.property.count({
+      where: { status: "ACTIVE", listing_type: "PRENAJOM", property_type: "BYT" },
+    }),
     prisma.property.count({ where: { property_type: null } }),
     prisma.property.count({ where: { latitude: null } }),
     prisma.property.count({ where: { longitude: null } }),
@@ -60,6 +66,21 @@ async function main() {
   console.log(`ACTIVE: ${active}`);
   console.log(`S súradnicami (lat & lng): ${withCoords}`);
   console.log(`ACTIVE + súradnice: ${activeWithCoords}`);
+  console.log("");
+
+  console.log("── listing_type (predaj / prenájom) ──");
+  for (const r of byListingType) {
+    const v = r.listing_type;
+    console.log(`  ${v}: ${r._count}`);
+  }
+  console.log(
+    `  → Nájomný dashboard zobrazuje len: ACTIVE + PRENAJOM + BYT = ${rentalDashboardCount}`
+  );
+  if (rentalDashboardCount === 0) {
+    console.log(
+      "  ⚠️  Nájomný dashboard bude prázdny, kým nebudú v DB aktívne byty na prenájom (PRENAJOM). Spustite scraper s kategóriami prenájom."
+    );
+  }
   console.log("");
 
   console.log("── property_type ──");

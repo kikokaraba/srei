@@ -275,6 +275,14 @@ export function RentalDashboard() {
           <p className="text-zinc-400">Momentálne nie sú k dispozícii žiadne dáta o nájomoch.</p>
           <p className="text-zinc-500 text-sm mt-1">Skúste zmeniť alebo zrušiť filtre.</p>
         </div>
+      ) : (summary?.totalListings === 0 && !hasActiveFilters) ? (
+        <div className="premium-card p-12 text-center">
+          <Key className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
+          <p className="text-zinc-400">V databáze zatiaľ nie sú žiadne byty na prenájom (PRENAJOM).</p>
+          <p className="text-zinc-500 text-sm mt-2 max-w-md mx-auto">
+            Dáta pochádzajú zo scrapingu Bazoš a Nehnutelnosti.sk. Spustite cron <code className="text-zinc-400 bg-zinc-800 px-1 rounded">/api/cron/scraper-stealth</code> alebo <code className="text-zinc-400 bg-zinc-800 px-1 rounded">/api/cron/scrape-all</code> – oba berú aj kategóriu „Byty prenájom“. Po naplnení DB sa tu zobrazia štatistiky.
+          </p>
+        </div>
       ) : (
         <>
           {/* Summary cards */}

@@ -395,8 +395,9 @@ export async function scrapeBazos(options: {
             }
           }
           
-          // "V texte" / dohodou – ak je aspoň titulok a rozumná plocha, nech prejde s cenou 0 a neskôr sa vyfiltruje alebo nastaví dohodou
-          if (price < 10000 && price !== -1) return; // Filter príliš lacné (okrem dohodou)
+          // Pre predaj min. 10k €, pre prenájom mesačný nájom typicky 50–5000 €
+          const minPrice = category.listingType === "PRENAJOM" ? 50 : 10000;
+          if (price < minPrice && price !== -1) return;
           
           // Plocha z titulu alebo kontextu
           let areaM2 = parseArea(title);
@@ -584,10 +585,11 @@ export async function scrapeNehnutelnosti(options: {
           title = title.replace(/^PREMIUM\s*/i, "").trim();
           if (title.length < 10 || title.length > 300) return;
           
-          // Cena
+          // Cena – predaj 10k+ €, prenájom mesačný nájom 50–5000 €
           const priceMatch = containerText.match(/(\d[\d\s,.]*)\s*€/);
           const price = priceMatch ? parsePrice(priceMatch[1]) : 0;
-          if (price < 10000) return;
+          const minPrice = category.listingType === "PRENAJOM" ? 50 : 10000;
+          if (price < minPrice) return;
           
           // Plocha
           const areaMatch = containerText.match(/(\d+(?:[,\.]\d+)?)\s*m[²2]/);
