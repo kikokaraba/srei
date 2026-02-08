@@ -9,7 +9,7 @@ Scrapuje **len byty** (predaj + prenájom), **celé Slovensko** + kraje.
 
 | Spôsob | Endpoint / akcia |
 |--------|------------------|
-| **Cron (Vercel)** | `GET/POST /api/cron/scrape-slovakia` (napr. 0 3,15 * * *) |
+| **Cron (Vercel)** | `GET/POST /api/cron/scrape-slovakia` (napr. 0 3,15 * * *) – **predvolene spustí Bazos + Top Reality naraz** |
 | **Admin** | Admin → Data → Apify Scraper → Spustiť |
 | **API** | `POST /api/v1/admin/scraper` (body: `{ "portals": ["nehnutelnosti", "bazos"] }`) |
 
@@ -44,7 +44,7 @@ Reality.sk nie je v Apify flow; staré záznamy v DB môžu mať zdroj REALITY.
 
 Scraping TopReality.sk cez Apify Actor **appealing_jingle/top-reality-scraper**.
 
-- **Spustenie:** `POST /api/cron/scrape-topreality`. Predvolene scrapuje **celé Slovensko** (všetky mestá z `SLOVAK_CITIES`). Body voliteľne: `village`, `type`, `maxRequestsPerCrawl`.
+- **Spustenie:** Pri cron volaní `POST /api/cron/scrape-slovakia` (bez parametrov alebo `?portal=all`) sa **spustia naraz Bazos aj Top Reality**. Samostatne: `POST /api/cron/scrape-topreality` alebo `POST /api/cron/scrape-slovakia?portal=topreality`. Predvolene scrapuje **celé Slovensko** (všetky mestá z `SLOVAK_CITIES`). Body voliteľne: `village`, `type`, `maxRequestsPerCrawl`.
 - **Webhook:** rovnaký endpoint `/api/webhooks/apify` s `portal: "topreality"`; dáta sa mapujú na `source: TOPREALITY`.
 - **Vstup Actora:** jazyky, typ (predaj/prenájom), kategórie bytov, obce (village). Default: byty 2–4 izby, predaj, celé Slovensko (~70 miest), maxRequestsPerCrawl 500.
 
