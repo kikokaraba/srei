@@ -123,12 +123,22 @@ const AVAILABLE_ACTIONS: Record<string, AutoAction> = {
         for (const dup of duplicates) {
           const ids = dup.ids;
           if (ids.length > 1) {
-            // Keep the first one, delete others
-            const toDelete = ids.slice(1);
-            await prisma.property.deleteMany({
-              where: { id: { in: toDelete } },
+            // Nech vymazávame len tie, ktoré nemá nikto uložené (obľúbené)
+            const withSaved = await prisma.savedProperty.findMany({
+              where: { propertyId: { in: ids } },
+              select: { propertyId: true },
             });
-            removedCount += toDelete.length;
+            const savedIds = new Set(withSaved.map((s) => s.propertyId));
+            const toDelete = ids.filter((id) => !savedIds.has(id));
+            // Ponechaj aspoň jeden záznam (najlepšie ten s uloženými)
+            const keepOne = ids.find((id) => savedIds.has(id)) ?? ids[0];
+            const toDeleteSafe = toDelete.filter((id) => id !== keepOne);
+            if (toDeleteSafe.length > 0) {
+              await prisma.property.deleteMany({
+                where: { id: { in: toDeleteSafe } },
+              });
+              removedCount += toDeleteSafe.length;
+            }
           }
         }
 

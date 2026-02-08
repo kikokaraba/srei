@@ -36,6 +36,8 @@ Apify volá `lib/scraper/apify-service.ts` → `triggerSlovakiaScraping()`; page
 
 Reality.sk nie je v Apify flow; staré záznamy v DB môžu mať zdroj REALITY.
 
+**Dôležité:** Cleanup a odstraňovanie duplicít nikdy nevymazávajú nehnuteľnosti, ktoré má niekto **uložené** (obľúbené / SavedProperty). Portfólio používateľa (PortfolioProperty) je od scraped Property nezávislé.
+
 ---
 
 ## Top Reality (Apify Store Actor)
@@ -53,3 +55,9 @@ curl -X POST "https://TvojaDoména/api/cron/scrape-topreality" \
   -d '{"maxRequestsPerCrawl": 50}'
 ```
 Alebo len jedna obec: `{"village": ["Bratislava"], "maxRequestsPerCrawl": 50}`.
+
+**Lokálny beh (webhook nepríde na localhost):** Po skončení behu spracuj dáta manuálne – z odpovede curl si vezmi `runId` a zavolaj:
+```bash
+curl -X POST "http://localhost:3000/api/cron/process-apify?runId=TU_RUN_ID&portal=topreality"
+```
+Nehnuteľnosti sa uložia do databázy so zdrojom TOPREALITY.

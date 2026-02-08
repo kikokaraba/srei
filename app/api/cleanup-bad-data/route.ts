@@ -29,8 +29,9 @@ export async function GET() {
         const deleted = await prisma.property.deleteMany({
           where: {
             price: group.price,
-            // Nevymazávaj seed dáta (majú street field vyplnený)
             street: null,
+            // Nevymazávaj nehnuteľnosti uložené v portfóliách používateľov (obľúbené)
+            savedBy: { none: {} },
           },
         });
         totalDeleted += deleted.count;
@@ -64,14 +65,11 @@ export async function GET() {
 
 export async function DELETE() {
   try {
-    // Vymaž všetky scraped properties (ponechaj len seed dáta)
+    // Vymaž scraped properties, ale NIKDY tie ktoré má niekto uložené (obľúbené)
     const deleted = await prisma.property.deleteMany({
       where: {
-        // Scraped properties nemajú vyplnený street (len district/address)
-        OR: [
-          { street: null },
-          { street: "" },
-        ],
+        OR: [{ street: null }, { street: "" }],
+        savedBy: { none: {} },
       },
     });
 
