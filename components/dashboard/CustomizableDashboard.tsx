@@ -112,9 +112,10 @@ export function CustomizableDashboard() {
   const [isEditMode, setIsEditMode] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: layout, isLoading } = useQuery({
+  const { data: layout, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["dashboard-layout"],
     queryFn: fetchLayout,
+    retry: 1,
   });
 
   const saveMutation = useMutation({
@@ -199,8 +200,24 @@ export function CustomizableDashboard() {
     );
   }
 
-  if (!layout) {
-    return null;
+  if (isError || !layout) {
+    return (
+      <div className="premium-card p-8 text-center">
+        <p className="text-zinc-300 mb-2">
+          {isError ? "Nepodarilo sa načítať rozloženie dashboardu." : "Rozloženie nie je k dispozícii."}
+        </p>
+        <p className="text-zinc-500 text-sm mb-4">
+          Nastavenia dashboardu (widgety) sú uložené oddelene od dát nehnuteľností. Ak ste práve vymazali dáta, dashboard sa nemazal.
+        </p>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-medium rounded-lg"
+        >
+          Skúsiť znova
+        </button>
+      </div>
+    );
   }
 
   const availableWidgets = Object.keys(WIDGET_REGISTRY) as WidgetId[];

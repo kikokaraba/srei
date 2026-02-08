@@ -1,10 +1,11 @@
 /**
- * Vymaže všetky nehnuteľnosti z databázy (a súvisiace záznamy cez CASCADE).
+ * Vymaže iba DÁTA nehnuteľností z databázy (a súvisiace záznamy cez CASCADE).
  * Použitie: CONFIRM_DELETE_ALL_PROPERTIES=1 pnpm exec tsx scripts/delete-all-properties.ts
  *
- * CASCADE zmaže: InvestmentMetrics, PriceHistory, MarketGap, PropertyImpact,
- * TaxInfo, SavedProperty, PropertySnapshot, PropertyFingerprint, PropertyMatch.
- * AIAlert (propertyId bez FK) – skript ich tiež zmaže, aby neostali neplatné referencie.
+ * Maže: Property (+ CASCADE: InvestmentMetrics, PriceHistory, MarketGap, PropertyImpact,
+ * TaxInfo, SavedProperty, PropertySnapshot, PropertyFingerprint, PropertyMatch), AIAlert.
+ *
+ * NEMAŽE: User, DashboardLayout (rozloženie widgetov), UserPreferences, nastavenia, portfólio štruktúra.
  */
 
 import { loadEnvConfig } from "@next/env";
