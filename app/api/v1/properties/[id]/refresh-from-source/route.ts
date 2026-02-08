@@ -38,15 +38,12 @@ export async function POST(
       );
     }
 
-    return NextResponse.json(
-      {
-        success: false,
-        message:
-          "Obnovenie z pôvodného inzerátu je nahradené Apify a batch-refresh. Nehnuteľnosť sa aktualizuje pri ďalšom behu Apify alebo batch-refresh.",
-        code: "APIFY_ONLY",
-      },
-      { status: 503 }
-    );
+    return NextResponse.json({
+      success: false,
+      message:
+        "Obnovenie z pôvodného inzerátu je nahradené Apify a batch-refresh. Nehnuteľnosť sa aktualizuje pri ďalšom behu Apify alebo batch-refresh.",
+      code: "APIFY_ONLY",
+    });
   } catch (error) {
     console.error("Refresh from source error:", error);
     return NextResponse.json(

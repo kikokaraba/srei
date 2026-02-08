@@ -168,17 +168,18 @@ export default function PropertyDetailPage() {
       const res = await fetch(`/api/v1/properties/${property.id}/refresh-from-source`, {
         method: "POST",
       });
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Obnovenie zlyhalo");
+        throw new Error(data.error || "Obnovenie zlyhalo");
       }
-      const data = await res.json();
       if (data.success && property) {
         const refetch = await fetch(`/api/v1/properties/${property.id}`);
         if (refetch.ok) {
           const refetchData = await refetch.json();
           setProperty(refetchData.data);
         }
+      } else if (data.message) {
+        alert(data.message);
       }
     } catch (e) {
       console.error("Refresh from source:", e);
