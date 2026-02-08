@@ -210,7 +210,7 @@ const defaultFilters: Filters = {
   search: "",
   region: "",
   city: "",
-  listingType: "PREDAJ",
+  listingType: "",
   propertyType: "BYT",
   source: "",
   minPrice: "",
@@ -390,6 +390,7 @@ export function PropertyList() {
     if (filters.search) count++;
     if (filters.region) count++;
     if (filters.city) count++;
+    if (filters.listingType) count++;
     if (filters.propertyType) count++;
     if (filters.source) count++;
     if (filters.minPrice) count++;
@@ -415,6 +416,13 @@ export function PropertyList() {
     }
     if (filters.city) {
       chips.push({ key: "city", label: "Mesto", value: filters.city });
+    }
+    if (filters.listingType) {
+      chips.push({
+        key: "listingType",
+        label: "Typ",
+        value: filters.listingType === "PRENAJOM" ? "Len prenájom" : "Len predaj",
+      });
     }
     if (filters.propertyType) {
       const p = PROPERTY_TYPES.find((x) => x.value === filters.propertyType);
@@ -458,7 +466,7 @@ export function PropertyList() {
       search: "",
       region: "",
       city: "",
-      listingType: "PREDAJ",
+      listingType: "",
       propertyType: "BYT",
       source: "",
       minPrice: "",
@@ -649,6 +657,17 @@ export function PropertyList() {
                   {city}
                 </option>
               ))}
+            </select>
+
+            {/* Typ inzerátu: Predaj / Prenájom / Oboje */}
+            <select
+              value={filters.listingType}
+              onChange={(e) => handleFilterChange("listingType", e.target.value)}
+              className="px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-zinc-300 text-sm focus:outline-none focus:border-zinc-700 min-w-[160px] cursor-pointer"
+            >
+              <option value="">Predaj aj prenájom</option>
+              <option value="PREDAJ">Len predaj</option>
+              <option value="PRENAJOM">Len prenájom</option>
             </select>
 
             {/* Kategória – predvolene Byty */}
