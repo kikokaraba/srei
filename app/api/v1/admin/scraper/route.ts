@@ -7,7 +7,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getAllScrapingTargets, getTargetsByPortal, triggerSlovakiaScraping } from "@/lib/scraper";
+import {
+  getAllScrapingTargets,
+  getTargetsByPortal,
+  triggerSlovakiaScraping,
+  runTopRealityScraper,
+} from "@/lib/scraper";
+import { SLOVAK_CITIES } from "@/lib/constants/cities";
 
 const SCRAPER_SOURCES = {
   BAZOS: {
@@ -16,7 +22,15 @@ const SCRAPER_SOURCES = {
     enabled: true,
     description: "Inzertný portál – byty predaj a prenájom (Apify)",
   },
+  TOPREALITY: {
+    name: "TopReality.sk",
+    url: "https://www.topreality.sk",
+    enabled: true,
+    description: "Realitný portál – byty predaj (Apify Store Actor)",
+  },
 } as const;
+
+const VILLAGES_WHOLE_SLOVAKIA = SLOVAK_CITIES.map((c) => c.name);
 
 /**
  * GET – konfigurácia a stav (DataFetchLog: apify-webhook, scrape-slovakia)
@@ -66,7 +80,10 @@ export async function GET(request: NextRequest) {
     }
 
     const targets = getAllScrapingTargets();
-    const byPortal = { bazos: getTargetsByPortal("bazos").length };
+    const byPortal = {
+      bazos: getTargetsByPortal("bazos").length,
+      topreality: VILLAGES_WHOLE_SLOVAKIA.length,
+    };
 
     return NextResponse.json({
       success: true,
@@ -112,8 +129,9 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST – spustí Apify scraping (triggerSlovakiaScraping)
- * Body: { portals?: ["bazos"], useWebhook?: boolean }
+ * POST – spustí Apify scraping (Bazos a/alebo Top Reality)
+ * Body: { portals?: ["bazos"] | ["topreality"] | ["bazos", "topreality"] | ["all"], useWebhook?: boolean }
+ * Default (prázdne alebo "all"): spustí Bazos + Top Reality.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -139,26 +157,70 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const portals: Array<"bazos"> =
-      Array.isArray(body.portals) && body.portals.length > 0
-        ? (body.portals as Array<"bazos">)
-        : ["bazos"];
+    const rawPortals = body.portals as string[] | undefined;
+    const wantAll =
+      !Array.isArray(rawPortals) ||
+      rawPortals.length === 0 ||
+      rawPortals.includes("all");
+    const portals: Array<"bazos" | "topreality"> = wantAll
+      ? ["bazos", "topreality"]
+      : (rawPortals as Array<"bazos" | "topreality">).filter((p) =>
+          ["bazos", "topreality"].includes(p)
+        );
+    if (portals.length === 0) {
+      return NextResponse.json(
+        { success: false, error: "portals musí byť ['bazos'], ['topreality'], ['bazos','topreality'] alebo ['all']" },
+        { status: 400 }
+      );
+    }
     const useWebhook = body.useWebhook !== false;
 
-    const targets = getAllScrapingTargets();
-    const filtered = targets.filter((t) => portals.includes(t.portal));
+    const runs: Array<{ portal: string; runId: string; urlCount?: number }> = [];
+    const errors: string[] = [];
 
-    const { runs, errors } = await triggerSlovakiaScraping(filtered, {
-      useWebhook,
-      portals,
-    });
+    if (portals.includes("bazos")) {
+      const targets = getAllScrapingTargets();
+      const filtered = targets.filter((t) => t.portal === "bazos");
+      const result = await triggerSlovakiaScraping(filtered, {
+        useWebhook,
+        portals: ["bazos"],
+      });
+      runs.push(...result.runs);
+      if (result.errors.length) errors.push(...result.errors);
+    }
+
+    if (portals.includes("topreality")) {
+      try {
+        const result = await runTopRealityScraper(
+          {
+            maxRequestsPerCrawl: 500,
+            language: "sk",
+            type: "sell",
+            kind: {
+              flats: ["2 room flat", "3 room flat", "4 room flat"],
+              houses: [],
+              premises: [],
+              objects: [],
+              plots: [],
+            },
+            village: VILLAGES_WHOLE_SLOVAKIA,
+            sort: "date_desc",
+          },
+          { useWebhook }
+        );
+        runs.push({
+          portal: "topreality",
+          runId: result.data.id,
+        });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Unknown error";
+        errors.push(`topreality: ${msg}`);
+      }
+    }
 
     if (errors.length > 0 && runs.length === 0) {
       return NextResponse.json(
-        {
-          success: false,
-          error: errors.join("; "),
-        },
+        { success: false, error: errors.join("; ") },
         { status: 502 }
       );
     }
@@ -167,7 +229,7 @@ export async function POST(request: NextRequest) {
       data: {
         source: "scrape-slovakia",
         status: errors.length > 0 ? "partial" : "success",
-        recordsCount: runs.reduce((s, r) => s + r.urlCount, 0),
+        recordsCount: runs.reduce((s, r) => s + (r.urlCount ?? 0), 0),
         error: errors.length > 0 ? errors.join("; ") : null,
       },
     });

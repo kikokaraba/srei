@@ -20,11 +20,19 @@ import {
   Trash2,
 } from "lucide-react";
 
+interface ScrapingRunItem {
+  runId: string;
+  portal: string;
+  urlCount?: number;
+}
+
 interface ScrapingRun {
   runId: string;
   status: "pending" | "running" | "succeeded" | "failed";
   portal: string;
   startedAt: string;
+  /** Pri portal=all máme viac runov (bazos + topreality) */
+  runs?: ScrapingRunItem[];
   stats?: {
     total: number;
     created: number;
@@ -87,8 +95,8 @@ export default function DataManagementPage() {
     addLog("🚀 Spúšťam Apify scraping...");
 
     try {
-      // 1. Spusti Apify run
-      const scrapeUrl = "/api/cron/scrape-slovakia?portal=bazos&limit=10";
+      // 1. Spusti Apify run (Bazos + Top Reality naraz)
+      const scrapeUrl = "/api/cron/scrape-slovakia?portal=all&limit=20";
       const startRes = await fetch(scrapeUrl, { method: "POST" });
 
       if (!startRes.ok) {
@@ -106,32 +114,31 @@ export default function DataManagementPage() {
         throw new Error(startData.error || "Nepodarilo sa spustiť scraping");
       }
 
-      // API vracia runs ako array
-      const runs = startData.runs || [];
+      // API vracia runs ako array (pri portal=all: bazos + topreality)
+      const runs: ScrapingRunItem[] = startData.runs || [];
       if (runs.length === 0) {
         throw new Error("Žiadne Apify runs neboli spustené");
       }
 
       const firstRun = runs[0];
-      const runId = firstRun.runId;
-      addLog(`✅ Apify run spustený: ${runId} (${firstRun.urlCount} URL)`);
-      
+      addLog(`✅ Apify run spustený: ${runs.map((r) => `${r.portal} (${r.runId?.slice(0, 8)}…)`).join(", ")}`);
       if (runs.length > 1) {
-        addLog(`📋 Spustených ${runs.length} runov celkovo`);
+        addLog(`📋 Spustených ${runs.length} runov: Bazos + Top Reality`);
       }
-      
+
       setCurrentRun({
-        runId,
+        runId: firstRun.runId,
         status: "running",
-        portal: firstRun.portal || "bazos",
-        startedAt: new Date().toISOString()
+        portal: runs.length > 1 ? "all" : firstRun.portal,
+        startedAt: new Date().toISOString(),
+        runs: runs.length > 0 ? runs : undefined,
       });
 
       setIsStarting(false);
 
-      // 2. Počkaj a sleduj stav
+      // 2. Počkaj a sleduj stav (všetky runy)
       addLog("⏳ Čakám na dokončenie Apify...");
-      await pollApifyStatus(runId);
+      await pollApifyStatus(runs);
 
     } catch (error) {
       addLog(`❌ Chyba: ${error instanceof Error ? error.message : "Neznáma chyba"}`);
@@ -140,89 +147,97 @@ export default function DataManagementPage() {
     }
   };
 
-  // Sleduj stav Apify runu
-  const pollApifyStatus = async (runId: string) => {
+  // Sleduj stav Apify runu (jedného alebo viacerých)
+  const pollApifyStatus = async (runs: ScrapingRunItem[]) => {
     let attempts = 0;
     const maxAttempts = 60; // Max 10 minút (každých 10s)
 
-    const checkStatus = async (): Promise<boolean> => {
-      try {
-        const statusUrl = `/api/v1/admin/apify-status?runId=${encodeURIComponent(runId)}`;
-        const res = await fetch(statusUrl);
-        if (!res.ok) {
-          addLog(`❌ Stav Apify vrátil ${res.status}. Skontrolujte Network tab.`);
-          return false;
-        }
-        const data = await res.json();
-
-        if (data.status === "SUCCEEDED") {
-          addLog("✅ Apify run dokončený!");
-          return true;
-        } else if (data.status === "FAILED" || data.status === "ABORTED") {
-          addLog(`❌ Apify run zlyhal: ${data.status}`);
-          setCurrentRun(prev => prev ? { ...prev, status: "failed" } : null);
-          return true;
-        }
-
-        // Stále beží
-        attempts++;
-        if (attempts >= maxAttempts) {
-          addLog("⚠️ Timeout - skúsim spracovať čo je dostupné");
-          return true;
-        }
-
-        addLog(`⏳ Apify stále beží... (${attempts * 10}s)`);
-        return false;
-      } catch {
-        return false;
+    const checkStatusForRun = async (run: ScrapingRunItem): Promise<"done" | "running"> => {
+      const res = await fetch(
+        `/api/v1/admin/apify-status?runId=${encodeURIComponent(run.runId)}`
+      );
+      if (!res.ok) return "running";
+      const data = await res.json();
+      if (data.status === "SUCCEEDED" || data.status === "FAILED" || data.status === "ABORTED") {
+        return "done";
       }
+      return "running";
     };
 
-    // Poll každých 10 sekúnd
-    while (!(await checkStatus())) {
-      await new Promise(r => setTimeout(r, 10000));
+    const allDone = async (): Promise<boolean> => {
+      const results = await Promise.all(runs.map(checkStatusForRun));
+      return results.every((r) => r === "done");
+    };
+
+    while (!(await allDone())) {
+      attempts++;
+      if (attempts >= maxAttempts) {
+        addLog("⚠️ Timeout - skúsim spracovať čo je dostupné");
+        break;
+      }
+      addLog(`⏳ Apify stále beží... (${attempts * 10}s)`);
+      await new Promise((r) => setTimeout(r, 10000));
     }
 
-    // 3. Spracuj výsledky
-    await processResults(runId);
+    addLog("✅ Všetky Apify runy dokončené.");
+    // 3. Spracuj výsledky (každý portal zvlášť)
+    await processResults(runs);
   };
 
-  // Spracuj výsledky z Apify
-  const processResults = async (runId: string) => {
+  // Spracuj výsledky z Apify (pre každý run/portal zvlášť)
+  const processResults = async (runs: ScrapingRunItem[]) => {
     setIsProcessing(true);
     addLog("📥 Spracovávam výsledky...");
 
+    let totalCreated = 0;
+    let totalUpdated = 0;
+    let totalSkipped = 0;
+    const errors: string[] = [];
+
     try {
-      const processUrl = `/api/cron/process-apify?runId=${encodeURIComponent(runId)}&portal=bazos`;
-      const res = await fetch(processUrl, { method: "POST" });
+      for (const run of runs) {
+        const processUrl = `/api/cron/process-apify?runId=${encodeURIComponent(run.runId)}&portal=${encodeURIComponent(run.portal)}`;
+        const res = await fetch(processUrl, { method: "POST" });
 
-      if (!res.ok) {
-        addLog(`❌ Spracovanie výsledkov vrátilo ${res.status}: ${processUrl}`);
-        throw new Error(
-          res.status === 404
-            ? "Endpoint process-apify neexistuje (404). Skontrolujte deploy."
-            : `Server odpovedal ${res.status}.`
-        );
+        if (!res.ok) {
+          addLog(`❌ Spracovanie ${run.portal} vrátilo ${res.status}`);
+          errors.push(`${run.portal}: HTTP ${res.status}`);
+          continue;
+        }
+        const data = await res.json();
+
+        if (data.success && data.stats) {
+          totalCreated += data.stats.created ?? 0;
+          totalUpdated += data.stats.updated ?? 0;
+          totalSkipped += data.stats.skipped ?? 0;
+          addLog(`✅ ${run.portal}: vytvorených ${data.stats.created}, aktualizovaných ${data.stats.updated}, preskočených ${data.stats.skipped}`);
+        } else if (!data.success) {
+          errors.push(`${run.portal}: ${data.error ?? "unknown"}`);
+        }
       }
-      const data = await res.json();
 
-      if (data.success) {
-        addLog(`✅ Spracované! Vytvorených: ${data.stats.created}, Aktualizovaných: ${data.stats.updated}, Preskočených: ${data.stats.skipped}`);
-        
-        setCurrentRun(prev => prev ? {
-          ...prev,
-          status: "succeeded",
-          stats: data.stats
-        } : null);
-
-        // Refresh štatistiky
-        await fetchDbStats();
-      } else {
-        throw new Error(data.error);
-      }
+      setCurrentRun((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: errors.length === runs.length ? "failed" : "succeeded",
+              stats: {
+                total: totalCreated + totalUpdated + totalSkipped,
+                created: totalCreated,
+                updated: totalUpdated,
+                skipped: totalSkipped,
+                errors,
+              },
+            }
+          : null
+      );
+      addLog(
+        `✅ Celkom: vytvorených ${totalCreated}, aktualizovaných ${totalUpdated}, preskočených ${totalSkipped}`
+      );
+      await fetchDbStats();
     } catch (error) {
       addLog(`❌ Chyba pri spracovaní: ${error instanceof Error ? error.message : "Neznáma chyba"}`);
-      setCurrentRun(prev => prev ? { ...prev, status: "failed" } : null);
+      setCurrentRun((prev) => (prev ? { ...prev, status: "failed" } : null));
     } finally {
       setIsProcessing(false);
     }

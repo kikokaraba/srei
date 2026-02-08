@@ -10,8 +10,8 @@ Scrapuje **len byty** (predaj + prenájom), **celé Slovensko** + kraje.
 | Spôsob | Endpoint / akcia |
 |--------|------------------|
 | **Cron (Vercel)** | `GET/POST /api/cron/scrape-slovakia` (napr. 0 3,15 * * *) – **predvolene spustí Bazos + Top Reality naraz** |
-| **Admin** | Admin → Data → Apify Scraper → Spustiť |
-| **API** | `POST /api/v1/admin/scraper` (body: `{ "portals": ["nehnutelnosti", "bazos"] }`) |
+| **Admin** | Admin → Data → Apify Scraper → Spustiť – **spustí Bazos + Top Reality** (portal=all) |
+| **API** | `POST /api/v1/admin/scraper` – predvolene **Bazos + Top Reality**. Body: `{ "portals": ["bazos"] \| ["topreality"] \| ["bazos","topreality"] \| ["all"] }` |
 
 Výsledky prichádzajú cez **webhook** `POST /api/webhooks/apify`; spracovanie je v tom istom endpointe alebo manuálne cez `GET /api/cron/process-apify?runId=...&portal=...`.
 
