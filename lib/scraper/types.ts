@@ -94,7 +94,7 @@ export interface ScrapeError {
  * Konfigurácia scrapera
  */
 export interface ScraperConfig {
-  source: "BAZOS" | "NEHNUTELNOSTI" | "REALITY";
+  source: "BAZOS" | "REALITY";
   baseUrl: string;
   rateLimit: number; // requests per minute
   maxPages: number;

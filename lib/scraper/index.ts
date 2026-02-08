@@ -42,11 +42,7 @@ export {
   type ApifyScrapedItem,
 } from "./apify-service";
 
-// Page funkcie pre Apify (nehnutelnosti-config)
-export {
-  NEHNUTELNOSTI_PAGE_FUNCTION,
-  BAZOS_PAGE_FUNCTION,
-  REALITY_PAGE_FUNCTION,
-} from "./nehnutelnosti-config";
+// Page funkcie pre Apify (nehnutelnosti-config – Bazoš + Reality)
+export { BAZOS_PAGE_FUNCTION, REALITY_PAGE_FUNCTION } from "./nehnutelnosti-config";
 
 export { normalizeImages } from "./normalize-images";

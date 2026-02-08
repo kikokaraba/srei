@@ -86,7 +86,7 @@ export default function DataManagementPage() {
 
     try {
       // 1. Spusti Apify run
-      const scrapeUrl = "/api/cron/scrape-slovakia?portal=nehnutelnosti&limit=10";
+      const scrapeUrl = "/api/cron/scrape-slovakia?portal=bazos&limit=10";
       const startRes = await fetch(scrapeUrl, { method: "POST" });
 
       if (!startRes.ok) {
@@ -121,7 +121,7 @@ export default function DataManagementPage() {
       setCurrentRun({
         runId,
         status: "running",
-        portal: firstRun.portal || "nehnutelnosti",
+        portal: firstRun.portal || "bazos",
         startedAt: new Date().toISOString()
       });
 
@@ -191,7 +191,7 @@ export default function DataManagementPage() {
     addLog("📥 Spracovávam výsledky...");
 
     try {
-      const processUrl = `/api/cron/process-apify?runId=${encodeURIComponent(runId)}&portal=nehnutelnosti`;
+      const processUrl = `/api/cron/process-apify?runId=${encodeURIComponent(runId)}&portal=bazos`;
       const res = await fetch(processUrl, { method: "POST" });
 
       if (!res.ok) {
@@ -419,10 +419,9 @@ export default function DataManagementPage() {
               const max = dbStats.bySource[0]?.count || 1;
               const pct = (item.count / max) * 100;
               const colors: Record<string, string> = {
-                NEHNUTELNOSTI: "bg-emerald-500",
                 BAZOS: "bg-amber-500",
                 REALITY: "bg-blue-500",
-                TOPREALITY: "bg-purple-500"
+                TOPREALITY: "bg-purple-500",
               };
               return (
                 <div key={item.source}>

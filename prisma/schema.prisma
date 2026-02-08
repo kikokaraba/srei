@@ -52,11 +52,10 @@ enum ListingType {
 }
 
 enum PropertySource {
-  BAZOS         // reality.bazos.sk
-  NEHNUTELNOSTI // nehnutelnosti.sk
-  REALITY       // reality.sk
-  TOPREALITY    // topreality.sk
-  MANUAL        // Manuálne pridané
+  BAZOS      // reality.bazos.sk
+  REALITY    // reality.sk
+  TOPREALITY // topreality.sk
+  MANUAL     // Manuálne pridané
 }
 
 enum PortfolioPropertyStatus {

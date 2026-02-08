@@ -26,11 +26,7 @@ export async function GET() {
     const bazosCount = await prisma.property.count({
       where: { source: "BAZOS" },
     });
-    
-    const nehnutelnostiCount = await prisma.property.count({
-      where: { source: "NEHNUTELNOSTI" },
-    });
-    
+
     const totalCount = await prisma.property.count();
     
     // Posledných 5 záznamov
@@ -66,7 +62,6 @@ export async function GET() {
       counts: {
         total: totalCount,
         bazos: bazosCount,
-        nehnutelnosti: nehnutelnostiCount,
       },
       recentProperties,
       recentLogs,

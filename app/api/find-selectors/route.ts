@@ -23,12 +23,10 @@ async function simpleFetch(url: string) {
 }
 
 export async function GET(request: NextRequest) {
-  const source = request.nextUrl.searchParams.get("source") || "NEHNUTELNOSTI";
-  
+  const source = request.nextUrl.searchParams.get("source") || "BAZOS";
   const urls: Record<string, { url: string; detailPattern: RegExp }> = {
-    NEHNUTELNOSTI: { url: "https://www.nehnutelnosti.sk/byty/predaj/", detailPattern: /\/detail\// },
+    BAZOS: { url: "https://reality.bazos.sk/predam/byt/", detailPattern: /\/inzerat\// },
     REALITY: { url: "https://www.reality.sk/byty/predaj/", detailPattern: /\/detail\// },
-    BAZOS: { url: "https://reality.bazos.sk/byty/", detailPattern: /\/inzerat\// },
     TOPREALITY: { url: "https://www.topreality.sk/vyhladavanie.html?form[category][0]=1", detailPattern: /\/detail\// },
   };
   

@@ -1,6 +1,6 @@
 /**
  * URL Parser - Detekcia zdroja a extrakcia ID z linku inzerátu
- * Podporované portály: Bazoš, Nehnutelnosti.sk, Reality.sk
+ * Podporované portály: Bazoš, Reality.sk
  */
 
 import type { PropertySource } from "@/generated/prisma/client";
@@ -32,19 +32,6 @@ const URL_PATTERNS: Array<{
       const idMatch = u.pathname.match(/\/inzerat\/(\d+)/);
       if (idMatch) {
         return `https://reality.bazos.sk/inzerat/${idMatch[1]}/`;
-      }
-      return url;
-    },
-  },
-  {
-    source: "NEHNUTELNOSTI",
-    domains: ["nehnutelnosti.sk", "www.nehnutelnosti.sk"],
-    idRegex: /\/detail\/([^/]+)(?:\/|$)/i,
-    normalizer: (url) => {
-      const u = new URL(url);
-      const idMatch = u.pathname.match(/\/detail\/([^/]+)/);
-      if (idMatch) {
-        return `https://www.nehnutelnosti.sk${u.pathname}`;
       }
       return url;
     },
@@ -115,10 +102,7 @@ export function parseListingUrl(rawUrl: string): ParsedListingUrl {
         : urlStr;
       
       // Prefix pre external_id ak potrebný (Bazoš má číselné ID)
-      const prefixedId =
-        pattern.source === "BAZOS" ? `bazos_${externalId}` : 
-        pattern.source === "NEHNUTELNOSTI" ? `neh_${externalId}` : 
-        externalId;
+      const prefixedId = pattern.source === "BAZOS" ? `bazos_${externalId}` : externalId;
       
       return {
         source: pattern.source,
@@ -133,7 +117,7 @@ export function parseListingUrl(rawUrl: string): ParsedListingUrl {
       externalId: "",
       sourceUrl: urlStr,
       isValid: false,
-      error: "Nepodporovaný portál. Podporujeme: reality.bazos.sk, nehnutelnosti.sk, reality.sk",
+      error: "Nepodporovaný portál. Podporujeme: reality.bazos.sk, reality.sk",
     };
   } catch {
     return {
@@ -151,6 +135,5 @@ export function parseListingUrl(rawUrl: string): ParsedListingUrl {
  */
 export const SUPPORTED_PORTALS = [
   { name: "Bazoš Reality", domain: "reality.bazos.sk", example: "https://reality.bazos.sk/inzerat/123456/" },
-  { name: "Nehnutelnosti.sk", domain: "nehnutelnosti.sk", example: "https://www.nehnutelnosti.sk/detail/xxx/" },
   { name: "Reality.sk", domain: "reality.sk", example: "https://www.reality.sk/..." },
 ] as const;

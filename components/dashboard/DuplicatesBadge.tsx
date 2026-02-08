@@ -22,7 +22,6 @@ interface DuplicatesData {
 
 // Mapovanie zdrojov na farby a názvy
 const SOURCE_INFO: Record<string, { name: string; color: string; bgColor: string }> = {
-  NEHNUTELNOSTI: { name: "Nehnutelnosti.sk", color: "text-blue-400", bgColor: "bg-blue-500/20" },
   REALITY: { name: "Reality.sk", color: "text-purple-400", bgColor: "bg-purple-500/20" },
   BAZOS: { name: "Bazoš", color: "text-orange-400", bgColor: "bg-orange-500/20" },
   TOPREALITY: { name: "TopReality", color: "text-green-400", bgColor: "bg-green-500/20" },

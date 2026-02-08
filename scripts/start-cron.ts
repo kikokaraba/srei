@@ -8,23 +8,13 @@
 const JOBS = [
   {
     name: "scrape-slovakia",
-    endpoint: "/api/cron/scrape-slovakia",
-    intervalMs: 10 * 60 * 1000, // 10 minutes
+    endpoint: "/api/cron/scrape-slovakia?portal=bazos",
+    intervalMs: 30 * 60 * 1000, // 30 minutes - Bazoš
   },
   {
-    name: "batch-refresh", 
+    name: "batch-refresh",
     endpoint: "/api/cron/batch-refresh",
     intervalMs: 15 * 60 * 1000, // 15 minutes
-  },
-  {
-    name: "scrape-slovakia",
-    endpoint: "/api/cron/scrape-slovakia?portal=nehnutelnosti",
-    intervalMs: 60 * 60 * 1000, // 1 hour - Nehnutelnosti.sk
-  },
-  {
-    name: "scrape-slovakia-bazos",
-    endpoint: "/api/cron/scrape-slovakia?portal=bazos",
-    intervalMs: 30 * 60 * 1000, // 30 minutes - Bazoš (častejšie pre hot deals)
   },
   {
     name: "scrape-bank-rates",

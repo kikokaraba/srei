@@ -25,12 +25,10 @@ async function simpleFetch(url: string, timeoutMs: number = 10000) {
 }
 
 export async function GET(request: NextRequest) {
-  const source = request.nextUrl.searchParams.get("source") || "NEHNUTELNOSTI";
-  
+  const source = request.nextUrl.searchParams.get("source") || "BAZOS";
   const urls: Record<string, string> = {
-    NEHNUTELNOSTI: "https://www.nehnutelnosti.sk/byty/predaj/",
+    BAZOS: "https://reality.bazos.sk/predam/byt/",
     REALITY: "https://www.reality.sk/byty/predaj/",
-    BAZOS: "https://reality.bazos.sk/byty/",
     TOPREALITY: "https://www.topreality.sk/vyhladavanie-nehnutelnosti.html?form%5Bcategory%5D%5B0%5D=1",
   };
   

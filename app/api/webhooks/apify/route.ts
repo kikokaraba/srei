@@ -11,7 +11,12 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getApifyDatasetItems, type ApifyScrapedItem } from "@/lib/scraper/apify-service";
+import {
+  getApifyDatasetItems,
+  getApifyDatasetItemsRaw,
+  type ApifyScrapedItem,
+  type TopRealityDatasetItem,
+} from "@/lib/scraper/apify-service";
 import { normalizeImages } from "@/lib/scraper/normalize-images";
 import {
   enrichAddressWithAI,
@@ -219,6 +224,10 @@ function extractExternalId(url: string): string {
     }
   }
   
+  // TopReality.sk – detail/id alebo query id
+  const topRealityMatch = url.match(/\/detail\/(\d+)/) || url.match(/[?&]id=(\d+)/);
+  if (topRealityMatch) return `tr-${topRealityMatch[1]}`;
+
   return `uk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
@@ -282,7 +291,7 @@ interface PreparedItem {
     photos: string;
     thumbnail_url: string | null;
     photo_count: number;
-    source: "NEHNUTELNOSTI" | "BAZOS" | "REALITY";
+    source: "BAZOS" | "REALITY" | "NEHNUTELNOSTI" | "TOPREALITY";
     source_url: string;
     external_id: string;
     listing_type: "PREDAJ" | "PRENAJOM";
@@ -322,7 +331,8 @@ function prepareItem(item: ApifyScrapedItem): { prepared: PreparedItem; rawAddre
   const pricePerM2 = area > 0 && price > 0 ? Math.round(price / area) : 0;
   const slug = generateSlug(item.title || "nehnutelnost", externalId);
   const { urls: imageUrls, thumbnailUrl } = normalizeImages(item);
-  const source = item.portal === "nehnutelnosti" ? "NEHNUTELNOSTI" as const : item.portal === "bazos" ? "BAZOS" as const : "REALITY" as const;
+  const source: "BAZOS" | "REALITY" | "NEHNUTELNOSTI" | "TOPREALITY" =
+    item.portal === "bazos" ? "BAZOS" : item.portal === "nehnutelnosti" ? "NEHNUTELNOSTI" : "REALITY";
   const rooms = parseRooms(item.rooms);
   const priority_score = rooms != null ? 50 : 30;
 
@@ -367,6 +377,84 @@ function prepareItem(item: ApifyScrapedItem): { prepared: PreparedItem; rawAddre
   };
 }
 
+/**
+ * Mapuje položku z Top Reality Actora na PreparedItem.
+ * Berieme len byty (flats), platná cena alebo plocha, titulok a URL.
+ */
+function prepareTopRealityItem(
+  item: TopRealityDatasetItem
+): { prepared: PreparedItem; rawAddressContext: string | null } | null {
+  const url = typeof item.url === "string" ? item.url : "";
+  if (!url || !url.includes("topreality")) return null;
+
+  const title = typeof item.title === "string" ? item.title : "";
+  if (!title) return null;
+
+  const priceRaw = item.price != null ? String(item.price) : "";
+  const price = parsePrice(priceRaw);
+  const areaRaw = item.area != null ? String(item.area) : "";
+  const area = parseArea(areaRaw);
+  const hasPrice = price > 0 || isPriceNegotiable(priceRaw);
+  const hasArea = area > 0;
+  if (!hasPrice && !hasArea) return null;
+
+  const externalId = extractExternalId(url);
+  const listingType = (item as { type?: string }).type === "rent" ? "PRENAJOM" : "PREDAJ";
+  const propertyType = "BYT";
+  const pricePerM2 = area > 0 && price > 0 ? Math.round(price / area) : 0;
+  const slug = generateSlug(title, externalId);
+
+  let imageUrls: string[] = [];
+  if (Array.isArray(item.images)) {
+    imageUrls = item.images.map((img) =>
+      typeof img === "string" ? img : (img as { url?: string }).url ?? ""
+    ).filter(Boolean);
+  }
+  const { thumbnailUrl } = normalizeImages({ images: imageUrls } as ApifyScrapedItem);
+
+  const city = typeof item.city === "string" ? item.city : (typeof item.location === "string" ? item.location : "Slovensko");
+  const rawAddressContext = [city, item.region, item.location].filter(Boolean).join(", ") || null;
+
+  return {
+    prepared: {
+      externalId,
+      sourceUrl: url,
+      price,
+      pricePerM2,
+      addPriceHistory: price > 0,
+      data: {
+        title,
+        slug,
+        description: typeof item.description === "string" ? item.description : "",
+        price,
+        price_per_m2: pricePerM2,
+        area_m2: area,
+        rooms: null,
+        floor: null,
+        condition: "POVODNY",
+        energy_certificate: "NONE",
+        city: city || "Slovensko",
+        district: "",
+        street: null,
+        address: city || "Slovensko",
+        photos: JSON.stringify(imageUrls),
+        thumbnail_url: thumbnailUrl,
+        photo_count: imageUrls.length,
+        source: "TOPREALITY",
+        source_url: url,
+        external_id: externalId,
+        listing_type: listingType as "PREDAJ" | "PRENAJOM",
+        property_type: propertyType,
+        priority_score: 40,
+        status: "ACTIVE",
+        last_seen_at: new Date(),
+        is_negotiable: price === 0 || isPriceNegotiable(priceRaw),
+      },
+    },
+    rawAddressContext,
+  };
+}
+
 // ============================================================================
 // WEBHOOK HANDLER – BATCH UPSERT
 // ============================================================================
@@ -389,24 +477,45 @@ export async function POST(request: NextRequest) {
     }
 
     const runStart = Date.now();
-    const items = await getApifyDatasetItems(payload.datasetId);
-    console.log(`📦 [Webhook] Fetched ${items.length} items`);
+    const isTopReality = payload.portal === "topreality";
 
     const results: { prepared: PreparedItem; rawAddressContext: string | null }[] = [];
     const skippedReasons: string[] = [];
     const itemErrors: { url?: string; reason: string }[] = [];
 
-    for (const item of items) {
-      try {
-        const r = prepareItem(item);
-        if (r) results.push(r);
-        else skippedReasons.push("Missing title or price+area or invalid area (10–500 m²)");
-      } catch (e) {
-        const err = e instanceof Error ? e.message : String(e);
-        itemErrors.push({ url: item?.url, reason: err });
-        skippedReasons.push(`Prepare failed: ${err}`);
+    if (isTopReality) {
+      const rawItems = await getApifyDatasetItemsRaw(payload.datasetId) as TopRealityDatasetItem[];
+      console.log(`📦 [Webhook] Fetched ${rawItems.length} Top Reality items`);
+      for (const item of rawItems) {
+        try {
+          const r = prepareTopRealityItem(item);
+          if (r) results.push(r);
+          else skippedReasons.push("Missing title or price+area or not byt");
+        } catch (e) {
+          const err = e instanceof Error ? e.message : String(e);
+          itemErrors.push({ url: item?.url, reason: err });
+          skippedReasons.push(`Prepare failed: ${err}`);
+        }
+      }
+    } else {
+      const items = await getApifyDatasetItems(payload.datasetId);
+      console.log(`📦 [Webhook] Fetched ${items.length} items`);
+      for (const item of items) {
+        try {
+          const r = prepareItem(item);
+          if (r) results.push(r);
+          else skippedReasons.push("Missing title or price+area or invalid area (10–500 m²)");
+        } catch (e) {
+          const err = e instanceof Error ? e.message : String(e);
+          itemErrors.push({ url: item?.url, reason: err });
+          skippedReasons.push(`Prepare failed: ${err}`);
+        }
       }
     }
+
+    const itemsLength = isTopReality
+      ? (await getApifyDatasetItemsRaw(payload.datasetId)).length
+      : (await getApifyDatasetItems(payload.datasetId)).length;
 
     const MAX_ENRICH = 30;
     const ENRICH_CONCURRENCY = 5;

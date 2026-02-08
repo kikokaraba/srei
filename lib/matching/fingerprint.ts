@@ -554,7 +554,7 @@ export async function findBestMatch(
   // 1. Presná zhoda podľa source + external_id
   const exactMatch = await prisma.property.findFirst({
     where: {
-      source: newProperty.source as "BAZOS" | "NEHNUTELNOSTI" | "REALITY" | "TOPREALITY" | "MANUAL",
+      source: newProperty.source as "BAZOS" | "REALITY" | "TOPREALITY" | "MANUAL",
       external_id: newProperty.external_id,
     },
     select: { id: true, status: true, last_seen_at: true },

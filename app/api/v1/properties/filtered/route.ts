@@ -60,7 +60,7 @@ export async function GET(request: Request) {
     }
 
     const VALID_LISTING: ListingType[] = ["PREDAJ", "PRENAJOM"];
-    const VALID_SOURCES: PropertySource[] = ["BAZOS", "NEHNUTELNOSTI", "REALITY", "TOPREALITY", "MANUAL"];
+    const VALID_SOURCES: PropertySource[] = ["BAZOS", "REALITY", "TOPREALITY", "MANUAL"];
 
     if (listingTypeParam) {
       const types = listingTypeParam.split(",").filter(Boolean).filter((t): t is ListingType => VALID_LISTING.includes(t as ListingType));

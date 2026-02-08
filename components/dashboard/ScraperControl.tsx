@@ -2,117 +2,62 @@
 
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { 
-  Play, 
-  Loader2, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Play,
+  Loader2,
+  CheckCircle,
+  XCircle,
   Globe,
-  Database,
-  Clock,
   Zap,
   AlertTriangle,
 } from "lucide-react";
 
-interface PortalResult {
+interface ScrapeSlovakiaResult {
   success: boolean;
-  portal: string;
-  found: number;
-  new: number;
-  updated: number;
-  duplicates?: number;
-  saveErrors?: number;
-  scrapeErrors?: number;
-  errors?: number;
-  totalInDatabase: number;
-  duration: number;
+  message?: string;
+  portal?: string;
+  targetsCount?: number;
+  runs?: Array<{ portal: string; runId: string; urlCount: number }>;
+  errors?: string[];
   error?: string;
 }
 
 export default function ScraperControl() {
   const [lastRun, setLastRun] = useState<{ portal: string; time: Date } | null>(null);
 
-  // Mutation pre Bazoš
-  const bazosMutation = useMutation({
-    mutationFn: async (): Promise<PortalResult> => {
+  const scrapeMutation = useMutation({
+    mutationFn: async (portal: "bazos" | "all"): Promise<ScrapeSlovakiaResult> => {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000);
-      
+      const timeoutId = setTimeout(() => controller.abort(), 60 * 1000);
+
       try {
-        const res = await fetch("/api/cron/scrape-bazos", {
-          method: "GET",
-          signal: controller.signal,
-        });
+        const res = await fetch(
+          `/api/cron/scrape-slovakia?portal=${portal}&limit=20`,
+          { method: "POST", signal: controller.signal }
+        );
         clearTimeout(timeoutId);
-        
+        const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          const errorText = await res.text().catch(() => res.statusText);
-          throw new Error(`HTTP ${res.status}: ${errorText.substring(0, 200)}`);
+          throw new Error(data.error || `HTTP ${res.status}`);
         }
-        return res.json();
+        return data;
       } catch (error) {
         clearTimeout(timeoutId);
         if (error instanceof Error && error.name === "AbortError") {
-          throw new Error("Scraping trvá príliš dlho (>5 min)");
+          throw new Error("Požiadavka trvala príliš dlho (>1 min)");
         }
         throw error;
       }
     },
-    onSuccess: () => {
-      setLastRun({ portal: "Bazoš", time: new Date() });
+    onSuccess: (_, portal) => {
+      setLastRun({ portal: portal === "all" ? "Bazoš (všetko)" : "Bazoš", time: new Date() });
     },
   });
 
-  // Mutation pre Nehnutelnosti.sk
-  const nehnutelnostiMutation = useMutation({
-    mutationFn: async (): Promise<PortalResult> => {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000);
-      
-      try {
-        const res = await fetch("/api/cron/scrape-nehnutelnosti", {
-          method: "GET",
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-        
-        if (!res.ok) {
-          const errorText = await res.text().catch(() => res.statusText);
-          throw new Error(`HTTP ${res.status}: ${errorText.substring(0, 200)}`);
-        }
-        return res.json();
-      } catch (error) {
-        clearTimeout(timeoutId);
-        if (error instanceof Error && error.name === "AbortError") {
-          throw new Error("Scraping trvá príliš dlho (>5 min)");
-        }
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      setLastRun({ portal: "Nehnutelnosti.sk", time: new Date() });
-    },
-  });
-
-  // Spustí oba scrapers s 5s pauzou medzi
-  const runBoth = async () => {
-    await bazosMutation.mutateAsync();
-    await new Promise(r => setTimeout(r, 5000));
-    await nehnutelnostiMutation.mutateAsync();
-  };
-
-  const bothMutation = useMutation({
-    mutationFn: runBoth,
-    onSuccess: () => {
-      setLastRun({ portal: "Všetko", time: new Date() });
-    },
-  });
-
-  const isAnyRunning = bazosMutation.isPending || nehnutelnostiMutation.isPending || bothMutation.isPending;
+  const isRunning = scrapeMutation.isPending;
 
   return (
     <div className="bg-zinc-800/50 rounded-xl border border-zinc-700 p-6">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
@@ -120,31 +65,27 @@ export default function ScraperControl() {
           </div>
           <div>
             <h2 className="text-base font-semibold text-white">Scraper Control</h2>
-            <p className="text-sm text-zinc-400">
-              Manuálne spustenie scrapera
-            </p>
+            <p className="text-sm text-zinc-400">Spustenie Apify scrapingu (Bazoš)</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`w-2 h-2 rounded-full ${isAnyRunning ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
-          <span className="text-sm text-zinc-400">
-            {isAnyRunning ? "Beží..." : "Pripravený"}
-          </span>
+          <span
+            className={`w-2 h-2 rounded-full ${isRunning ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`}
+          />
+          <span className="text-sm text-zinc-400">{isRunning ? "Beží..." : "Pripravený"}</span>
         </div>
       </div>
 
-      {/* Portal Buttons - 2 samostatné tlačidlá */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        {/* Bazoš Button */}
         <button
-          onClick={() => bazosMutation.mutate()}
-          disabled={isAnyRunning}
-          className="flex items-center justify-center gap-2 px-4 py-3 bg-amber-500 hover:from-yellow-600 hover:to-amber-600 disabled:from-zinc-600 disabled:to-zinc-600 text-white font-bold rounded-xl transition-all disabled:cursor-not-allowed"
+          onClick={() => scrapeMutation.mutate("bazos")}
+          disabled={isRunning}
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-amber-500 hover:bg-amber-600 disabled:bg-zinc-600 text-white font-bold rounded-xl transition-all disabled:cursor-not-allowed"
         >
-          {bazosMutation.isPending ? (
+          {scrapeMutation.isPending ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              Scrapujem Bazoš...
+              Spúšťam Bazoš...
             </>
           ) : (
             <>
@@ -153,154 +94,79 @@ export default function ScraperControl() {
             </>
           )}
         </button>
-
-        {/* Nehnutelnosti.sk Button */}
         <button
-          onClick={() => nehnutelnostiMutation.mutate()}
-          disabled={isAnyRunning}
-          className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-zinc-600 disabled:to-zinc-600 text-white font-bold rounded-xl transition-all disabled:cursor-not-allowed"
+          onClick={() => scrapeMutation.mutate("all")}
+          disabled={isRunning}
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-zinc-600 text-white font-bold rounded-xl transition-all disabled:cursor-not-allowed"
         >
-          {nehnutelnostiMutation.isPending ? (
+          {scrapeMutation.isPending ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              Scrapujem Nehnutelnosti...
+              Spúšťam...
             </>
           ) : (
             <>
-              <Play className="w-5 h-5" />
-              Spustiť Nehnutelnosti.sk
+              <Zap className="w-5 h-5" />
+              Spustiť (všetky targety)
             </>
           )}
         </button>
       </div>
 
-      {/* Run Both Button */}
-      <button
-        onClick={() => bothMutation.mutate()}
-        disabled={isAnyRunning}
-        className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-emerald-500 hover:from-emerald-600 hover:to-teal-600 disabled:from-zinc-600 disabled:to-zinc-600 text-white font-bold text-lg rounded-xl transition-all disabled:cursor-not-allowed "
-      >
-        {bothMutation.isPending ? (
-          <>
-            <Loader2 className="w-6 h-6 animate-spin" />
-            Scrapujem všetko... (3-5 minút)
-          </>
-        ) : (
-          <>
-            <Zap className="w-6 h-6" />
-            Spustiť Obidva Portály
-          </>
-        )}
-      </button>
-
-      {/* Info */}
       <p className="text-xs text-zinc-500 mt-3 text-center">
-        Bazoš: Byty, Domy, Pozemky | Nehnutelnosti.sk: Byty, Domy
+        Bazoš: byty predaj a prenájom, celé Slovensko + kraje. Výsledky prídu cez webhook.
       </p>
 
-      {/* Bazoš Result */}
-      {bazosMutation.data && (
-        <ResultCard result={bazosMutation.data} color="yellow" />
+      {scrapeMutation.data && (
+        <div className="mt-4 p-4 rounded-xl border bg-emerald-500/10 border-emerald-500/30">
+          <div className="flex items-center gap-2 mb-2">
+            {scrapeMutation.data.success ? (
+              <CheckCircle className="w-5 h-5 text-emerald-400" />
+            ) : (
+              <AlertTriangle className="w-5 h-5 text-amber-400" />
+            )}
+            <span className="font-bold text-emerald-300">
+              {scrapeMutation.data.success ? "Spustené" : "Chyba"}
+            </span>
+          </div>
+          <p className="text-sm text-zinc-300">{scrapeMutation.data.message}</p>
+          {scrapeMutation.data.runs?.length ? (
+            <ul className="mt-2 text-xs text-zinc-400">
+              {scrapeMutation.data.runs.map((r) => (
+                <li key={r.runId}>
+                  {r.portal}: {r.urlCount} URL, runId: {r.runId.slice(0, 8)}…
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {scrapeMutation.data.errors?.length ? (
+            <p className="mt-2 text-xs text-rose-400">{scrapeMutation.data.errors.join("; ")}</p>
+          ) : null}
+        </div>
       )}
 
-      {/* Nehnutelnosti Result */}
-      {nehnutelnostiMutation.data && (
-        <ResultCard result={nehnutelnostiMutation.data} color="blue" />
+      {scrapeMutation.error && (
+        <div className="mt-4 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl">
+          <div className="flex items-center gap-2 mb-2">
+            <XCircle className="w-5 h-5 text-rose-400" />
+            <span className="font-semibold text-rose-300">Chyba</span>
+          </div>
+          <p className="text-sm text-rose-400">
+            {scrapeMutation.error instanceof Error
+              ? scrapeMutation.error.message
+              : "Neznáma chyba"}
+          </p>
+        </div>
       )}
 
-      {/* Errors */}
-      {bazosMutation.error && (
-        <ErrorCard error={bazosMutation.error} portal="Bazoš" />
-      )}
-      {nehnutelnostiMutation.error && (
-        <ErrorCard error={nehnutelnostiMutation.error} portal="Nehnutelnosti.sk" />
-      )}
-
-      {/* Info footer */}
       <div className="mt-6 flex items-center justify-between text-xs text-zinc-500">
-        <span>
-          Automatický scraping: 6:00, 10:00, 14:00, 18:00, 22:00
-        </span>
+        <span>Automatický scraping: 6:00, 10:00, 14:00, 18:00, 22:00</span>
         {lastRun && (
           <span>
             Posledné: {lastRun.portal} o {lastRun.time.toLocaleTimeString("sk-SK")}
           </span>
         )}
       </div>
-    </div>
-  );
-}
-
-function ResultCard({ result, color }: { result: PortalResult; color: "yellow" | "blue" }) {
-  const colorClass = color === "yellow" 
-    ? "bg-amber-500/10 border-amber-500/30" 
-    : "bg-blue-500/10 border-blue-500/30";
-  const textColor = color === "yellow" ? "text-amber-300" : "text-blue-300";
-  
-  return (
-    <div className={`mt-4 p-4 rounded-xl border ${colorClass}`}>
-      <div className="flex items-center gap-2 mb-3">
-        {result.success ? (
-          <CheckCircle className={`w-5 h-5 ${textColor}`} />
-        ) : (
-          <AlertTriangle className="w-5 h-5 text-amber-400" />
-        )}
-        <span className={`font-bold ${textColor}`}>
-          {result.portal}
-        </span>
-        <span className="text-zinc-400 text-sm">
-          ({Math.round(result.duration / 1000)}s)
-        </span>
-      </div>
-
-      <div className="grid grid-cols-5 gap-2 text-center">
-        <div>
-          <div className="text-lg font-bold text-white">{result.found}</div>
-          <div className="text-xs text-zinc-400">Nájdených</div>
-        </div>
-        <div>
-          <div className="text-lg font-bold text-emerald-400">+{result.new}</div>
-          <div className="text-xs text-zinc-400">Nových</div>
-        </div>
-        <div>
-          <div className="text-lg font-bold text-zinc-500">{result.duplicates || 0}</div>
-          <div className="text-xs text-zinc-400">Duplicít</div>
-        </div>
-        <div>
-          <div className="text-lg font-bold text-blue-400">{result.updated}</div>
-          <div className="text-xs text-zinc-400">Aktualizovaných</div>
-        </div>
-        <div>
-          <div className="text-lg font-bold text-zinc-300 flex items-center justify-center gap-1">
-            <Database className="w-4 h-4" />
-            {result.totalInDatabase}
-          </div>
-          <div className="text-xs text-zinc-400">V DB</div>
-        </div>
-      </div>
-      
-      {/* Errors */}
-      {((result.saveErrors || 0) > 0 || (result.scrapeErrors || 0) > 0) && (
-        <div className="mt-3 p-2 bg-rose-500/10 border border-rose-500/20 rounded text-xs text-rose-400">
-          {result.saveErrors ? `${result.saveErrors} chýb pri ukladaní` : ""}
-          {result.saveErrors && result.scrapeErrors ? " | " : ""}
-          {result.scrapeErrors ? `${result.scrapeErrors} chýb pri scrapingu` : ""}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ErrorCard({ error, portal }: { error: Error | unknown; portal: string }) {
-  return (
-    <div className="mt-4 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl">
-      <div className="flex items-center gap-2 mb-2">
-        <XCircle className="w-5 h-5 text-rose-400" />
-        <span className="font-semibold text-rose-300">Chyba: {portal}</span>
-      </div>
-      <p className="text-sm text-rose-400">
-        {error instanceof Error ? error.message : "Neznáma chyba"}
-      </p>
     </div>
   );
 }

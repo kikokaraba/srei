@@ -133,14 +133,6 @@ function extractPriceFromHtml(html: string, source: string): number | null {
     let priceMatch: RegExpMatchArray | null = null;
     
     switch (source) {
-      case "NEHNUTELNOSTI":
-        // nehnutelnosti.sk price patterns
-        priceMatch = html.match(/class="[^"]*price[^"]*"[^>]*>[\s\S]*?([\d\s]+)[\s€]/i);
-        if (!priceMatch) {
-          priceMatch = html.match(/>([\d\s]{3,})[\s]?€/);
-        }
-        break;
-        
       case "BAZOS":
         // bazos.sk price patterns
         priceMatch = html.match(/class="inzeratycena"[^>]*>[\s\S]*?([\d\s]+)[\s€]/i);

@@ -16,12 +16,6 @@ const SCRAPER_SOURCES = {
     enabled: true,
     description: "Inzertný portál – byty predaj a prenájom (Apify)",
   },
-  NEHNUTELNOSTI: {
-    name: "Nehnutelnosti.sk",
-    url: "https://www.nehnutelnosti.sk",
-    enabled: true,
-    description: "Realitný portál – byty predaj a prenájom (Apify)",
-  },
 } as const;
 
 /**
@@ -72,10 +66,7 @@ export async function GET(request: NextRequest) {
     }
 
     const targets = getAllScrapingTargets();
-    const byPortal = {
-      nehnutelnosti: getTargetsByPortal("nehnutelnosti").length,
-      bazos: getTargetsByPortal("bazos").length,
-    };
+    const byPortal = { bazos: getTargetsByPortal("bazos").length };
 
     return NextResponse.json({
       success: true,
@@ -122,7 +113,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST – spustí Apify scraping (triggerSlovakiaScraping)
- * Body: { portals?: ["nehnutelnosti", "bazos"], useWebhook?: boolean }
+ * Body: { portals?: ["bazos"], useWebhook?: boolean }
  */
 export async function POST(request: NextRequest) {
   try {
@@ -148,10 +139,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const portals: Array<"nehnutelnosti" | "bazos"> =
+    const portals: Array<"bazos"> =
       Array.isArray(body.portals) && body.portals.length > 0
-        ? body.portals
-        : ["nehnutelnosti", "bazos"];
+        ? (body.portals as Array<"bazos">)
+        : ["bazos"];
     const useWebhook = body.useWebhook !== false;
 
     const targets = getAllScrapingTargets();

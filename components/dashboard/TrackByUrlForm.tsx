@@ -92,7 +92,7 @@ export function TrackByUrlForm({ onSuccess }: { onSuccess?: () => void }) {
       )}
       
       <p className="mt-2 text-xs text-zinc-500">
-        Podporované: reality.bazos.sk, nehnutelnosti.sk
+        Podporované: reality.bazos.sk, reality.sk
       </p>
     </form>
   );

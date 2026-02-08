@@ -20,7 +20,6 @@ import PremiumGate from "@/components/ui/PremiumGate";
 
 const SOURCE_COLORS: Record<string, string> = {
   BAZOS: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-  NEHNUTELNOSTI: "bg-blue-500/10 text-blue-400 border-blue-500/20",
   REALITY: "bg-purple-500/10 text-purple-400 border-purple-500/20",
   TOPREALITY: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
   MANUAL: "bg-zinc-800 text-zinc-400 border-zinc-700",
@@ -28,7 +27,6 @@ const SOURCE_COLORS: Record<string, string> = {
 
 const SOURCE_LABELS: Record<string, string> = {
   BAZOS: "Bazoš",
-  NEHNUTELNOSTI: "Nehnuteľnosti.sk",
   REALITY: "Reality.sk",
   TOPREALITY: "Topreality.sk",
   MANUAL: "Manuálne",

@@ -124,11 +124,6 @@ export function calculatePriorityScore(factors: PriorityFactors): number {
   // SOURCE FACTORS (±5 points)
   // =====================================
   
-  // Some sources update more frequently
-  if (factors.source === "NEHNUTELNOSTI") {
-    score += 5; // Larger portal, more activity
-  }
-
   // Clamp to 0-100 range
   return Math.max(0, Math.min(100, Math.round(score)));
 }

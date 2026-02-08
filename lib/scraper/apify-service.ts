@@ -7,10 +7,7 @@
  * 3. Nastavuje webhooky pre automatické spracovanie výsledkov
  */
 
-import {
-  NEHNUTELNOSTI_PAGE_FUNCTION,
-  BAZOS_PAGE_FUNCTION,
-} from "./nehnutelnosti-config";
+import { BAZOS_PAGE_FUNCTION } from "./nehnutelnosti-config";
 import type { ScrapingTarget } from "./slovakia-scraper";
 
 const APIFY_API_KEY = process.env.APIFY_API_KEY;
@@ -75,14 +72,7 @@ export interface ApifyScrapedItem {
  * Získa Page Function podľa portálu
  */
 function getPageFunction(portal: string): string {
-  switch (portal) {
-    case "nehnutelnosti":
-      return NEHNUTELNOSTI_PAGE_FUNCTION;
-    case "bazos":
-      return BAZOS_PAGE_FUNCTION;
-    default:
-      return NEHNUTELNOSTI_PAGE_FUNCTION;
-  }
+  return portal === "bazos" ? BAZOS_PAGE_FUNCTION : BAZOS_PAGE_FUNCTION;
 }
 
 /**
@@ -192,7 +182,7 @@ export async function triggerSlovakiaScraping(
   runs: Array<{ portal: string; runId: string; urlCount: number }>;
   errors: string[];
 }> {
-  const { useWebhook = true, portals = ["nehnutelnosti", "bazos"] } = options;
+  const { useWebhook = true, portals = ["bazos"] } = options;
   const runs: Array<{ portal: string; runId: string; urlCount: number }> = [];
   const errors: string[] = [];
 
@@ -297,4 +287,138 @@ export async function waitForApifyRun(
   }
 
   throw new Error(`Apify run ${runId} timeout after ${timeout}ms`);
+}
+
+// ============================================================================
+// TOP REALITY ACTOR (appealing_jingle/top-reality-scraper)
+// ============================================================================
+
+/** Vstup pre Top Reality Scraper Actor podľa input schema */
+export interface TopRealityInput {
+  maxRequestsPerCrawl?: number;
+  language?: "sk" | "cz" | "en" | "pl" | "hu";
+  onlyPrivateListings?: boolean;
+  type?: "all" | "sell" | "buy" | "rent" | "looking-for-rent" | "exchange" | "auction";
+  kind?: {
+    flats?: string[];
+    houses?: string[];
+    premises?: string[];
+    objects?: string[];
+    plots?: string[];
+  };
+  text?: string;
+  priceFrom?: number;
+  priceTo?: number;
+  pricePerArea?: boolean;
+  areaFrom?: number;
+  areaTo?: number;
+  newBuildings?: boolean;
+  sort?: "price_asc" | "price_desc" | "price_m2_asc" | "price_m2_desc" | "date_desc" | "date_asc" | "id_desc" | "id_asc";
+  village?: string[];
+}
+
+/** Položka z datasetu Top Reality Actora (flexibilná – Actor môže vracať ďalšie polia) */
+export interface TopRealityDatasetItem {
+  url?: string;
+  title?: string;
+  price?: number | string;
+  area?: number | string;
+  location?: string;
+  city?: string;
+  region?: string;
+  description?: string;
+  images?: string[] | { url?: string }[];
+  [key: string]: unknown;
+}
+
+const TOP_REALITY_ACTOR_ID = "appealing_jingle~top-reality-scraper";
+
+/**
+ * Spustí Top Reality Scraper Actor a pripojí webhook na náš endpoint.
+ * Výsledky prídu cez POST /api/webhooks/apify s portal: "topreality".
+ */
+export async function runTopRealityScraper(
+  input: TopRealityInput,
+  options: { useWebhook?: boolean } = {}
+): Promise<ApifyRunResponse> {
+  if (!APIFY_API_KEY) {
+    throw new Error("APIFY_API_KEY is not configured");
+  }
+
+  const useWebhook = options.useWebhook !== false;
+
+  const body: Record<string, unknown> = {
+    maxRequestsPerCrawl: input.maxRequestsPerCrawl ?? 100,
+    language: input.language ?? "sk",
+    onlyPrivateListings: input.onlyPrivateListings ?? false,
+    type: input.type ?? "sell",
+    kind: input.kind ?? {
+      flats: ["2 room flat", "3 room flat"],
+      houses: [],
+      premises: [],
+      objects: [],
+      plots: [],
+    },
+    text: input.text ?? "",
+    priceFrom: input.priceFrom ?? 0,
+    priceTo: input.priceTo ?? 0,
+    pricePerArea: input.pricePerArea ?? false,
+    areaFrom: input.areaFrom ?? 0,
+    areaTo: input.areaTo ?? 0,
+    newBuildings: input.newBuildings ?? false,
+    sort: input.sort ?? "date_desc",
+    village: input.village ?? ["Bratislava"],
+  };
+
+  if (useWebhook) {
+    (body as Record<string, unknown>).webhooks = [
+      {
+        eventTypes: ["ACTOR.RUN.SUCCEEDED"],
+        requestUrl: getWebhookUrl(),
+        payloadTemplate: `{
+          "resourceId": {{resource.id}},
+          "datasetId": "{{resource.defaultDatasetId}}",
+          "portal": "topreality",
+          "status": "{{resource.status}}"
+        }`,
+      },
+    ];
+  }
+
+  console.log(`🚀 [Apify] Starting Top Reality scraper (${TOP_REALITY_ACTOR_ID})`);
+  console.log(`   Webhook: ${useWebhook ? getWebhookUrl() : "disabled"}`);
+
+  const response = await fetch(
+    `${APIFY_BASE_URL}/acts/${TOP_REALITY_ACTOR_ID}/runs?token=${APIFY_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Apify API error: ${response.status} - ${error}`);
+  }
+
+  const result = (await response.json()) as ApifyRunResponse;
+  console.log(`✅ [Apify] Top Reality run started: ${result.data.id}`);
+  return result;
+}
+
+/**
+ * Získa položky z Apify datasetu ako surový pole (pre Top Reality alebo iné Actory s iným výstupom).
+ */
+export async function getApifyDatasetItemsRaw(datasetId: string): Promise<unknown[]> {
+  if (!APIFY_API_KEY) {
+    throw new Error("APIFY_API_KEY is not configured");
+  }
+  const response = await fetch(
+    `${APIFY_BASE_URL}/datasets/${datasetId}/items?token=${APIFY_API_KEY}`
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to fetch dataset: ${response.status}`);
+  }
+  return response.json();
 }

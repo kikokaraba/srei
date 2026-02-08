@@ -77,7 +77,7 @@ interface Property {
   is_distressed: boolean;
   days_on_market: number;
   listing_type: "PREDAJ";
-  source: "NEHNUTELNOSTI" | "BAZOS" | "REALITY" | "TOPREALITY";
+  source: "BAZOS" | "REALITY" | "TOPREALITY";
   // Fotky
   photos?: string;
   thumbnail_url?: string | null;

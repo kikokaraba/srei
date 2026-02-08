@@ -6,7 +6,7 @@
  * 
  * Query params:
  * - datasetId: ID Apify datasetu (required)
- * - portal: "nehnutelnosti" | "bazos" (default: nehnutelnosti)
+ * - portal: "bazos" (default: bazos)
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -284,7 +284,7 @@ export async function POST(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     let datasetId = searchParams.get("datasetId");
     const runId = searchParams.get("runId");
-    const portal = searchParams.get("portal") || "nehnutelnosti";
+    const portal = searchParams.get("portal") || "bazos";
     
     // Ak máme runId, získame z neho datasetId
     if (runId && !datasetId) {
@@ -411,8 +411,7 @@ export async function POST(request: NextRequest) {
           photos: JSON.stringify(imageUrls),
           thumbnail_url: thumbnailUrl,
           photo_count: imageUrls.length,
-          source: portal.toUpperCase() === "NEHNUTELNOSTI" ? "NEHNUTELNOSTI" : 
-                  portal.toUpperCase() === "BAZOS" ? "BAZOS" : "REALITY",
+          source: portal.toUpperCase() === "BAZOS" ? "BAZOS" : "REALITY",
           source_url: item.url,
           external_id: externalId,
           listing_type: listingType,
@@ -532,6 +531,6 @@ export async function GET() {
   return NextResponse.json({
     success: true,
     message: "Use POST with ?datasetId=xxx to process Apify results",
-    example: "/api/cron/process-apify?datasetId=abc123&portal=nehnutelnosti",
+    example: "/api/cron/process-apify?datasetId=abc123&portal=bazos",
   });
 }

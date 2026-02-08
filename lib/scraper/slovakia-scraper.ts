@@ -1,10 +1,7 @@
 /**
  * Slovakia-Wide Scraper
  *
- * Scrapuje celé Slovensko len z:
- * - Nehnutelnosti.sk (byty predaj + prenájom)
- * - Bazoš.sk (byty predaj + prenájom)
- *
+ * Scrapuje celé Slovensko z Bazoš.sk (byty predaj + prenájom).
  * Pokrýva celé Slovensko + všetkých 8 krajov.
  */
 
@@ -13,24 +10,13 @@
 // ============================================================================
 
 export interface ScrapingTarget {
-  portal: "nehnutelnosti" | "bazos";
+  portal: "bazos";
   propertyType: "byty";
   transactionType: "predaj" | "prenajom";
   region?: string;
   url: string;
   priority: number;
 }
-
-const REGION_SLUGS_NEH: Record<string, string> = {
-  BA: "bratislavsky-kraj",
-  TT: "trnavsky-kraj",
-  TN: "trenciansky-kraj",
-  NR: "nitriansky-kraj",
-  ZA: "zilinsky-kraj",
-  BB: "banskobystricky-kraj",
-  PO: "presovsky-kraj",
-  KE: "kosicky-kraj",
-};
 
 const REGION_SLUGS_BAZOS: Record<string, string> = {
   BA: "bratislavsky",
@@ -42,40 +28,6 @@ const REGION_SLUGS_BAZOS: Record<string, string> = {
   PO: "presovsky",
   KE: "kosicky",
 };
-
-/**
- * Nehnutelnosti.sk – len byty predaj a prenájom, celé Slovensko + kraje
- */
-function generateNehnutelnostiUrls(): ScrapingTarget[] {
-  const urls: ScrapingTarget[] = [];
-  const baseUrl = "https://www.nehnutelnosti.sk";
-
-  const transactions: Array<"predaj" | "prenajom"> = ["predaj", "prenajom"];
-
-  for (const trans of transactions) {
-    // Celé Slovensko
-    urls.push({
-      portal: "nehnutelnosti",
-      propertyType: "byty",
-      transactionType: trans,
-      url: `${baseUrl}/byty/${trans}/`,
-      priority: 10,
-    });
-
-    for (const [regionId, slug] of Object.entries(REGION_SLUGS_NEH)) {
-      urls.push({
-        portal: "nehnutelnosti",
-        propertyType: "byty",
-        transactionType: trans,
-        region: regionId,
-        url: `${baseUrl}/byty/${trans}/${slug}/`,
-        priority: regionId === "BA" ? 9 : 7,
-      });
-    }
-  }
-
-  return urls;
-}
 
 /**
  * Bazoš.sk – len byty predaj a prenájom, celé Slovensko + kraje
@@ -118,10 +70,10 @@ function generateBazosUrls(): ScrapingTarget[] {
 // ============================================================================
 
 /**
- * Všetky scraping targety – len Nehnutelnosti + Bazoš, byty predaj/prenájom, celé Slovensko
+ * Všetky scraping targety – Bazoš, byty predaj/prenájom, celé Slovensko
  */
 export function getAllScrapingTargets(): ScrapingTarget[] {
-  const targets = [...generateNehnutelnostiUrls(), ...generateBazosUrls()];
+  const targets = generateBazosUrls();
   return targets.sort((a, b) => b.priority - a.priority);
 }
 

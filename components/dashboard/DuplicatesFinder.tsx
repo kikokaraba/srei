@@ -44,7 +44,6 @@ interface DuplicatesResponse {
 }
 
 const SOURCE_COLORS: Record<string, { bg: string; text: string }> = {
-  NEHNUTELNOSTI: { bg: "bg-blue-500/20", text: "text-blue-400" },
   REALITY: { bg: "bg-purple-500/20", text: "text-purple-400" },
   BAZOS: { bg: "bg-amber-500/20", text: "text-amber-400" },
   TOPREALITY: { bg: "bg-emerald-500/20", text: "text-emerald-400" },

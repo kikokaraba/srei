@@ -22,13 +22,13 @@ import { prisma } from "@/lib/prisma";
 /**
  * POST - Spustí Apify scraping
  * Query params:
- * - portal: "nehnutelnosti" | "bazos" | "all" (default: nehnutelnosti)
+ * - portal: "bazos" | "all" (default: bazos)
  * - limit: max počet URL (default: 10)
  */
 export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const portal = searchParams.get("portal") || "nehnutelnosti";
+    const portal = searchParams.get("portal") || "bazos";
     const limit = parseInt(searchParams.get("limit") || "10");
     
     // Získaj targets
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     // Spusti Apify scraping
     const result = await triggerSlovakiaScraping(targets, {
       useWebhook: true,
-      portals: portal === "all" ? ["nehnutelnosti", "bazos"] : [portal],
+      portals: portal === "all" ? ["bazos"] : [portal],
     });
     
     return NextResponse.json({
@@ -112,7 +112,6 @@ export async function GET() {
         lastUpdate: lastScrape?.updatedAt,
       },
       usage: {
-        nehnutelnosti: "POST /api/cron/scrape-slovakia?portal=nehnutelnosti",
         bazos: "POST /api/cron/scrape-slovakia?portal=bazos",
         all: "POST /api/cron/scrape-slovakia?portal=all&limit=20",
       },
