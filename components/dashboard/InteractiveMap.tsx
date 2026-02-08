@@ -134,15 +134,6 @@ export default function InteractiveMap() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const dbRes = await fetch("/api/db-test", { signal: AbortSignal.timeout(5000) });
-      const dbData = await dbRes.json();
-      setDbConnected(dbData.ok);
-
-      if (!dbData.ok) {
-        setLoading(false);
-        return;
-      }
-
       const params = new URLSearchParams();
       params.set("limit", String(MAP_LIMIT));
       if (includeWithoutCoords) params.set("includeWithoutCoords", "true");
@@ -153,9 +144,19 @@ export default function InteractiveMap() {
       if (!Number.isNaN(maxP)) params.set("maxPrice", String(maxP));
 
       const propsRes = await fetch(`/api/v1/properties/map?${params.toString()}`, {
+        cache: "no-store",
         signal: AbortSignal.timeout(20000),
       });
       const propsData = await propsRes.json();
+
+      if (!propsRes.ok) {
+        setDbConnected(false);
+        setProperties([]);
+        setCityStats([]);
+        return;
+      }
+
+      setDbConnected(true);
 
       if (propsData.data && Array.isArray(propsData.data)) {
         const validProps = propsData.data.filter(

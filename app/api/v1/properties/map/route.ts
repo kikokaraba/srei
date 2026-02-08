@@ -1,9 +1,11 @@
 /**
  * API endpoint for map data
  * Returns properties with coordinates for map display
+ * Always reads fresh from DB (no cache).
  */
-
 import { NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
 import { auth } from "@/lib/auth";
 import { getPropertiesForMap, getCityCenter } from "@/lib/monitoring/geocoding";
 import { ListingType } from "@/generated/prisma/client";
