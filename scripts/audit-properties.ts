@@ -78,7 +78,7 @@ async function main() {
   );
   if (rentalDashboardCount === 0) {
     console.log(
-      "  ⚠️  Nájomný dashboard bude prázdny, kým nebudú v DB aktívne byty na prenájom (PRENAJOM). Spustite scraper s kategóriami prenájom."
+      "  ⚠️  Nájomný dashboard bude prázdny, kým nebudú v DB aktívne byty na prenájom (PRENAJOM). Spustite Apify scraping: /api/cron/scrape-slovakia alebo Admin → Data."
     );
   }
   console.log("");

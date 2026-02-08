@@ -1,13 +1,9 @@
-// Scraper Module - Centrálny export
+// Scraper Module – výhradne Apify (webhook + process-apify)
 
-// Types
 export * from "./types";
 
-// URL Parser & Single Listing Scraper
 export { parseListingUrl, SUPPORTED_PORTALS } from "./url-parser";
-export { scrapeSingleListing } from "./single-listing-scraper";
 
-// Parser
 export {
   parseCondition,
   parseEnergyCertificate,
@@ -25,72 +21,7 @@ export {
   parseDescription,
 } from "./parser";
 
-// Bazoš Scraper
-export {
-  BAZOS_CONFIG,
-  parseLocation,
-  parseBazosPrice,
-  parseBazosArea,
-  extractExternalId,
-  scrapeListingPage,
-  scrapeListingDetail,
-  parseListing,
-  rateLimitWait,
-} from "./bazos";
-
-// Cheerio Scraper (fallback)
-export {
-  scrapeListingPageCheerio,
-  scrapeListingDetailCheerio,
-  scrapeWithCheerio,
-} from "./cheerio-scraper";
-
-// Playwright Scraper
-export {
-  scrapeListingPagePlaywright,
-  scrapeListingDetailPlaywright,
-  scrapeWithDetails,
-  closeBrowser,
-  BAZOS_SELECTORS,
-  browserManager,
-  type PlaywrightConfig,
-} from "./playwright-scraper";
-
-// Engine
-export {
-  scrapeBazos,
-  runFullSync,
-  ScrapeLogger,
-} from "./engine";
-
-// Stealth Engine
-export {
-  fetchWithRetry,
-  parseListingElement,
-  syncProperty,
-  scrapeBazosCategory,
-  runStealthScrape,
-  DEFAULT_CONFIG as STEALTH_CONFIG,
-  USER_AGENTS,
-  type ScraperStats,
-  type ParsedListing,
-} from "./stealth-engine";
-
-// Professional Stealth Scraper (Nehnutelnosti.sk)
-export {
-  scrapeNehnutelnostiList,
-  scrapeNehnutelnostiDetail,
-  autoScroll,
-  extractHighQualityImages,
-  humanDelay,
-  getRandomUserAgent,
-  closeStealthBrowser,
-  stealthManager,
-  NEHNUTELNOSTI_SELECTORS,
-  type StealthConfig,
-} from "./stealth-scraper";
-
-// Slovakia-Wide Scraper
+// Cieľové URL pre Apify (Nehnutelnosti.sk + Bazoš)
 export {
   getAllScrapingTargets,
   getTargetsByPortal,
@@ -98,22 +29,10 @@ export {
   getTargetsByPropertyType,
   batchTargets,
   getScrapingStats,
-  slovakiaScraper,
-  SlovakiaScraper,
   type ScrapingTarget,
-  type ScrapingProgress,
-  type ScrapingResult,
 } from "./slovakia-scraper";
 
-// Apify Scraper (Professional infrastructure)
-export {
-  runApifyWebScraper,
-  runApifyPlaywrightScraper,
-  scrapeNehnutelnostiApify,
-  scrapeBazosApify,
-} from "./apify-scraper";
-
-// Apify Service (Production scraping with webhooks)
+// Apify Service – spúšťanie scrapingu a spracovanie výsledkov
 export {
   runApifyScraper,
   triggerSlovakiaScraping,
@@ -123,9 +42,11 @@ export {
   type ApifyScrapedItem,
 } from "./apify-service";
 
-// Page Functions pre jednotlivé portály
+// Page funkcie pre Apify (nehnutelnosti-config)
 export {
   NEHNUTELNOSTI_PAGE_FUNCTION,
   BAZOS_PAGE_FUNCTION,
   REALITY_PAGE_FUNCTION,
 } from "./nehnutelnosti-config";
+
+export { normalizeImages } from "./normalize-images";

@@ -1,13 +1,14 @@
 /**
  * POST /api/v1/properties/[id]/refresh-from-source
- * Znovu načíta dáta z pôvodného inzerátu (detail stránka) a aktualizuje Property.
- * Použitie: oprava zle prečítaných údajov zo listingu (cena, m², titulok).
+ * Obnovenie dát z pôvodného portálu.
+ *
+ * Refresh je realizovaný cez batch-refresh cron (kontrola aktivity, ceny)
+ * alebo cez ďalší beh Apify. Priame načítanie jedného inzerátu nie je k dispozícii.
  */
 
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { scrapeSingleListing } from "@/lib/scraper/single-listing-scraper";
 
 export async function POST(
   _request: Request,
@@ -23,7 +24,7 @@ export async function POST(
 
     const property = await prisma.property.findUnique({
       where: { id },
-      select: { id: true, source_url: true, price: true, title: true },
+      select: { id: true, source_url: true, title: true },
     });
 
     if (!property) {
@@ -37,59 +38,15 @@ export async function POST(
       );
     }
 
-    const { property: scraped, error: scrapeError } = await scrapeSingleListing(
-      property.source_url
-    );
-
-    if (!scraped) {
-      return NextResponse.json(
-        { error: scrapeError ?? "Nepodarilo sa načítať pôvodný inzerát" },
-        { status: 400 }
-      );
-    }
-
-    const priceChanged = property.price !== scraped.price;
-
-    await prisma.$transaction([
-      prisma.property.update({
-        where: { id: property.id },
-        data: {
-          title: scraped.title?.substring(0, 200) ?? undefined,
-          price: scraped.price,
-          price_per_m2: scraped.pricePerM2,
-          area_m2: scraped.areaM2,
-          rooms: scraped.rooms ?? undefined,
-          district: scraped.district || undefined,
-          address: scraped.district
-            ? `${scraped.city}, ${scraped.district}`
-            : scraped.city,
-          description: scraped.description?.substring(0, 5000) || undefined,
-          updatedAt: new Date(),
-        },
-      }),
-      ...(priceChanged
-        ? [
-            prisma.priceHistory.create({
-              data: {
-                propertyId: property.id,
-                price: scraped.price,
-                price_per_m2: scraped.pricePerM2,
-              },
-            }),
-          ]
-        : []),
-    ]);
-
-    return NextResponse.json({
-      success: true,
-      message: "Dáta boli obnovené z pôvodného inzerátu",
-      data: {
-        price: scraped.price,
-        area_m2: scraped.areaM2,
-        price_per_m2: scraped.pricePerM2,
-        title: scraped.title?.substring(0, 80),
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          "Obnovenie z pôvodného inzerátu je nahradené Apify a batch-refresh. Nehnuteľnosť sa aktualizuje pri ďalšom behu Apify alebo batch-refresh.",
+        code: "APIFY_ONLY",
       },
-    });
+      { status: 503 }
+    );
   } catch (error) {
     console.error("Refresh from source error:", error);
     return NextResponse.json(

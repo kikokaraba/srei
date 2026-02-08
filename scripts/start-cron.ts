@@ -7,8 +7,8 @@
 
 const JOBS = [
   {
-    name: "scrape-paginated",
-    endpoint: "/api/cron/scrape-paginated",
+    name: "scrape-slovakia",
+    endpoint: "/api/cron/scrape-slovakia",
     intervalMs: 10 * 60 * 1000, // 10 minutes
   },
   {

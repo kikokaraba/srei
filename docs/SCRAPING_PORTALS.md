@@ -1,83 +1,37 @@
-# Scraping nehnuteľností – portály a nastavenie
+# Scraping nehnuteľností – Apify
 
-SRIA scrapuje **iba z dvoch portálov**: **Nehnutelnosti.sk** a **Bazoš**.  
-Scrapuje **len byty** v kategóriách **predaj** a **prenájom**, **celé Slovensko**.
-
----
-
-## 1. Bazoš (reality.bazos.sk)
-
-| Položka | Hodnota |
-|--------|--------|
-| **Zdroj v DB** | `PropertySource.BAZOS` |
-| **Base URL** | `https://reality.bazos.sk` |
-| **Typ** | Priamy HTTP + Cheerio |
-
-**Kategórie:** byty predaj (`/predam/byt/`), byty prenájom (`/prenajmu/byt/`).  
-**Implementácia:** `lib/scraper/simple-scraper.ts` → `scrapeBazos()`.
-
-**Spúšťanie:**
-- Cron: `GET /api/cron/scrape-bazos`
-- Scrape-all: `GET /api/cron/scrape-all` (Bazoš + Nehnutelnosti.sk)
-- Admin API: `POST /api/v1/admin/scraper` so zdrojom `BAZOS`
-- Apify (celé Slovensko): `POST /api/cron/scrape-slovakia?portal=bazos`
-
-**Detail inzerátu:** `lib/scraper/single-listing-scraper.ts` → `scrapeBazosDetail(url)`.
+SRIA scrapuje **iba cez Apify** z dvoch portálov: **Nehnutelnosti.sk** a **Bazoš**.  
+Scrapuje **len byty** (predaj + prenájom), **celé Slovensko** + kraje.
 
 ---
 
-## 2. Nehnutelnosti.sk (www.nehnutelnosti.sk)
+## Spúšťanie
 
-| Položka | Hodnota |
-|--------|--------|
-| **Zdroj v DB** | `PropertySource.NEHNUTELNOSTI` |
-| **Base URL** | `https://www.nehnutelnosti.sk` |
-| **Typ** | Priamy HTTP + Cheerio |
+| Spôsob | Endpoint / akcia |
+|--------|------------------|
+| **Cron (Vercel)** | `GET/POST /api/cron/scrape-slovakia` (napr. 0 3,15 * * *) |
+| **Admin** | Admin → Data → Apify Scraper → Spustiť |
+| **API** | `POST /api/v1/admin/scraper` (body: `{ "portals": ["nehnutelnosti", "bazos"] }`) |
 
-**Kategórie:** byty predaj (`/byty/predaj/`), byty prenájom (`/byty/prenajom/`).  
-**Implementácia:** `lib/scraper/simple-scraper.ts` → `scrapeNehnutelnosti()`.
-
-**Spúšťanie:**
-- Cron: `GET /api/cron/scrape-nehnutelnosti`
-- Scrape-all: `GET /api/cron/scrape-all`
-- Scrape-paginated: `GET/POST /api/cron/scrape-paginated` (každých 10 min) – len Nehnutelnosti.sk
-- Admin API: `POST /api/v1/admin/scraper` so zdrojom `NEHNUTELNOSTI`
-- Apify: `POST /api/cron/scrape-slovakia?portal=nehnutelnosti`
-
-**Detail inzerátu:** `scrapeNehnutelnostiDetail(url)` v `single-listing-scraper.ts`.
+Výsledky prichádzajú cez **webhook** `POST /api/webhooks/apify`; spracovanie je v tom istom endpointe alebo manuálne cez `GET /api/cron/process-apify?runId=...&portal=...`.
 
 ---
 
-## Celé Slovensko (Apify + slovakia-scraper)
+## Portály
 
-**Endpoint:** `POST /api/cron/scrape-slovakia`  
-**Query:** `portal=nehnutelnosti` | `portal=bazos` | `portal=all` (oba portály), voliteľne `limit`.
+| Portál | Zdroj v DB | Targety |
+|--------|------------|--------|
+| **Bazoš** | `BAZOS` | byty predaj/prenájom, celé SK + kraje |
+| **Nehnutelnosti.sk** | `NEHNUTELNOSTI` | byty predaj/prenájom, celé SK + kraje |
 
-**Targety** (`lib/scraper/slovakia-scraper.ts`):
-- Nehnutelnosti.sk: byty predaj + prenájom – celé Slovensko + 8 krajov
-- Bazoš: byty predaj + prenájom – celé Slovensko + 8 krajov
-
-Výsledky prichádzajú cez webhook `/api/webhooks/apify`, spracovanie cez `process-apify`.
-
----
-
-## Scrape-all
-
-`GET /api/cron/scrape-all` – scrapuje **Bazoš + Nehnutelnosti.sk** (byty predaj + prenájom) cez `scrapeAll()` v simple-scraperi, ukladanie cez ingestion pipeline.
+Targety (URL kategórií) sú v `lib/scraper/slovakia-scraper.ts` (`getAllScrapingTargets`, `getTargetsByPortal`).  
+Apify volá `lib/scraper/apify-service.ts` → `triggerSlovakiaScraping()`; page funkcie sú v `lib/scraper/nehnutelnosti-config.ts`.
 
 ---
 
-## Scrape-paginated
+## Premenné
 
-`GET/POST /api/cron/scrape-paginated` – **iba Nehnutelnosti.sk**, každých 10 min, postupne po stránkach (byty predaj, byty prenájom).
+- `APIFY_API_KEY` – povinné pre spúšťanie scrapingu
+- `NEXT_PUBLIC_APP_URL` / `NEXTAUTH_URL` – pre webhook URL
 
----
-
-## Súhrn
-
-| Portál | Cron | Scrape-all | Scrape-paginated | Apify | Admin API | Detail URL |
-|--------|------|------------|------------------|-------|-----------|------------|
-| **Bazoš** | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ |
-| **Nehnutelnosti.sk** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-
-Reality.sk a TopReality.sk nie sú v scrapingu podporované (len staré záznamy v DB môžu mať tieto zdroje).
+Reality.sk a TopReality.sk nie sú podporované (len staré záznamy v DB môžu mať tieto zdroje).

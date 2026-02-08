@@ -6,7 +6,7 @@
  * 
  * Setup:
  * 1. Go to https://console.upstash.com/qstash
- * 2. Create schedules pointing to YOUR_RAILWAY_URL/api/qstash?job=scrape-paginated
+ * 2. Create schedules pointing to YOUR_RAILWAY_URL/api/qstash?job=scrape-slovakia
  * 3. Add QSTASH_CURRENT_SIGNING_KEY and QSTASH_NEXT_SIGNING_KEY to Railway env
  */
 
@@ -44,9 +44,9 @@ export async function POST(request: NextRequest) {
     let result;
     
     switch (job) {
-      case "scrape-paginated":
-        // Call the paginated scraper
-        const scrapeRes = await fetch(`${baseUrl}/api/cron/scrape-paginated`, {
+      case "scrape-slovakia":
+        // Apify scraping (Nehnutelnosti.sk + Bazoš)
+        const scrapeRes = await fetch(`${baseUrl}/api/cron/scrape-slovakia`, {
           method: "POST",
         });
         result = await scrapeRes.json();

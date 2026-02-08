@@ -39,22 +39,22 @@ export async function GET(request: NextRequest) {
                     `https://${request.headers.get("host")}`;
 
     // Execute scraping
-    console.log("📦 Running scrape-paginated...");
-    const scrapeResponse = await fetch(`${baseUrl}/api/cron/scrape-paginated`, {
+    console.log("📦 Running Apify scrape-slovakia...");
+    const scrapeResponse = await fetch(`${baseUrl}/api/cron/scrape-slovakia`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
     });
-    
-    const scrapeResult = await scrapeResponse.json();
-    console.log("✅ Scrape result:", scrapeResult.results || scrapeResult);
 
-    // Log this run
+    const scrapeResult = await scrapeResponse.json();
+    console.log("✅ Scrape result:", scrapeResult.runs ?? scrapeResult);
+
+    const urlCount = scrapeResult.runs?.reduce((s: number, r: { urlCount?: number }) => s + (r.urlCount ?? 0), 0) ?? 0;
     await prisma.dataFetchLog.create({
       data: {
         source: "self-scheduler",
-        status: "success",
-        recordsCount: scrapeResult.results?.newProperties || 0,
-        duration_ms: scrapeResult.duration_ms || 0,
+        status: scrapeResult.success ? "success" : "partial",
+        recordsCount: urlCount,
+        error: scrapeResult.errors?.length ? scrapeResult.errors.join("; ") : null,
       },
     });
 

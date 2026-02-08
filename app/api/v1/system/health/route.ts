@@ -6,50 +6,47 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
-    // Získaj posledné scraper logy
     const scraperLogs = await prisma.dataFetchLog.findMany({
       where: {
-        source: { in: ["STEALTH_BAZOS", "FULL_SYNC", "NBS_CHECK"] },
+        source: { in: ["apify-webhook", "scrape-slovakia", "NBS_CHECK"] },
       },
       orderBy: { fetchedAt: "desc" },
       take: 10,
     });
-    
-    // Agreguj logy podľa source
-    const scraperMap = new Map<string, typeof scraperLogs[0]>();
+
+    const scraperMap = new Map<string, (typeof scraperLogs)[0]>();
     for (const log of scraperLogs) {
-      if (!scraperMap.has(log.source)) {
-        scraperMap.set(log.source, log);
-      }
+      if (!scraperMap.has(log.source)) scraperMap.set(log.source, log);
     }
-    
+
     const scrapers = [
       {
-        source: "Bazoš Stealth",
-        ...(scraperMap.get("STEALTH_BAZOS") ? {
-          lastRun: scraperMap.get("STEALTH_BAZOS")!.fetchedAt.toISOString(),
-          status: scraperMap.get("STEALTH_BAZOS")!.status as "success" | "partial" | "blocked" | "error",
-          recordsCount: scraperMap.get("STEALTH_BAZOS")!.recordsCount,
-          duration: scraperMap.get("STEALTH_BAZOS")!.duration_ms 
-            ? `${Math.round(scraperMap.get("STEALTH_BAZOS")!.duration_ms! / 1000)}s` 
-            : undefined,
-          error: scraperMap.get("STEALTH_BAZOS")!.error || undefined,
-        } : {
-          status: "never" as const,
-        }),
+        source: "Apify (Bazoš + Nehnutelnosti.sk)",
+        ...(scraperMap.get("apify-webhook") || scraperMap.get("scrape-slovakia")
+          ? (() => {
+              const log = scraperMap.get("apify-webhook") ?? scraperMap.get("scrape-slovakia")!;
+              return {
+                lastRun: log.fetchedAt.toISOString(),
+                status: log.status as "success" | "partial" | "error",
+                recordsCount: log.recordsCount,
+                duration: log.duration_ms ? `${Math.round(log.duration_ms / 1000)}s` : undefined,
+                error: log.error ?? undefined,
+              };
+            })()
+          : { status: "never" as const }),
       },
       {
         source: "NBS Data",
-        ...(scraperMap.get("NBS_CHECK") ? {
-          lastRun: scraperMap.get("NBS_CHECK")!.fetchedAt.toISOString(),
-          status: scraperMap.get("NBS_CHECK")!.status as "success" | "partial" | "error",
-          recordsCount: scraperMap.get("NBS_CHECK")!.recordsCount,
-          duration: scraperMap.get("NBS_CHECK")!.duration_ms 
-            ? `${Math.round(scraperMap.get("NBS_CHECK")!.duration_ms! / 1000)}s` 
-            : undefined,
-        } : {
-          status: "never" as const,
-        }),
+        ...(scraperMap.get("NBS_CHECK")
+          ? {
+              lastRun: scraperMap.get("NBS_CHECK")!.fetchedAt.toISOString(),
+              status: scraperMap.get("NBS_CHECK")!.status as "success" | "partial" | "error",
+              recordsCount: scraperMap.get("NBS_CHECK")!.recordsCount,
+              duration: scraperMap.get("NBS_CHECK")!.duration_ms
+                ? `${Math.round(scraperMap.get("NBS_CHECK")!.duration_ms! / 1000)}s`
+                : undefined,
+            }
+          : { status: "never" as const }),
       },
     ];
     

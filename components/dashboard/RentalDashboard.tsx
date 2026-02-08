@@ -280,7 +280,7 @@ export function RentalDashboard() {
           <Key className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
           <p className="text-zinc-400">V databáze zatiaľ nie sú žiadne byty na prenájom (PRENAJOM).</p>
           <p className="text-zinc-500 text-sm mt-2 max-w-md mx-auto">
-            Dáta pochádzajú zo scrapingu Bazoš a Nehnutelnosti.sk. Spustite cron <code className="text-zinc-400 bg-zinc-800 px-1 rounded">/api/cron/scraper-stealth</code> alebo <code className="text-zinc-400 bg-zinc-800 px-1 rounded">/api/cron/scrape-all</code> – oba berú aj kategóriu „Byty prenájom“. Po naplnení DB sa tu zobrazia štatistiky.
+            Dáta pochádzajú z Apify (Bazoš + Nehnutelnosti.sk). Spustite <code className="text-zinc-400 bg-zinc-800 px-1 rounded">/api/cron/scrape-slovakia</code> alebo Admin → Data → Apify Scraper. Výsledky prídu cez webhook. Po naplnení DB sa tu zobrazia štatistiky.
           </p>
         </div>
       ) : (

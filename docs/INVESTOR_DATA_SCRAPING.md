@@ -15,7 +15,7 @@ Prehľad dát, ktoré by mal investor mať pre štatistiky a porovnávanie. Ozna
 | História ceny inzerátu | Batch refresh / detail scrape | ✅ PriceHistory | Trend ceny, dni na trhu |
 | Duplicity („u partnerov“) | Viac zdrojov (BAZOS, NEHNUTELNOSTI) | ✅ Matching | Počet zdrojov, úspora |
 
-**Odporúčanie:** Pravidelne cron pre scrape-all / scrape-paginated a batch refresh, aby DailyMarketStats a realtime mali plné dáta.
+**Odporúčanie:** Pravidelne cron pre `/api/cron/scrape-slovakia` (Apify) a batch-refresh, aby DailyMarketStats a realtime mali plné dáta.
 
 ---
 
