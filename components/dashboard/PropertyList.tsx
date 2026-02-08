@@ -76,7 +76,7 @@ interface Property {
   source_url: string | null;
   is_distressed: boolean;
   days_on_market: number;
-  listing_type: "PREDAJ";
+  listing_type: "PREDAJ" | "PRENAJOM";
   source: "BAZOS" | "REALITY" | "TOPREALITY";
   // Fotky
   photos?: string;
@@ -492,6 +492,18 @@ export function PropertyList() {
     const normalized = normalizeCityName(city);
     const cityInfo = getCityInfo(normalized);
     return cityInfo?.region || city;
+  };
+
+  /** Zobraziteľná lokalita: pri „Slovensko“/neznámom preferuj district alebo skrátenú adresu. */
+  const getDisplayLocation = (p: Property) => {
+    const isGeneric = !p.city || /^slovensko$|^neznáme$|^unknown$/i.test(p.city.trim());
+    if (isGeneric && (p.district?.trim() || p.address?.trim())) {
+      const part = p.district?.trim() || p.address.trim().slice(0, 50);
+      return part + (part.length >= 50 ? "…" : "");
+    }
+    if (p.district && p.city) return `${p.district}, ${getRegionLabel(p.city)}`;
+    if (p.city) return getRegionLabel(p.city);
+    return p.district || p.address || "Slovensko";
   };
 
   const getConditionLabel = (condition: string) => {
@@ -991,15 +1003,16 @@ export function PropertyList() {
 
                 {/* Card Content */}
                 <div className="p-4">
-                  {/* Location */}
-                  <div className="flex items-center gap-1.5 text-zinc-500 text-xs mb-2">
-                    <MapPin className="w-3 h-3 flex-shrink-0" />
-                    <span className="truncate">
-                      {property.district && property.city 
-                        ? `${property.district}, ${getRegionLabel(property.city)}`
-                        : property.city 
-                          ? getRegionLabel(property.city)
-                          : property.district || property.address || "Slovensko"}
+                  {/* Listing type + Location */}
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-1.5 text-zinc-500 text-xs min-w-0">
+                      <MapPin className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate">{getDisplayLocation(property)}</span>
+                    </div>
+                    <span className={`flex-shrink-0 px-2 py-0.5 rounded text-[10px] font-medium ${
+                      property.listing_type === "PRENAJOM" ? "bg-violet-500/20 text-violet-400" : "bg-zinc-700 text-zinc-300"
+                    }`}>
+                      {property.listing_type === "PRENAJOM" ? "Prenájom" : "Predaj"}
                     </span>
                   </div>
 
@@ -1132,14 +1145,15 @@ export function PropertyList() {
                             : property.investmentSummary}
                         </p>
                       )}
-                      <div className="flex items-center gap-4 text-sm text-zinc-400">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5" />
-                          {property.district && property.city 
-                          ? `${property.district}, ${getRegionLabel(property.city)}`
-                          : property.city 
-                            ? getRegionLabel(property.city)
-                            : property.district || "Slovensko"}
+                      <div className="flex items-center gap-4 text-sm text-zinc-400 flex-wrap">
+                        <span className="flex items-center gap-1 min-w-0 truncate max-w-[200px]">
+                          <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                          {getDisplayLocation(property)}
+                        </span>
+                        <span className={`flex-shrink-0 px-2 py-0.5 rounded text-xs font-medium ${
+                          property.listing_type === "PRENAJOM" ? "bg-violet-500/20 text-violet-400" : "bg-zinc-700 text-zinc-300"
+                        }`}>
+                          {property.listing_type === "PRENAJOM" ? "Prenájom" : "Predaj"}
                         </span>
                         <span className="flex items-center gap-1">
                           <Maximize2 className="w-3.5 h-3.5" />
