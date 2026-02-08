@@ -61,3 +61,20 @@ Alebo len jedna obec: `{"village": ["Bratislava"], "maxRequestsPerCrawl": 50}`.
 curl -X POST "http://localhost:3000/api/cron/process-apify?runId=TU_RUN_ID&portal=topreality"
 ```
 Nehnuteľnosti sa uložia do databázy so zdrojom TOPREALITY.
+
+---
+
+## Keď scrapovalo ~80 inzerátov, ale v DB ich nevidíš
+
+Dáta sa do databázy dostanú až **po spracovaní**:
+
+1. **Webhook** – Apify po dokončení behu zavolá `POST /api/webhooks/apify`. To funguje len ak aplikácia beží na verejnej URL (Vercel); na localhost webhook nepríde.
+2. **Admin „Spustiť Scraping“** – po dokončení Apify runov stránka automaticky volá „Spracovávam výsledky“ (process-apify pre každý run). Ak si **zavrel stránku** pred tým, spracovanie sa nespustilo.
+3. **Manuálne spracovanie** – Admin → Data → sekcia **Manuálne spracovanie výsledkov**: vlož **Run ID** z Apify (Apify Console → Runs → skopíruj ID behu), zvoľ portál (Bazos / Top Reality) a klikni **Spracuj**. Pre beh „Bazos + Top Reality“ máš dva runy – spracuj každý zvlášť (raz portal Bazos, raz Top Reality s príslušným runId).
+4. **Curl** – ak bežíš lokálne, po skončení scrapingu zavolaj napr.:
+   ```bash
+   curl -X POST "http://localhost:3000/api/cron/process-apify?runId=TU_BAZOS_RUN_ID&portal=bazos"
+   curl -X POST "http://localhost:3000/api/cron/process-apify?runId=TU_TOPREALITY_RUN_ID&portal=topreality"
+   ```
+
+Po úspešnom spracovaní uvidíš záznamy v DB rozdelené podľa zdroja (BAZOS, TOPREALITY) v Admin → Data alebo v `/api/debug-db` (counts.bazos, counts.topReality).

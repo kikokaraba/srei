@@ -26,6 +26,9 @@ export async function GET() {
     const bazosCount = await prisma.property.count({
       where: { source: "BAZOS" },
     });
+    const topRealityCount = await prisma.property.count({
+      where: { source: "TOPREALITY" },
+    });
 
     const totalCount = await prisma.property.count();
     
@@ -62,6 +65,7 @@ export async function GET() {
       counts: {
         total: totalCount,
         bazos: bazosCount,
+        topReality: topRealityCount,
       },
       recentProperties,
       recentLogs,

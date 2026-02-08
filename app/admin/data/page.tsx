@@ -59,6 +59,9 @@ export default function DataManagementPage() {
   const [logs, setLogs] = useState<string[]>([]);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [isResetting, setIsResetting] = useState(false);
+  const [manualRunId, setManualRunId] = useState("");
+  const [manualPortal, setManualPortal] = useState<"bazos" | "topreality">("bazos");
+  const [isManualProcessing, setIsManualProcessing] = useState(false);
 
   // Pridaj log
   const addLog = useCallback((message: string) => {
@@ -243,6 +246,32 @@ export default function DataManagementPage() {
     }
   };
 
+  // Manuálne spracovanie výsledkov (ak webhook nebol zavolaný alebo stránka sa zavrela pred dokončením)
+  const runManualProcess = async () => {
+    const runId = manualRunId.trim();
+    if (!runId) {
+      addLog("❌ Zadaj Run ID z Apify (napr. z Apify Console → Runs).");
+      return;
+    }
+    setIsManualProcessing(true);
+    addLog(`📥 Spracovávam run ${runId} (${manualPortal})...`);
+    try {
+      const processUrl = `/api/cron/process-apify?runId=${encodeURIComponent(runId)}&portal=${encodeURIComponent(manualPortal)}`;
+      const res = await fetch(processUrl, { method: "POST" });
+      const data = await res.json();
+      if (res.ok && data.success && data.stats) {
+        addLog(`✅ ${manualPortal}: vytvorených ${data.stats.created}, aktualizovaných ${data.stats.updated}, preskočených ${data.stats.skipped}`);
+        await fetchDbStats();
+      } else {
+        addLog(`❌ ${data.error ?? res.status}`);
+      }
+    } catch (e) {
+      addLog(`❌ Chyba: ${e instanceof Error ? e.message : "Neznáma"}`);
+    } finally {
+      setIsManualProcessing(false);
+    }
+  };
+
   const resetAllProperties = async () => {
     if (!window.confirm("Naozaj vymazať VŠETKY nehnuteľnosti z databázy? Táto akcia je nevratná.")) {
       return;
@@ -360,6 +389,49 @@ export default function DataManagementPage() {
             )}
           </div>
         )}
+      </div>
+
+      {/* Manuálne spracovanie – ak webhook neprišiel alebo si zavrel stránku pred „Spracovávam výsledky“ */}
+      <div className="premium-card p-5 border border-amber-500/20 bg-amber-500/5">
+        <h3 className="text-sm font-medium text-amber-400/90 mb-2 flex items-center gap-2">
+          <RefreshCw className="w-4 h-4" />
+          Manuálne spracovanie výsledkov
+        </h3>
+        <p className="text-xs text-zinc-500 mb-4">
+          Ak scraping prebehol (~80 inzerátov), ale v DB ich nevidíš: buď webhook nebol zavolaný (napr. lokálny beh), alebo si zavrel stránku pred tým, ako sa spustilo „Spracovávam výsledky“. Vlož <strong>Run ID</strong> z Apify (Runs → skopíruj ID behu) a spracuj pre každý portál zvlášť.
+        </p>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-xs text-zinc-500 mb-1">Run ID</label>
+            <input
+              type="text"
+              value={manualRunId}
+              onChange={(e) => setManualRunId(e.target.value)}
+              placeholder="napr. abcd1234xyz..."
+              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 text-sm font-mono placeholder:text-zinc-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-zinc-500 mb-1">Portál</label>
+            <select
+              value={manualPortal}
+              onChange={(e) => setManualPortal(e.target.value as "bazos" | "topreality")}
+              className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 text-sm"
+            >
+              <option value="bazos">Bazos</option>
+              <option value="topreality">Top Reality</option>
+            </select>
+          </div>
+          <button
+            type="button"
+            onClick={runManualProcess}
+            disabled={isManualProcessing || !manualRunId.trim()}
+            className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-500 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            {isManualProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+            {isManualProcessing ? "Spracovávam..." : "Spracuj"}
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid */}
