@@ -482,10 +482,12 @@ export async function POST(request: NextRequest) {
     const results: { prepared: PreparedItem; rawAddressContext: string | null }[] = [];
     const skippedReasons: string[] = [];
     const itemErrors: { url?: string; reason: string }[] = [];
+    let totalItems = 0;
 
     if (isTopReality) {
       const rawItems = await getApifyDatasetItemsRaw(payload.datasetId) as TopRealityDatasetItem[];
-      console.log(`📦 [Webhook] Fetched ${rawItems.length} Top Reality items`);
+      totalItems = rawItems.length;
+      console.log(`📦 [Webhook] Fetched ${totalItems} Top Reality items`);
       for (const item of rawItems) {
         try {
           const r = prepareTopRealityItem(item);
@@ -499,7 +501,8 @@ export async function POST(request: NextRequest) {
       }
     } else {
       const items = await getApifyDatasetItems(payload.datasetId);
-      console.log(`📦 [Webhook] Fetched ${items.length} items`);
+      totalItems = items.length;
+      console.log(`📦 [Webhook] Fetched ${totalItems} items`);
       for (const item of items) {
         try {
           const r = prepareItem(item);
@@ -512,10 +515,6 @@ export async function POST(request: NextRequest) {
         }
       }
     }
-
-    const itemsLength = isTopReality
-      ? (await getApifyDatasetItemsRaw(payload.datasetId)).length
-      : (await getApifyDatasetItems(payload.datasetId)).length;
 
     const MAX_ENRICH = 30;
     const ENRICH_CONCURRENCY = 5;
@@ -616,7 +615,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         portal: payload.portal,
-        stats: { total: items.length, created: 0, updated: 0, skipped: items.length, errors: skippedReasons.slice(0, 20) },
+        stats: { total: totalItems, created: 0, updated: 0, skipped: totalItems, errors: skippedReasons.slice(0, 20) },
       });
     }
 
@@ -750,10 +749,10 @@ export async function POST(request: NextRequest) {
     }
 
     const stats = {
-      total: items.length,
+      total: totalItems,
       created,
       updated,
-      skipped: Math.max(0, items.length - created - updated),
+      skipped: Math.max(0, totalItems - created - updated),
       hunterAlertsSent,
       errors: allErrors.slice(0, 50),
       duration_ms,

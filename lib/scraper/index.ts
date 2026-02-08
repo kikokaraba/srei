@@ -36,13 +36,17 @@ export {
 export {
   runApifyScraper,
   triggerSlovakiaScraping,
+  runTopRealityScraper,
   getApifyDatasetItems,
+  getApifyDatasetItemsRaw,
   getApifyRunStatus,
   waitForApifyRun,
   type ApifyScrapedItem,
+  type TopRealityInput,
+  type TopRealityDatasetItem,
 } from "./apify-service";
 
-// Page funkcie pre Apify (nehnutelnosti-config – Bazoš + Reality)
+// Page funkcie pre Apify (nehnutelnosti-config)
 export { BAZOS_PAGE_FUNCTION, REALITY_PAGE_FUNCTION } from "./nehnutelnosti-config";
 
 export { normalizeImages } from "./normalize-images";
