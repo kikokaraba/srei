@@ -13,6 +13,7 @@ interface Property {
   price: number;
   area_m2: number;
   price_per_m2: number;
+  is_negotiable?: boolean;
   rooms: number | null;
   investmentMetrics?: {
     gross_yield: number;
@@ -128,9 +129,12 @@ export function RecentProperties() {
           <Home className="w-5 h-5 text-emerald-400" />
           <h2 className="text-base font-semibold text-zinc-100">Nedávne nehnuteľnosti</h2>
         </div>
-        <button className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors">
+        <Link
+          href="/dashboard/properties"
+          className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+        >
           Zobraziť všetko →
-        </button>
+        </Link>
       </div>
 
       <div className="space-y-4">
@@ -151,9 +155,10 @@ export function RecentProperties() {
           const isSaving = savingId === property.id;
           
           return (
-          <div
+          <Link
             key={property.id}
-            className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50 hover:border-emerald-500/30 transition-colors cursor-pointer"
+            href={`/dashboard/property/${property.id}`}
+            className="block bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50 hover:border-emerald-500/30 transition-colors cursor-pointer"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -162,7 +167,12 @@ export function RecentProperties() {
                     {property.title}
                   </h3>
                   <button
-                    onClick={(e) => toggleSave(property.id, e)}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleSave(property.id, e);
+                    }}
                     disabled={isSaving}
                     className={`p-2 rounded-lg transition-colors ${
                       isSaved
@@ -185,7 +195,7 @@ export function RecentProperties() {
                     <MapPin className="w-4 h-4" />
                     <span>{property.district}</span>
                   </div>
-                  {property.rooms && (
+                  {property.rooms != null && (
                     <div className="flex items-center gap-1">
                       <Home className="w-4 h-4" />
                       <span>{property.rooms} {property.rooms === 1 ? "izba" : property.rooms < 5 ? "izby" : "izieb"}</span>
@@ -197,13 +207,17 @@ export function RecentProperties() {
                   <div>
                     <p className="text-xs text-zinc-500 mb-1">Cena</p>
                     <p className="text-lg font-bold text-zinc-100">
-                      €{property.price.toLocaleString()}
+                      {(Number(property.price) === 0 || property.is_negotiable)
+                        ? "Cena dohodou"
+                        : `€${Number(property.price).toLocaleString()}`}
                     </p>
                   </div>
                   <div>
                     <p className="text-xs text-zinc-500 mb-1">Cena/m²</p>
                     <p className="text-sm font-medium text-zinc-200">
-                      €{property.price_per_m2.toLocaleString()}
+                      {(Number(property.price) === 0 || property.is_negotiable)
+                        ? "–"
+                        : `€${Number(property.price_per_m2).toLocaleString()}`}
                     </p>
                   </div>
                   <div>
@@ -211,14 +225,14 @@ export function RecentProperties() {
                     <div className="flex items-center gap-1">
                       <TrendingUp className="w-4 h-4 text-emerald-400" />
                       <p className="text-sm font-bold text-emerald-400">
-                        {property.investmentMetrics?.gross_yield?.toFixed(1) || "N/A"}%
+                        {property.investmentMetrics?.gross_yield != null ? `${property.investmentMetrics.gross_yield.toFixed(1)}%` : "N/A"}
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </Link>
         );
         })}
       </div>
