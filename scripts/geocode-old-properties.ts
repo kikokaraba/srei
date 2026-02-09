@@ -15,7 +15,7 @@ const NOMINATIM_DELAY_MS = 1100;
 
 function parseArgs(): { dryRun: boolean; limit: number } {
   const a = process.argv.slice(2);
-  let dryRun = a.includes("--dry-run");
+  const dryRun = a.includes("--dry-run");
   let limit = 50;
   const i = a.indexOf("--limit");
   if (i >= 0 && a[i + 1]) limit = Math.max(1, parseInt(a[i + 1], 10) || 50);

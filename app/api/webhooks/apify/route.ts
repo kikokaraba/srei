@@ -321,7 +321,7 @@ function prepareItem(item: ApifyScrapedItem): { prepared: PreparedItem; rawAddre
   const price = parsePrice(item.price_raw);
   let area = parseArea(item.area_m2);
   let city = item.location && typeof item.location === "object" ? item.location.city : undefined;
-  if (!city && typeof item.location === "string") city = item.location.split(/[,|]/)[0]?.trim();
+  if (!city && typeof item.location === "string") city = (item.location as string).split(/[,|]/)[0]?.trim();
   city = city || "Slovensko";
   const hasPrice = price > 0 || negotiable;
   let hasArea = area > 0;

@@ -10,7 +10,6 @@ import {
   Building,
   ArrowLeft,
   Shield,
-  Loader2,
   BarChart3,
   Menu,
   X,
@@ -30,60 +29,8 @@ const adminNav = [
   { name: "Štatistiky", href: "/admin/stats", icon: BarChart3 },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    // Check if user is admin (credentials: include ensures session cookie is sent)
-    fetch("/api/v1/admin/stats", { credentials: "include" })
-      .then((res) => {
-        if (res.status === 403 || res.status === 401) {
-          router.push("/dashboard");
-          return null;
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (data?.success) {
-          setIsAdmin(true);
-        }
-      })
-      .catch(() => {
-        router.push("/dashboard");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [router]);
-
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [pathname]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative w-10 h-10 mx-auto mb-4">
-            <div className="w-10 h-10 border-2 border-zinc-800 rounded-full"></div>
-            <div className="absolute top-0 left-0 w-10 h-10 border-2 border-rose-500 rounded-full animate-spin border-t-transparent"></div>
-          </div>
-          <p className="text-zinc-500 text-sm">Overujem prístup...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return null;
-  }
-
-  const SidebarContent = () => (
+function AdminSidebarContent({ pathname, onClose }: { pathname: string; onClose: () => void }) {
+  return (
     <>
       {/* Logo */}
       <div className="p-4 lg:p-5">
@@ -98,7 +45,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </div>
           <button
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={onClose}
             className="lg:hidden p-2 text-zinc-500 hover:text-zinc-200 rounded-lg hover:bg-zinc-800/50"
           >
             <X className="w-5 h-5" />
@@ -111,7 +58,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {adminNav.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
-          const isHighlight = 'highlight' in item && item.highlight;
+          const isHighlight = "highlight" in item && item.highlight;
 
           return (
             <Link
@@ -123,7 +70,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
               }`}
             >
-              {/* Active indicator */}
               {isActive && (
                 <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r ${isHighlight ? "bg-emerald-400" : "bg-rose-400"}`} />
               )}
@@ -149,10 +95,61 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
     </>
   );
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/v1/admin/stats", { credentials: "include" })
+      .then((res) => {
+        if (res.status === 403 || res.status === 401) {
+          router.push("/dashboard");
+          return null;
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (data?.success) {
+          setIsAdmin(true);
+        }
+      })
+      .catch(() => {
+        router.push("/dashboard");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [router]);
+
+  useEffect(() => {
+    queueMicrotask(() => setMobileMenuOpen(false));
+  }, [pathname]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative w-10 h-10 mx-auto mb-4">
+            <div className="w-10 h-10 border-2 border-zinc-800 rounded-full"></div>
+            <div className="absolute top-0 left-0 w-10 h-10 border-2 border-rose-500 rounded-full animate-spin border-t-transparent"></div>
+          </div>
+          <p className="text-zinc-500 text-sm">Overujem prístup...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-[#050505]">
-      {/* Mobile Header - Premium */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 glass-premium px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-rose-500/10 flex items-center justify-center">
@@ -168,7 +165,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </button>
       </div>
 
-      {/* Mobile Sidebar Overlay */}
       {mobileMenuOpen && (
         <div
           className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
@@ -176,22 +172,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         />
       )}
 
-      {/* Mobile Sidebar */}
       <aside
         className={`lg:hidden fixed top-0 left-0 bottom-0 z-50 w-64 bg-[#0a0a0a] border-r border-zinc-800/30 flex flex-col transform transition-transform duration-300 ease-in-out ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <SidebarContent />
+        <AdminSidebarContent pathname={pathname} onClose={() => setMobileMenuOpen(false)} />
       </aside>
 
       <div className="flex">
-        {/* Desktop Sidebar - Premium Glassmorphism */}
         <aside className="hidden lg:flex w-56 glass-sidebar flex-col shrink-0 fixed top-0 left-0 bottom-0">
-          <SidebarContent />
+          <AdminSidebarContent pathname={pathname} onClose={() => setMobileMenuOpen(false)} />
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 lg:ml-56 pt-14 lg:pt-0">
           <div className="p-4 lg:p-8 max-w-7xl mx-auto">
             {children}
