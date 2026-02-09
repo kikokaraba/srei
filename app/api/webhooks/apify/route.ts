@@ -19,6 +19,12 @@ import {
 } from "@/lib/scraper/apify-service";
 import { normalizeImages } from "@/lib/scraper/normalize-images";
 import {
+  parseArea as parseAreaFromText,
+  parseRooms as parseRoomsFromText,
+  parseFloor as parseFloorFromText,
+  parseCondition as parseConditionFromText,
+} from "@/lib/scraper/parser";
+import {
   enrichAddressWithAI,
   verifyAddressWithGeocoding,
   type EnrichedAddress,
@@ -313,12 +319,38 @@ interface PreparedItem {
 function prepareItem(item: ApifyScrapedItem): { prepared: PreparedItem; rawAddressContext: string | null } | null {
   const negotiable = isPriceNegotiable(item.price_raw);
   const price = parsePrice(item.price_raw);
-  const area = parseArea(item.area_m2);
-  const city = item.location?.city || "Slovensko";
+  let area = parseArea(item.area_m2);
+  let city = item.location && typeof item.location === "object" ? item.location.city : undefined;
+  if (!city && typeof item.location === "string") city = item.location.split(/[,|]/)[0]?.trim();
+  city = city || "Slovensko";
   const hasPrice = price > 0 || negotiable;
-  const hasArea = area > 0;
+  let hasArea = area > 0;
   const hasTitle = !!item.title;
   if (!hasTitle || (!hasPrice && !hasArea)) return null;
+
+  // Bazoš: fallback – plocha/izby/poschodie/stav z titulku a popisu
+  let rooms = parseRooms(item.rooms);
+  let floor: number | null = parseFloor(item.floor);
+  let conditionRaw: string | null = parseCondition(item.condition);
+  if (item.portal === "bazos" && (item.title || item.description)) {
+    const fullText = [item.title, item.description].filter(Boolean).join(" ");
+    if (area === 0) {
+      const fromText = parseAreaFromText(fullText);
+      if (fromText != null && fromText >= 10 && fromText <= 500) {
+        area = fromText;
+        hasArea = true;
+      }
+    }
+    if (rooms == null) {
+      const fromText = parseRoomsFromText(fullText);
+      if (fromText != null) rooms = fromText;
+    }
+    if (floor == null && !item.floor) {
+      const fp = parseFloorFromText(fullText);
+      floor = fp.floor != null ? fp.floor : null;
+    }
+    if (!conditionRaw) conditionRaw = parseConditionFromText(fullText) as string;
+  }
 
   const externalId = extractExternalId(item.url);
   const listingType = detectTransactionType(item.url);
@@ -330,7 +362,6 @@ function prepareItem(item: ApifyScrapedItem): { prepared: PreparedItem; rawAddre
   const { urls: imageUrls, thumbnailUrl } = normalizeImages(item);
   const source: "BAZOS" | "REALITY" | "NEHNUTELNOSTI" | "TOPREALITY" =
     item.portal === "bazos" ? "BAZOS" : item.portal === "nehnutelnosti" ? "NEHNUTELNOSTI" : "REALITY";
-  const rooms = parseRooms(item.rooms);
   const priority_score = rooms != null ? 50 : 30;
 
   const rawAddressContext = (item.raw_address_context ?? "").trim() || null;
@@ -349,8 +380,8 @@ function prepareItem(item: ApifyScrapedItem): { prepared: PreparedItem; rawAddre
         price_per_m2: pricePerM2,
         area_m2: area,
         rooms,
-        floor: parseFloor(item.floor),
-        condition: mapConditionToSchema(parseCondition(item.condition)),
+        floor,
+        condition: mapConditionToSchema(conditionRaw),
         energy_certificate: "NONE",
         city,
         district: item.location?.district || "",

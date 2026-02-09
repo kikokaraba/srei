@@ -19,6 +19,12 @@ import {
 import { prisma } from "@/lib/prisma";
 import { generateCoreFingerprint } from "@/lib/matching/fingerprint";
 import { normalizeImages } from "@/lib/scraper/normalize-images";
+import {
+  parseArea as parseAreaFromText,
+  parseRooms as parseRoomsFromText,
+  parseFloor as parseFloorFromText,
+  parseCondition as parseConditionFromText,
+} from "@/lib/scraper/parser";
 import { extractLocationWithAI } from "@/lib/ai/location-extraction";
 
 // Geocoding pomocou Nominatim (OpenStreetMap)
@@ -363,7 +369,30 @@ export async function POST(request: NextRequest) {
       try {
         const negotiable = isPriceNegotiable(item.price_raw);
         const price = parsePrice(item.price_raw);
-        const area = parseArea(item.area_m2);
+        let area = parseArea(item.area_m2);
+        let rooms = parseRooms(item.rooms);
+        let floorParsed = parseFloor(item.floor);
+
+        // Bazoš: fallback – plocha/izby/poschodie/stav z titulku a popisu, ak scraper nevrátil
+        if (portal === "bazos" && (item.title || item.description)) {
+          const fullText = [item.title, item.description].filter(Boolean).join(" ");
+          if (area === 0) {
+            const fromText = parseAreaFromText(fullText);
+            if (fromText != null && fromText >= 10 && fromText <= 500) area = fromText;
+          }
+          if (rooms == null) {
+            const fromText = parseRoomsFromText(fullText);
+            if (fromText != null) rooms = fromText;
+          }
+          if (floorParsed == null && !item.floor) {
+            const fp = parseFloorFromText(fullText);
+            floorParsed = fp.floor != null ? fp.floor : null;
+          }
+          if (!item.condition) {
+            item.condition = parseConditionFromText(fullText);
+          }
+        }
+        if (floorParsed === undefined) floorParsed = null;
 
         // Extrahuj mesto z location (môže byť string alebo objekt)
         let city = "Slovensko";
@@ -442,7 +471,6 @@ export async function POST(request: NextRequest) {
         
         const externalId = extractExternalId(item.url);
         const listingType = detectListingType(item.url);
-        const rooms = parseRooms(item.rooms);
         const priority_score = rooms != null ? 50 : 30;
         const pricePerM2 = area > 0 && price > 0 ? Math.round(price / area) : 0;
         const slug = generateSlug(item.title, externalId);
@@ -464,7 +492,7 @@ export async function POST(request: NextRequest) {
           is_negotiable: negotiable || price === 0,
           area_m2: area,
           rooms,
-          floor: parseFloor(item.floor),
+          floor: floorParsed,
           condition: mapCondition(item.condition),
           energy_certificate: "NONE" as const,
           city,
